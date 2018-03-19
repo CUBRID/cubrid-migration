@@ -347,8 +347,8 @@
 			<scale></scale>
 		</SourceDataType>
 		<TargetDataType>
-			<type>bit varying</type>
-			<precision>64</precision>
+			<type>timestamp</type>
+			<precision></precision>
 			<scale></scale>
 		</TargetDataType>
 	</DataTypeMapping>
