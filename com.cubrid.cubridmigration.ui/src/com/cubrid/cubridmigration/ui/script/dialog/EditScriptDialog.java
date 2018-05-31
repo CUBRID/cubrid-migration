@@ -187,7 +187,10 @@ public class EditScriptDialog extends
 		super.buttonPressed(buttonId);
 	}
 	
-	@Override
+
+	/**
+	 * Return a value as boolean 
+	 */
 	protected boolean isResizable() {
 	    return true;
 	}
