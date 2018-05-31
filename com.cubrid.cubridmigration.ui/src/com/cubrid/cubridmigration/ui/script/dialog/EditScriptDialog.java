@@ -186,4 +186,9 @@ public class EditScriptDialog extends
 		}
 		super.buttonPressed(buttonId);
 	}
+	
+	@Override
+	protected boolean isResizable() {
+	    return super.isResizable();
+	}
 }
