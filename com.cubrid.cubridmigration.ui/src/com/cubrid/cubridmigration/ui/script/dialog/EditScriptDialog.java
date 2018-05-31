@@ -189,6 +189,6 @@ public class EditScriptDialog extends
 	
 	@Override
 	protected boolean isResizable() {
-	    return super.isResizable();
+	    return true;
 	}
 }
