@@ -300,6 +300,12 @@ public class Oracle2CUBRIDTranformHelper extends
 			return;
 		}
 
+		if (defaultValue.toLowerCase(Locale.US).startsWith("to_char")) {
+			cubridColumn.setDefaultIsExpression(true);
+			cubridColumn.setDefaultValue(defaultValue);
+			return;
+		}
+
 		if ("TIMESTAMP".equalsIgnoreCase(dataType)) {
 			try {
 				CUBRIDTimeUtil.parseDatetime2Long(defaultValue, TimeZone.getDefault());
