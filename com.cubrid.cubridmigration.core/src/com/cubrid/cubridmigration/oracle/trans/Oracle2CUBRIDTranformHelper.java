@@ -342,9 +342,9 @@ public class Oracle2CUBRIDTranformHelper extends
 	 * @return
 	 */
 	private boolean isDefaultValueExpression(String defaultValue) {
-		String lowerCaseOfDefaultValue = defaultValue.toLowerCase(Locale.US);
+		String lowerCaseDefaultValue = defaultValue.toLowerCase(Locale.US);
 		
-		if (lowerCaseOfDefaultValue.startsWith("to_char")) {
+		if (lowerCaseDefaultValue.startsWith("to_char")) {
 			return true;
 		}
 
