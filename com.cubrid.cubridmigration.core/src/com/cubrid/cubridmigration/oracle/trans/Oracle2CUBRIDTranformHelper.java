@@ -300,7 +300,7 @@ public class Oracle2CUBRIDTranformHelper extends
 			return;
 		}
 
-		if (defaultValue.toLowerCase(Locale.US).startsWith("to_char")) {
+		if (isDefaultValueExpression(defaultValue)) {
 			cubridColumn.setDefaultIsExpression(true);
 			cubridColumn.setDefaultValue(defaultValue);
 			return;
@@ -335,7 +335,22 @@ public class Oracle2CUBRIDTranformHelper extends
 			}
 		}
 	}
+	
+	/**
+	 * isDefaultValueExpression
+	 * @param defaultValue
+	 * @return
+	 */
+	private boolean isDefaultValueExpression(String defaultValue) {
+		String lowerCaseOfDefaultValue = defaultValue.toLowerCase(Locale.US);
+		
+		if (lowerCaseOfDefaultValue.startsWith("to_char")) {
+			return true;
+		}
 
+		return false;
+	}
+	
 	/**
 	 * 
 	 * verify the length that numeric convert to varchar
