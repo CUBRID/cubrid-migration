@@ -106,44 +106,68 @@ public class MSSQL2CUBRIDTranformHelper extends
 	/**
 	 * adjust default value of a column
 	 * 
-	 * @param srcColumn Column
-	 * @param cubCol Column
+	 * @param sourceColumn Column
+	 * @param cubridColumn Column
 	 */
-	protected void adjustDefaultValue(Column srcColumn, Column cubCol) {
-		String value = srcColumn.getDefaultValue();
+	protected void adjustDefaultValue(Column sourceColumn, Column cubridColumn) {
+		String defaultValue = sourceColumn.getDefaultValue();
 
-		if (value == null) {
-			cubCol.setDefaultValue(null);
+		if (defaultValue == null) {
+			cubridColumn.setDefaultValue(null);
 			return;
 		}
 
-		String trimValue = value.trim();
+		// ex: N'' or N'value'
+		if (isUnicodeConstant(defaultValue)) {
+			cubridColumn.setDefaultIsExpression(false);
+			if ("N''".equalsIgnoreCase(defaultValue)) {
+				cubridColumn.setDefaultValue("''");
+				return;
+			} else {
+				int beginIndex = 2;
+				int endIndex = defaultValue.length() - 1;
+				String extractedDefaultValue = defaultValue.substring(beginIndex, endIndex);
+				cubridColumn.setDefaultValue(extractedDefaultValue);
+				return;
+			}
+		}
+		
+		String trimValue = defaultValue.trim();
 		if (trimValue.startsWith("(") && trimValue.endsWith(")")) {
-			value = value.substring(1, value.length() - 1);
+			defaultValue = defaultValue.substring(1, defaultValue.length() - 1);
 		}
 
 		// ex:(NULL)
-		if ("NULL".equals(value)) {
-			cubCol.setDefaultValue(null);
+		if ("NULL".equals(defaultValue)) {
+			cubridColumn.setDefaultValue(null);
 			return;
 		}
 
 		// ex: ('0000-00-00 00:00:00')
-		if (trimValue.startsWith("'") && trimValue.endsWith("'") && value.length() > 2) {
-			value = value.substring(1, value.length() - 1);
-		} else if (value.startsWith("(") && value.endsWith(")")) {
+		if (trimValue.startsWith("'") && trimValue.endsWith("'") && defaultValue.length() > 2) {
+			defaultValue = defaultValue.substring(1, defaultValue.length() - 1);
+		} else if (defaultValue.startsWith("(") && defaultValue.endsWith(")")) {
 			// ex: ((0))
-			value = value.substring(1, value.length() - 1);
+			defaultValue = defaultValue.substring(1, defaultValue.length() - 1);
 		}
 
-		final FormatDataResult format = CUBRIDFormator.format(cubCol.getDataTypeInstance(), value);
+		final FormatDataResult format = CUBRIDFormator.format(cubridColumn.getDataTypeInstance(), defaultValue);
 		if (format.success) {
-			cubCol.setDefaultValue(format.getFormatResult());
+			cubridColumn.setDefaultValue(format.getFormatResult());
 		} else {
-			cubCol.setDefaultValue(null);
+			cubridColumn.setDefaultValue(null);
 		}
 
 	}
+
+	/**
+	 * Check that a default value is enclosed with alphabet N and single quotes at the first and the last.
+	 * @param defaultValue
+	 * @return
+	 */
+	private boolean isUnicodeConstant(String defaultValue) {
+	    return defaultValue.startsWith("N'") && defaultValue.endsWith("'");
+    }
 
 	/**
 	 * Convert JDBC Object To CUBRID Object
