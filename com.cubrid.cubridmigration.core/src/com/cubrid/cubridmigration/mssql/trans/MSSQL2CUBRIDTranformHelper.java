@@ -161,7 +161,8 @@ public class MSSQL2CUBRIDTranformHelper extends
 	}
 
 	/**
-	 * Check that a default value is enclosed with alphabet N and single quotes at the first and the last.
+	 * Checks that a default value is Unicode Constant
+	 * 
 	 * @param defaultValue
 	 * @return
 	 */
