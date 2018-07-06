@@ -141,7 +141,7 @@ public class EditScriptDialog extends
 
 		Label label = new Label(dbnameGroup, SWT.NONE);
 		label.setText(Messages.lblScriptName);
-		txtName = new StyledText(dbnameGroup, SWT.BORDER);
+		txtName = new StyledText(dbnameGroup, SWT.BORDER | SWT.SINGLE);
 		txtName.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
 		txtName.setTextLimit(100);
 		txtName.setText(name);
