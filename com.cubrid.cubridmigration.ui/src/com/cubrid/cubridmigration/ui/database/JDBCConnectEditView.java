@@ -114,8 +114,47 @@ public class JDBCConnectEditView {
 		final String firstFile = fileDialog.open();
 		if (StringUtils.isBlank(firstFile)) {
 			return;
-		}
+		}		
 		if (!JDBCDriverManager.getInstance().addDriver(firstFile, false)) {
+			// --> added by chris
+			//System.out.println ("... check addDriver()") ;
+			//final DatabaseType dt = getDBType();
+			List<JDBCData> driverList = dt.getJDBCDatas();
+			//txtHostPort.setSelection(Integer.parseInt(dt.getDefaultJDBCPort()));
+			//cboCharset.setEnabled(dt.isSupportJDBCEncoding());
+			//if (dt.isSupportJDBCEncoding()) {
+			//	cboCharset.select(1);
+			//} else {
+			//	cboCharset.select(0);
+			//}
+			//If there is no driver.
+			//if (CollectionUtils.isEmpty(driverList)) {
+			//	cboDrivers.setItems(new String[0]);
+			//	return;
+			//}
+			//Update driver names combo-box
+			//cboDrivers.setItems(new String[0]);
+			//System.out.println ("... fireDBSystemChanged() : " + driverList.size()) ;
+			JDBCData jd3 = dt.getJDBCData(firstFile) ;
+			if (jd3 != null)
+			{
+				for (JDBCData jd2 : driverList) {
+					//addDriver2CBO(jd);
+					//System.out.println (">>>" + jd3.getDesc()) ;
+					//System.out.println ("<<<" + jd2.getDesc()) ;
+					
+					if (jd3.getDesc().equals(jd2.getDesc()))
+					{
+						//System.out.println ("... SAME") ;
+						UICommonTool.openInformationBox(Display.getDefault().getActiveShell(),
+								Messages.msgWarning,
+								Messages.msgDuplicatedJdbcDriverFile);
+						return ;
+					}
+				}
+			}
+			//cboDrivers.select(cboDrivers.getItemCount() - 1);
+			// <--
 			UICommonTool.openErrorBox(Display.getDefault().getActiveShell(),
 					Messages.errInvalidJdbcJar);
 			return;
@@ -391,6 +430,7 @@ public class JDBCConnectEditView {
 	 * fire DBSystem Changed, update driver combo and default port and encoding
 	 */
 	public void fireDBSystemChanged() {
+		//System.out.println ("... fireDBSystemChanged()") ;
 		final DatabaseType dt = getDBType();
 		List<JDBCData> driverList = dt.getJDBCDatas();
 		txtHostPort.setSelection(Integer.parseInt(dt.getDefaultJDBCPort()));
@@ -407,6 +447,7 @@ public class JDBCConnectEditView {
 		}
 		//Update driver names combo-box
 		cboDrivers.setItems(new String[0]);
+		//System.out.println ("... fireDBSystemChanged() : " + driverList.size()) ;
 		for (JDBCData jd : driverList) {
 			addDriver2CBO(jd);
 		}
