@@ -141,13 +141,10 @@ public class JDBCConnectionMgrView {
 	 * add database connection info
 	 */
 	private void addDBConInfo() {
-		//System.out.println ("... addDBConInfo()") ;
 		ConnParameters cp = DBConnectionDialog.getCatalog(getActiveShell(), getDBTypeArray(), null);
 		if (cp == null) {
 			return;
 		}
-		//System.out.println ("... cp : " + cp.getConName()) ;
-		//System.out.println ("... db type array count : " + getDBTypeArray ().length) ;
 		for (DatabaseConnectionInfo dbCon : dbDataList) {
 			dbCon.setSelected(false);
 		}
@@ -443,8 +440,6 @@ public class JDBCConnectionMgrView {
 			result[i] = DatabaseType.getDatabaseTypeByID(id);
 			i++;
 		}
-		
-		//System.out.println ("... getDBTypeArray () : " + result.length) ;
 		
 		return result;
 	}
