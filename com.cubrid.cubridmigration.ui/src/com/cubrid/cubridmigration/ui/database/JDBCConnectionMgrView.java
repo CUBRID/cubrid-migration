@@ -440,6 +440,7 @@ public class JDBCConnectionMgrView {
 			result[i] = DatabaseType.getDatabaseTypeByID(id);
 			i++;
 		}
+		
 		return result;
 	}
 

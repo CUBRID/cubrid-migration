@@ -114,8 +114,20 @@ public class JDBCConnectEditView {
 		final String firstFile = fileDialog.open();
 		if (StringUtils.isBlank(firstFile)) {
 			return;
-		}
+		}		
 		if (!JDBCDriverManager.getInstance().addDriver(firstFile, false)) {
+			List<JDBCData> driverList = dt.getJDBCDatas();
+			JDBCData jd2 = dt.getJDBCData(firstFile) ;
+			if (jd2 != null) {
+				for (JDBCData jd3 : driverList) {
+					if (jd3.getDesc().equals(jd2.getDesc())) {
+						UICommonTool.openInformationBox(Display.getDefault().getActiveShell(),
+								Messages.msgWarning,
+								Messages.msgDuplicatedJdbcDriverFile);
+						return ;
+					}
+				}
+			}
 			UICommonTool.openErrorBox(Display.getDefault().getActiveShell(),
 					Messages.errInvalidJdbcJar);
 			return;
