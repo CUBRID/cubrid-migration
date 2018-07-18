@@ -48,6 +48,8 @@ import com.cubrid.cubridmigration.cubrid.CUBRIDDatabase;
 import com.cubrid.cubridmigration.mssql.MSSQLDatabase;
 import com.cubrid.cubridmigration.mysql.MySQLDatabase;
 import com.cubrid.cubridmigration.oracle.OracleDatabase;
+//import com.cubrid.cubridmigration.ui.common.UICommonTool;
+//import com.cubrid.cubridmigration.ui.message.Messages;
 
 /**
  * Base class of Database Types
@@ -148,7 +150,12 @@ public abstract class DatabaseType {
 		for (String cn : jdbcClassName) {
 			try {
 				cl = JDBCUtil.getJDBCDriverClassLoader(driverPath);
-				cl.loadClass(cn);
+				try {
+					cl.loadClass(cn);
+				} catch (UnsupportedClassVersionError ex2) {
+					jdbcDatas.add(new JDBCData(this, driverPath, cl, cn));
+					continue;
+				}
 			} catch (Exception ex) {
 				continue;
 			}
