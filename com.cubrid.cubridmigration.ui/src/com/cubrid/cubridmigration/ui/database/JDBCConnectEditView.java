@@ -57,6 +57,7 @@ import com.cubrid.cubridmigration.core.connection.CMTConParamManager;
 import com.cubrid.cubridmigration.core.connection.ConnParameters;
 import com.cubrid.cubridmigration.core.connection.JDBCData;
 import com.cubrid.cubridmigration.core.connection.JDBCDriverManager;
+import com.cubrid.cubridmigration.core.connection.JDBCUtil;
 import com.cubrid.cubridmigration.core.dbobject.Catalog;
 import com.cubrid.cubridmigration.core.dbtype.DatabaseType;
 import com.cubrid.cubridmigration.ui.common.Status;
@@ -116,6 +117,30 @@ public class JDBCConnectEditView {
 			return;
 		}
 		if (!JDBCDriverManager.getInstance().addDriver(firstFile, false)) {
+			List<JDBCData> driverList = dt.getJDBCDatas();
+			JDBCData jd2 = dt.getJDBCData(firstFile) ;
+			if (jd2 != null) {
+				ClassLoader cl = JDBCUtil.getJDBCDriverClassLoader(firstFile);
+				try {
+					cl.loadClass(jd2.getDriverClassName());
+				} catch (UnsupportedClassVersionError ex) {
+					UICommonTool.openErrorBox(Display.getDefault().getActiveShell(),
+							Messages.errInvalidJdbcJar + "\n[" + ex.getMessage() + "]");
+					return;
+				} catch (ClassNotFoundException ex2) {
+					ex2.printStackTrace();
+				}
+
+				for (JDBCData jd3 : driverList) {
+					if (jd3.getDesc().equals(jd2.getDesc())) {
+						UICommonTool.openInformationBox(Display.getDefault().getActiveShell(),
+								Messages.msgWarning,
+								Messages.msgDuplicatedJdbcDriverFile);
+
+						return;
+					}
+				}
+			}
 			UICommonTool.openErrorBox(Display.getDefault().getActiveShell(),
 					Messages.errInvalidJdbcJar);
 			return;

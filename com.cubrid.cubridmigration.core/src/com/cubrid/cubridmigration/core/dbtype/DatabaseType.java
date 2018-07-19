@@ -148,7 +148,12 @@ public abstract class DatabaseType {
 		for (String cn : jdbcClassName) {
 			try {
 				cl = JDBCUtil.getJDBCDriverClassLoader(driverPath);
-				cl.loadClass(cn);
+				try {
+					cl.loadClass(cn);
+				} catch (UnsupportedClassVersionError ex2) {
+					jdbcDatas.add(new JDBCData(this, driverPath, cl, cn));
+					continue;
+				}
 			} catch (Exception ex) {
 				continue;
 			}
