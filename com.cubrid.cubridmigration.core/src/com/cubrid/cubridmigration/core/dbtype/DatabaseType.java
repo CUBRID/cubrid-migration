@@ -48,8 +48,6 @@ import com.cubrid.cubridmigration.cubrid.CUBRIDDatabase;
 import com.cubrid.cubridmigration.mssql.MSSQLDatabase;
 import com.cubrid.cubridmigration.mysql.MySQLDatabase;
 import com.cubrid.cubridmigration.oracle.OracleDatabase;
-//import com.cubrid.cubridmigration.ui.common.UICommonTool;
-//import com.cubrid.cubridmigration.ui.message.Messages;
 
 /**
  * Base class of Database Types

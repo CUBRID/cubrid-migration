@@ -129,8 +129,6 @@ public class JDBCConnectEditView {
 							+ "\n[" + ex.getMessage() + "]");
 					return;
 				} catch (ClassNotFoundException ex2) {
-					// TODO Auto-generated catch block
-					ex2.printStackTrace();
 				}
 
 				for (JDBCData jd3 : driverList) {
