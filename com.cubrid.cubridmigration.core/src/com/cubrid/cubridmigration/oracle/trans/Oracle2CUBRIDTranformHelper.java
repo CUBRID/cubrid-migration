@@ -301,6 +301,7 @@ public class Oracle2CUBRIDTranformHelper extends
 		}
 
 		if (isDefaultValueExpression(defaultValue)) {
+			defaultValue = convertFunctionInDefaultValue(defaultValue, cubridColumn.getDataType());
 			cubridColumn.setDefaultIsExpression(true);
 			cubridColumn.setDefaultValue(defaultValue);
 			return;
@@ -337,6 +338,23 @@ public class Oracle2CUBRIDTranformHelper extends
 	}
 	
 	/**
+	 * If there is no matched condition case, returns defaultValue as it is.
+	 * 
+	 * @param defaultValue
+	 * @param dataType
+	 * @return
+	 */
+	private String convertFunctionInDefaultValue(String defaultValue, String dataType) {
+		String lowerCaseDefaultValue = defaultValue.toLowerCase(Locale.US);
+		
+		if ("datetime".equalsIgnoreCase(dataType) && lowerCaseDefaultValue.startsWith("to_date")) {
+			return lowerCaseDefaultValue.replaceFirst("to_date", "to_datetime");
+		}
+		
+		return defaultValue;
+	}
+	
+	/**
 	 * isDefaultValueExpression
 	 * @param defaultValue
 	 * @return
@@ -344,8 +362,16 @@ public class Oracle2CUBRIDTranformHelper extends
 	private boolean isDefaultValueExpression(String defaultValue) {
 		String lowerCaseDefaultValue = defaultValue.toLowerCase(Locale.US);
 		
-		if (lowerCaseDefaultValue.startsWith("to_char")) {
-			return true;
+		// Function names should be lowerCases
+		String[] functions = { 
+				"to_char",
+				"to_date"
+		};
+		
+		for (String function : functions) {
+			if (lowerCaseDefaultValue.startsWith(function)) {
+				return true;
+			}
 		}
 
 		return false;
