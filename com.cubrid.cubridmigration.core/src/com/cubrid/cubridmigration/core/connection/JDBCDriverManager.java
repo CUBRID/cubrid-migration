@@ -122,6 +122,29 @@ public final class JDBCDriverManager implements
 	}
 
 	/**
+	 * @param databaseType DB type
+	 * @param driverFile full path of driver file
+	 * 
+	 * @return  1 if driver is supported current JDK Version
+	 *          0 if driver is not supported current JDK Version
+	 *         -1 otherwise
+	 */
+	public int isSupportedJDKVersion (DatabaseType databaseType, String driverFile) {
+		JDBCData jd = databaseType.getJDBCData(driverFile) ;
+		if (jd != null) {
+			ClassLoader cl = JDBCUtil.getJDBCDriverClassLoader(driverFile);
+			try {
+				cl.loadClass(jd.getDriverClassName());
+			} catch (UnsupportedClassVersionError ex) {
+				return 0;
+			} catch (Exception ex) {
+				return -1;
+			}
+		}
+		return 1;
+	}
+	
+	/**
 	 * Delete a driver file.
 	 * 
 	 * @param driverFile full path of driver file

@@ -39,6 +39,7 @@ import org.apache.commons.lang.StringUtils;
 
 import com.cubrid.cubridmigration.core.connection.IConnHelper;
 import com.cubrid.cubridmigration.core.connection.JDBCData;
+import com.cubrid.cubridmigration.core.connection.JDBCDriverManager;
 import com.cubrid.cubridmigration.core.connection.JDBCUtil;
 import com.cubrid.cubridmigration.core.datatype.DBDataTypeHelper;
 import com.cubrid.cubridmigration.core.dbmetadata.AbstractJDBCSchemaFetcher;
@@ -148,7 +149,12 @@ public abstract class DatabaseType {
 		for (String cn : jdbcClassName) {
 			try {
 				cl = JDBCUtil.getJDBCDriverClassLoader(driverPath);
-				cl.loadClass(cn);
+				try {
+					cl.loadClass(cn);
+				} catch (UnsupportedClassVersionError ex) {
+					jdbcDatas.add(new JDBCData(this, driverPath, cl, cn));
+					continue;
+				}
 			} catch (Exception ex) {
 				continue;
 			}

@@ -121,8 +121,12 @@ public class JDBCConnectEditView {
 			return;
 		}
 		if (!JDBCDriverManager.getInstance().addDriver(firstFile, false)) {
-			UICommonTool.openErrorBox(Display.getDefault().getActiveShell(),
-					Messages.errInvalidJdbcJar);
+			if (JDBCDriverManager.getInstance().isSupportedJDKVersion(dt, firstFile) == 0)
+				UICommonTool.openErrorBox(Display.getDefault().getActiveShell(),
+						Messages.errInvalidJdbcJar + "\n[Please check your JRE version.]");
+			else
+				UICommonTool.openErrorBox(Display.getDefault().getActiveShell(),
+						Messages.errInvalidJdbcJar);
 			return;
 		}
 		jd = dt.getJDBCData(firstFile);
