@@ -44,6 +44,7 @@ import com.cubrid.cubridmigration.core.dbobject.Column;
 import com.cubrid.cubridmigration.core.dbobject.PK;
 import com.cubrid.cubridmigration.core.dbobject.Record;
 import com.cubrid.cubridmigration.core.dbobject.Table;
+import com.cubrid.cubridmigration.core.dbtype.DatabaseType;
 import com.cubrid.cubridmigration.core.engine.JDBCConManager;
 import com.cubrid.cubridmigration.core.engine.MigrationStatusManager;
 import com.cubrid.cubridmigration.core.engine.RecordExportedListener;
@@ -387,6 +388,13 @@ public class JDBCExporter extends
 	 * @return
 	 */
 	protected boolean isLatestPage(Table sTable, long exportedRecords, long recordCountOfCurrentPage) {
+		int sourceDBTypeID = config.getSourceDBType().getID();
+		if (config.isImplicitEstimate()
+		        && (sourceDBTypeID == DatabaseType.ORACLE.getID()
+		        ||  sourceDBTypeID == DatabaseType.MYSQL.getID())) {
+			return true;
+		}
+		
 		return recordCountOfCurrentPage == 0
 				|| recordCountOfCurrentPage < config.getPageFetchCount()
 				|| (!config.isImplicitEstimate() && exportedRecords >= sTable.getTableRowCount());
