@@ -174,6 +174,9 @@ public final class OracleSchemaFetcher extends
 			if (LOG.isDebugEnabled()) {
 				LOG.debug("[VAR]schema=" + schema.getName());
 			}
+			
+			System.out.println ("~~~" + "[VAR]schema=" + schema.getName()) ;
+			
 			// get tables
 			List<Table> tableList = schema.getTables();
 			if (tableList == null) {
@@ -182,10 +185,15 @@ public final class OracleSchemaFetcher extends
 			if (LOG.isDebugEnabled()) {
 				LOG.debug("[VAR]tableList.count=" + tableList.size());
 			}
+			
+			System.out.println ("~~~" + "[VAR]tableList.count=" + tableList.size()) ;
+			
 			for (Table table : tableList) {
 				String ddl = getObjectDDL(conn, schema.getName(), table.getName(),
 						OBJECT_TYPE_TABLE);
 				table.setDDL(ddl);
+				
+				System.out.println ("~~~" + "table.getName()=" + table.getName()) ;				
 			}
 			// get views
 			List<View> viewList = schema.getViews();
@@ -195,10 +203,15 @@ public final class OracleSchemaFetcher extends
 			if (LOG.isDebugEnabled()) {
 				LOG.debug("[VAR]viewList.count=" + viewList.size());
 			}
+			
+			System.out.println ("~~~" + "[VAR]viewList.count=" + viewList.size()) ;
+			
 			for (View view : viewList) {
 				String ddl = getObjectDDL(conn, schema.getName(), view.getName(), OBJECT_TYPE_VIEW);
 				view.setDDL(ddl);
 				view.setQuerySpec(getQueryText(conn, schema.getName(), view.getName()));
+				
+				System.out.println ("~~~" + "view.getName()=" + view.getName()) ;				
 			}
 			buildPartitions(conn, catalog, schema);
 		}
