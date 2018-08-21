@@ -193,7 +193,7 @@ public final class OracleSchemaFetcher extends
 						OBJECT_TYPE_TABLE);
 				table.setDDL(ddl);
 				
-				System.out.println ("~~~" + "table.getName()=" + table.getName()) ;				
+				//System.out.println ("~~~" + "table.getName()=" + table.getName()) ;				
 			}
 			// get views
 			List<View> viewList = schema.getViews();
@@ -211,7 +211,7 @@ public final class OracleSchemaFetcher extends
 				view.setDDL(ddl);
 				view.setQuerySpec(getQueryText(conn, schema.getName(), view.getName()));
 				
-				System.out.println ("~~~" + "view.getName()=" + view.getName()) ;				
+				//System.out.println ("~~~" + "view.getName()=" + view.getName()) ;				
 			}
 			buildPartitions(conn, catalog, schema);
 		}
@@ -440,6 +440,17 @@ public final class OracleSchemaFetcher extends
 					column.setPrecision(precisionStr == null ? null : rs.getInt("DATA_PRECISION"));
 					String scaleStr = rs.getString("DATA_SCALE");
 					column.setScale(scaleStr == null ? null : rs.getInt("DATA_SCALE"));
+					
+					// test
+					if (column.getDataType().equals("NUMBER"))
+					{
+						System.out.print ("~~~" + schema.getName() + "[" + table.getName() + "]") ;
+						System.out.print("~~~" + "NUMBER : presision (") ;
+						System.out.print(precisionStr) ;
+						System.out.println("), scale (" + scaleStr + ")") ;
+					}
+					//
+					
 					//Oracle Integer
 					if (column.getDataType().equals("NUMBER") && precisionStr == null
 							&& "0".equals(scaleStr)) {
