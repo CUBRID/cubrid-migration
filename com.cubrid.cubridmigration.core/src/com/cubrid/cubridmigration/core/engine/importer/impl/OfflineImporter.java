@@ -352,7 +352,7 @@ public abstract class OfflineImporter extends
 						sb.append(vv);
 					}
 					sb.append(");");
-					System.out.println ("~~~ " + sb) ;
+					System.out.println ("~~~" + sb) ;
 					pw.write(sb.toString());
 					pw.write("\n");
 					total++;

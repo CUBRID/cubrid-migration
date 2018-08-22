@@ -411,6 +411,7 @@ public class CUBRIDSQLHelper extends
 
 		bf.append(NEWLINE).append(END_LINE_CHAR);
 
+		System.out.println ("~~~" + bf) ;
 		return bf.toString();
 	}
 
