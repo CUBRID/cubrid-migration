@@ -444,7 +444,8 @@ public final class OracleSchemaFetcher extends
 					// test
 					if (column.getDataType().equals("NUMBER"))
 					{
-						System.out.print ("~~~" + schema.getName() + "[" + table.getName() + "]") ;
+						System.out.print ("~~~" + schema.getName() + "[" + table.getName()) ;
+						System.out.print (", " + columnName + "]") ;
 						System.out.print("~~~" + "NUMBER : presision (") ;
 						System.out.print(precisionStr) ;
 						System.out.println("), scale (" + scaleStr + ")") ;
