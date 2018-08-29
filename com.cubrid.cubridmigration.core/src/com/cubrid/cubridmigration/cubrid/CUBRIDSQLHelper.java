@@ -98,6 +98,8 @@ public class CUBRIDSQLHelper extends
 		bf.append(getQuotedObjName(column.getName()));
 		bf.append(" ").append(column.getShownDataType());
 
+		System.out.println ("~~~" + " getColumnDDL : " + bf) ;
+		
 		boolean autoInc = column.isAutoIncrement();
 		String value = column.getDefaultValue();
 		if (autoInc) {
@@ -411,7 +413,7 @@ public class CUBRIDSQLHelper extends
 
 		bf.append(NEWLINE).append(END_LINE_CHAR);
 
-		System.out.println ("~~~" + bf) ;
+		System.out.println ("~~~" + "CUBRIDSQLHelper:" + bf) ;
 		return bf.toString();
 	}
 

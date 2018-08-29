@@ -175,7 +175,7 @@ public final class OracleSchemaFetcher extends
 				LOG.debug("[VAR]schema=" + schema.getName());
 			}
 			
-			System.out.println ("~~~" + "[VAR]schema=" + schema.getName()) ;
+			System.out.println ("~~~" + " OracleSchemaFetcher : buildCatalog [VAR]schema=" + schema.getName()) ;
 			
 			// get tables
 			List<Table> tableList = schema.getTables();
@@ -407,6 +407,7 @@ public final class OracleSchemaFetcher extends
 	 */
 	protected void buildTableColumns(final Connection conn, final Catalog catalog,
 			final Schema schema, final Table table) throws SQLException {
+		System.out.println ("~~~" + " OracleSchemaFetcher : buildTableColumns") ;
 		if (LOG.isDebugEnabled()) {
 			LOG.debug("[IN]buildTableColumns()");
 		}
@@ -449,6 +450,7 @@ public final class OracleSchemaFetcher extends
 						System.out.print("~~~" + "NUMBER : presision (") ;
 						System.out.print(precisionStr) ;
 						System.out.println("), scale (" + scaleStr + ")") ;
+						//System.out.println ("~~~" + " ---> " + column.getPrecision() + "," + column.getScale()) ;
 					}
 					//
 					
@@ -480,6 +482,7 @@ public final class OracleSchemaFetcher extends
 
 					String shownDataType = dtHelper.getShownDataType(column);
 					column.setShownDataType(shownDataType);
+					System.out.println ("~~~" + " shownDataType : " + shownDataType) ;
 
 					table.addColumn(column);
 				} catch (Exception ex) {

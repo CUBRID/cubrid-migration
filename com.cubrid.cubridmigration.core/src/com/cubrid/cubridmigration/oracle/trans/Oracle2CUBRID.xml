@@ -344,7 +344,7 @@
 		<TargetDataType>
 			<type>numeric</type>
 			<precision>38</precision>
-			<scale>15</scale>
+			<scale>38</scale>
 		</TargetDataType>
 		<TargetDataType>
 			<type>int</type>
