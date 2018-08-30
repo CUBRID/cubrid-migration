@@ -54,6 +54,9 @@ public class NumericConverter extends
 	 */
 	public Object convert(Object obj, DataTypeInstance dti,
 			MigrationConfiguration config) {
+		
+		System.out.println ("~~~" + " NumericConverter convert : " + obj.toString()) ;
+		
 		Object value = null;
 
 		if (obj instanceof BigInteger || obj instanceof BigDecimal) {
