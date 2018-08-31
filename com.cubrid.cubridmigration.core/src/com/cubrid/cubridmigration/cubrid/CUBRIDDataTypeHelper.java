@@ -48,6 +48,7 @@ import com.cubrid.cubridmigration.core.datatype.DataTypeSymbol;
 import com.cubrid.cubridmigration.core.dbobject.Catalog;
 import com.cubrid.cubridmigration.core.dbobject.Column;
 import com.cubrid.cubridmigration.core.dbtype.DatabaseType;
+import com.cubrid.cubridmigration.core.trans.DBTransformHelper;
 import com.cubrid.cubridmigration.cubrid.exception.UnSupportCUBRIDDataTypeException;
 
 /**
@@ -342,6 +343,20 @@ public final class CUBRIDDataTypeHelper extends
 		//Do nothing here.
 	}
 
+	public Object getCUBRIDDataSetByDataTypeID (Object obj, String dataType) {
+		Object value = obj;
+		
+		System.out.println ("~~~" + " CUBRIDDataTypeHelper getCUBRIDDataSetByDataTypeID : " + dataType + "," + obj) ;
+
+		//DBTransformHelper tranformHelper = getDBTransformHelper();
+		Integer dataTypeID = getCUBRIDDataTypeID(dataType);
+		if (dataTypeID == DataTypeConstant.CUBRID_DT_NUMERIC) {
+			System.out.println ("~~~" + " CUBRIDDataTypeHelper getCUBRIDDataSetByDataTypeID : CUBRID_DT_NUMERIC") ;
+		}
+
+		return value;
+	}
+	
 	/**
 	 * Retrieves the CUBRID data type ID. If data type is collection, only
 	 * retrieves the main data type ID.
