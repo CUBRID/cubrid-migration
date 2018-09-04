@@ -343,6 +343,14 @@ public final class CUBRIDDataTypeHelper extends
 		//Do nothing here.
 	}
 
+	/**
+	 * Check the length of numeric data.
+	 * 
+	 * @param obj Object
+	 * @param dataType String
+	 * @return value Object
+	 */
+
 	public Object getCUBRIDDataSetByDataTypeID (Object obj, String dataType) {
 		Object value = obj;
 		
@@ -351,7 +359,8 @@ public final class CUBRIDDataTypeHelper extends
 		//DBTransformHelper tranformHelper = getDBTransformHelper();
 		Integer dataTypeID = getCUBRIDDataTypeID(dataType);
 		if (dataTypeID == DataTypeConstant.CUBRID_DT_NUMERIC) {
-			System.out.println ("~~~" + " CUBRIDDataTypeHelper getCUBRIDDataSetByDataTypeID : CUBRID_DT_NUMERIC") ;
+			System.out.println ("~~~" + " CUBRIDDataTypeHelper getCUBRIDDataSetByDataTypeID : " + obj.getClass()) ;
+			System.out.println ("~~~" + " CUBRIDDataTypeHelper getCUBRIDDataSetByDataTypeID : " + obj.toString()) ;			
 		}
 
 		return value;

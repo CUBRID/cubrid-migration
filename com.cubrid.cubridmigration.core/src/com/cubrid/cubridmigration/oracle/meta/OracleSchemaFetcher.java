@@ -173,10 +173,7 @@ public final class OracleSchemaFetcher extends
 		for (Schema schema : schemaList) {
 			if (LOG.isDebugEnabled()) {
 				LOG.debug("[VAR]schema=" + schema.getName());
-			}
-			
-			System.out.println ("~~~" + " OracleSchemaFetcher : buildCatalog [VAR]schema=" + schema.getName()) ;
-			
+			}			
 			// get tables
 			List<Table> tableList = schema.getTables();
 			if (tableList == null) {
@@ -186,14 +183,10 @@ public final class OracleSchemaFetcher extends
 				LOG.debug("[VAR]tableList.count=" + tableList.size());
 			}
 			
-			System.out.println ("~~~" + "[VAR]tableList.count=" + tableList.size()) ;
-			
 			for (Table table : tableList) {
 				String ddl = getObjectDDL(conn, schema.getName(), table.getName(),
 						OBJECT_TYPE_TABLE);
 				table.setDDL(ddl);
-				
-				//System.out.println ("~~~" + "table.getName()=" + table.getName()) ;				
 			}
 			// get views
 			List<View> viewList = schema.getViews();
@@ -204,14 +197,10 @@ public final class OracleSchemaFetcher extends
 				LOG.debug("[VAR]viewList.count=" + viewList.size());
 			}
 			
-			System.out.println ("~~~" + "[VAR]viewList.count=" + viewList.size()) ;
-			
 			for (View view : viewList) {
 				String ddl = getObjectDDL(conn, schema.getName(), view.getName(), OBJECT_TYPE_VIEW);
 				view.setDDL(ddl);
 				view.setQuerySpec(getQueryText(conn, schema.getName(), view.getName()));
-				
-				//System.out.println ("~~~" + "view.getName()=" + view.getName()) ;				
 			}
 			buildPartitions(conn, catalog, schema);
 		}
@@ -407,7 +396,6 @@ public final class OracleSchemaFetcher extends
 	 */
 	protected void buildTableColumns(final Connection conn, final Catalog catalog,
 			final Schema schema, final Table table) throws SQLException {
-		System.out.println ("~~~" + " OracleSchemaFetcher : buildTableColumns") ;
 		if (LOG.isDebugEnabled()) {
 			LOG.debug("[IN]buildTableColumns()");
 		}
@@ -442,18 +430,6 @@ public final class OracleSchemaFetcher extends
 					String scaleStr = rs.getString("DATA_SCALE");
 					column.setScale(scaleStr == null ? null : rs.getInt("DATA_SCALE"));
 					
-					// test
-					if (column.getDataType().equals("NUMBER"))
-					{
-						System.out.print ("~~~" + schema.getName() + "[" + table.getName()) ;
-						System.out.print (", " + columnName + "]") ;
-						System.out.print("~~~" + "NUMBER : presision (") ;
-						System.out.print(precisionStr) ;
-						System.out.println("), scale (" + scaleStr + ")") ;
-						//System.out.println ("~~~" + " ---> " + column.getPrecision() + "," + column.getScale()) ;
-					}
-					//
-					
 					//Oracle Integer
 					if (column.getDataType().equals("NUMBER") && precisionStr == null
 							&& "0".equals(scaleStr)) {
@@ -482,7 +458,6 @@ public final class OracleSchemaFetcher extends
 
 					String shownDataType = dtHelper.getShownDataType(column);
 					column.setShownDataType(shownDataType);
-					System.out.println ("~~~" + " shownDataType : " + shownDataType) ;
 
 					table.addColumn(column);
 				} catch (Exception ex) {

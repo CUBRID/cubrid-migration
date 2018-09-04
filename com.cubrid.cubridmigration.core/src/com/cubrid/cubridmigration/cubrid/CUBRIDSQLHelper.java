@@ -97,8 +97,6 @@ public class CUBRIDSQLHelper extends
 		StringBuffer bf = new StringBuffer();
 		bf.append(getQuotedObjName(column.getName()));
 		bf.append(" ").append(column.getShownDataType());
-
-		System.out.println ("~~~" + " getColumnDDL : " + bf) ;
 		
 		boolean autoInc = column.isAutoIncrement();
 		String value = column.getDefaultValue();
@@ -413,7 +411,6 @@ public class CUBRIDSQLHelper extends
 
 		bf.append(NEWLINE).append(END_LINE_CHAR);
 
-		System.out.println ("~~~" + "CUBRIDSQLHelper:" + bf) ;
 		return bf.toString();
 	}
 
