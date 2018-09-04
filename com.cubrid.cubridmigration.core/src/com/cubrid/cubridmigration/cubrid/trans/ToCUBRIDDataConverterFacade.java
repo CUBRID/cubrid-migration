@@ -127,9 +127,6 @@ public final class ToCUBRIDDataConverterFacade implements
 	 */
 	public Object convert(Object obj, DataTypeInstance dti,
 			MigrationConfiguration config) {
-
-		System.out.println ("~~~" + " ToCUBRIDDataConverterFacade convert : " + dti.getName() + ", " + dti.toString()) ;
-		
 		if (obj == null) {
 			return null;
 		}
@@ -142,15 +139,13 @@ public final class ToCUBRIDDataConverterFacade implements
 		Object dataTypeID = dataTypeHelper.getCUBRIDDataTypeID(dti.getName());
 		final AbstractDataConverter cvter = converterMap.get(dataTypeID);
 		if (cvter != null) {
-			Object value = obj;
+			//Object value = obj;
+			Object value = dataTypeHelper.getCUBRIDDataSetByDataTypeID (obj, dti.getName()) ;
+
 			//Transform Byte[] to byte[]
 			if (obj instanceof Byte[]) {
 				value = CommonUtils.getBytesFromByteArray((Byte[]) obj);
 			}
-			
-			System.out.println ("~~~" + " ToCUBRIDDataConverterFacade convert class : " + obj.getClass()) ;
-			System.out.println ("~~~" + " ToCUBRIDDataConverterFacade convert obj : " + obj) ;
-			System.out.println ("~~~" + " ToCUBRIDDataConverterFacade convert value : " + value) ;
 			
 			return cvter.convert(value, dti, config);
 		}
