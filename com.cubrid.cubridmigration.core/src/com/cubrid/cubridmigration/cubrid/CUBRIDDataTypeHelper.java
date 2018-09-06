@@ -29,6 +29,7 @@
  */
 package com.cubrid.cubridmigration.cubrid;
 
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -40,6 +41,7 @@ import java.util.Map;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
+import com.cubrid.cubridmigration.core.common.CommonUtils;
 import com.cubrid.cubridmigration.core.common.log.LogUtil;
 import com.cubrid.cubridmigration.core.datatype.DBDataTypeHelper;
 import com.cubrid.cubridmigration.core.datatype.DataTypeConstant;
@@ -343,6 +345,16 @@ public final class CUBRIDDataTypeHelper extends
 		//Do nothing here.
 	}
 
+	private int checkRound (String strData, int checkPos)
+	{
+		int checkData = Character.getNumericValue(strData.charAt(checkPos)) ;
+		
+		if (checkData < 5)
+			return 0 ;
+		else
+			return 1 ;
+	}
+	
 	/**
 	 * Check the length of numeric data.
 	 * 
@@ -354,13 +366,35 @@ public final class CUBRIDDataTypeHelper extends
 	public Object getCUBRIDDataSetByDataTypeID (Object obj, String dataType) {
 		Object value = obj;
 		
-		System.out.println ("~~~" + " CUBRIDDataTypeHelper getCUBRIDDataSetByDataTypeID : " + dataType + "," + obj) ;
+		//System.out.println ("~~~" + " CUBRIDDataTypeHelper getCUBRIDDataSetByDataTypeID : " + dataType + "," + obj) ;
 
 		//DBTransformHelper tranformHelper = getDBTransformHelper();
 		Integer dataTypeID = getCUBRIDDataTypeID(dataType);
 		if (dataTypeID == DataTypeConstant.CUBRID_DT_NUMERIC) {
-			System.out.println ("~~~" + " CUBRIDDataTypeHelper getCUBRIDDataSetByDataTypeID : " + obj.getClass()) ;
-			System.out.println ("~~~" + " CUBRIDDataTypeHelper getCUBRIDDataSetByDataTypeID : " + obj.toString()) ;			
+			//System.out.println ("~~~" + " CUBRIDDataTypeHelper getCUBRIDDataSetByDataTypeID : " + obj.getClass()) ;
+			System.out.println ("~~~" + " CUBRIDDataTypeHelper getCUBRIDDataSetByDataTypeID : " + obj.toString()) ;
+			
+			if (obj instanceof BigDecimal) {
+				System.out.println ("~~~" + " CUBRIDDataTypeHelper BigDecimal") ;
+				int max_size = DataTypeConstant.NUMERIC_MAX_PRECISIE_SIZE ;
+				String strValue = obj.toString() ;
+				
+				if (strValue.charAt(0) == '.')
+				{
+					if (strValue.length() > max_size + 1)
+					{
+						System.out.println ("~~~" + " . max") ;
+						
+					}
+				}
+				else if (strValue.charAt(0) == '0' && strValue.charAt(1) == '.')
+				{
+				}
+				else
+				{
+					strValue = strValue.replace(".", "") ;
+				}
+			}
 		}
 
 		return value;
