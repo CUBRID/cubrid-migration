@@ -29,8 +29,10 @@
  */
 package com.cubrid.cubridmigration.cubrid;
 
+import java.io.ObjectStreamException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.math.RoundingMode;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -345,15 +347,16 @@ public final class CUBRIDDataTypeHelper extends
 		//Do nothing here.
 	}
 
-	private int checkRound (String strData, int checkPos)
-	{
-		int checkData = Character.getNumericValue(strData.charAt(checkPos)) ;
+	/*
+	private Boolean needRound(String strData, int checkPos) {
+		int checkData = Character.getNumericValue(strData.charAt(checkPos));
 		
 		if (checkData < 5)
-			return 0 ;
+			return false;
 		else
-			return 1 ;
+			return true;
 	}
+	*/
 	
 	/**
 	 * Check the length of numeric data.
@@ -363,7 +366,7 @@ public final class CUBRIDDataTypeHelper extends
 	 * @return value Object
 	 */
 
-	public Object getCUBRIDDataSetByDataTypeID (Object obj, String dataType) {
+	public Object getCUBRIDDataSetByDataTypeID(Object obj, String dataType) {
 		Object value = obj;
 		
 		//System.out.println ("~~~" + " CUBRIDDataTypeHelper getCUBRIDDataSetByDataTypeID : " + dataType + "," + obj) ;
@@ -376,12 +379,15 @@ public final class CUBRIDDataTypeHelper extends
 			
 			if (obj instanceof BigDecimal) {
 				System.out.println ("~~~" + " CUBRIDDataTypeHelper BigDecimal") ;
-				int max_size = DataTypeConstant.NUMERIC_MAX_PRECISIE_SIZE ;
+				int maxSize = DataTypeConstant.NUMERIC_MAX_PRECISIE_SIZE ;
+				//BigDecimal bigDecimal = obj.
+				//value = new BigDecimal(obj.toString()).setScale(maxSize, RoundingMode.HALF_UP);
 				String strValue = obj.toString() ;
 				
+				/*
 				if (strValue.charAt(0) == '.')
 				{
-					if (strValue.length() > max_size + 1)
+					if (strValue.length() > maxSize + 1)
 					{
 						System.out.println ("~~~" + " . max") ;
 						
@@ -393,6 +399,19 @@ public final class CUBRIDDataTypeHelper extends
 				else
 				{
 					strValue = strValue.replace(".", "") ;
+				}
+				*/
+				if ((strValue.charAt(0) == '.') ||
+						(strValue.charAt(0) == '0' && strValue.charAt(1) == '.')) {
+					value = new BigDecimal(obj.toString()).setScale(maxSize, RoundingMode.HALF_UP);
+					System.out.println ("--> change 0 : " + value) ;
+				}
+				else {
+					int index = strValue.indexOf(".");
+					if (index > 0 && maxSize >= index) {
+						value = new BigDecimal(obj.toString()).setScale(maxSize-index, RoundingMode.HALF_UP);
+						System.out.println ("--> change 1 : " + value) ;
+					}
 				}
 			}
 		}
