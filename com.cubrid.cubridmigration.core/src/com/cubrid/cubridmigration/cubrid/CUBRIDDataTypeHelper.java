@@ -346,17 +346,6 @@ public final class CUBRIDDataTypeHelper extends
 	private CUBRIDDataTypeHelper() {
 		//Do nothing here.
 	}
-
-	/*
-	private Boolean needRound(String strData, int checkPos) {
-		int checkData = Character.getNumericValue(strData.charAt(checkPos));
-		
-		if (checkData < 5)
-			return false;
-		else
-			return true;
-	}
-	*/
 	
 	/**
 	 * Check the length of numeric data.
@@ -368,53 +357,33 @@ public final class CUBRIDDataTypeHelper extends
 
 	public Object getCUBRIDDataSetByDataTypeID(Object obj, String dataType) {
 		Object value = obj;
-		
-		//System.out.println ("~~~" + " CUBRIDDataTypeHelper getCUBRIDDataSetByDataTypeID : " + dataType + "," + obj) ;
-
-		//DBTransformHelper tranformHelper = getDBTransformHelper();
+		/*
 		Integer dataTypeID = getCUBRIDDataTypeID(dataType);
 		if (dataTypeID == DataTypeConstant.CUBRID_DT_NUMERIC) {
-			//System.out.println ("~~~" + " CUBRIDDataTypeHelper getCUBRIDDataSetByDataTypeID : " + obj.getClass()) ;
-			System.out.println ("~~~" + " CUBRIDDataTypeHelper getCUBRIDDataSetByDataTypeID : " + obj.toString()) ;
-			
 			if (obj instanceof BigDecimal) {
-				System.out.println ("~~~" + " CUBRIDDataTypeHelper BigDecimal") ;
 				int maxSize = DataTypeConstant.NUMERIC_MAX_PRECISIE_SIZE ;
-				//BigDecimal bigDecimal = obj.
-				//value = new BigDecimal(obj.toString()).setScale(maxSize, RoundingMode.HALF_UP);
 				String strValue = obj.toString() ;
-				
-				/*
-				if (strValue.charAt(0) == '.')
-				{
-					if (strValue.length() > maxSize + 1)
-					{
-						System.out.println ("~~~" + " . max") ;
-						
+				if (strValue.charAt(0) == '.') {
+					if (strValue.length() > maxSize + 1) {
+						value = new BigDecimal(obj.toString()).setScale(maxSize, RoundingMode.HALF_UP);
 					}
 				}
-				else if (strValue.charAt(0) == '0' && strValue.charAt(1) == '.')
-				{
-				}
-				else
-				{
-					strValue = strValue.replace(".", "") ;
-				}
-				*/
-				if ((strValue.charAt(0) == '.') ||
-						(strValue.charAt(0) == '0' && strValue.charAt(1) == '.')) {
-					value = new BigDecimal(obj.toString()).setScale(maxSize, RoundingMode.HALF_UP);
-					System.out.println ("--> change 0 : " + value) ;
+				else if (strValue.charAt(0) == '0' && strValue.charAt(1) == '.') {
+					if (strValue.length() > maxSize + 2) {
+						value = new BigDecimal(obj.toString()).setScale(maxSize, RoundingMode.HALF_UP);
+					}
 				}
 				else {
-					int index = strValue.indexOf(".");
-					if (index > 0 && maxSize >= index) {
-						value = new BigDecimal(obj.toString()).setScale(maxSize-index, RoundingMode.HALF_UP);
-						System.out.println ("--> change 1 : " + value) ;
+					if (strValue.length() > maxSize+1) {
+						int index = strValue.indexOf(".");
+						if (index > 0 && maxSize >= index) {
+							value = new BigDecimal(obj.toString()).setScale(maxSize-index, RoundingMode.HALF_UP);
+						}
 					}
 				}
 			}
 		}
+		*/
 
 		return value;
 	}
