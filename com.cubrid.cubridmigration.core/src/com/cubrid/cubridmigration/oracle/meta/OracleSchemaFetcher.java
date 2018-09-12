@@ -173,7 +173,7 @@ public final class OracleSchemaFetcher extends
 		for (Schema schema : schemaList) {
 			if (LOG.isDebugEnabled()) {
 				LOG.debug("[VAR]schema=" + schema.getName());
-			}
+			}			
 			// get tables
 			List<Table> tableList = schema.getTables();
 			if (tableList == null) {
@@ -182,6 +182,7 @@ public final class OracleSchemaFetcher extends
 			if (LOG.isDebugEnabled()) {
 				LOG.debug("[VAR]tableList.count=" + tableList.size());
 			}
+			
 			for (Table table : tableList) {
 				String ddl = getObjectDDL(conn, schema.getName(), table.getName(),
 						OBJECT_TYPE_TABLE);
@@ -195,6 +196,7 @@ public final class OracleSchemaFetcher extends
 			if (LOG.isDebugEnabled()) {
 				LOG.debug("[VAR]viewList.count=" + viewList.size());
 			}
+			
 			for (View view : viewList) {
 				String ddl = getObjectDDL(conn, schema.getName(), view.getName(), OBJECT_TYPE_VIEW);
 				view.setDDL(ddl);
@@ -427,6 +429,7 @@ public final class OracleSchemaFetcher extends
 					column.setPrecision(precisionStr == null ? null : rs.getInt("DATA_PRECISION"));
 					String scaleStr = rs.getString("DATA_SCALE");
 					column.setScale(scaleStr == null ? null : rs.getInt("DATA_SCALE"));
+					
 					//Oracle Integer
 					if (column.getDataType().equals("NUMBER") && precisionStr == null
 							&& "0".equals(scaleStr)) {

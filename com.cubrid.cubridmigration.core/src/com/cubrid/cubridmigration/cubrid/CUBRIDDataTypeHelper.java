@@ -29,7 +29,10 @@
  */
 package com.cubrid.cubridmigration.cubrid;
 
+import java.io.ObjectStreamException;
+import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.math.RoundingMode;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -40,6 +43,7 @@ import java.util.Map;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
+import com.cubrid.cubridmigration.core.common.CommonUtils;
 import com.cubrid.cubridmigration.core.common.log.LogUtil;
 import com.cubrid.cubridmigration.core.datatype.DBDataTypeHelper;
 import com.cubrid.cubridmigration.core.datatype.DataTypeConstant;
@@ -48,6 +52,7 @@ import com.cubrid.cubridmigration.core.datatype.DataTypeSymbol;
 import com.cubrid.cubridmigration.core.dbobject.Catalog;
 import com.cubrid.cubridmigration.core.dbobject.Column;
 import com.cubrid.cubridmigration.core.dbtype.DatabaseType;
+import com.cubrid.cubridmigration.core.trans.DBTransformHelper;
 import com.cubrid.cubridmigration.cubrid.exception.UnSupportCUBRIDDataTypeException;
 
 /**
@@ -341,7 +346,46 @@ public final class CUBRIDDataTypeHelper extends
 	private CUBRIDDataTypeHelper() {
 		//Do nothing here.
 	}
+	
+	/**
+	 * Check the length of numeric data.
+	 * 
+	 * @param obj Object
+	 * @param dataType String
+	 * @return value Object
+	 */
 
+	public Object getCUBRIDDataSetByDataTypeID(Object obj, String dataType) {
+		Object value = obj;
+		Integer dataTypeID = getCUBRIDDataTypeID(dataType);
+		if (dataTypeID == DataTypeConstant.CUBRID_DT_NUMERIC) {
+			if (obj instanceof BigDecimal) {
+				int maxSize = DataTypeConstant.NUMERIC_MAX_PRECISIE_SIZE ;
+				String strValue = obj.toString() ;
+				if (strValue.charAt(0) == '.') {
+					if (strValue.length() > maxSize + 1) {
+						value = new BigDecimal(obj.toString()).setScale(maxSize, RoundingMode.HALF_UP);
+					}
+				}
+				else if (strValue.charAt(0) == '0' && strValue.charAt(1) == '.') {
+					if (strValue.length() > maxSize + 2) {
+						value = new BigDecimal(obj.toString()).setScale(maxSize, RoundingMode.HALF_UP);
+					}
+				}
+				else {
+					if (strValue.length() > maxSize+1) {
+						int index = strValue.indexOf(".");
+						if (index > 0 && maxSize >= index) {
+							value = new BigDecimal(obj.toString()).setScale(maxSize-index, RoundingMode.HALF_UP);
+						}
+					}
+				}
+			}
+		}
+
+		return value;
+	}
+	
 	/**
 	 * Retrieves the CUBRID data type ID. If data type is collection, only
 	 * retrieves the main data type ID.

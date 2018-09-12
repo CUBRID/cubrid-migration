@@ -79,6 +79,7 @@ public class Oracle2CUBRIDTranformHelper extends
 	protected void adjustPrecision(Column srcColumn, Column cubColumn, MigrationConfiguration config) {
 		//UROWID/ROWID/INTERVAL to character varying doesn't need adjust precision
 		final String srcDataType = srcColumn.getDataType();
+		
 		if ("UROWID".equals(srcDataType) || "ROWID".equals(srcDataType)
 				|| srcDataType.indexOf("INTERVAL YEAR") > -1
 				|| srcDataType.indexOf("INTERVAL DAY") > -1) {
@@ -86,6 +87,7 @@ public class Oracle2CUBRIDTranformHelper extends
 		}
 		CUBRIDDataTypeHelper cubDTHelper = CUBRIDDataTypeHelper.getInstance(null);
 		long expectedPrecision = (long) cubColumn.getPrecision();
+		
 		if (cubDTHelper.isStrictNumeric(cubColumn.getDataType())) {
 			Integer tarScale = cubColumn.getScale();
 			int scale = tarScale == null ? 0 : tarScale;
