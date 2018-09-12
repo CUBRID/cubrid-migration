@@ -88,24 +88,19 @@ public class Oracle2CUBRIDTranformHelper extends
 		CUBRIDDataTypeHelper cubDTHelper = CUBRIDDataTypeHelper.getInstance(null);
 		long expectedPrecision = (long) cubColumn.getPrecision();
 		
-		System.out.print(", prec : " + expectedPrecision) ;
-		
 		if (cubDTHelper.isStrictNumeric(cubColumn.getDataType())) {
 			Integer tarScale = cubColumn.getScale();
-			System.out.print(", scale : " + tarScale + "[data type : " + cubColumn.getDataType() + "]") ;
 			int scale = tarScale == null ? 0 : tarScale;
 			if (scale < 0) {
 				expectedPrecision = expectedPrecision + Math.abs(scale);
 				scale = 0;
 				cubColumn.setScale(scale);
-				System.out.println("--> setScale : " + scale) ;
 			}
 			if (scale > expectedPrecision) {
 				expectedPrecision = scale;
 			}
 			if (expectedPrecision <= DataTypeConstant.NUMERIC_MAX_PRECISIE_SIZE) {
 				cubColumn.setPrecision((int) expectedPrecision);
-				System.out.println("--> setPrecision : " + expectedPrecision) ;
 				return;
 			}
 			if (scale == 0) {
@@ -122,7 +117,6 @@ public class Oracle2CUBRIDTranformHelper extends
 
 			cubColumn.setDataTypeInstance(dti);
 			cubColumn.setJdbcIDOfDataType(DataTypeConstant.CUBRID_DT_VARCHAR);
-			System.out.println("--> setJdbcIDOfDataType : VARCHAR (" + expectedPrecision + ", null)") ;
 			return;
 		}
 		if (cubDTHelper.isBinary(cubColumn.getDataType())) {

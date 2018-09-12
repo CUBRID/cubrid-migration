@@ -357,7 +357,6 @@ public final class CUBRIDDataTypeHelper extends
 
 	public Object getCUBRIDDataSetByDataTypeID(Object obj, String dataType) {
 		Object value = obj;
-		/*
 		Integer dataTypeID = getCUBRIDDataTypeID(dataType);
 		if (dataTypeID == DataTypeConstant.CUBRID_DT_NUMERIC) {
 			if (obj instanceof BigDecimal) {
@@ -383,7 +382,6 @@ public final class CUBRIDDataTypeHelper extends
 				}
 			}
 		}
-		*/
 
 		return value;
 	}
