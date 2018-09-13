@@ -29,7 +29,9 @@
  */
 package com.cubrid.cubridmigration.cubrid;
 
+import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.math.RoundingMode;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -340,6 +342,46 @@ public final class CUBRIDDataTypeHelper extends
 
 	private CUBRIDDataTypeHelper() {
 		//Do nothing here.
+	}
+	
+	/**
+	 * If it is NUMERIC type and there is a decimal point,
+	 * it returns the rounded value if the total number of digits exceeds 38.
+	 * 
+	 * @param obj Object
+	 * @param dataType String
+	 * @return value Object
+	 */
+
+	public Object getCUBRIDDataSetByDataTypeID(Object obj, String dataType) {
+		Object value = obj;
+		Integer dataTypeID = getCUBRIDDataTypeID(dataType);
+		if (dataTypeID == DataTypeConstant.CUBRID_DT_NUMERIC) {
+			if (obj instanceof BigDecimal) {
+				int maxSize = DataTypeConstant.NUMERIC_MAX_PRECISIE_SIZE ;
+				String strValue = obj.toString() ;
+				if (strValue.charAt(0) == '.') {
+					if (strValue.length() > maxSize + 1) {
+						value = new BigDecimal(obj.toString()).setScale(maxSize, RoundingMode.HALF_UP);
+					}
+				}
+				else if (strValue.charAt(0) == '0' && strValue.charAt(1) == '.') {
+					if (strValue.length() > maxSize + 2) {
+						value = new BigDecimal(obj.toString()).setScale(maxSize, RoundingMode.HALF_UP);
+					}
+				}
+				else {
+					if (strValue.length() > maxSize+1) {
+						int index = strValue.indexOf(".");
+						if (index > 0 && maxSize >= index) {
+							value = new BigDecimal(obj.toString()).setScale(maxSize-index, RoundingMode.HALF_UP);
+						}
+					}
+				}
+			}
+		}
+
+		return value;
 	}
 
 	/**
