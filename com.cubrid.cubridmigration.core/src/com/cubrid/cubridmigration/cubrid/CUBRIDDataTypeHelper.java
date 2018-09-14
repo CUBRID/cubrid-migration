@@ -29,7 +29,9 @@
  */
 package com.cubrid.cubridmigration.cubrid;
 
+import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.math.RoundingMode;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
