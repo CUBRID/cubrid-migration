@@ -31,7 +31,9 @@ package com.cubrid.cubridmigration.cubrid.trans.converter;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.math.RoundingMode;
 
+import com.cubrid.cubridmigration.core.datatype.DataTypeConstant;
 import com.cubrid.cubridmigration.core.datatype.DataTypeInstance;
 import com.cubrid.cubridmigration.core.engine.config.MigrationConfiguration;
 import com.cubrid.cubridmigration.core.trans.AbstractDataConverter;
@@ -47,6 +49,41 @@ public class NumericConverter extends
 		AbstractDataConverter {
 
 	/**
+	 * If it is NUMERIC type and there is a decimal point,
+	 * it returns the rounded value if the total number of digits exceeds 38.
+	 * 
+	 * @param obj Object
+	 * @param dataType String
+	 * @return value Object
+	 */
+
+	private Object getCUBRIDDataSet(Object obj) {
+		Object value = obj;
+		int maxSize = DataTypeConstant.NUMERIC_MAX_PRECISIE_SIZE ;
+		String strValue = obj.toString() ;
+		if (strValue.charAt(0) == '.') {
+			if (strValue.length() > maxSize + 1) {
+				value = new BigDecimal(obj.toString()).setScale(maxSize, RoundingMode.HALF_UP);
+			}
+		}
+		else if (strValue.charAt(0) == '0' && strValue.charAt(1) == '.') {
+			if (strValue.length() > maxSize + 2) {
+				value = new BigDecimal(obj.toString()).setScale(maxSize, RoundingMode.HALF_UP);
+			}
+		}
+		else {
+			if (strValue.length() > maxSize+1) {
+				int index = strValue.indexOf(".");
+				if (index > 0 && maxSize >= index) {
+					value = new BigDecimal(obj.toString()).setScale(maxSize-index, RoundingMode.HALF_UP);
+				}
+			}
+		}
+
+		return value;
+	}
+
+	/**
 	 * @param obj Object
 	 * @param dti DataTypeInstance
 	 * @param config MigrationConfiguration
@@ -56,8 +93,11 @@ public class NumericConverter extends
 			MigrationConfiguration config) {
 		Object value = null;
 
-		if (obj instanceof BigInteger || obj instanceof BigDecimal) {
+		if (obj instanceof BigInteger) {
 			return obj;
+		}
+		if (obj instanceof BigDecimal) {
+			return getCUBRIDDataSet(obj) ;
 		}
 		int scale = dti.getScale();
 		if (scale == 0) {
@@ -69,7 +109,7 @@ public class NumericConverter extends
 			}
 		} else if (scale > 0) {
 			try {
-				value = new BigDecimal(obj.toString());
+				value = getCUBRIDDataSet (new BigDecimal(obj.toString()));
 			} catch (NumberFormatException ex) {
 				throw new RuntimeException("ERROR: could not convert:" + obj
 						+ " to CUBRID type Numeric", ex);
