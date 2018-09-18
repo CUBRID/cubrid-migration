@@ -61,22 +61,16 @@ public class NumericConverter extends
 		Object value = obj;
 		int maxSize = DataTypeConstant.NUMERIC_MAX_PRECISIE_SIZE ;
 		String strValue = obj.toString() ;
-		if (strValue.charAt(0) == '.') {
-			if (strValue.length() > maxSize + 1) {
-				value = new BigDecimal(obj.toString()).setScale(maxSize, RoundingMode.HALF_UP);
-			}
-		}
-		else if (strValue.charAt(0) == '0' && strValue.charAt(1) == '.') {
+
+		if (strValue.charAt(0) == '0' && strValue.charAt(1) == '.') {
 			if (strValue.length() > maxSize + 2) {
 				value = new BigDecimal(obj.toString()).setScale(maxSize, RoundingMode.HALF_UP);
 			}
 		}
 		else {
-			if (strValue.length() > maxSize+1) {
-				int index = strValue.indexOf(".");
-				if (index > 0 && maxSize >= index) {
-					value = new BigDecimal(obj.toString()).setScale(maxSize-index, RoundingMode.HALF_UP);
-				}
+			int index = strValue.indexOf(".");
+			if ((index >= 0 && index < maxSize) && strValue.length() > maxSize) {
+				value = new BigDecimal(obj.toString()).setScale(maxSize - index, RoundingMode.HALF_UP);
 			}
 		}
 
