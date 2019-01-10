@@ -55,21 +55,25 @@ public class NumericConverter extends
 	 * @param obj Object
 	 * @return value Object
 	 */
-
 	private Object getCUBRIDDataSet(Object obj) {
 		Object value = obj;
 		int maxSize = DataTypeConstant.NUMERIC_MAX_PRECISIE_SIZE ;
 		String strValue = obj.toString() ;
-
-		if (strValue.charAt(0) == '0' && strValue.charAt(1) == '.') {
-			if (strValue.length() > maxSize + 2) {
-				value = new BigDecimal(obj.toString()).setScale(maxSize, RoundingMode.HALF_UP);
+		int strValueLength = strValue.length();
+		
+		if (strValue.charAt(0) == '0') {
+			if (strValueLength == 1) {
+				return value;
 			}
-		}
-		else {
+			if (strValue.charAt(1) == '.') {
+				if (strValueLength > maxSize + 2) {
+					value = new BigDecimal(strValue).setScale(maxSize, RoundingMode.HALF_UP);
+				}
+			}
+		} else {
 			int index = strValue.indexOf(".");
-			if ((index >= 0 && index < maxSize) && strValue.length() > maxSize) {
-				value = new BigDecimal(obj.toString()).setScale(maxSize - index, RoundingMode.HALF_UP);
+			if ((index >= 0 && index < maxSize) && strValueLength > maxSize) {
+				value = new BigDecimal(strValue).setScale(maxSize - index, RoundingMode.HALF_UP);
 			}
 		}
 
