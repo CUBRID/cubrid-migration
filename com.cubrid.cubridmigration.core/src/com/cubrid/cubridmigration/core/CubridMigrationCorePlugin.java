@@ -36,6 +36,9 @@ import org.osgi.framework.BundleContext;
  * @author moulinwang
  * @version 1.0 - 2009-9-18
  */
+
+//190308
+
 public class CubridMigrationCorePlugin extends
 		Plugin {
 	public static final String PLUGIN_ID = "com.cubrid.cubridmigration.core";
