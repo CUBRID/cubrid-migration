@@ -67,7 +67,7 @@ public class SQLServer2CUBRIDTypeMapPage extends
 		Composite com = new Composite(parent, SWT.NONE);
 		com.setLayout(new GridLayout());
 		com.setLayoutData(new GridData(SWT.FILL));
-		container = new DataTypeMappingComposite(parent,
+		container = new DataTypeMappingComposite(com,
 				MigrationTransFactory.getTransformHelper(DatabaseType.MSSQL,
 						DatabaseType.CUBRID).getDataTypeMappingHelper());
 		return com;
