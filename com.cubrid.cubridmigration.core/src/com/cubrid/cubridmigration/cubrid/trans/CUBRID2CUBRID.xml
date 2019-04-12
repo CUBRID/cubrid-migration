@@ -325,6 +325,11 @@
 			<precision></precision>
 			<scale></scale>
 		</TargetDataType>
+		<TargetDataType>
+			<type>bit varying</type>
+			<precision>1073741823</precision>
+			<scale></scale>
+		</TargetDataType>
 	</DataTypeMapping>
 	
 	<DataTypeMapping>
@@ -338,6 +343,11 @@
 			<precision></precision>
 			<scale></scale>
 		</TargetDataType>
+		<TargetDataType>
+			<type>varchar</type>
+			<precision>1073741823</precision>
+			<scale></scale>
+		</TargetDataType>
 	</DataTypeMapping>
 	
 	<DataTypeMapping>
@@ -349,6 +359,11 @@
 		<TargetDataType>
 			<type>blob</type>
 			<precision></precision>
+			<scale></scale>
+		</TargetDataType>
+		<TargetDataType>
+			<type>bit varying</type>
+			<precision>1073741823</precision>
 			<scale></scale>
 		</TargetDataType>
 	</DataTypeMapping>
