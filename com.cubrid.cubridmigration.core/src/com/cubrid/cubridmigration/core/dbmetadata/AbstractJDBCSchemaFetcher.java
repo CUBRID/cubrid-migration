@@ -201,6 +201,8 @@ public abstract class AbstractJDBCSchemaFetcher implements
 		// Get Tables
 		try {
 			buildTables(conn, catalog, schema, filter);
+		} catch (SQLException e) {
+			throw e;
 		} catch (Exception e) {
 			LOG.error("buildTables", e);
 		}
