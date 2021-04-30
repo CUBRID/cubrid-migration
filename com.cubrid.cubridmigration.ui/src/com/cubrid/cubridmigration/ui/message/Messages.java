@@ -305,6 +305,7 @@ public class Messages extends
 	public static String errMsgImportRemoteScriptFailed;
 	public static String errMsgInvalidCronPatten;
 	public static String errMsgInvalidStartTime;
+	public static String errMsgLoadSchemaFailed;
 	public static String errMsgNoCSV;
 	public static String errMsgNoExportScript;
 	public static String errMsgProxySettingError;
