@@ -30,6 +30,7 @@
 package com.cubrid.cubridmigration.ui.database;
 
 import java.lang.reflect.InvocationTargetException;
+import java.sql.SQLException;
 
 import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -99,6 +100,10 @@ public class SchemaFetcherWithProgress implements
 			if (exception != null) {
 				if (dbSource instanceof ConnParameters) {
 					errorMessage = Messages.errConnectDatabase;
+					Throwable cause = exception.getCause();
+					if (cause instanceof SQLException) {
+						errorMessage = Messages.errMsgLoadSchemaFailed;
+					}
 				} else {
 					errorMessage = Messages.errInvalidMysqlDumpFile;
 				}
