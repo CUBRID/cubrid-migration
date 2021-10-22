@@ -55,6 +55,7 @@ public class ReportCommandHandler extends
 
 	private PrintStream outPrinter = System.out;
 	private int pageSize = 10;
+	private boolean atOnceMode = false;
 
 	/**
 	 * 
@@ -74,6 +75,7 @@ public class ReportCommandHandler extends
 			printHistoryFiles();
 			return;
 		}
+		this.atOnceMode = isAtOnceMode(args);
 		try {
 			outPrinter.println();
 			outPrinter.println("Reading migration history file: <"
@@ -103,7 +105,7 @@ public class ReportCommandHandler extends
 			outPrinter.println("        Exported:[" + mor.getExpCount() + "]");
 			outPrinter.println("        Imported:[" + mor.getImpCount() + "]");
 		}
-		if (!waitForEnter()) {
+		if (!waitForEnter(atOnceMode)) {
 			return;
 		}
 		outPrinter.println();
@@ -120,13 +122,13 @@ public class ReportCommandHandler extends
 			}
 			if (pageCount >= pageSize) {
 				pageCount = 1;
-				if (!waitForEnter()) {
+				if (!waitForEnter(atOnceMode)) {
 					return;
 				}
 			}
 			pageCount++;
 		}
-		if (!waitForEnter()) {
+		if (!waitForEnter(atOnceMode)) {
 			return;
 		}
 		outPrinter.println();
@@ -141,7 +143,7 @@ public class ReportCommandHandler extends
 			outPrinter.println("        Imported:[" + rmr.getImpCount() + "]");
 			if (pageCount >= pageSize) {
 				pageCount = 1;
-				if (!waitForEnter()) {
+				if (!waitForEnter(atOnceMode)) {
 					return;
 				}
 			}
@@ -157,7 +159,7 @@ public class ReportCommandHandler extends
 					+ "]");
 			if (pageCount >= pageSize) {
 				pageCount = 1;
-				if (!waitForEnter()) {
+				if (!waitForEnter(atOnceMode)) {
 					return;
 				}
 			}
@@ -171,6 +173,16 @@ public class ReportCommandHandler extends
 	 */
 	protected void printHelp() {
 		ConsoleUtils.printHelp("/com/cubrid/cubridmigration/command/help_report.txt");
+	}
+
+	/**
+	 * isAtOnceMode
+	 */
+	private boolean isAtOnceMode(List<String> args) {
+		if (args.indexOf("-ao") >= 0) {
+			return true;
+		}
+		return false;
 	}
 
 }
