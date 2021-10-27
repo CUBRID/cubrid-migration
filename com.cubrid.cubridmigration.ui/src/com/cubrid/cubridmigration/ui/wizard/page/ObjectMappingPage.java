@@ -154,6 +154,7 @@ public class ObjectMappingPage extends
 				MessageDialog.openInformation(getShell(), Messages.msgInformation,
 						Messages.msgLowerCaseWarning);
 			}
+
 			if (isFirstVisible
 					&& util.checkMultipleSchema(sourceCatalog, cfg)
 					&& util.createAllObjectsMap(sourceCatalog)
@@ -161,6 +162,7 @@ public class ObjectMappingPage extends
 				showDetailMessageDialog(sourceCatalog);
 			}
 
+			showLobInfo(sourceCatalog);
 			cfg.setSrcCatalog(sourceCatalog, !mw.isLoadMigrationScript());
 
 			//Reset migration configuration
@@ -191,6 +193,17 @@ public class ObjectMappingPage extends
 			throw ex;
 		}
 
+	}
+
+	/**
+	 * showLobInfo
+	 * @param sourceCatalog
+	 */
+	private void showLobInfo(Catalog sourceCatalog) {
+		String lobInfo = util.getLobInfo(sourceCatalog);
+		if (StringUtils.isNotEmpty(lobInfo)) {
+			DetailMessageDialog.openInfo(getShell(), Messages.titleLobInformation, Messages.msgLobInformation, lobInfo);
+		}
 	}
 
 	private void showDetailMessageDialog(Catalog sourceCatalog) {
@@ -534,7 +547,6 @@ public class ObjectMappingPage extends
 		srcDBContainer.setText(Messages.lblSourceDBPart);
 
 		tvSourceDBObjects = new SourceDBExploreView(srcDBContainer, SWT.BORDER);
-
 		tvSourceDBObjects.addSelectionChangedListener(new ISelectionChangedListener() {
 
 			public void selectionChanged(SelectionChangedEvent event) {

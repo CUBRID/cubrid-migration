@@ -809,11 +809,25 @@ public class MigrationConfiguration {
 				tcol = getDBTransformHelper().getCUBRIDColumn(scol, this);
 				tcol.setName(scc.getTarget());
 			}
+			setNullableForLobDataType(tcol);
 			tcols.add(tcol);
 		}
 		setc.clearColumnList();
 		setc.addAllColumnList(sccs);
 		tarTable.setColumns(tcols);
+	}
+
+	/**
+	 * setNullableForLobDataType
+	 * @param column
+	 */
+	private void setNullableForLobDataType(Column column) {
+		String shownDataType = column.getShownDataType();
+		if ("CLOB".equalsIgnoreCase(shownDataType) || "BLOB".equalsIgnoreCase(shownDataType)) {
+			if (!column.isNullable()) {
+				column.setNullable(true);
+			}
+		}
 	}
 
 	/**
@@ -849,7 +863,7 @@ public class MigrationConfiguration {
 				String referencedTableName = fk.getReferencedTableName();
 				Map<String, Integer> allTablesCountMap = srcCatalog.getAllTablesCountMap();
 				Integer integer = allTablesCountMap.get(referencedTableName);
-				if (integer > 1) {
+				if (integer != null && integer > 1) {
 					String owner = fk.getTable().getOwner();
 					tfk.setReferencedTableName(owner + "_" + referencedTableName);
 				} else {

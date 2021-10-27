@@ -1027,4 +1027,29 @@ public class MigrationCfgUtils {
 		.append(owner.toLowerCase()).append("_").append(objectName.toLowerCase())
 		.append("\n");
 	}
+
+	/**
+	 * getLobInfo
+	 * @param sourceCatalog
+	 */
+	public String getLobInfo(Catalog sourceCatalog) {
+		StringBuffer sb = new StringBuffer();
+		List<Schema> schemas = sourceCatalog.getSchemas();
+		for (Schema schema : schemas) {
+			List<Table> tables = schema.getTables();
+			for (Table table : tables) {
+				List<Column> columns = table.getColumns();
+				for (Column column : columns) {
+					String dataType = column.getDataType();
+					boolean isNullable = column.isNullable();
+					if (("BLOB".equalsIgnoreCase(dataType) || "CLOB".equalsIgnoreCase(dataType)) && !isNullable) {
+						sb.append("[").append(schema.getName()).append("]");
+						sb.append(" ").append(table.getName()).append(".").append(column.getName());
+						sb.append(" (").append(column.getDataType()).append(")\n");
+					}
+				}
+			}
+		}
+		return sb.toString();
+	}
 }
