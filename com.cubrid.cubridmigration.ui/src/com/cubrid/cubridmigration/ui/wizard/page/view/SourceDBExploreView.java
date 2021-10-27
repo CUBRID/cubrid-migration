@@ -32,12 +32,19 @@ package com.cubrid.cubridmigration.ui.wizard.page.view;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.IAction;
+import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.MenuDetectEvent;
+import org.eclipse.swt.events.MenuDetectListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeItem;
 import org.eclipse.swt.widgets.Widget;
@@ -53,6 +60,7 @@ import com.cubrid.cubridmigration.ui.common.navigator.node.ColumnsNode;
 import com.cubrid.cubridmigration.ui.common.navigator.node.DatabaseNode;
 import com.cubrid.cubridmigration.ui.common.navigator.node.SQLTableNode;
 import com.cubrid.cubridmigration.ui.common.navigator.node.SQLTablesNode;
+import com.cubrid.cubridmigration.ui.common.navigator.node.SchemaNode;
 import com.cubrid.cubridmigration.ui.message.Messages;
 
 /**
@@ -68,6 +76,8 @@ public class SourceDBExploreView implements
 			Messages.labelTreeObjSql);
 	private final TreeViewer treeView;
 
+	private IRefreshableView refreshableView;
+
 	private MigrationConfiguration config;
 
 	private final List<ISelectionChangedListener> listeners = new ArrayList<ISelectionChangedListener>();
@@ -79,7 +89,62 @@ public class SourceDBExploreView implements
 		treeView.getTree().setLayout(new GridLayout());
 		treeView.getTree().setLayoutData(
 				new GridData(SWT.FILL, SWT.FILL, true, true));
+		treeView.getTree().addMenuDetectListener(
+				new MenuDetectListener() {
+			@Override
+			public void menuDetected(MenuDetectEvent e) {
+				Object source = (Tree) e.getSource();
+				if (source instanceof Tree) {
+					Tree tree = (Tree) source;
+					TreeItem[] treeItems = tree.getSelection();
+					Object selectedItem = treeItems[0].getData();
+					buildMenuManager(selectedItem);
+				}
+			}
+		});
+	}
 
+	/**
+	 * setRefreshableView
+	 * @param refreshableView
+	 */
+	public void setRefreshableView(IRefreshableView refreshableView) {
+		this.refreshableView = refreshableView;
+	}
+
+	/**
+	 * build Menu Manager
+	 * @param selectedItem
+	 */
+	private void buildMenuManager(Object selectedItem) {
+		final MenuManager menuManager = new MenuManager();
+
+		if (selectedItem instanceof SchemaNode) {
+			SchemaNode schemaNode = (SchemaNode) selectedItem;
+			final String schemaNodeName = schemaNode.getName();
+			final IAction selectAllAction = new Action(
+					Messages.bind(Messages.menuSelectAll, schemaNodeName), Action.AS_RADIO_BUTTON) {
+				public void run() {
+					config.setAll(schemaNodeName, true);
+					refreshableView.refreshCurrentView();
+				}
+			};
+			final IAction deselectAllAction = new Action(
+					Messages.bind(Messages.menuDeselectAll, schemaNodeName), Action.AS_RADIO_BUTTON) {
+				public void run() {
+					config.setAll(schemaNodeName, false);
+					refreshableView.refreshCurrentView();
+				}
+			};
+
+			menuManager.add(selectAllAction);
+			menuManager.add(deselectAllAction);
+		}
+
+		Control control = treeView.getControl();
+		Menu menu = menuManager.createContextMenu(control);
+		control.setMenu(menu);
+		menuManager.update(true);
 	}
 
 	/**

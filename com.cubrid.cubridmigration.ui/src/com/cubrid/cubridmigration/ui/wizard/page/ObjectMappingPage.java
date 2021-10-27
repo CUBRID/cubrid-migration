@@ -96,6 +96,7 @@ import com.cubrid.cubridmigration.ui.wizard.page.view.AbstractMappingView;
 import com.cubrid.cubridmigration.ui.wizard.page.view.ColumnMappingView;
 import com.cubrid.cubridmigration.ui.wizard.page.view.FKMappingView;
 import com.cubrid.cubridmigration.ui.wizard.page.view.GeneralObjMappingView;
+import com.cubrid.cubridmigration.ui.wizard.page.view.IRefreshableView;
 import com.cubrid.cubridmigration.ui.wizard.page.view.IndexMappingView;
 import com.cubrid.cubridmigration.ui.wizard.page.view.SQLTableMappingView;
 import com.cubrid.cubridmigration.ui.wizard.page.view.SequenceMappingView;
@@ -112,7 +113,8 @@ import com.cubrid.cubridmigration.ui.wizard.utils.VerifyResultMessages;
  * @version 1.0 - 2012-07-20
  */
 public class ObjectMappingPage extends
-		MigrationWizardPage {
+		MigrationWizardPage implements
+		IRefreshableView {
 	private static final Logger LOG = LogUtil.getLogger(ObjectMappingPage.class);
 	private SourceDBExploreView tvSourceDBObjects;
 	private final Map<String, AbstractMappingView> node2ViewMapping = new HashMap<String, AbstractMappingView>();
@@ -154,6 +156,7 @@ public class ObjectMappingPage extends
 				MessageDialog.openInformation(getShell(), Messages.msgInformation,
 						Messages.msgLowerCaseWarning);
 			}
+
 			if (isFirstVisible
 					&& util.checkMultipleSchema(sourceCatalog, cfg)
 					&& util.createAllObjectsMap(sourceCatalog)
@@ -534,7 +537,7 @@ public class ObjectMappingPage extends
 		srcDBContainer.setText(Messages.lblSourceDBPart);
 
 		tvSourceDBObjects = new SourceDBExploreView(srcDBContainer, SWT.BORDER);
-
+		tvSourceDBObjects.setRefreshableView(this);
 		tvSourceDBObjects.addSelectionChangedListener(new ISelectionChangedListener() {
 
 			public void selectionChanged(SelectionChangedEvent event) {
@@ -574,7 +577,7 @@ public class ObjectMappingPage extends
 	 * Refresh current view
 	 * 
 	 */
-	private void refreshCurrentView() {
+	public void refreshCurrentView() {
 		if (currentView != null) {
 			currentView.showData(currentView.getModel());
 		}

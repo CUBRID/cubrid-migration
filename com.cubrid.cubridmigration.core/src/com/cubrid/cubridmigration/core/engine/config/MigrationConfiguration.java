@@ -3037,6 +3037,51 @@ public class MigrationConfiguration {
 	}
 
 	/**
+	 * setAll
+	 *
+	 * @param ownerName
+	 * @param value
+	 */
+	public void setAll(String ownerName, boolean value) {
+		for (SourceEntryTableConfig setc : expTables) {
+			if (setc.getOwner().equalsIgnoreCase(ownerName)) {
+				setc.setCreateNewTable(value);
+				setc.setMigrateData(value);
+				setc.setCreatePartition(value);
+				setc.setCreatePK(value);
+				setc.setReplace(value);
+
+				for (SourceColumnConfig scc : setc.getColumnConfigList()) {
+					scc.setCreate(value);
+					scc.setReplace(value);
+				}
+				for (SourceFKConfig sfkc : setc.getFKConfigList()) {
+					sfkc.setCreate(value);
+					sfkc.setReplace(value);
+				}
+				for (SourceIndexConfig sic : setc.getIndexConfigList()) {
+					sic.setCreate(value);
+					sic.setReplace(value);
+				}
+			}
+		}
+
+		for (SourceViewConfig svc : expViews) {
+			if (svc.getOwner().equalsIgnoreCase(ownerName)) {
+				svc.setCreate(value);
+				svc.setReplace(value);
+			}
+		}
+
+		for (SourceSequenceConfig ssc : expSerials) {
+			if (ssc.getOwner().equalsIgnoreCase(ownerName)) {
+				ssc.setCreate(value);
+				ssc.setReplace(value);
+			}
+		}
+	}
+
+	/**
 	 * @param commitCount the commitCount to set
 	 */
 	public void setCommitCount(int commitCount) {
