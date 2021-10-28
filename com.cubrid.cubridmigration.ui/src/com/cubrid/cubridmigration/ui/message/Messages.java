@@ -463,6 +463,8 @@ public class Messages extends
 	public static String menuOpenWithWizard;
 	public static String menuRefresh;
 	public static String menuTopElment;
+	public static String menuSelectAll;
+	public static String menuDeselectAll;
 	public static String msgAccomplished;
 	public static String msgCanceled;
 	public static String msgCfmClearALL;
