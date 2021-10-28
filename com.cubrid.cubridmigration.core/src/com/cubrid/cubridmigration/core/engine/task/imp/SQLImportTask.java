@@ -31,6 +31,7 @@ package com.cubrid.cubridmigration.core.engine.task.imp;
 
 import java.io.File;
 import java.io.IOException;
+import java.sql.BatchUpdateException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -95,25 +96,119 @@ public class SQLImportTask extends
 			String totalFile = null;
 			if (config.isWriteErrorRecords()) {
 				final MigrationDirAndFilesManager dirAndFilesMgr = mrManager.getDirAndFilesMgr();
+
 				String tempFileName = dirAndFilesMgr.getNewTempFile();
-				File tmpFile = new File(tempFileName);
 				totalFile = dirAndFilesMgr.getErrorFilesDir()
 						+ new File(sqlFile).getName();
-				try {
-					PathUtils.createFile(tmpFile);
-					CUBRIDIOUtils.writeLines(tmpFile, sqls.toArray(new String[0]));
-				} catch (IOException ex1) {
-					tmpFile = null;
-				}
-				if (tmpFile != null) {
-					FileMergeRunnable fmr = new FileMergeRunnable(tempFileName,
-							totalFile, "utf-8", null, true, true);
-					mrManager.getMergeTaskExe().execute(fmr);
-				}
+
+				writeErrorRecords(tempFileName, totalFile);
+				writeErrorFile(tempFileName, totalFile, ex);
 			}
 			eventHandler.handleEvent(new ImportSQLsEvent(sqlFile, sqls.size(),
 					size, ex, totalFile));
 		}
+	}
+
+	/**
+	 * writeErrorRecords
+	 * @param tempFileName
+	 * @param totalFileName
+	 */
+	private void writeErrorRecords(String tempFileName, String totalFileName) {
+		String[] errorRecords = sqls.toArray(new String[0]);
+		createErrorFile(errorRecords, tempFileName, totalFileName);
+	}
+
+	/**
+	 * writeErrorFile
+	 * @param tempFileName
+	 * @param totalFile
+	 * @param ex
+	 */
+	private void writeErrorFile(String tempFileName, String totalFile, SQLException ex) {
+		String tempErrorFileName = tempFileName + ".err";
+		String totalErrorFile = totalFile + ".err";
+		String[] errorMessage = new String[] { createErrorMessage(ex) };
+		createErrorFile(errorMessage, tempErrorFileName, totalErrorFile);
+	}
+
+	/**
+	 * createErrorFile
+	 * @param tempFileName
+	 * @param contents
+	 * @param totalFileName
+	 */
+	private void createErrorFile(String[] contents, String tempFileName, String totalFileName) {
+		File tempFile = new File(tempFileName);
+		createTempFile(tempFile, contents);
+		if (tempFile != null) {
+			mergeFile(tempFileName, totalFileName);
+		}
+	}
+
+	/**
+	 * createTempFile
+	 * @param tempFile
+	 * @param contents
+	 * @return
+	 */
+	private void createTempFile(File tempFile, String[] contents) {
+		try {
+			PathUtils.createFile(tempFile);
+			CUBRIDIOUtils.writeLines(tempFile, contents);
+		} catch (IOException e) {
+			tempFile = null;
+		}
+	}
+
+	/**
+	 * mergeFile
+	 * @param srcFileName
+	 * @param trgFileName
+	 */
+	private void mergeFile(String srcFileName, String trgFileName) {
+	    FileMergeRunnable fmr = new FileMergeRunnable(srcFileName,
+				trgFileName, "utf-8", null, true, true);
+		mrManager.getMergeTaskExe().execute(fmr);
+	}
+
+	/**
+	 * createErrorMessage
+	 * @param ex
+	 * @return
+	 */
+	private String createErrorMessage(SQLException ex) {
+		return new StringBuffer()
+		.append("/* ").append("Error code : ")
+		.append(ex.getErrorCode())
+		.append(" | ")
+		.append("Error message : ")
+		.append(ex.getMessage().replace(System.getProperty("line.separator"), "").trim())
+		.append(" | ")
+		.append("SQL : ")
+		.append(getFirstErrorSql(ex))
+		.append(" */")
+		.toString();
+	}
+
+	/**
+	 * getFirstErrorSql
+	 * @param ex
+	 * @return
+	 */
+	private String getFirstErrorSql(SQLException ex) {
+		String firstErrorSql = "";
+		if (ex instanceof BatchUpdateException) {
+			BatchUpdateException bue = (BatchUpdateException) ex;
+			int[] updateCounts = bue.getUpdateCounts();
+			for (int i = 0; i < updateCounts.length; i++) {
+				if (updateCounts[i] == Statement.EXECUTE_FAILED) {
+					firstErrorSql = sqls.get(i).trim().toString();
+					return firstErrorSql;
+				}
+			}
+		}
+		return firstErrorSql;
 	}
 
 	/**

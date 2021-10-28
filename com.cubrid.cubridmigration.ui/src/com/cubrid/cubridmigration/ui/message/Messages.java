@@ -560,6 +560,7 @@ public class Messages extends
 	public static String msgIsUseCachedCatalog;
 	public static String msgIsUseNewerScriptCatalog;
 	public static String msgIsUseScriptCatalog;
+	public static String msgLobInformation;
 	public static String msgLowerCaseWarning;
 	public static String msgMappingOverride;
 	public static String msgNoIndexColumn;
@@ -719,6 +720,7 @@ public class Messages extends
 	public static String titleExportScript;
 	public static String titleGroupSettingDialog;
 	public static String titleImportScript;
+	public static String titleLobInformation;
 	public static String titleNewScript;
 	public static String titlePerformanceSettings;
 	public static String titleRenameSchema;

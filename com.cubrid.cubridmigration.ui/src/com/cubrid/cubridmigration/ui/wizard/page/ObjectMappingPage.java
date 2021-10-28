@@ -164,6 +164,7 @@ public class ObjectMappingPage extends
 				showDetailMessageDialog(sourceCatalog);
 			}
 
+			showLobInfo(sourceCatalog);
 			cfg.setSrcCatalog(sourceCatalog, !mw.isLoadMigrationScript());
 
 			//Reset migration configuration
@@ -194,6 +195,17 @@ public class ObjectMappingPage extends
 			throw ex;
 		}
 
+	}
+
+	/**
+	 * showLobInfo
+	 * @param sourceCatalog
+	 */
+	private void showLobInfo(Catalog sourceCatalog) {
+		String lobInfo = util.getLobInfo(sourceCatalog);
+		if (StringUtils.isNotEmpty(lobInfo)) {
+			DetailMessageDialog.openInfo(getShell(), Messages.titleLobInformation, Messages.msgLobInformation, lobInfo);
+		}
 	}
 
 	private void showDetailMessageDialog(Catalog sourceCatalog) {

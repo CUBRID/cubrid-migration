@@ -117,6 +117,18 @@ public class HistoryCommandHandler implements
 	 * @return false to stop display the information
 	 */
 	protected boolean waitForEnter() {
+		return waitForEnter(false);
+	}
+
+	/**
+	 * Waiting for Enter
+	 *
+	 * @return false to stop display the information
+	 */
+	protected boolean waitForEnter(boolean atOnceMode) {
+		if (atOnceMode) {
+			return true;
+		}
 		String ps = "<Press [enter] to continue...>";
 		outPrinter.print(ps);
 		Console console = System.console();
