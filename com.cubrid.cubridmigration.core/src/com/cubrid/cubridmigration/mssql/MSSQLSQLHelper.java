@@ -29,6 +29,9 @@
  */
 package com.cubrid.cubridmigration.mssql;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import com.cubrid.cubridmigration.core.dbobject.Table;
 import com.cubrid.cubridmigration.core.sql.SQLHelper;
 import com.cubrid.cubridmigration.cubrid.CUBRIDSQLHelper;
@@ -394,7 +397,23 @@ public class MSSQLSQLHelper extends
 		//		result = replacePageSizeParameterToValue(result, SQLPARAM_PAGE_END, "1");
 		//		result = replacePageSizeParameterToValue(result, SQLPARAM_TOTAL_EXPORTED, "0");
 		if (sql.equals(result)) {
-			result = "SELECT TOP 1 * FROM (" + sql + ") tartbl";
+			Pattern orderByPattern = Pattern.compile("ORDER\\s+BY", Pattern.MULTILINE | Pattern.CASE_INSENSITIVE);
+			Matcher orderByMatcher = orderByPattern.matcher(sql);
+
+			if (orderByMatcher.find()) {
+				Pattern selectTopPattern = Pattern.compile("SELECT\\s+TOP", Pattern.MULTILINE
+				        | Pattern.CASE_INSENSITIVE);
+				Matcher selectTopMatcher = selectTopPattern.matcher(sql);
+
+				if (!selectTopMatcher.find()) {
+					// ORDER BY (Yes), SELECT TOP (No)
+					result = result.trim().replaceFirst("(?i)SELECT ", "SELECT TOP 1 ");
+				} else {
+					// ORDER BY (Yes), SELECT TOP (Yes) - Return value as it is
+				}
+			} else {
+				result = "SELECT TOP 1 * FROM (" + sql + ") tartbl";
+			}
 		}
 		return result;
 	}

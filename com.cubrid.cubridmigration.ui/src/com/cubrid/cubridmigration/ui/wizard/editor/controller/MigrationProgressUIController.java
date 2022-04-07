@@ -479,9 +479,13 @@ public class MigrationProgressUIController {
 		item[2] = String.valueOf(newExp);
 		if (!config.isImplicitEstimate()) {
 			long oldimp = getCellValue(item[3]);
-			item[4] = String.valueOf(Math.round(100 * (newExp + oldimp)
-					/ (2 * getCellValue(item[1]))))
-					+ "%";
+			try {
+				item[4] = String.valueOf(Math.round(100 * (newExp + oldimp)
+						/ (2 * getCellValue(item[1]))))
+						+ "%";
+			} catch (Exception e) {
+				// Do nothing
+			}
 		}
 		return item;
 	}
@@ -522,9 +526,13 @@ public class MigrationProgressUIController {
 		item[3] = String.valueOf(newImp);
 		if (!config.isImplicitEstimate()) {
 			long oldexp = getCellValue(item[2]);
-			item[4] = String.valueOf(Math.round(100 * (oldexp + newImp)
-					/ (2 * getCellValue(item[1]))))
-					+ "%";
+			try {
+				item[4] = String.valueOf(Math.round(100 * (oldexp + newImp)
+						/ (2 * getCellValue(item[1]))))
+						+ "%";
+			} catch (Exception e) {
+				// Do nothing
+			}
 		}
 		return item;
 	}
