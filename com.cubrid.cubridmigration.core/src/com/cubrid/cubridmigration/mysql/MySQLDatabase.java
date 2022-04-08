@@ -57,7 +57,8 @@ public class MySQLDatabase extends
 	public MySQLDatabase() {
 		super(DBConstant.DBTYPE_MYSQL,
 				DBConstant.DB_NAMES[DBConstant.DBTYPE_MYSQL],
-				new String[]{DBConstant.JDBC_CLASS_MYSQL },
+				new String[] { DBConstant.JDBC_CLASS_MYSQL,
+				DBConstant.JDBC_CLASS_MYSQL8_OR_LATER },
 				DBConstant.DEF_PORT_MYSQL, new MySQLSchemaFetcher(),
 				new MySQLExportHelper(), new MysqlConnHelper(), false);
 	}

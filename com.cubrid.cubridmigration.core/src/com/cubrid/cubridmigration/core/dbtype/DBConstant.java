@@ -49,6 +49,7 @@ public class DBConstant { //NOPMD
 	public static final String JDBC_CLASS_MSSQL = "com.microsoft.sqlserver.jdbc.SQLServerDriver";
 	public static final String JDBC_CLASS_CUBRID = "cubrid.jdbc.driver.CUBRIDDriver";
 	public static final String JDBC_CLASS_MYSQL = "org.gjt.mm.mysql.Driver";
+	public static final String JDBC_CLASS_MYSQL8_OR_LATER = "com.mysql.cj.jdbc.Driver";
 	public static final String JDBC_CLASS_MSSQL_JTDS = "net.sourceforge.jtds.jdbc.Driver";
 
 	public static final String DEF_PORT_MSSQL = "1433";
