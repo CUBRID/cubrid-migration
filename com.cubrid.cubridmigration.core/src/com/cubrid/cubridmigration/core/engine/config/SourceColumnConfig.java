@@ -52,6 +52,8 @@ public class SourceColumnConfig extends
 
 	//A class file's full name with method "Object convert(String tablename,String columnName,Object value)" 
 	private String userDataHandler;
+	
+	private String comment;
 
 	/**
 	 * Parent table configuration.
@@ -69,6 +71,10 @@ public class SourceColumnConfig extends
 		this.parent = parent;
 	}
 
+	public String getComment() {
+		return comment;
+	}
+	
 	public boolean isNeedTrim() {
 		return needTrim;
 	}
@@ -77,6 +83,10 @@ public class SourceColumnConfig extends
 		this.needTrim = needTrim;
 	}
 
+	public void setComment(String comment) {
+		this.comment = comment;
+	}
+	
 	/**
 	 * Get replace value
 	 * 

@@ -98,7 +98,7 @@ public final class CUBRIDSchemaFetcher extends
 
 	private static final String ALL_TABLE_COLUMN = "SELECT a.class_name, a.attr_name, a.attr_type, a.from_class_name,"
 			+ " a.data_type, a.prec, a.scale, a.is_nullable,"
-			+ " a.domain_class_name, a.default_value, a.def_order,c.is_reuse_oid_class"
+			+ " a.domain_class_name, a.default_value, a.def_order,c.is_reuse_oid_class, c.comment"
 			+ " FROM db_attribute a , db_class c"
 			+ " WHERE c.class_name = a.class_name AND c.class_type='CLASS' AND c.is_system_class='NO' and from_class_name is NULL"
 			+ " ORDER BY a.class_name, c.class_type, a.def_order";
@@ -427,6 +427,7 @@ public final class CUBRIDSchemaFetcher extends
 
 			while (rs.next()) {
 				String tableName = rs.getString("class_name");
+				String comment = rs.getString("comment");
 				if (tableName == null) {
 					continue;
 				}
@@ -438,6 +439,7 @@ public final class CUBRIDSchemaFetcher extends
 				if (table == null) {
 					table = factory.createTable();
 					table.setName(tableName);
+					table.setComment(comment);
 					table.setReuseOID(isYes(rs.getString("is_reuse_oid_class")));
 					schema.addTable(table);
 					tables.put(tableName, table);

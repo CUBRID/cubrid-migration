@@ -46,6 +46,7 @@ public class SourceTableConfig {
 	 * It is a null value except Oracle.
 	 */
 	private String owner;
+	private String comment;
 	private String target;
 	private boolean createNewTable = true;
 	private boolean migrateData = true;
@@ -141,6 +142,10 @@ public class SourceTableConfig {
 		return owner;
 	}
 
+	public String getComment() {
+		return comment;
+	}
+	
 	public String getSqlAfter() {
 		return sqlAfter == null ? "" : sqlAfter;
 	}
@@ -246,6 +251,10 @@ public class SourceTableConfig {
 
 	public void setOwner(String owner) {
 		this.owner = owner;
+	}
+	
+	public void setComment(String comment) {
+		this.comment = comment;
 	}
 
 	/**

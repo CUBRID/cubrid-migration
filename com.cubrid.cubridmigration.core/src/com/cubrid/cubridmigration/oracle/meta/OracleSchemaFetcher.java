@@ -146,6 +146,12 @@ public final class OracleSchemaFetcher extends
 			+ "WHERE S.SEQUENCE_OWNER=? AND NOT S.SEQUENCE_NAME LIKE 'BIN$%' ";
 
 	private static final String SQL_SHOW_VIEW_QUERYTEXT = "SELECT TEXT from ALL_VIEWS WHERE OWNER=? AND VIEW_NAME=?";
+	
+	private static final String SQL_GET_TABLE_COMMENT = "SELECT COMMENTS FROM ALL_TAB_COMMENTS WHERE OWNER=? AND "
+			+ "TABLE_NAME=?";
+	
+	private static final String SQL_GET_COLUMN_COMMENT = "SELECT COMMENTS FROM ALL_COL_COMMENTS WHERE OWNER=? AND "
+			+ "COLUMN_NAME=?";
 
 	//private static final String SHOW_SEQUENCE_MAXVAL = "SELECT ?.CURRVAL  FROM DUAL";
 
@@ -186,6 +192,9 @@ public final class OracleSchemaFetcher extends
 				String ddl = getObjectDDL(conn, schema.getName(), table.getName(),
 						OBJECT_TYPE_TABLE);
 				table.setDDL(ddl);
+				
+				String comment = getTableComment(conn, schema.getName(), table.getName());
+				table.setComment(comment);
 			}
 			// get views
 			List<View> viewList = schema.getViews();
@@ -455,6 +464,8 @@ public final class OracleSchemaFetcher extends
 
 					String shownDataType = dtHelper.getShownDataType(column);
 					column.setShownDataType(shownDataType);
+					
+					column.setComment(getColumnComment(conn, schema.getName(), column.getName()));
 
 					table.addColumn(column);
 				} catch (Exception ex) {
@@ -969,6 +980,69 @@ public final class OracleSchemaFetcher extends
 		} finally {
 			Closer.close(rs);
 			Closer.close(preStmt);
+		}
+	}
+	
+	/**
+	 * get TABLE comment
+	 * 
+	 * @param conn Connection
+	 * @param objectName String
+	 * @return comment
+	 */
+	private String getTableComment(Connection conn, String schemaName, String objectName) {
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		try {
+			pstmt = conn.prepareStatement(SQL_GET_TABLE_COMMENT);
+			pstmt.setString(1, schemaName);
+			pstmt.setString(2, objectName);
+			
+			rs = pstmt.executeQuery();
+			
+			String comment = "";
+			while (rs.next()) {
+				comment = rs.getString("COMMENTS");
+			}
+			return comment;
+		} catch (Exception e){
+			e.printStackTrace();
+			return null;
+		} finally {
+			Closer.close(rs);
+			Closer.close(pstmt);
+		}
+	}
+	
+	/**
+	 * get column comment
+	 * 
+	 * @param conn
+	 * @param objectName
+	 * @param schemaName
+	 * @return comment
+	 */
+	private String getColumnComment(Connection conn, String schemaName, String columnName) {
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		try {
+			pstmt = conn.prepareStatement(SQL_GET_COLUMN_COMMENT);
+			pstmt.setString(1, schemaName);
+			pstmt.setString(2, columnName);
+			
+			rs = pstmt.executeQuery();
+			
+			String comment = "";
+			while (rs.next()) {
+				comment = rs.getString("COMMENTS");
+			}
+			return comment;
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		} finally {
+			Closer.close(pstmt);
+			Closer.close(rs);
 		}
 	}
 

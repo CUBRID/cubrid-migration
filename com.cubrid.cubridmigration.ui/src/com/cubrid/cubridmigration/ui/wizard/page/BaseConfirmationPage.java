@@ -45,6 +45,7 @@ import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.ToolItem;
 import org.eclipse.ui.PlatformUI;
 
+import com.cubrid.cubridmigration.core.dbobject.Column;
 import com.cubrid.cubridmigration.core.dbobject.FK;
 import com.cubrid.cubridmigration.core.dbobject.Index;
 import com.cubrid.cubridmigration.core.dbobject.PK;
@@ -53,6 +54,7 @@ import com.cubrid.cubridmigration.core.dbobject.Table;
 import com.cubrid.cubridmigration.core.dbobject.View;
 import com.cubrid.cubridmigration.core.engine.config.MigrationConfiguration;
 import com.cubrid.cubridmigration.core.engine.config.SourceCSVConfig;
+import com.cubrid.cubridmigration.core.engine.config.SourceColumnConfig;
 import com.cubrid.cubridmigration.core.engine.config.SourceConfig;
 import com.cubrid.cubridmigration.core.engine.config.SourceEntryTableConfig;
 import com.cubrid.cubridmigration.core.engine.config.SourceSQLTableConfig;
@@ -69,8 +71,7 @@ import com.cubrid.cubridmigration.ui.wizard.dialog.PerformanceSettingsDialog;
  * @author caoyilin
  * @version 2.0 - 2013-8-23
  */
-public class BaseConfirmationPage extends
-		MigrationWizardPage {
+public class BaseConfirmationPage extends MigrationWizardPage {
 
 	private static final String NEWLINE = System.getProperty("line.separator");
 	protected StyledText txtSummary;
@@ -86,7 +87,8 @@ public class BaseConfirmationPage extends
 	/**
 	 * Create buttons in this page
 	 * 
-	 * @param parent of the buttons
+	 * @param parent
+	 *            of the buttons
 	 */
 	protected void createButtons(Composite parent) {
 		comRoot = new Composite(parent, SWT.BORDER);
@@ -103,8 +105,8 @@ public class BaseConfirmationPage extends
 		btnSettings.addSelectionListener(new SelectionAdapter() {
 
 			public void widgetSelected(final SelectionEvent event) {
-				PerformanceSettingsDialog dialog = new PerformanceSettingsDialog(getShell(),
-						getMigrationWizard().getMigrationConfig());
+				PerformanceSettingsDialog dialog = new PerformanceSettingsDialog(
+						getShell(), getMigrationWizard().getMigrationConfig());
 				dialog.open();
 			}
 		});
@@ -141,12 +143,13 @@ public class BaseConfirmationPage extends
 			public void widgetSelected(final SelectionEvent event) {
 				prepare4SaveScript();
 				getMigrationWizard().saveMigrationScript(false, isSaveSchema());
-				MessageDialog.openInformation(
-						PlatformUI.getWorkbench().getDisplay().getActiveShell(),
+				MessageDialog.openInformation(PlatformUI.getWorkbench()
+						.getDisplay().getActiveShell(),
 						Messages.msgInformation, Messages.setOptionPageOKMsg);
 			}
 		});
-		btnUpdateScript.setEnabled(getMigrationWizard().getMigrationScript() != null);
+		btnUpdateScript
+				.setEnabled(getMigrationWizard().getMigrationScript() != null);
 		new ToolItem(tbTools, SWT.SEPARATOR);
 		final ToolItem btnNewScript = new ToolItem(tbTools, SWT.NONE);
 		btnNewScript.setText(Messages.btnCreateNewScript);
@@ -155,16 +158,18 @@ public class BaseConfirmationPage extends
 
 			public void widgetSelected(final SelectionEvent event) {
 				prepare4SaveScript();
-				String name = EditScriptDialog.getMigrationScriptName(getShell(),
-						getMigrationWizard().getMigrationConfig().getName());
+				String name = EditScriptDialog.getMigrationScriptName(
+						getShell(), getMigrationWizard().getMigrationConfig()
+								.getName());
 				if (StringUtils.isBlank(name)) {
 					return;
 				}
 				getMigrationWizard().getMigrationConfig().setName(name);
 				getMigrationWizard().saveMigrationScript(true, isSaveSchema());
-				btnUpdateScript.setEnabled(getMigrationWizard().getMigrationScript() != null);
-				MessageDialog.openInformation(
-						PlatformUI.getWorkbench().getDisplay().getActiveShell(),
+				btnUpdateScript.setEnabled(getMigrationWizard()
+						.getMigrationScript() != null);
+				MessageDialog.openInformation(PlatformUI.getWorkbench()
+						.getDisplay().getActiveShell(),
 						Messages.msgInformation, Messages.setOptionPageOKMsg);
 			}
 		});
@@ -173,7 +178,8 @@ public class BaseConfirmationPage extends
 	/**
 	 * Create contents of the wizard
 	 * 
-	 * @param parent Composite
+	 * @param parent
+	 *            Composite
 	 */
 	public void createControl(Composite parent) {
 		Composite container = new Composite(parent, SWT.NONE);
@@ -184,13 +190,13 @@ public class BaseConfirmationPage extends
 		container2.setLayout(new GridLayout());
 		container2.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 
-		txtSummary = new StyledText(container2, SWT.LEFT | SWT.BORDER | SWT.READ_ONLY | SWT.WRAP
-				| SWT.V_SCROLL);
+		txtSummary = new StyledText(container2, SWT.LEFT | SWT.BORDER
+				| SWT.READ_ONLY | SWT.WRAP | SWT.V_SCROLL);
 		txtSummary.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 		txtSummary.setBackground(SWTResourceConstents.COLOR_WHITE);
 
-		txtDDL = new StyledText(container2, SWT.LEFT | SWT.BORDER | SWT.READ_ONLY | SWT.WRAP
-				| SWT.V_SCROLL);
+		txtDDL = new StyledText(container2, SWT.LEFT | SWT.BORDER
+				| SWT.READ_ONLY | SWT.WRAP | SWT.V_SCROLL);
 		GridData gd = new GridData(SWT.FILL, SWT.FILL, true, true);
 		gd.exclude = true;
 		txtDDL.setLayoutData(gd);
@@ -204,12 +210,13 @@ public class BaseConfirmationPage extends
 	 */
 	protected void exportScriptToFile() {
 		try {
-			final MigrationConfiguration cfg = getMigrationWizard().getMigrationConfig();
+			final MigrationConfiguration cfg = getMigrationWizard()
+					.getMigrationConfig();
 			prepare4SaveScript();
 			ExportScriptDialog.exportScript(cfg, isSaveSchema());
 		} catch (Exception e) {
-			//			MessageDialog.openError(PlatformUI.getWorkbench().getDisplay().getActiveShell(),
-			//					Messages.msgWarning, Messages.setOptionPageErrMsg);
+			// MessageDialog.openError(PlatformUI.getWorkbench().getDisplay().getActiveShell(),
+			// Messages.msgWarning, Messages.setOptionPageErrMsg);
 		}
 	}
 
@@ -251,6 +258,15 @@ public class BaseConfirmationPage extends
 				continue;
 			}
 			Table tarTbl = cfg.getTargetTableSchema(setc.getTarget());
+			if (tarTbl.getComment() == null || tarTbl.getComment() != setc.getComment()) {
+				tarTbl.setComment(setc.getComment());
+			}
+			for (Column tarCol : tarTbl.getColumns()) {
+				SourceColumnConfig sourceCol = setc.getColumnConfig(tarCol.getName().toUpperCase());
+				if (tarCol.getComment() == null || sourceCol.getComment() != tarCol.getComment()){
+					tarCol.setComment(sourceCol.getComment());
+				}
+			}
 			if (tarTbl == null || tables.contains(tarTbl)) {
 				continue;
 			}
@@ -329,7 +345,8 @@ public class BaseConfirmationPage extends
 	/**
 	 * Show or hide the DDL text.
 	 * 
-	 * @param flag boolean
+	 * @param flag
+	 *            boolean
 	 */
 	protected void switchText(boolean flag) {
 		txtDDL.setVisible(flag);

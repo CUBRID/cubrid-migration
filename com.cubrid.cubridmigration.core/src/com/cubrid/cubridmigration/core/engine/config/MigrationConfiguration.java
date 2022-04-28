@@ -687,6 +687,7 @@ public class MigrationConfiguration {
 					setc = new SourceEntryTableConfig();
 					setc.setOwner(sourceDBSchema.getName());
 					setc.setName(srcTable.getName());
+					setc.setComment(srcTable.getComment());
 					setc.setTarget(getTargetName(allTablesCountMap, srcTable.getOwner(), srcTable.getName()));
 					setc.setCreateNewTable(false);
 					setc.setCreatePartition(false);
@@ -788,6 +789,7 @@ public class MigrationConfiguration {
 			if (scc == null) {
 				scc = new SourceColumnConfig();
 				scc.setName(scol.getName());
+				scc.setComment(scol.getComment());
 				//If target is duplicated, auto append a number after the target.
 				String newTar = StringUtils.lowerCase(scol.getName());
 				String newTar2 = newTar;

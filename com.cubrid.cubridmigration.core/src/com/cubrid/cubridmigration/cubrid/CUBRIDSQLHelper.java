@@ -142,6 +142,9 @@ public class CUBRIDSQLHelper extends
 		if (!column.isNullable() && isNotPKColumn) {
 			bf.append(" NOT NULL");
 		}
+		if (column.getComment() != null) {
+			bf.append(" comment \'" + column.getComment() + "\'");
+		}
 		if (column.isShared() || !column.isUnique() || !isNotPKColumn) {
 			return bf.toString();
 		}
@@ -159,6 +162,7 @@ public class CUBRIDSQLHelper extends
 				bf.append(" UNIQUE ");
 			}
 		}
+
 		return bf.toString();
 	}
 
@@ -405,12 +409,15 @@ public class CUBRIDSQLHelper extends
 		if (table.isReuseOID()) {
 			bf.append(" REUSE_OID");
 		}
+		if (table.getComment() != null) {
+			bf.append(" comment = \'" + table.getComment() + "\'");
+		}
 		if (DBUtils.supportedCubridPartition(table.getPartitionInfo())) {
 			bf.append(NEWLINE).append(table.getPartitionInfo().getDDL());
 		}
 
 		bf.append(NEWLINE).append(END_LINE_CHAR);
-
+				
 		return bf.toString();
 	}
 

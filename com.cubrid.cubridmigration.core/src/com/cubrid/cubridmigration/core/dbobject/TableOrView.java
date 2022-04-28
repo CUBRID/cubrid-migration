@@ -47,6 +47,8 @@ public abstract class TableOrView extends
 	private static final long serialVersionUID = -1637002612150615363L;
 	protected Schema schema;
 	protected String name;
+	
+	protected String comment;
 	/**
 	 * Owner name such as SCOTT of SCOTT.EMP on Oracle. It is a null value
 	 * except Oracle.
@@ -88,6 +90,14 @@ public abstract class TableOrView extends
 
 	public void setName(String name) {
 		this.name = name;
+	}
+	
+	public String getComment() {
+		return comment;
+	}
+	
+	public void setComment(String comment) {
+		this.comment = comment;
 	}
 
 	public String getOwner() {
