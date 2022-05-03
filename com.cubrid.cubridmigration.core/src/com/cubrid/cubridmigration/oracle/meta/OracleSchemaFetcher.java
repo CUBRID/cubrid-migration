@@ -151,7 +151,7 @@ public final class OracleSchemaFetcher extends
 			+ "TABLE_NAME=?";
 	
 	private static final String SQL_GET_COLUMN_COMMENT = "SELECT COMMENTS FROM ALL_COL_COMMENTS WHERE OWNER=? AND "
-			+ "COLUMN_NAME=?";
+			+ "TABLE_NAME=? AND COLUMN_NAME=?";
 
 	//private static final String SHOW_SEQUENCE_MAXVAL = "SELECT ?.CURRVAL  FROM DUAL";
 
@@ -465,7 +465,7 @@ public final class OracleSchemaFetcher extends
 					String shownDataType = dtHelper.getShownDataType(column);
 					column.setShownDataType(shownDataType);
 					
-					column.setComment(getColumnComment(conn, schema.getName(), column.getName()));
+					column.setComment(getColumnComment(conn, schema.getName(), table.getName(), column.getName()));
 
 					table.addColumn(column);
 				} catch (Exception ex) {
@@ -1022,13 +1022,14 @@ public final class OracleSchemaFetcher extends
 	 * @param schemaName
 	 * @return comment
 	 */
-	private String getColumnComment(Connection conn, String schemaName, String columnName) {
+	private String getColumnComment(Connection conn, String schemaName, String tableName, String columnName) {
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try {
 			pstmt = conn.prepareStatement(SQL_GET_COLUMN_COMMENT);
 			pstmt.setString(1, schemaName);
-			pstmt.setString(2, columnName);
+			pstmt.setString(2, tableName);
+			pstmt.setString(3, columnName);
 			
 			rs = pstmt.executeQuery();
 			
