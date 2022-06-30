@@ -324,6 +324,7 @@ public class MigrationCfgUtils {
 	 */
 	protected VerifyResultMessages checkEntryTableCfg(MigrationConfiguration config,
 			SourceEntryTableConfig setc) {
+				
 		//If don't create and don't migrate data, ignore it
 		if (!setc.isCreateNewTable() && !setc.isMigrateData()) {
 			return new VerifyResultMessages();
@@ -917,19 +918,27 @@ public class MigrationCfgUtils {
 	 */
 	public String getNoPKSourceTablesCheckingResult() {
 		StringBuffer sb = new StringBuffer();
+		Table table = null;
 		for (SourceEntryTableConfig setc : config.getExpEntryTableCfg()) {
 			if (!setc.isCreateNewTable() && !setc.isMigrateData()) {
 				continue;
 			}
-			if (sb.length() > 0) {
-				sb.append(", ");
+			
+			table = config.getSrcTableSchema(setc.getOwner(), setc.getName());
+
+			if (!table.hasPK()) {
+				if (config.getSrcCatalog().getSchemas().size() > 1) {
+					sb.append(table.getSchema().getName()).append(".");
+				}
+
+				sb.append(setc.getName()).append(", ");
 			}
-			sb.append(setc.getName());
 		}
 		if (sb.length() == 0) {
 			return "";
 		}
-		return NLS.bind(Messages.objectMapPageErrMsgNoPK, sb.toString());
+		
+		return NLS.bind(Messages.objectMapPageErrMsgNoPK, sb.toString().replaceAll(", $", ""));
 	}
 
 	public boolean checkMultipleSchema(Catalog catalog, MigrationConfiguration cfg) {
@@ -937,6 +946,11 @@ public class MigrationCfgUtils {
 				&& cfg.getSourceDBType().isSupportMultiSchema()
 				&& (catalog.getSchemas().size() > 1)
 				&& !cfg.hasObjects2Export();
+	}
+	
+	public boolean isSourceMultiSchema(Catalog catalog, MigrationConfiguration cfg) {
+		return cfg.sourceIsOnline() && (catalog.getSchemas().size() > 1);
+		
 	}
 
 	public boolean createAllObjectsMap(Catalog catalog) {
