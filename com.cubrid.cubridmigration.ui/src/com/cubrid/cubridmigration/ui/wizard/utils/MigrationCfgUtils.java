@@ -947,11 +947,6 @@ public class MigrationCfgUtils {
 				&& (catalog.getSchemas().size() > 1)
 				&& !cfg.hasObjects2Export();
 	}
-	
-	public boolean isSourceMultiSchema(Catalog catalog, MigrationConfiguration cfg) {
-		return cfg.sourceIsOnline() && (catalog.getSchemas().size() > 1);
-		
-	}
 
 	public boolean createAllObjectsMap(Catalog catalog) {
 		List<Schema> schemas = catalog.getSchemas();
