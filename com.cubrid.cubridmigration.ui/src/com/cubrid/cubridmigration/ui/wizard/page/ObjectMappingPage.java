@@ -146,6 +146,7 @@ public class ObjectMappingPage extends
 		mw.refreshWizardStatus();
 		util.setTargetCatalog(mw.getTargetCatalog(), mw);
 		if (!isFirstVisible) {
+			refreshTreeView();
 			return;
 		}
 		try {
