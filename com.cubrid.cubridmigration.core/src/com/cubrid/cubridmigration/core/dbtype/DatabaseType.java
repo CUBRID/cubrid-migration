@@ -46,6 +46,7 @@ import com.cubrid.cubridmigration.core.dbmetadata.AbstractJDBCSchemaFetcher;
 import com.cubrid.cubridmigration.core.export.DBExportHelper;
 import com.cubrid.cubridmigration.core.sql.SQLHelper;
 import com.cubrid.cubridmigration.cubrid.CUBRIDDatabase;
+import com.cubrid.cubridmigration.informix.InformixDatabase;
 import com.cubrid.cubridmigration.mariadb.MariaDBDatabase;
 import com.cubrid.cubridmigration.mssql.MSSQLDatabase;
 import com.cubrid.cubridmigration.mysql.MySQLDatabase;
@@ -71,8 +72,10 @@ public abstract class DatabaseType {
 	public static final DatabaseType ORACLE = new OracleDatabase();
 
 	public static final DatabaseType MARIADB = new MariaDBDatabase();
+	
+	public static final DatabaseType INFORMIX = new InformixDatabase();
 
-	private static final DatabaseType[] DTS = new DatabaseType[] {MYSQL, CUBRID, ORACLE, MSSQL, MARIADB};
+	private static final DatabaseType[] DTS = new DatabaseType[] {MYSQL, CUBRID, ORACLE, MSSQL, MARIADB, INFORMIX};
 
 	/**
 	 * Retrieves all Database types

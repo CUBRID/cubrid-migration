@@ -44,8 +44,9 @@ public class DBConstant { //NOPMD
 	public static final int DBTYPE_MSSQL = 2;
 	public static final int DBTYPE_ORACLE = 3;
 	public static final int DBTYPE_MARIADB = 4;
+	public static final int DBTYPE_INFORMIX = 5;
 
-	public static final String[] DB_NAMES = new String[] {"MYSQL", "CUBRID", "MSSQL", "ORACLE", "MARIADB"};
+	public static final String[] DB_NAMES = new String[] {"MYSQL", "CUBRID", "MSSQL", "ORACLE", "MARIADB", "INFORMIX"};
 
 	public static final String JDBC_CLASS_ORACLE = "oracle.jdbc.OracleDriver";
 	public static final String JDBC_CLASS_MSSQL = "com.microsoft.sqlserver.jdbc.SQLServerDriver";
@@ -54,12 +55,14 @@ public class DBConstant { //NOPMD
 	public static final String JDBC_CLASS_MYSQL8_OR_LATER = "com.mysql.cj.jdbc.Driver";
 	public static final String JDBC_CLASS_MSSQL_JTDS = "net.sourceforge.jtds.jdbc.Driver";
 	public static final String JDBC_CLASS_MARIADB = "org.mariadb.jdbc.Driver";
+	public static final String JDBC_CLASS_INFORMIX = "com.informix.jdbc.IfxDriver";
 
 	public static final String DEF_PORT_MSSQL = "1433";
 	public static final String DEF_PORT_MYSQL = "3306";
 	public static final String DEF_PORT_CUBRID = "33000";
 	public static final String DEF_PORT_ORACLE = "1521";
 	public static final String DEF_PORT_MARIADB = "3306";
+	public static final String DEF_PORT_INFORMIX = "9088";
 
 	//	public static final String PATTERN_JAR_FILE_MSSQL = "^sqljdbc\\S*.jar";
 	//	public static final String PATTERN_JAR_FILE_MYSQL = "^mysql\\S*.jar";
@@ -76,6 +79,8 @@ public class DBConstant { //NOPMD
 	public static final String SUFFIX_QUOTE_ORACLE = "\"";
 	public static final String PREFIX_QUOTE_MARIADB = "`";
 	public static final String SUFFIX_QUOTE_MARIADB = "`";
+	public static final String PREFIX_QUOTE_INFORMIX = "`";
+	public static final String SUFFIX_QUOTE_INFOMRIX = "`";
 
 	public static final String DB_NULL_VALUE = "NULL";
 }
