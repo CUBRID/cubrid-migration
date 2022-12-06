@@ -200,6 +200,11 @@ public final class OracleSchemaFetcher extends
 				table.setDDL(ddl);
 				
 				String comment = getTableComment(conn, schema.getName(), table.getName());
+				
+				if (comment != null) {
+					comment = commentEditor(comment);
+				}
+				
 				table.setComment(comment);
 			}
 			// get views
@@ -216,6 +221,11 @@ public final class OracleSchemaFetcher extends
 				view.setQuerySpec(getQueryText(conn, schema.getName(), view.getName(), view));
 				
 				String comment = getViewComment(conn, schema.getName(), view.getName());
+				
+				if (comment != null) {
+					comment = commentEditor(comment);
+				}
+				
 				view.setComment(comment);
 			}
 			buildPartitions(conn, catalog, schema);
@@ -1014,6 +1024,11 @@ public final class OracleSchemaFetcher extends
 			while (rs.next()) {
 				comment = rs.getString("COMMENTS");
 			}
+			
+			if (comment != null) {
+				comment = commentEditor(comment);
+			}
+			
 			return comment;
 		} catch (Exception e){
 			e.printStackTrace();
@@ -1038,6 +1053,11 @@ public final class OracleSchemaFetcher extends
 			while (rs.next()) {
 				comment = rs.getString("COMMENTS");
 			}
+			
+			if (comment != null) {
+				comment = commentEditor(comment);
+			}
+			
 			return comment;
 		} catch (Exception e){
 			e.printStackTrace();
@@ -1063,6 +1083,11 @@ public final class OracleSchemaFetcher extends
 			while (rs.next()) {
 				comment = rs.getString("COMMENTS");
 			}
+			
+			if (comment != null) {
+				comment = commentEditor(comment);
+			}
+			
 			return "\'" + comment + "\'";
 		} catch (Exception e){
 			e.printStackTrace();
@@ -1096,6 +1121,11 @@ public final class OracleSchemaFetcher extends
 			while (rs.next()) {
 				comment = rs.getString("COMMENTS");
 			}
+			
+			if (comment != null) {
+				comment = commentEditor(comment);
+			}
+			
 			return comment;
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -1548,6 +1578,8 @@ public final class OracleSchemaFetcher extends
 	public DatabaseType getDBType() {
 		return DatabaseType.ORACLE;
 	}
+
+	
 	//	protected void buildAllSchemas(Connection conn, Catalog catalog, Schema schema, Map<String, Table> tables)
 	//			throws SQLException {
 	//	}

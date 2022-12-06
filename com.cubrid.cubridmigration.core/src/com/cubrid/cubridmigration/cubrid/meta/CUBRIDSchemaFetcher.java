@@ -313,6 +313,10 @@ public final class CUBRIDSchemaFetcher extends
 
 				String comment = rs.getString("comment");
 				
+				if (comment != null) {
+					comment = commentEditor(comment);
+				}
+				
 				String indexFindKey = tableName + "-" + indexName;
 				Index index = indexes.get(indexFindKey);
 				if (index == null) {
@@ -435,6 +439,12 @@ public final class CUBRIDSchemaFetcher extends
 				if (tableName == null) {
 					continue;
 				}
+				
+				if (tableComment != null) {
+					tableComment = commentEditor(tableComment);
+				}
+				
+				
 				if (filter != null && filter.filter(null, tableName)) {
 					//CUBRID is one DB one schema
 					continue;
@@ -456,6 +466,10 @@ public final class CUBRIDSchemaFetcher extends
 				Integer prec = rs.getInt("prec");
 				Integer scale = rs.getInt("scale");
 				String columnComment = rs.getString("column_comment");
+				
+				if (columnComment != null) {
+					columnComment = commentEditor(columnComment);
+				}
 
 				Column column = factory.createColumn();
 				column.setName(attrName);
@@ -700,6 +714,10 @@ public final class CUBRIDSchemaFetcher extends
 				String comment = rs.getString("comment");
 				int cachedNum = rs.getInt("cached_num");
 
+				if (comment != null) {
+					comment = commentEditor(comment);
+				}
+				
 				boolean isCycle = "1".equals(cyclic);
 
 				Sequence sequence = factory.createSequence(sequenceName, new BigInteger(minVal),
@@ -883,6 +901,10 @@ public final class CUBRIDSchemaFetcher extends
 				String defaultValue = rs.getString("default_value");
 				
 				String comment = rs.getString("comment");
+				
+				if (comment != null) {
+					comment = commentEditor(comment);
+				}
 
 				Column column = factory.createColumn();
 				column.setName(attrName);
@@ -1112,6 +1134,10 @@ public final class CUBRIDSchemaFetcher extends
 					while (rs.next()) {
 						String querySpec = rs.getString("vclass_def");
 						String comment = rs.getString("comment");
+						
+						if (comment != null) {
+							comment = commentEditor(comment);
+						}
 						
 						view.setQuerySpec(querySpec);
 						view.setComment(comment);

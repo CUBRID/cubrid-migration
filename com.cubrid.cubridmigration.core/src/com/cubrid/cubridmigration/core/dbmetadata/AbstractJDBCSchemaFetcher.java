@@ -1177,4 +1177,13 @@ public abstract class AbstractJDBCSchemaFetcher implements
 	public static final boolean isYes(String value) {
 		return "YES".equalsIgnoreCase(value);
 	}
+	
+	protected String commentEditor(String comment) {
+		String editedComment;
+		
+		editedComment = comment.replaceAll("[\\']", "\\'\\'");
+		
+		return editedComment;
+	}
+	
 }
