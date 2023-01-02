@@ -101,12 +101,13 @@ public class MigrationWizard extends
 	 * @return Set<Integer> of database type ids
 	 */
 	public static Set<Integer> getSupportedSrcDBTypes() {
-		Set<Integer> supportedDBs = new HashSet<Integer>(4);
+		Set<Integer> supportedDBs = new HashSet<Integer>(6);
 		supportedDBs.add(DatabaseType.MYSQL.getID());
 		supportedDBs.add(DatabaseType.ORACLE.getID());
 		supportedDBs.add(DatabaseType.CUBRID.getID());
 		supportedDBs.add(DatabaseType.MSSQL.getID());
 		supportedDBs.add(DatabaseType.MARIADB.getID());
+		supportedDBs.add(DatabaseType.INFORMIX.getID());
 		return supportedDBs;
 	}
 

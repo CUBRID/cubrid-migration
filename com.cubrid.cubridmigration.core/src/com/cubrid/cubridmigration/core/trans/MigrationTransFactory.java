@@ -34,6 +34,8 @@ import com.cubrid.cubridmigration.core.dbtype.DatabaseType;
 import com.cubrid.cubridmigration.cubrid.trans.CUBRID2CUBRIDTranformHelper;
 import com.cubrid.cubridmigration.cubrid.trans.CUBRIDDataTypeMappingHelper;
 import com.cubrid.cubridmigration.cubrid.trans.ToCUBRIDDataConverterFacade;
+import com.cubrid.cubridmigration.informix.trans.Informix2CUBRIDTransformHelper;
+import com.cubrid.cubridmigration.informix.trans.InformixDataTypeMappingHelper;
 import com.cubrid.cubridmigration.mariadb.trans.MariaDB2CUBRIDTranformHelper;
 import com.cubrid.cubridmigration.mariadb.trans.MariaDBDataTypeMappingHelper;
 import com.cubrid.cubridmigration.mssql.trans.MSSQL2CUBRIDTranformHelper;
@@ -65,6 +67,8 @@ public class MigrationTransFactory {
 			new CUBRIDDataTypeMappingHelper());
 	private static final MariaDB2CUBRIDTranformHelper MARIADB2CUBRID_TRANFORM_HELPER = new MariaDB2CUBRIDTranformHelper(
 			new MariaDBDataTypeMappingHelper(), ToCUBRIDDataConverterFacade.getIntance());
+	private static final Informix2CUBRIDTransformHelper INFORMIX2CUBRID_TRANSFORM_HELPER = new Informix2CUBRIDTransformHelper(
+			new InformixDataTypeMappingHelper(),ToCUBRIDDataConverterFacade.getIntance());
 	/**
 	 * getTransformHelper of source to target migration
 	 * 
@@ -84,6 +88,8 @@ public class MigrationTransFactory {
 			return MSSQL2CUBRID_TRANFORM_HELPER;
 		} else if (srcDT.getID() == DatabaseType.MARIADB.getID()) {
 			return MARIADB2CUBRID_TRANFORM_HELPER;
+		}else if (srcDT.getID() == DatabaseType.INFORMIX.getID()) {
+			return INFORMIX2CUBRID_TRANSFORM_HELPER;
 		}
 		throw new IllegalArgumentException("Can't support migration type.");
 	}

@@ -49,6 +49,8 @@ Bundle-ClassPath: lib/commons-beanutils-1.8.0.jar,
  lib/hadoop-tools-1.1.2.jar,
  lib/hsqldb-1.8.0.10.jar,
  lib/jsch-0.1.51.jar,
+ lib/jdbc-4.50.7.1.jar,
+ lib/bson-4.8.0.jar,
  .
 Export-Package: 
  com.ctc.wstx.api;

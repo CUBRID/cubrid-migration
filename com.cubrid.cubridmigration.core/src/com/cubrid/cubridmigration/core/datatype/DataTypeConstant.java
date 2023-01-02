@@ -71,7 +71,7 @@ public class DataTypeConstant {
 	public static final int CUBRID_DT_CLOB = Types.CLOB; //2005;
 	public static final int CUBRID_DT_BLOB = Types.BLOB; //2004;
 	public static final int CUBRID_DT_ENUM = 61111; //12
-
+	public static final int CUBRID_DT_JSON = 71111;
 	/** MYSQL **/
 	public static final int MYSQL_MAXSIZE = 1073741823;
 	public static final String MYSQL_NCHARMAXSIZE = "536870911";
@@ -91,4 +91,5 @@ public class DataTypeConstant {
 
 	public static final String CUBRID_FBO = "fbo";
 	public static final String CUBRID_GLO = "glo";
+	public static final String CURBID_JSON = "json";
 }

@@ -147,6 +147,8 @@ public class Messages extends
 	public static String btnSrcOnlineOracleDBDes;
 	public static String btnSrcOnlineMariaDBDBDes;
 	public static String btnSrcOnlineMariaDBDB;
+	public static String btnSrcOnlineInformixDB;
+	public static String btnSrcOnlineInformixDBDes;
 	public static String btnSrcSQLFiles;
 	public static String btnSrcSQLFilesDes;
 	public static String btnSSHProxySettings;
@@ -636,6 +638,7 @@ public class Messages extends
 	public static String onlineCUBRIDCommitCount;
 	public static String openConfActionTitle;
 	public static String oracle2CUBRID;
+	public static String informix2CUBRID;
 	public static String otherSettings;
 	public static String prefTitleGeneral;
 	public static String productName;

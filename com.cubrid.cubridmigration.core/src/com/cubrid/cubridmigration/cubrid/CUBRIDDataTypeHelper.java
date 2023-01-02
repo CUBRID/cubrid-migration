@@ -285,6 +285,13 @@ public final class CUBRIDDataTypeHelper extends
 				DataTypeConstant.CUBRID_DT_ENUM, "enum", "enum");
 		enumSymbol.getNickNames().add("enum");
 		CUBRIDDATA_TYPES.add(enumSymbol);
+		
+		//json
+		DataTypeSymbol jsonSymbol = new DataTypeSymbol(
+				DataTypeConstant.CUBRID_DT_JSON, "json", "json");
+		jsonSymbol.getNickNames().add("json");
+		CUBRIDDATA_TYPES.add(jsonSymbol);
+				
 	}
 
 	/**
@@ -336,6 +343,7 @@ public final class CUBRIDDataTypeHelper extends
 		TYPE_BYTES_MAP.put(DataTypeConstant.CUBRID_DT_SEQUENCE, 256);
 		TYPE_BYTES_MAP.put(DataTypeConstant.CUBRID_DT_SET, 256);
 		TYPE_BYTES_MAP.put(DataTypeConstant.CUBRID_DT_MULTISET, 256);
+		TYPE_BYTES_MAP.put(DataTypeConstant.CUBRID_DT_JSON, 0);
 	}
 
 	private CUBRIDDataTypeHelper() {

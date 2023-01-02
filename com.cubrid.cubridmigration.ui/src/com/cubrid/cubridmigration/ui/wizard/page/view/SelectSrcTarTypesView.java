@@ -77,6 +77,7 @@ public class SelectSrcTarTypesView {
 	private Button btnOnlineMYSQLSrc;
 	private Button btnOnlineMSSQLSrc;
 	private Button btnOnlineMariaDBSrc;
+	private Button btnOnlineInformixSrc;
 
 	private Button btnDumpSrc;
 	private Button btnSQLSrc;
@@ -121,6 +122,11 @@ public class SelectSrcTarTypesView {
 				Messages.btnSrcOnlineMariaDBDBDes);
 		btnOnlineMariaDBSrc.setData(MigrationConfiguration.SOURCE_TYPE_MARIADB);
 		srcButtons.add(btnOnlineMariaDBSrc);
+		/*add new button for informix*/
+		btnOnlineInformixSrc = createSrcTarTypeBtn(grpSrc, Messages.btnSrcOnlineInformixDB,
+				Messages.btnSrcOnlineInformixDBDes);
+		btnOnlineInformixSrc.setData(MigrationConfiguration.SOURCE_TYPE_INFORMIX);
+		srcButtons.add(btnOnlineInformixSrc);
 		
 		Label comSep = new Label(grpSrc, SWT.SEPARATOR | SWT.HORIZONTAL);
 		{

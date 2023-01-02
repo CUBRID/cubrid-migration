@@ -95,6 +95,12 @@
       </page>
       <page
             category="com.cubrid.cubridmigration.ui.preference.MigrationConfigPage"
+            class="com.cubrid.cubridmigration.ui.preference.Informix2CUBRIDTypeMapPage"
+            id="com.cubrid.cubridmigration.ui.preference.Informix2CUBRIDTypeMapPage"
+            name="Informix&gt;&gt;CUBRID">
+      </page>
+      <page
+            category="com.cubrid.cubridmigration.ui.preference.MigrationConfigPage"
             class="com.cubrid.cubridmigration.ui.preference.CUBRID2CUBRIDTypeMapPage"
             id="com.cubrid.cubridmigration.ui.preference.CUBRID2CUBRIDTypeMapPage"
             name="CUBRID&gt;&gt;CUBRID">

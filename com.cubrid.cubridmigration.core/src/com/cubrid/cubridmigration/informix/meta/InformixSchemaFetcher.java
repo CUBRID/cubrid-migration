@@ -77,8 +77,10 @@ import com.cubrid.cubridmigration.informix.export.InformixExportHelper;
 public class InformixSchemaFetcher extends AbstractJDBCSchemaFetcher{
 	
 	final static String ROUTINE_QUERY = "select b.data, p.procname as name from sysprocbody b "
-			+ "join sysprocedures p on b.procid=p.procid where datakey=? "
-			+ "and p.owner=? order by b.procid, b.seqno";
+
+			+ "join sysprocedures p on b.procid=p.procid where p.isproc=? "
+			+ "and p.owner=? AND mode IN ('O', 'R', 'D', 'T') order by b.procid, b.seqno";
+
 	
 	final static String SEQUENCE_QUERY = "select t.tabname,t.owner, s.* from systables as t, "
 			+ "syssequences as s where t.tabid = s.tabid and t.owner =?";
