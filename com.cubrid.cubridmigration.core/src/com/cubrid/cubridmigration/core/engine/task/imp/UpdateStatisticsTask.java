@@ -96,7 +96,7 @@ public class UpdateStatisticsTask extends
 			}
 		}
 		for (String target : objectsToBeUpdated) {
-			String sql = "UPDATE STATISTICS ON \"" + target + "\"";
+			String sql = "UPDATE STATISTICS ON \"" + target + "\";";
 			result.add(sql);
 		}
 		return result;
