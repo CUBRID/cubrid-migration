@@ -48,9 +48,9 @@ import com.cubrid.cubridmigration.core.export.IExportDataHandler;
  *
  * @author rathana
  * @version 1.0 
- * @created Oct 13, 2022
+ * @created Jan 18, 2023
  */
-public class InformixSetTypeHandler implements
+public class InformixListTypeHandler implements
 IExportDataHandler{
 
 	/**
@@ -63,7 +63,7 @@ IExportDataHandler{
 	 */
 	public Object getJdbcObject(ResultSet rs, Column column) throws SQLException {
 		
-Object obj = rs.getObject(column.getName());
+		Object obj = rs.getObject(column.getName());
 		
 		if (obj != null) {
 			String value = obj.toString();
@@ -71,7 +71,6 @@ Object obj = rs.getObject(column.getName());
 			return value;
 		}
 		return null;
-		
 		
 	}
 

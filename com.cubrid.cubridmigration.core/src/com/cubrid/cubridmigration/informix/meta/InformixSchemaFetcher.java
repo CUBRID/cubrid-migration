@@ -214,6 +214,15 @@ public class InformixSchemaFetcher extends AbstractJDBCSchemaFetcher{
 			}
 			if (table != null) {
 				schema.addTable(table);
+				for(Column column : table.getColumns()) {
+					String dataType = column.getDataType();
+					if(column.getDataType().contains("sendreceive")) {
+						dataType = "set";
+					}
+					
+					column.setDataType(dataType);
+					
+				};
 //				allTables.add(table);
 			}
 		}

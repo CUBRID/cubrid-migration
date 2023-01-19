@@ -43,6 +43,7 @@ import com.cubrid.cubridmigration.informix.export.handler.InformixBSONTypeHandle
 import com.cubrid.cubridmigration.informix.export.handler.InformixBooleanTypeHandler;
 import com.cubrid.cubridmigration.informix.export.handler.InformixCustomTypeHandler;
 import com.cubrid.cubridmigration.informix.export.handler.InformixJSONTypeHandler;
+import com.cubrid.cubridmigration.informix.export.handler.InformixListTypeHandler;
 import com.cubrid.cubridmigration.informix.export.handler.InformixSetTypeHandler;
 
 /**
@@ -61,6 +62,8 @@ public class InformixExportHelper extends DBExportHelper{
 		handlerMap2.put("bson", new InformixBSONTypeHandler());
 		handlerMap2.put("boolean", new InformixBooleanTypeHandler());
 		handlerMap2.put("set", new InformixSetTypeHandler());
+		handlerMap2.put("list", new InformixListTypeHandler());
+		handlerMap2.put("multiset", new InformixListTypeHandler());
 //		handlerMap1.put(CUSTOM, new InformixCustomTypeHandler());
 	}
 	
