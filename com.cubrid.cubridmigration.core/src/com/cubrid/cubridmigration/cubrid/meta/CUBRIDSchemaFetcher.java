@@ -93,6 +93,8 @@ public final class CUBRIDSchemaFetcher extends
 	};
 
 	private CUBRIDDataTypeHelper cubDTHelper = CUBRIDDataTypeHelper.getInstance(null);
+	
+	private final int COMMENT_SUPPORT_VERSION = 100;
 
 	/**
 	 * Retrieves the lower case of type, and some type may be changed into stand
@@ -175,7 +177,7 @@ public final class CUBRIDSchemaFetcher extends
 					+ " FROM db_attr_setdomain_elm a, db_class c"
 					+ " WHERE c.class_name = a.class_name AND c.class_type='CLASS'"
 					+ " AND c.is_system_class='NO'"
-					+ " ORDER BY a.class_name ";
+					+ " ORDER BY a.class_name";
 
 			stmt = conn.createStatement();
 			rs = stmt.executeQuery(sql);
@@ -265,17 +267,16 @@ public final class CUBRIDSchemaFetcher extends
 			//After CUBRID 9.1.0, function based index supported.
 			DatabaseMetaData metaData = conn.getMetaData();
 			String jdbcMajorVersion = metaData.getDatabaseProductVersion();
-			final String sqlFuncCol;
 			boolean supFuncIdx = jdbcMajorVersion.compareToIgnoreCase("9.1.0") >= 0;
-			if (supFuncIdx) {
-				sqlFuncCol = ", b.func";
-			} else {
-				sqlFuncCol = "";
-			}
-
+			final String sqlFuncCol = supFuncIdx ? ", b.func" : "";
+			
+			int dbVersion = getDBVersion(conn);
+			String sqlComment = dbVersion >= COMMENT_SUPPORT_VERSION ? ", a.comment" : "";
+			
 			String sql = "SELECT a.class_name, a.index_name, a.is_unique,"
-					+ " a.comment, b.key_attr_name, b.asc_desc"
+					+ " b.key_attr_name, b.asc_desc"
 					+ sqlFuncCol
+					+ sqlComment
 					+ " FROM db_index a, db_index_key b, db_class c"
 					+ " WHERE a.class_name=b.class_name AND c.class_type='CLASS'"
 					+ " AND a.index_name=b.index_name AND a.class_name=c.class_name"
@@ -305,10 +306,10 @@ public final class CUBRIDSchemaFetcher extends
 
 				boolean isUnique = isYes(rs.getString("is_unique"));
 
-				String comment = rs.getString("comment");
-				
-				if (comment != null) {
-					comment = commentEditor(comment);
+				String comment = null;
+				if (dbVersion >= COMMENT_SUPPORT_VERSION) {
+					comment = rs.getString("comment");
+					comment = comment != null ? commentEditor(comment) : null;
 				}
 				
 				String indexFindKey = tableName + "-" + indexName;
@@ -425,12 +426,17 @@ public final class CUBRIDSchemaFetcher extends
 		// get table information
 		ResultSet rs = null;
 		Statement stmt = null;
-		try {			
+		try {
+			int dbVersion = getDBVersion(conn);
+			String sqlComment = 
+					dbVersion > COMMENT_SUPPORT_VERSION ? ", a.comment as column_comment, c.comment as table_comment" : "";
+			
 			String sql = "SELECT a.class_name, a.attr_name, a.attr_type,"
 					+ " a.from_class_name, a.data_type, a.prec,"
 					+ " a.scale, a.is_nullable, a.domain_class_name,"
-					+ " a.default_value, a.def_order, a.comment as column_comment,"
-					+ " c.is_reuse_oid_class, c.comment as table_comment"
+					+ " a.default_value, a.def_order,"
+					+ " c.is_reuse_oid_class"
+					+ sqlComment
 					+ " FROM db_attribute a, db_class c"
 					+ " WHERE c.class_name = a.class_name AND c.class_type='CLASS'"
 					+ " AND c.is_system_class='NO' AND a.from_class_name IS NULL"
@@ -442,9 +448,14 @@ public final class CUBRIDSchemaFetcher extends
 
 			while (rs.next()) {
 				String tableName = rs.getString("class_name");
-				String tableComment = rs.getString("table_comment");
 				if (tableName == null) {
 					continue;
+				}
+				
+				String tableComment = null;
+				if (dbVersion >= COMMENT_SUPPORT_VERSION) {
+					tableComment = rs.getString("table_comment");
+					tableComment = tableComment != null ? commentEditor(tableComment) : null;
 				}
 				
 				if (tableComment != null) {
@@ -472,10 +483,10 @@ public final class CUBRIDSchemaFetcher extends
 				String domainClassName = rs.getString("domain_class_name");
 				Integer prec = rs.getInt("prec");
 				Integer scale = rs.getInt("scale");
-				String columnComment = rs.getString("column_comment");
-				
-				if (columnComment != null) {
-					columnComment = commentEditor(columnComment);
+				String columnComment = null;
+				if (dbVersion >= COMMENT_SUPPORT_VERSION) {
+					columnComment = rs.getString("column_comment");
+					columnComment = columnComment != null ? commentEditor(columnComment) : null;
 				}
 
 				Column column = factory.createColumn();
@@ -711,9 +722,13 @@ public final class CUBRIDSchemaFetcher extends
 		List<Sequence> sequenceList = new ArrayList<Sequence>();
 
 		try {
+			int dbVersion = getDBVersion(conn);
+			String sqlComment = dbVersion >= COMMENT_SUPPORT_VERSION ? ", comment" : "";
+			
 			String sql = "SELECT name, owner, current_val,"
 					+ " increment_val, max_val, min_val, cyclic,"
-					+ " started, class_name, att_name, cached_num, comment"
+					+ " started, class_name, att_name, cached_num"
+					+ sqlComment
 					+ " FROM db_serial"
 					+ " WHERE class_name IS NULL";
 			
@@ -729,12 +744,12 @@ public final class CUBRIDSchemaFetcher extends
 				String maxVal = rs.getString("max_val");
 				String minVal = rs.getString("min_val");
 				String cyclic = rs.getString("cyclic");
-				String comment = rs.getString("comment");
+				String comment = null;
 				int cachedNum = rs.getInt("cached_num");
-
-				if (comment != null) {
-					comment = commentEditor(comment);
-				}
+				if (dbVersion >= COMMENT_SUPPORT_VERSION) {
+					comment = rs.getString("comment");
+					comment = comment != null ? commentEditor(comment) : null;
+				}				
 				
 				boolean isCycle = "1".equals(cyclic);
 
@@ -896,10 +911,14 @@ public final class CUBRIDSchemaFetcher extends
 		ResultSet rs = null; //NOPMD
 		PreparedStatement preStmt = null;
 		String tableName = table.getName();
-		try {	
+		try {
+			int dbVersion = getDBVersion(conn);
+			String sqlComment = dbVersion > COMMENT_SUPPORT_VERSION ? ", a.comment" : "";
+			
 			String sql = "SELECT a.attr_name, a.attr_type, a.from_class_name,"
 					+ " a.data_type, a.prec, a.scale, a.is_nullable,"
-					+ " a.domain_class_name, a.default_value, a.def_order, a.comment"
+					+ " a.domain_class_name, a.default_value, a.def_order"
+					+ sqlComment
 					+ " FROM db_attribute a"
 					+ " WHERE a.class_name=?" 
 					+ " ORDER BY a.def_order";
@@ -919,10 +938,10 @@ public final class CUBRIDSchemaFetcher extends
 
 				String defaultValue = rs.getString("default_value");
 				
-				String comment = rs.getString("comment");
-				
-				if (comment != null) {
-					comment = commentEditor(comment);
+				String comment = null;
+				if (dbVersion >= COMMENT_SUPPORT_VERSION) {
+					comment = rs.getString("comment");
+					comment = comment != null ? commentEditor(comment) : null;
 				}
 
 				Column column = factory.createColumn();
@@ -1151,7 +1170,11 @@ public final class CUBRIDSchemaFetcher extends
 		ResultSet rs = null; //NOPMD
 		PreparedStatement stmt = null; //NOPMD
 		try {
-			String sql = "SELECT vclass_def, comment"
+			int dbVersion = getDBVersion(conn);
+			String sqlComment = dbVersion > COMMENT_SUPPORT_VERSION ? ", comment" : "";
+			
+			String sql = "SELECT vclass_def"
+					+ sqlComment
 					+ " FROM db_vclass"
 					+ " WHERE vclass_name=?";
 			
@@ -1163,10 +1186,10 @@ public final class CUBRIDSchemaFetcher extends
 					rs = stmt.executeQuery();
 					while (rs.next()) {
 						String querySpec = rs.getString("vclass_def");
-						String comment = rs.getString("comment");
-						
-						if (comment != null) {
-							comment = commentEditor(comment);
+						String comment = null;
+						if (dbVersion >= COMMENT_SUPPORT_VERSION) {
+							comment = rs.getString("comment");
+							comment = comment != null ? commentEditor(comment) : null;
 						}
 						
 						view.setQuerySpec(querySpec);
@@ -1389,6 +1412,12 @@ public final class CUBRIDSchemaFetcher extends
 
 	protected DBExportHelper getExportHelper() {
 		return DatabaseType.CUBRID.getExportHelper();
+	}
+	
+	private int getDBVersion(Connection conn) throws SQLException {
+		int majorVersion = conn.getMetaData().getDatabaseMajorVersion() * 10;
+		int minorVersion = conn.getMetaData().getDatabaseMinorVersion();
+		return majorVersion + minorVersion;
 	}
 
 	/**
