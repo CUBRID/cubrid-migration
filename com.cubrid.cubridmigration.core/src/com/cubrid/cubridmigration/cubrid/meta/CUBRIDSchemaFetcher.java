@@ -428,8 +428,7 @@ public final class CUBRIDSchemaFetcher extends
 		Statement stmt = null;
 		try {
 			int dbVersion = getDBVersion(conn);
-			String sqlComment = 
-					dbVersion > COMMENT_SUPPORT_VERSION ? ", a.comment as column_comment, c.comment as table_comment" : "";
+			String sqlComment = dbVersion >= COMMENT_SUPPORT_VERSION ? ", a.comment as column_comment, c.comment as table_comment" : "";
 			
 			String sql = "SELECT a.class_name, a.attr_name, a.attr_type,"
 					+ " a.from_class_name, a.data_type, a.prec,"
@@ -913,7 +912,7 @@ public final class CUBRIDSchemaFetcher extends
 		String tableName = table.getName();
 		try {
 			int dbVersion = getDBVersion(conn);
-			String sqlComment = dbVersion > COMMENT_SUPPORT_VERSION ? ", a.comment" : "";
+			String sqlComment = dbVersion >= COMMENT_SUPPORT_VERSION ? ", a.comment" : "";
 			
 			String sql = "SELECT a.attr_name, a.attr_type, a.from_class_name,"
 					+ " a.data_type, a.prec, a.scale, a.is_nullable,"
@@ -1171,7 +1170,7 @@ public final class CUBRIDSchemaFetcher extends
 		PreparedStatement stmt = null; //NOPMD
 		try {
 			int dbVersion = getDBVersion(conn);
-			String sqlComment = dbVersion > COMMENT_SUPPORT_VERSION ? ", comment" : "";
+			String sqlComment = dbVersion >= COMMENT_SUPPORT_VERSION ? ", comment" : "";
 			
 			String sql = "SELECT vclass_def"
 					+ sqlComment
