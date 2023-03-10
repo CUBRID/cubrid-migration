@@ -1178,7 +1178,7 @@ public final class CUBRIDSchemaFetcher extends
 					+ " WHERE vclass_name=?";
 			
 			stmt = conn.prepareStatement(sql);
-			rs = stmt.executeQuery();
+			
 			for (View view : schema.getViews()) {
 				try {
 					stmt.setString(1, view.getName());
