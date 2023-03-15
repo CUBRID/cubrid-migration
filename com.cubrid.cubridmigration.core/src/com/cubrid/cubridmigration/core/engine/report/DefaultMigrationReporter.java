@@ -42,6 +42,7 @@ import com.cubrid.cubridmigration.core.common.Closer;
 import com.cubrid.cubridmigration.core.common.PathUtils;
 import com.cubrid.cubridmigration.core.common.log.LogUtil;
 import com.cubrid.cubridmigration.core.dbobject.DBObject;
+import com.cubrid.cubridmigration.core.dbobject.View;
 import com.cubrid.cubridmigration.core.engine.config.MigrationConfiguration;
 import com.cubrid.cubridmigration.core.engine.event.CreateObjectEvent;
 import com.cubrid.cubridmigration.core.engine.event.ExportCSVEvent;
@@ -167,6 +168,9 @@ public abstract class DefaultMigrationReporter implements
 				DBObjMigrationResult dbor = report.getDBObjResult(ev.getDbObject());
 				dbor.setSucceed(true);
 				dbor.setDdl(ev.getDbObject().getDDL());
+				if (ev.getDbObject().getObjType() == DBObject.OBJ_TYPE_VIEW) {
+					dbor.setDdl(dbor.getDdl() + "\n" + ((View)ev.getDbObject()).getAlterDDL());
+				}
 			} else {
 				DBObjMigrationResult dbor = report.getDBObjResult(ev.getDbObject());
 				dbor.setSucceed(false);
