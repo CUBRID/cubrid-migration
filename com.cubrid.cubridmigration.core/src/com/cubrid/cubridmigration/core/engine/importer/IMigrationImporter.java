@@ -121,6 +121,13 @@ public interface IMigrationImporter {
 	 * @param view View
 	 */
 	public void createView(View view);
+	
+	/**
+	 * Create view alter
+	 * 
+	 * @param view View
+	 */
+	public void createViewAlter(View view);
 
 	/**
 	 * Import records

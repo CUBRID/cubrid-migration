@@ -647,6 +647,17 @@ public abstract class OfflineImporter extends
 		view.setDDL(viewDDL);
 		executeDDL(viewDDL + "\n", false, createResultHandler(view));
 	}
+	
+	/**
+	 * Create view alter
+	 * 
+	 * @param view to be created
+	 */
+	public void createViewAlter(View view) {
+		String viewAlterDDL = CUBRIDSQLHelper.getInstance(null).getViewAlterDDL(view);
+		view.setAlterDDL(viewAlterDDL);
+		executeDDL(viewAlterDDL + "\n", false, createResultHandler(view));
+	}
 
 	/**
 	 * Create primary key

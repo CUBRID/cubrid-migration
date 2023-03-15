@@ -27,102 +27,29 @@
  * OF SUCH DAMAGE. 
  *
  */
-package com.cubrid.cubridmigration.core.dbobject;
+package com.cubrid.cubridmigration.core.engine.task.imp;
+
+import com.cubrid.cubridmigration.core.dbobject.View;
+import com.cubrid.cubridmigration.core.engine.task.ImportTask;
 
 /**
- * to store a view information
+ * CreateImportViewAlterTask responses to create imported view sql ddl.
  * 
- * @author moulinwang
- * @version 1.0 - 2009-9-9 created by moulinwang
+ * @author Dongmin Kim
+ * @version 1.0 - 2023-3-15 created by Dongmin Kim
  */
-public class View extends
-		TableOrView {
+public class ViewAlterImportTask extends 
+		ImportTask {
 
-	private static final long serialVersionUID = -553278718163557788L;
-	private String querySpec;
-	private String createSql;
-	private String alterSql;
-
-	public View() {
-		super();
-	}
-
-	public View(Schema schema) {
-		super();
-		this.schema = schema;
-	}
-
-	public String getQuerySpec() {
-		return querySpec == null ? "" : querySpec;
-	}
-
-	public void setQuerySpec(String querySpec) {
-		this.querySpec = querySpec;
-	}
-
-	public String getDDL() {
-		return createSql;
-	}
-
-	public void setDDL(String createSql) {
-		this.createSql = createSql;
-	}
+	private final View importView;
 	
-	public String getAlterDDL() {
-		return alterSql;
-	}
-	
-	public void setAlterDDL(String alterSql) {
-		this.alterSql = alterSql;
+	public ViewAlterImportTask(View importView) {
+		super();
+		this.importView = importView;
 	}
 
-	/**
-	 * Override hashCode
-	 * 
-	 * @return int
-	 */
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((name == null) ? 0 : name.hashCode());
-		return result;
-	}
-
-	/**
-	 * Override equals method
-	 * 
-	 * @param obj Object
-	 * @return boolean
-	 */
-	public boolean equals(Object obj) {
-		if (this == obj) {
-			return true;
-		}
-
-		if (obj == null) {
-			return false;
-		}
-
-		if (getClass() != obj.getClass()) {
-			return false;
-		}
-
-		View other = (View) obj;
-		if (name == null) {
-			if (other.name != null) {
-				return false;
-			}
-		} else if (!name.equals(other.name)) {
-			return false;
-		}
-
-		return true;
-	}
-
-	/**
-	 * @return object type
-	 */
-	public String getObjType() {
-		return OBJ_TYPE_VIEW;
+	@Override
+	protected void executeImport() {
+		importer.createViewAlter(importView);
 	}
 }

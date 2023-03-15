@@ -140,6 +140,22 @@ public class JDBCImporter extends
 			createObjectFailed(view, e);
 		}
 	}
+	
+	/**
+	 * Create View Alter
+	 * 
+	 * @param view View
+	 */
+	public void createViewAlter(View view) {
+		String viewAlterDDL = CUBRIDSQLHelper.getInstance(null).getViewAlterDDL(view);
+		view.setAlterDDL(viewAlterDDL);
+		try {
+			executeDDL(viewAlterDDL);
+			createObjectSuccess(view);
+		} catch (RuntimeException e) {
+			createObjectFailed(view, e);
+		}
+	}
 
 	/**
 	 * Create primary key

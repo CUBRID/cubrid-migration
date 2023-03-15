@@ -27,102 +27,37 @@
  * OF SUCH DAMAGE. 
  *
  */
-package com.cubrid.cubridmigration.core.dbobject;
+package com.cubrid.cubridmigration.core.engine.task.exp;
+
+import com.cubrid.cubridmigration.core.dbobject.View;
+import com.cubrid.cubridmigration.core.engine.config.MigrationConfiguration;
+import com.cubrid.cubridmigration.core.engine.config.SourceConfig;
+import com.cubrid.cubridmigration.core.engine.task.ExportTask;
 
 /**
- * to store a view information
  * 
- * @author moulinwang
- * @version 1.0 - 2009-9-9 created by moulinwang
+ * ViewAlterExportTask responses to export view alter ddl.
+ * 
+ * @author Dongmin Kim
+ * @version 1.0 - 2023-3-15 created by Dongmin Kim
  */
-public class View extends
-		TableOrView {
+public class ViewAlterExportTask extends 
+		ExportTask {
 
-	private static final long serialVersionUID = -553278718163557788L;
-	private String querySpec;
-	private String createSql;
-	private String alterSql;
-
-	public View() {
-		super();
-	}
-
-	public View(Schema schema) {
-		super();
-		this.schema = schema;
-	}
-
-	public String getQuerySpec() {
-		return querySpec == null ? "" : querySpec;
-	}
-
-	public void setQuerySpec(String querySpec) {
-		this.querySpec = querySpec;
-	}
-
-	public String getDDL() {
-		return createSql;
-	}
-
-	public void setDDL(String createSql) {
-		this.createSql = createSql;
-	}
+	private final MigrationConfiguration config;
+	private final SourceConfig exportView;
 	
-	public String getAlterDDL() {
-		return alterSql;
-	}
+	public ViewAlterExportTask(MigrationConfiguration config, SourceConfig exportView) {
+		this.config = config;
+		this.exportView = exportView;
+	}	
 	
-	public void setAlterDDL(String alterSql) {
-		this.alterSql = alterSql;
-	}
-
-	/**
-	 * Override hashCode
-	 * 
-	 * @return int
-	 */
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((name == null) ? 0 : name.hashCode());
-		return result;
-	}
-
-	/**
-	 * Override equals method
-	 * 
-	 * @param obj Object
-	 * @return boolean
-	 */
-	public boolean equals(Object obj) {
-		if (this == obj) {
-			return true;
+	@Override
+	protected void executeExportTask() {
+		View importView = config.getTargetViewSchema(exportView.getTarget());
+		if (importView == null) {
+			return;
 		}
-
-		if (obj == null) {
-			return false;
-		}
-
-		if (getClass() != obj.getClass()) {
-			return false;
-		}
-
-		View other = (View) obj;
-		if (name == null) {
-			if (other.name != null) {
-				return false;
-			}
-		} else if (!name.equals(other.name)) {
-			return false;
-		}
-
-		return true;
-	}
-
-	/**
-	 * @return object type
-	 */
-	public String getObjType() {
-		return OBJ_TYPE_VIEW;
+		importTaskExecutor.execute((Runnable) taskFactory.createImportViewAlterTask(importView));
 	}
 }

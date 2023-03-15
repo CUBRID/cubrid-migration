@@ -61,6 +61,7 @@ import com.cubrid.cubridmigration.core.engine.task.exp.SequenceExportTask;
 import com.cubrid.cubridmigration.core.engine.task.exp.TableRecordExportTask;
 import com.cubrid.cubridmigration.core.engine.task.exp.TableSchemaExportTask;
 import com.cubrid.cubridmigration.core.engine.task.exp.TriggerExportTask;
+import com.cubrid.cubridmigration.core.engine.task.exp.ViewAlterExportTask;
 import com.cubrid.cubridmigration.core.engine.task.exp.ViewSchemaExportTask;
 import com.cubrid.cubridmigration.core.engine.task.exp.XMLRecordExportTask;
 import com.cubrid.cubridmigration.core.engine.task.imp.CSVImportTask;
@@ -78,6 +79,7 @@ import com.cubrid.cubridmigration.core.engine.task.imp.TableSchemaImportTask;
 import com.cubrid.cubridmigration.core.engine.task.imp.TriggerImportTask;
 import com.cubrid.cubridmigration.core.engine.task.imp.UpdateAutoIncColCurrentValueTask;
 import com.cubrid.cubridmigration.core.engine.task.imp.UpdateStatisticsTask;
+import com.cubrid.cubridmigration.core.engine.task.imp.ViewAlterImportTask;
 import com.cubrid.cubridmigration.core.engine.task.imp.ViewSchemaImportTask;
 
 /**
@@ -256,6 +258,18 @@ public class MigrationTaskFactory {
 		initExportTask(task, false);
 		return task;
 	}
+	
+	/**
+	 * createExportViewAlterTask
+	 * 
+	 * @param vw View
+	 * @return ViewAlterExportTask
+	 */
+	public ViewAlterExportTask createExportViewAlterTask(SourceConfig vw) {
+		ViewAlterExportTask task = new ViewAlterExportTask(context.getConfig(), vw);
+		initExportTask(task, false);
+		return task;
+	}
 
 	/**
 	 * Initialize the Import task
@@ -289,6 +303,18 @@ public class MigrationTaskFactory {
 	 */
 	public ImportTask createImportViewTask(View vw) {
 		ViewSchemaImportTask task = new ViewSchemaImportTask(vw);
+		initImportTask(task);
+		return task;
+	}
+	
+	/**
+	 * createImportViewAlterTask
+	 * 
+	 * @param vw View
+	 * @return ViewAlterImportTask
+	 */
+	public ImportTask createImportViewAlterTask(View vw) {
+		ViewAlterImportTask task = new ViewAlterImportTask(vw);
 		initImportTask(task);
 		return task;
 	}
