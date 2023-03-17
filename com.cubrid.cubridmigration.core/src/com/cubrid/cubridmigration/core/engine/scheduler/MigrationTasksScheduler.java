@@ -89,7 +89,7 @@ public class MigrationTasksScheduler {
 		clearTargetDB();
 		createTables();
 		createViews();
-		createViewAlters();
+		alterViews();
 		createSerials();
 
 		executeUserSQLs();
@@ -296,7 +296,7 @@ public class MigrationTasksScheduler {
 	 * Schedule export view alter tasks.
 	 * 
 	 */
-	protected void createViewAlters() {
+	protected void alterViews() {
 		MigrationConfiguration config = context.getConfig();
 		List<SourceViewConfig> views = config.getExpViewCfg();
 		for (SourceViewConfig vw : views) {

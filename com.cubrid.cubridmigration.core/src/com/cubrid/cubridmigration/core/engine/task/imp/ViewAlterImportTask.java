@@ -50,6 +50,6 @@ public class ViewAlterImportTask extends
 
 	@Override
 	protected void executeImport() {
-		importer.createViewAlter(importView);
+		importer.alterView(importView);
 	}
 }

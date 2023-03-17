@@ -146,7 +146,7 @@ public class JDBCImporter extends
 	 * 
 	 * @param view View
 	 */
-	public void createViewAlter(View view) {
+	public void alterView(View view) {
 		String viewAlterDDL = CUBRIDSQLHelper.getInstance(null).getViewAlterDDL(view);
 		view.setAlterDDL(viewAlterDDL);
 		try {
