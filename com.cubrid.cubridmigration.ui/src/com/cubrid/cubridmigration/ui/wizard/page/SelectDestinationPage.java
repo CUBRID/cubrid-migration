@@ -30,7 +30,6 @@
 package com.cubrid.cubridmigration.ui.wizard.page;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
@@ -59,7 +58,6 @@ import com.cubrid.cubridmigration.core.common.PathUtils;
 import com.cubrid.cubridmigration.core.common.TimeZoneUtils;
 import com.cubrid.cubridmigration.core.connection.ConnParameters;
 import com.cubrid.cubridmigration.core.dbobject.Catalog;
-import com.cubrid.cubridmigration.core.dbobject.Schema;
 import com.cubrid.cubridmigration.core.engine.config.MigrationConfiguration;
 import com.cubrid.cubridmigration.ui.common.Status;
 import com.cubrid.cubridmigration.ui.common.UICommonTool;
@@ -509,7 +507,6 @@ public class SelectDestinationPage extends
 		private Combo targetFileTimezoneCombo;
 
 		private Button btnCSVSetting;
-		private String fileExt = ".txt";
 
 		private Combo cboCharset;
 		private Label lblCharset;
@@ -518,39 +515,6 @@ public class SelectDestinationPage extends
 		private Text txtLobPath;
 		
 		private Button btnAddUserSchema;
-
-		/**
-		 * checkFileRepositroy
-		 * 
-		 * @return boolean
-		 */
-		private boolean checkFileRepositroy() {
-			File schema = new File(getSchemaFullName());
-			File index = new File(getIndexFullName());
-			File data = new File(getDataFullName());
-			StringBuffer buffer = new StringBuffer();
-			try {
-				if (schema.exists()) {
-					buffer.append(schema.getCanonicalPath()).append("\r\n");
-				}
-				if (index.exists()) {
-					buffer.append(index.getCanonicalPath()).append("\r\n");
-				}
-				if (!btnOneTableOneFile.getSelection() && data.exists()) {
-					buffer.append(data.getCanonicalPath()).append("\r\n");
-				}
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-			if (buffer.length() > 0) {
-				return MessageDialog.openConfirm(
-						PlatformUI.getWorkbench().getDisplay().getActiveShell(),
-						Messages.msgConfirmation,
-						Messages.fileWarningMessage + "\r\n" + buffer.toString() + "\r\n"
-								+ Messages.confirmMessage);
-			}
-			return true;
-		}
 
 		/**
 		 * Create Controls
@@ -682,24 +646,6 @@ public class SelectDestinationPage extends
 		}
 
 		/**
-		 * Get output files prefix for output files name
-		 * 
-		 * @return prefix.
-		 */
-		private String getFilePrefix() {
-			String result = txtFilePrefix.getText().trim();
-			if (StringUtils.isEmpty(result)) {
-				return "";
-			}
-			return result + "_";
-		}
-
-		private String getDataFullName() {
-			return new StringBuffer(getFileRepository()).append(getFilePrefix()).append("data").append(
-					fileExt).toString();
-		}
-
-		/**
 		 * The file repository with File.separator ended.
 		 * 
 		 * @return String
@@ -710,16 +656,6 @@ public class SelectDestinationPage extends
 				text = text + File.separator;
 			}
 			return text;
-		}
-
-		private String getIndexFullName() {
-			return new StringBuffer(getFileRepository()).append(getFilePrefix()).append("index").append(
-					getMigrationWizard().getMigrationConfig().getDefaultTargetSchemaFileExtName()).toString();
-		}
-
-		private String getSchemaFullName() {
-			return new StringBuffer(getFileRepository()).append(getFilePrefix()).append("schema").append(
-					getMigrationWizard().getMigrationConfig().getDefaultTargetSchemaFileExtName()).toString();
 		}
 
 		/**
@@ -741,15 +677,9 @@ public class SelectDestinationPage extends
 			setTitle(getMigrationWizard().getStepNoMsg(SelectDestinationPage.this)
 					+ Messages.msgDestOutputFilesSetting);
 			setDescription(Messages.msgDestOutputFilesSettingDes);
-
-			MigrationWizard wizard = getMigrationWizard();
-			final Schema schema = wizard.getSourceCatalog().getSchemas().get(0);
-			String schemaName = "";
-			if (schema != null) {
-				schemaName = schema.getName();
-			}
+			
 			MigrationConfiguration config = getMigrationWizard().getMigrationConfig();
-			fileExt = config.getDataFileExt();
+			String schemaName = config.getSourceConParams().getConUser();
 			btnCSVSetting.setVisible(config.targetIsCSV());
 
 			// final boolean isChar = config.targetIsCSV() ||
@@ -789,9 +719,6 @@ public class SelectDestinationPage extends
 		 * @return true if saving successfully
 		 */
 		public boolean save() {
-			if (!checkFileRepositroy()) {
-				return false;
-			}
 			MigrationConfiguration config = getMigrationWizard().getMigrationConfig();
 			if (config.targetIsDBDump()) {
 				config.setOneTableOneFile(btnOneTableOneFile.getSelection());
@@ -803,9 +730,6 @@ public class SelectDestinationPage extends
 			}
 			config.setFileRepositroyPath(getFileRepository());
 			config.setTargetFilePrefix(txtFilePrefix.getText());
-			config.setTargetIndexFileName(getIndexFullName());
-			config.setTargetSchemaFileName(getSchemaFullName());
-			config.setTargetDataFileName(getDataFullName());
 			config.setTargetFileTimeZone(targetFileTimezoneCombo.getItem(targetFileTimezoneCombo.getSelectionIndex()));
 			config.setTargetCharSet(cboCharset.getText());
 			

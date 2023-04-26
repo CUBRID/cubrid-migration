@@ -202,9 +202,12 @@ public class MigrationTasksScheduler {
 	private void clearTargetDB() {
 		MigrationConfiguration config = context.getConfig();
 		if (config.targetIsFile()) {
-			PathUtils.deleteFile(new File(config.getTargetSchemaFileName()));
-			PathUtils.deleteFile(new File(config.getTargetDataFileName()));
-			PathUtils.deleteFile(new File(config.getTargetIndexFileName()));
+			for (Schema schema : config.getTargetSchemaList()) {
+				PathUtils.deleteFile(new File(config.getTargetSchemaFileName(schema.getTargetSchemaName())));
+				PathUtils.deleteFile(new File(config.getTargetDataFileName(schema.getTargetSchemaName())));
+				PathUtils.deleteFile(new File(config.getTargetIndexFileName(schema.getTargetSchemaName())));
+			}
+			;
 		}
 		executeTask(taskFactory.createCleanDBTask());
 	}

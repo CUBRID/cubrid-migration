@@ -30,7 +30,10 @@
  */
 package com.cubrid.cubridmigration.ui.wizard.page;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -56,8 +59,10 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
+import org.eclipse.ui.PlatformUI;
 
 import com.cubrid.common.ui.swt.table.celleditor.EditableComboBoxCellEditor;
+import com.cubrid.cubridmigration.core.common.PathUtils;
 import com.cubrid.cubridmigration.core.common.log.LogUtil;
 import com.cubrid.cubridmigration.core.dbobject.Catalog;
 import com.cubrid.cubridmigration.core.dbobject.Schema;
@@ -81,8 +86,7 @@ public class SchemaMappingPage extends MigrationWizardPage {
 	TableViewer srcTableViewer = null;
 	TableViewer tarTableViewer = null;
 	
-	ArrayList<String> tarSchemaNameList = new ArrayList<String>();
-	
+	ArrayList<String> tarSchemaNameList = new ArrayList<String>();	
 	ArrayList<SrcTable> srcTableList = new ArrayList<SrcTable>();
 	
 	List<Schema> srcSchemaList = null;
@@ -620,6 +624,11 @@ public class SchemaMappingPage extends MigrationWizardPage {
 	}
 	
 	private boolean saveOfflineData(boolean addUserSchema) {
+		List<Schema> targetSchemaList = new ArrayList<Schema>();
+		Map<String, String> schemaFullName = new HashMap<String, String>();
+		Map<String, String> dataFullName = new HashMap<String, String>();
+		Map<String, String> indexFullName = new HashMap<String, String>();
+		
 		for (SrcTable srcTable : srcTableList) {
 			if (addUserSchema) {
 				if (srcTable.getTarSchema().isEmpty() || srcTable.getTarSchema() == null 
@@ -628,11 +637,84 @@ public class SchemaMappingPage extends MigrationWizardPage {
 					
 					return false;
 				}
-				Schema sourceSchema = srcCatalog.getSchemaByName(srcTable.getSrcSchema());
-				sourceSchema.setTargetSchemaName(srcTable.getTarSchema());
+				Schema schema = srcCatalog.getSchemaByName(srcTable.getSrcSchema());
+				schema.setTargetSchemaName(srcTable.getTarSchema());
+				targetSchemaList.add(schema);
+				
+				schemaFullName.put(srcTable.getTarSchema(), getSchemaFullName(srcTable.getTarSchema()));
+				dataFullName.put(srcTable.getTarSchema(), getDataFullName(srcTable.getTarSchema()));
+				indexFullName.put(srcTable.getTarSchema(), getIndexFullName(srcTable.getTarSchema()));
 			}
 		}
 		
+		if (!checkFileRepositroy(schemaFullName, dataFullName, indexFullName)) {
+			return false;
+		}
+		
+		config.setTargetSchemaList(targetSchemaList);
+		config.setTargetSchemaFileName(schemaFullName);
+		config.setTargetDataFileName(dataFullName);
+		config.setTargetIndexFileName(indexFullName);
+		
+		return true;
+	}
+	
+	private String getSchemaFullName(String targetSchemaName) {
+		StringBuffer fileName = new StringBuffer();
+		fileName.append(File.separator).append(config.getTargetFilePrefix()).append("_").append(targetSchemaName).append("_schema").append(
+				getMigrationWizard().getMigrationConfig().getDefaultTargetSchemaFileExtName());
+		
+		return PathUtils.mergePath(PathUtils.mergePath(config.getFileRepositroyPath(), targetSchemaName), fileName.toString());
+	}
+	
+	private String getDataFullName(String targetSchemaName) {
+		StringBuffer fileName = new StringBuffer();
+		fileName.append(File.separator).append(config.getTargetFilePrefix()).append("_").append(targetSchemaName).append("_data").append(config.getDataFileExt());
+	
+		return PathUtils.mergePath(PathUtils.mergePath(config.getFileRepositroyPath(), targetSchemaName), fileName.toString());
+	}
+	
+	private String getIndexFullName(String targetSchemaName) {		
+		StringBuffer fileName = new StringBuffer();
+		fileName.append(File.separator).append(config.getTargetFilePrefix()).append("_").append(targetSchemaName).append("_index").append(
+				getMigrationWizard().getMigrationConfig().getDefaultTargetSchemaFileExtName());
+		
+		return PathUtils.mergePath(PathUtils.mergePath(config.getFileRepositroyPath(), targetSchemaName), fileName.toString());
+	}
+	
+	/**
+	 * checkFileRepositroy
+	 * 
+	 * @return boolean
+	 */
+	private boolean checkFileRepositroy(Map<String, String> schemaFullName, Map<String, String> dataFullName, Map<String, String> indexFullName) {
+		StringBuffer buffer = new StringBuffer();
+		try {
+			for (SrcTable srcTable : srcTableList) {
+				File schemaFile = new File(schemaFullName.get(srcTable.getTarSchema()));
+				File indexFile = new File(indexFullName.get(srcTable.getTarSchema()));
+				File dataFile = new File(dataFullName.get(srcTable.getTarSchema()));
+				
+				if (schemaFile.exists()) {
+					buffer.append(schemaFile.getCanonicalPath()).append(System.lineSeparator());
+				}
+				if (dataFile.exists()) {
+					buffer.append(dataFile.getCanonicalPath()).append(System.lineSeparator());
+				}
+				if (indexFile.exists()) {
+					buffer.append(indexFile.getCanonicalPath()).append(System.lineSeparator());
+				}
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		if (buffer.length() > 0) {
+			return MessageDialog.openConfirm(
+					PlatformUI.getWorkbench().getDisplay().getActiveShell(),
+					Messages.msgConfirmation,
+					Messages.fileWarningMessage + "\r\n" + buffer.toString() + "\r\n"
+							+ Messages.confirmMessage);
+		}
 		return true;
 	}
 	

@@ -67,13 +67,18 @@ public class LoadFileImporter extends
 	private static class CurrentDataFileInfo {
 		String fileHeader;
 		String fileFullName;
+		String fileTableFullName;
 		int currentFileNO = 1;
 		String fileExt;
 
-		public CurrentDataFileInfo(String header, String ext) {
+		public CurrentDataFileInfo(String fileFullName, String header, String prefix, String owner, String name, String ext) {
 			this.fileHeader = header;
 			this.fileExt = ext;
-			this.fileFullName = header + ext;
+			this.fileTableFullName = header + File.separator 
+					+ owner + File.separator
+					+ prefix + "_" + owner + "_" + name
+					+ ext;
+			this.fileFullName = fileFullName;
 		}
 
 		/**
@@ -84,15 +89,17 @@ public class LoadFileImporter extends
 			final StringBuffer sb = new StringBuffer(fileHeader);
 			currentFileNO++;
 			sb.append("_").append(currentFileNO);
-			fileFullName = sb.append(fileExt).toString();
+			fileTableFullName = sb.append(fileExt).toString();
 			//If has old file ,remove it firstly
-			PathUtils.deleteFile(new File(fileFullName));
+			PathUtils.deleteFile(new File(fileTableFullName));
 		}
 	}
 
 	protected final static Logger LOGGER = LogUtil.getLogger(LoadFileImporter.class);
 
 	private final Map<String, CurrentDataFileInfo> tableFiles = new HashMap<String, CurrentDataFileInfo>();
+	private final Map<String, String> schemaFiles = new HashMap<String, String>();
+	private final Map<String, String> indexFiles = new HashMap<String, String>();
 
 	private final Object lockObj = new Object();
 
@@ -131,23 +138,23 @@ public class LoadFileImporter extends
 			final int expCount) {
 		synchronized (lockObj) {
 			MigrationDirAndFilesManager mdfm = mrManager.getDirAndFilesMgr();
-			CurrentDataFileInfo es = tableFiles.get(stc.getName());
-			if (es == null) {
-				final StringBuffer sb = new StringBuffer(
-						mrManager.getDirAndFilesMgr().getMergeFilesDir()).append(
-						config.getFullTargetFilePrefix()).append(stc.getTarget());
-				es = new CurrentDataFileInfo(sb.toString(), config.getDataFileExt());
-				PathUtils.deleteFile(new File(es.fileFullName));
-				tableFiles.put(stc.getName(), es);
+			
+			if (!tableFiles.containsKey(stc.getTargetOwner() + stc.getName())) {
+				tableFiles.put(stc.getTargetOwner() + stc.getName(), new CurrentDataFileInfo(config.getTargetDataFileName(stc.getTargetOwner()), 
+						mdfm.getMergeFilesDir(),config.getTargetFilePrefix(), stc.getTargetOwner(), stc.getName(), config.getDataFileExt()));
 			}
+			
+			CurrentDataFileInfo es = tableFiles.get(stc.getTargetOwner() + stc.getName());
+			
 			//If the target file is full. 
-			if (mdfm.isDataFileFull(es.fileFullName)) {
+			if (mdfm.isDataFileFull(es.fileTableFullName)) {
 				//Full name will be changed.
 				es.nextFile();
 			}
+			final String fileTableFullName = es.fileTableFullName;
 			final String fileFullName = es.fileFullName;
-			mdfm.addDataFile(fileFullName, impCount);
-			executeTask(fileName, fileFullName, new RunnableResultHandler() {
+			mdfm.addDataFile(fileTableFullName, impCount);
+			executeTask(fileName, fileTableFullName, new RunnableResultHandler() {
 
 				public void success() {
 					eventHandler.handleEvent(new ImportRecordsEvent(stc, impCount));
@@ -169,7 +176,7 @@ public class LoadFileImporter extends
 					final boolean expEnd = sm.getExpFlag(stc.getOwner(), stc.getName());
 					//If it is the last merging,Merge data files to one data file
 					if (expEnd && totalEc == totalIc) {
-						executeTask(fileFullName, config.getTargetDataFileName(), null, true, false);
+						executeTask(fileTableFullName, fileFullName, null, true, false);
 					}
 				}
 
@@ -180,6 +187,22 @@ public class LoadFileImporter extends
 				}
 			}, config.isDeleteTempFile(), false);
 		}
+	}
+	
+	protected String handleSchemaFile(String fileName, String owner) {
+		if (!schemaFiles.containsKey(owner)) {
+			schemaFiles.put(owner, config.getTargetSchemaFileName(owner));
+		}
+		
+		return schemaFiles.get(owner);
+	}
+	
+	protected String handleIndexFile(String fileName, String owner) {
+		if (!indexFiles.containsKey(owner)) {
+			indexFiles.put(owner, config.getTargetIndexFileName(owner));
+		}
+		
+		return indexFiles.get(owner);
 	}
 
 	/**
@@ -207,9 +230,9 @@ public class LoadFileImporter extends
 	 * @param listener a call interface.
 	 * @param isIndex true if the DDL is about index
 	 */
-	protected void sendSchemaFile(String fileName, RunnableResultHandler listener, boolean isIndex) {
+	protected void sendSchemaFile(String fileName, RunnableResultHandler listener, boolean isIndex, String owner) {
 		executeTask(fileName,
-				isIndex ? config.getTargetIndexFileName() : config.getTargetSchemaFileName(),
+				isIndex ? handleIndexFile(fileName, owner) : handleSchemaFile(fileName, owner),
 				listener, config.isDeleteTempFile(), true);
 	}
 

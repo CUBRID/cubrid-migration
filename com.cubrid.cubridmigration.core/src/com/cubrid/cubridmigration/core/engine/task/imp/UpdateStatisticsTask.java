@@ -40,6 +40,7 @@ import org.apache.log4j.Logger;
 
 import com.cubrid.cubridmigration.core.common.Closer;
 import com.cubrid.cubridmigration.core.common.log.LogUtil;
+import com.cubrid.cubridmigration.core.dbobject.Schema;
 import com.cubrid.cubridmigration.core.engine.config.MigrationConfiguration;
 import com.cubrid.cubridmigration.core.engine.config.SourceCSVConfig;
 import com.cubrid.cubridmigration.core.engine.config.SourceEntryTableConfig;
@@ -70,7 +71,7 @@ public class UpdateStatisticsTask extends
 	 * 
 	 * @return UPDATE STATISTICS ON SQLs
 	 */
-	private List<String> getUpdateStatisticsSQLs() {
+	private List<String> getUpdateStatisticsSQLs(String schemaName) {
 		List<String> result = new ArrayList<String>();
 		if (config.sourceIsSQL()) {
 			return result;
@@ -81,19 +82,20 @@ public class UpdateStatisticsTask extends
 			if (config.sourceIsCSV()) {
 				List<SourceCSVConfig> csvConfigs = config.getCSVConfigs();
 				for (SourceCSVConfig csvf : csvConfigs) {
-					
-					objectsToBeUpdated.add("" + csvf.getTargetOwner() + "\".\"" + csvf.getTarget());
+					if (csvf.getTargetOwner().equals(schemaName)) {
+						objectsToBeUpdated.add("" + csvf.getTargetOwner() + "\".\"" + csvf.getTarget());
+					}
 				}
 			} else {
 				List<SourceEntryTableConfig> expEntryTableCfg = config.getExpEntryTableCfg();
 				for (SourceEntryTableConfig setc : expEntryTableCfg) {
-					if (setc.isMigrateData() && !objectsToBeUpdated.contains(setc.getTarget())) {
+					if (setc.getTargetOwner().equals(schemaName) && setc.isMigrateData() && !objectsToBeUpdated.contains(setc.getTarget())) {
 						objectsToBeUpdated.add("" + setc.getTargetOwner() + "\".\"" + setc.getTarget());
 					}
 				}
 				List<SourceSQLTableConfig> expSQLCfg = config.getExpSQLCfg();
 				for (SourceSQLTableConfig sstc : expSQLCfg) {
-					if (sstc.isMigrateData() && !objectsToBeUpdated.contains(sstc.getTarget())) {
+					if (sstc.getTargetOwner().equals(schemaName) && sstc.isMigrateData() && !objectsToBeUpdated.contains(sstc.getTarget())) {
 						objectsToBeUpdated.add("" + sstc.getTargetOwner() + "\".\"" + sstc.getTarget());
 					}
 				}
@@ -135,31 +137,38 @@ public class UpdateStatisticsTask extends
 	protected void executeImport() {
 		if (config.targetIsOnline()) {
 			if (config.isUpdateStatistics()) {
-				LOG.debug("Execute update statistics for CUBRID");
-				execSQLList(getUpdateStatisticsSQLs());
+				List<Schema> schemaList = config.getTargetSchemaList();
+				for (Schema schema : schemaList) {
+					LOG.debug("Execute update statistics for " + schema.getTargetSchemaName());
+					execSQLList(getUpdateStatisticsSQLs(schema.getTargetSchemaName()));
+				}
 			}
 			return;
 		}
-		String tfile = config.getTargetIndexFileName();
-		File file = new File(tfile);
-		//if no indexes, return.
-		if (!file.exists() || file.length() == 0) {
-			return;
-		}
-		OutputStream os = null; //NO PMD
-		try {
-			os = new BufferedOutputStream(new FileOutputStream(file, true));
-			List<String> sqlList = getUpdateStatisticsSQLs();
-			byte[] enterBytes = "\n".getBytes();
-			for (String sql : sqlList) {
-				os.write(sql.getBytes());
-				os.write(enterBytes);
+		
+		List<Schema> schemaList = config.getTargetSchemaList();
+		for (Schema schema : schemaList) {
+			String tfile = config.getTargetIndexFileName(schema.getTargetSchemaName());
+			File file = new File(tfile);
+			//if no indexes, return.
+			if (!file.exists() || file.length() == 0) {
+				return;
 			}
-			os.flush();
-		} catch (Exception e) {
-			throw new RuntimeException(e);
-		} finally {
-			Closer.close(os);
+			OutputStream os = null; //NO PMD
+			try {
+				os = new BufferedOutputStream(new FileOutputStream(file, true));
+				List<String> sqlList = getUpdateStatisticsSQLs(schema.getTargetSchemaName());
+				byte[] enterBytes = "\n".getBytes();
+				for (String sql : sqlList) {
+					os.write(sql.getBytes());
+					os.write(enterBytes);
+				}
+				os.flush();
+			} catch (Exception e) {
+				throw new RuntimeException(e);
+			} finally {
+				Closer.close(os);
+			}
 		}
 	}
 

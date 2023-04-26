@@ -29,6 +29,7 @@
  */
 package com.cubrid.cubridmigration.ui.wizard.page;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -45,6 +46,7 @@ import org.eclipse.swt.widgets.ToolItem;
 
 import com.cubrid.cubridmigration.core.common.log.LogUtil;
 import com.cubrid.cubridmigration.core.connection.ConnParameters;
+import com.cubrid.cubridmigration.core.dbobject.Schema;
 import com.cubrid.cubridmigration.core.dbtype.DatabaseType;
 import com.cubrid.cubridmigration.core.engine.config.MigrationConfiguration;
 import com.cubrid.cubridmigration.core.engine.config.SourceConfig;
@@ -157,41 +159,51 @@ public class ConfirmationPage extends
 			text.append(migration.getFileRepositroyPath());
 			text.append(lineSeparator).append(tabSeparator);
 
-			text.append(Messages.confrimSchema).append("  ");
-			if (styleRanges != null) {
-				styleRanges.add(new StyleRange(text.length(),
-						migration.getTargetSchemaFileName().length(),
-						SWTResourceConstents.COLOR_BLUE, null));
-			}
-			text.append(migration.getTargetSchemaFileName());
-			text.append(lineSeparator).append(tabSeparator);
-
-			text.append(Messages.confrimIndex).append("  ");
-			if (styleRanges != null) {
-				styleRanges.add(new StyleRange(text.length(),
-						migration.getTargetIndexFileName().length(),
-						SWTResourceConstents.COLOR_BLUE, null));
-			}
-			text.append(migration.getTargetIndexFileName());
-			text.append(lineSeparator).append(tabSeparator);
-
-			text.append(Messages.confrimData).append("  ");
+			text.append(Messages.confrimSchema).append(lineSeparator);
 			int oldLength = text.length();
-			if (migration.isOneTableOneFile()) {
-				text.append(Messages.btnOneTableOneFile).append(lineSeparator).append(tabSeparator);
-			} else {
-				if (migration.getDestType() == MigrationConfiguration.DEST_DB_UNLOAD
-						|| migration.getDestType() == MigrationConfiguration.DEST_SQL) {
-					text.append(migration.getTargetDataFileName());
-				} else {
-					text.append(migration.getFileRepositroyPath());
-					//text.append("data").append(File.separator);
-					text.append(migration.getTargetFilePrefix()).append(
-							Messages.lblConfirmDataFormat);
-					text.append(migration.getDataFileExt());
-				}
+			for (Schema targetSchema : migration.getTargetSchemaList()) {
+				text.append(tabSeparator).append(tabSeparator);
+				text.append(migration.getTargetSchemaFileName(targetSchema.getTargetSchemaName()));
 				text.append(lineSeparator);
-				text.append(tabSeparator);
+			}
+			if (styleRanges != null) {
+				styleRanges.add(new StyleRange(oldLength, text.length() - oldLength,
+						SWTResourceConstents.COLOR_BLUE, null));
+			}
+
+			text.append(tabSeparator).append(Messages.confrimIndex).append(lineSeparator);
+			oldLength = text.length();
+			for (Schema targetSchema : migration.getTargetSchemaList()) {
+				text.append(tabSeparator).append(tabSeparator);
+				text.append(migration.getTargetIndexFileName(targetSchema.getTargetSchemaName()));
+				text.append(lineSeparator);
+			}
+			if (styleRanges != null) {
+				styleRanges.add(new StyleRange(oldLength, text.length() - oldLength,
+						SWTResourceConstents.COLOR_BLUE, null));
+			}
+
+			text.append(tabSeparator).append(Messages.confrimData).append(lineSeparator);
+			oldLength = text.length();
+			if (migration.isOneTableOneFile()) {
+				text.append(Messages.btnOneTableOneFile).append(lineSeparator).append(tabSeparator).append(tabSeparator);
+			} else {
+				for (Schema targetSchema : migration.getTargetSchemaList()) {
+					text.append(tabSeparator).append(tabSeparator);
+					if (migration.getDestType() == MigrationConfiguration.DEST_DB_UNLOAD
+							|| migration.getDestType() == MigrationConfiguration.DEST_SQL) {
+						text.append(migration.getTargetDataFileName(targetSchema.getTargetSchemaName()));
+					} else {
+						text.append(migration.getFileRepositroyPath());
+						text.append(targetSchema.getName()).append(File.separator);
+						//text.append("data").append(File.separator);
+						text.append(migration.getTargetFilePrefix())
+							.append(targetSchema.getName())
+							.append(Messages.lblConfirmDataFormat)
+							.append(migration.getDataFileExt());
+					}
+					text.append(lineSeparator);
+				}	
 			}
 			if (styleRanges != null) {
 				styleRanges.add(new StyleRange(oldLength, text.length() - oldLength,

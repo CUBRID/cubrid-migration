@@ -770,9 +770,6 @@ public final class MigrationTemplateHandler extends
 			parseTargetJDBC(attr);
 		} else if (TemplateTags.TAG_FILE_REPOSITORY.equals(qName)) {
 			config.setFileRepositroyPath(attr.getValue(TemplateTags.ATTR_DIR));
-			config.setTargetSchemaFileName(attr.getValue(TemplateTags.ATTR_SCHEMA));
-			config.setTargetDataFileName(attr.getValue(TemplateTags.ATTR_DATA));
-			config.setTargetIndexFileName(attr.getValue(TemplateTags.ATTR_INDEX));
 			config.setTargetFileTimeZone(attr.getValue(TemplateTags.ATTR_TIMEZONE));
 			config.setOneTableOneFile(getBoolean(attr.getValue(TemplateTags.ATTR_ONETABLEONEFILE),
 					false));
