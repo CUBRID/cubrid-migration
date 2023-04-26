@@ -659,6 +659,12 @@ public class SchemaMappingPage extends MigrationWizardPage {
 		return true;
 	}
 	
+	/**
+	 * get Schema file full path
+	 * 
+	 * @param targetSchemaName
+	 * @return schema file full path
+	 */
 	private String getSchemaFullName(String targetSchemaName) {
 		StringBuffer fileName = new StringBuffer();
 		fileName.append(File.separator).append(config.getTargetFilePrefix()).append("_").append(targetSchemaName).append("_schema").append(
@@ -667,6 +673,12 @@ public class SchemaMappingPage extends MigrationWizardPage {
 		return PathUtils.mergePath(PathUtils.mergePath(config.getFileRepositroyPath(), targetSchemaName), fileName.toString());
 	}
 	
+	/**
+	 * get Data file full path
+	 * 
+	 * @param targetSchemaName
+	 * @return data file full path
+	 */
 	private String getDataFullName(String targetSchemaName) {
 		StringBuffer fileName = new StringBuffer();
 		fileName.append(File.separator).append(config.getTargetFilePrefix()).append("_").append(targetSchemaName).append("_data").append(config.getDataFileExt());
@@ -674,6 +686,12 @@ public class SchemaMappingPage extends MigrationWizardPage {
 		return PathUtils.mergePath(PathUtils.mergePath(config.getFileRepositroyPath(), targetSchemaName), fileName.toString());
 	}
 	
+	/**
+	 * get Index file full path
+	 * 
+	 * @param targetSchemaName
+	 * @return index file full path
+	 */
 	private String getIndexFullName(String targetSchemaName) {		
 		StringBuffer fileName = new StringBuffer();
 		fileName.append(File.separator).append(config.getTargetFilePrefix()).append("_").append(targetSchemaName).append("_index").append(
@@ -683,8 +701,11 @@ public class SchemaMappingPage extends MigrationWizardPage {
 	}
 	
 	/**
-	 * checkFileRepositroy
+	 * Check if overwriting to a file
 	 * 
+	 * @param schemaFullName
+	 * @param dataFullName
+	 * @param indexFullName
 	 * @return boolean
 	 */
 	private boolean checkFileRepositroy(Map<String, String> schemaFullName, Map<String, String> dataFullName, Map<String, String> indexFullName) {

@@ -189,19 +189,29 @@ public class LoadFileImporter extends
 		}
 	}
 	
-	protected String handleSchemaFile(String fileName, String owner) {
+	/**
+	 * Send Schema file to server loadDB command.
+	 * 
+	 * @param owner
+	 * @return schema file full path
+	 */
+	protected String handleSchemaFile(String owner) {
 		if (!schemaFiles.containsKey(owner)) {
 			schemaFiles.put(owner, config.getTargetSchemaFileName(owner));
 		}
-		
 		return schemaFiles.get(owner);
 	}
 	
-	protected String handleIndexFile(String fileName, String owner) {
+	/**
+	 * Send Index file to server loadDB command.
+	 * 
+	 * @param owner
+	 * @return index file full path
+	 */
+	protected String handleIndexFile(String owner) {
 		if (!indexFiles.containsKey(owner)) {
 			indexFiles.put(owner, config.getTargetIndexFileName(owner));
 		}
-		
 		return indexFiles.get(owner);
 	}
 
@@ -232,7 +242,7 @@ public class LoadFileImporter extends
 	 */
 	protected void sendSchemaFile(String fileName, RunnableResultHandler listener, boolean isIndex, String owner) {
 		executeTask(fileName,
-				isIndex ? handleIndexFile(fileName, owner) : handleSchemaFile(fileName, owner),
+				isIndex ? handleIndexFile(owner) : handleSchemaFile(owner),
 				listener, config.isDeleteTempFile(), true);
 	}
 

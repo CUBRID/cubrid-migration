@@ -186,7 +186,8 @@ public class ConfirmationPage extends
 			text.append(tabSeparator).append(Messages.confrimData).append(lineSeparator);
 			oldLength = text.length();
 			if (migration.isOneTableOneFile()) {
-				text.append(Messages.btnOneTableOneFile).append(lineSeparator).append(tabSeparator).append(tabSeparator);
+				text.append(tabSeparator).append(tabSeparator);
+				text.append(Messages.btnOneTableOneFile).append(lineSeparator);
 			} else {
 				for (Schema targetSchema : migration.getTargetSchemaList()) {
 					text.append(tabSeparator).append(tabSeparator);
