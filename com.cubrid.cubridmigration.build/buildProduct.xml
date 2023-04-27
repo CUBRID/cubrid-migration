@@ -2,7 +2,7 @@
 	<property file="${basedir}/../com.cubrid.cubridmigration.ui/version.properties" />
 	<property file="product_build_conf/build.properties" />
 	<property file="product_build_conf/build_common.properties" />
-	<property name="product.version" value="${releaseStr}-build-${buildNumber}" />
+	<property name="product.version" value="build-${buildVersionId}" />
 	<property name="launcher.win.32" value="${basedir}/launcher/win32/cubridmigration.exe" />
 	<property name="launcher.win.64" value="${basedir}/launcher/win64/cubridmigration.exe" />
 	<!-- Clean build directory and workspace -->

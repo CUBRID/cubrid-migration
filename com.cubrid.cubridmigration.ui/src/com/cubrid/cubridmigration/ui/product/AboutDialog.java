@@ -74,7 +74,7 @@ public class AboutDialog extends
 		}
 		String[] strs = Version.buildVersionId.split("\\.");
 		String message = Messages.bind(Messages.aboutMessage, new String[] {productName,
-				Version.releaseYear, strs[strs.length - 1], Messages.msgCubridHomePageUrl,
+				Version.releaseVersion, strs[strs.length - 1], Messages.msgCubridHomePageUrl,
 				Messages.msgCubridProjectSiteUrl, Messages.msgCUBRIDToolsSiteURL});
 		this.setItem(scan(message));
 	}
