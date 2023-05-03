@@ -54,6 +54,7 @@ public class Messages extends
 	public static String btnAdd;
 	public static String btnAddFromHDFS;
 	public static String btnAddUserSchema;
+	public static String btnSplitSchema;
 	public static String btnAdvanced;
 	public static String btnAdvancedSettings;
 	public static String btnAgreed;
@@ -245,6 +246,12 @@ public class Messages extends
 	public static String confrimExportViews;
 	public static String confrimIndex;
 	public static String confrimSchema;
+	public static String confrimTable;
+	public static String confrimView;
+	public static String confrimPk;
+	public static String confrimFk;
+	public static String confrimSerial;
+	public static String confrimUpdateStatistic;
 	public static String confrimSQLTables;
 	public static String cUBRID2CUBRID;
 	public static String cubridNewInfoEditorName;

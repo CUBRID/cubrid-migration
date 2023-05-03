@@ -83,20 +83,20 @@ public class UpdateStatisticsTask extends
 				List<SourceCSVConfig> csvConfigs = config.getCSVConfigs();
 				for (SourceCSVConfig csvf : csvConfigs) {
 					if (csvf.getTargetOwner().equals(schemaName)) {
-						objectsToBeUpdated.add("" + csvf.getTargetOwner() + "\".\"" + csvf.getTarget());
+						objectsToBeUpdated.add("[" + csvf.getTargetOwner() + "].[" + csvf.getTarget() + "]");
 					}
 				}
 			} else {
 				List<SourceEntryTableConfig> expEntryTableCfg = config.getExpEntryTableCfg();
 				for (SourceEntryTableConfig setc : expEntryTableCfg) {
 					if (setc.getTargetOwner().equals(schemaName) && setc.isMigrateData() && !objectsToBeUpdated.contains(setc.getTarget())) {
-						objectsToBeUpdated.add("" + setc.getTargetOwner() + "\".\"" + setc.getTarget());
+						objectsToBeUpdated.add("[" + setc.getTargetOwner() + "].[" + setc.getTarget() + "]");
 					}
 				}
 				List<SourceSQLTableConfig> expSQLCfg = config.getExpSQLCfg();
 				for (SourceSQLTableConfig sstc : expSQLCfg) {
 					if (sstc.getTargetOwner().equals(schemaName) && sstc.isMigrateData() && !objectsToBeUpdated.contains(sstc.getTarget())) {
-						objectsToBeUpdated.add("" + sstc.getTargetOwner() + "\".\"" + sstc.getTarget());
+						objectsToBeUpdated.add("[" + sstc.getTargetOwner() + "].[" + sstc.getTarget() + "]");
 					}
 				}
 			}
@@ -124,7 +124,7 @@ public class UpdateStatisticsTask extends
 		}
 		
 		for (String target : objectsToBeUpdated) {
-			String sql = "UPDATE STATISTICS ON \"" + target + "\";";
+			String sql = "UPDATE STATISTICS ON " + target + ";";
 
 			result.add(sql);
 		}
@@ -148,12 +148,13 @@ public class UpdateStatisticsTask extends
 		
 		List<Schema> schemaList = config.getTargetSchemaList();
 		for (Schema schema : schemaList) {
-			String tfile = config.getTargetIndexFileName(schema.getTargetSchemaName());
+			String tfile = config.getTargetUpdateStatisticFileName(schema.getTargetSchemaName());
 			File file = new File(tfile);
 			//if no indexes, return.
-			if (!file.exists() || file.length() == 0) {
-				return;
-			}
+//			if (!file.exists() || file.length() == 0) {
+//				return;
+//			}
+			
 			OutputStream os = null; //NO PMD
 			try {
 				os = new BufferedOutputStream(new FileOutputStream(file, true));

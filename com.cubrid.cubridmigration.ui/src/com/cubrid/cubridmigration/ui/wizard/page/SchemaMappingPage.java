@@ -98,6 +98,16 @@ public class SchemaMappingPage extends MigrationWizardPage {
 	
 	private boolean firstVisible = true;
 	
+	Map<String, String> schemaFullName;
+	Map<String, String> tableFullName;
+	Map<String, String> viewFullName;
+	Map<String, String> pkFullName;
+	Map<String, String> fkFullName;
+	Map<String, String> dataFullName;
+	Map<String, String> indexFullName;
+	Map<String, String> serialFullName;
+	Map<String, String> updateStatisticFullName;
+	
 	protected class SrcTable {
 		private boolean isSelected;
 		
@@ -625,9 +635,15 @@ public class SchemaMappingPage extends MigrationWizardPage {
 	
 	private boolean saveOfflineData(boolean addUserSchema) {
 		List<Schema> targetSchemaList = new ArrayList<Schema>();
-		Map<String, String> schemaFullName = new HashMap<String, String>();
-		Map<String, String> dataFullName = new HashMap<String, String>();
-		Map<String, String> indexFullName = new HashMap<String, String>();
+		schemaFullName = new HashMap<String, String>();
+		tableFullName = new HashMap<String, String>();
+		viewFullName = new HashMap<String, String>();
+		pkFullName = new HashMap<String, String>();
+		fkFullName = new HashMap<String, String>();
+		dataFullName = new HashMap<String, String>();
+		indexFullName = new HashMap<String, String>();
+		serialFullName = new HashMap<String, String>();
+		updateStatisticFullName = new HashMap<String, String>();
 		
 		for (SrcTable srcTable : srcTableList) {
 			if (addUserSchema) {
@@ -642,20 +658,31 @@ public class SchemaMappingPage extends MigrationWizardPage {
 				targetSchemaList.add(schema);
 				
 				schemaFullName.put(srcTable.getTarSchema(), getSchemaFullName(srcTable.getTarSchema()));
+				tableFullName.put(srcTable.getTarSchema(), getTableFullName(srcTable.getTarSchema()));
+				viewFullName.put(srcTable.getTarSchema(), getViewFullName(srcTable.getTarSchema()));
 				dataFullName.put(srcTable.getTarSchema(), getDataFullName(srcTable.getTarSchema()));
 				indexFullName.put(srcTable.getTarSchema(), getIndexFullName(srcTable.getTarSchema()));
+				pkFullName.put(srcTable.getTarSchema(), getPkFullName(srcTable.getTarSchema()));
+				fkFullName.put(srcTable.getTarSchema(), getFkFullName(srcTable.getTarSchema()));
+				serialFullName.put(srcTable.getTarSchema(), getSequenceFullName(srcTable.getTarSchema()));
+				updateStatisticFullName.put(srcTable.getTarSchema(), getUpdateStatisticFullName(srcTable.getTarSchema()));
 			}
 		}
 		
-		if (!checkFileRepositroy(schemaFullName, dataFullName, indexFullName)) {
+		if (!checkFileRepositroy()) {
 			return false;
 		}
 		
 		config.setTargetSchemaList(targetSchemaList);
 		config.setTargetSchemaFileName(schemaFullName);
+		config.setTargetTableFileName(tableFullName);
+		config.setTargetViewFileName(viewFullName);
 		config.setTargetDataFileName(dataFullName);
 		config.setTargetIndexFileName(indexFullName);
-		
+		config.setTargetPkFileName(pkFullName);
+		config.setTargetFkFileName(fkFullName);
+		config.setTargetSerialFileName(serialFullName);
+		config.setTargetUpdateStatisticFileName(updateStatisticFullName);
 		return true;
 	}
 	
@@ -668,6 +695,34 @@ public class SchemaMappingPage extends MigrationWizardPage {
 	private String getSchemaFullName(String targetSchemaName) {
 		StringBuffer fileName = new StringBuffer();
 		fileName.append(File.separator).append(config.getTargetFilePrefix()).append("_").append(targetSchemaName).append("_schema").append(
+				getMigrationWizard().getMigrationConfig().getDefaultTargetSchemaFileExtName());
+		
+		return PathUtils.mergePath(PathUtils.mergePath(config.getFileRepositroyPath(), targetSchemaName), fileName.toString());
+	}
+	
+	/**
+	 * get Table file full path
+	 * 
+	 * @param targetSchemaName
+	 * @return table file full path
+	 */
+	private String getTableFullName(String targetSchemaName) {
+		StringBuffer fileName = new StringBuffer();
+		fileName.append(File.separator).append(config.getTargetFilePrefix()).append("_").append(targetSchemaName).append("_table").append(
+				getMigrationWizard().getMigrationConfig().getDefaultTargetSchemaFileExtName());
+		
+		return PathUtils.mergePath(PathUtils.mergePath(config.getFileRepositroyPath(), targetSchemaName), fileName.toString());
+	}
+	
+	/**
+	 * get View file full path
+	 * 
+	 * @param targetSchemaName
+	 * @return view file full path
+	 */
+	private String getViewFullName(String targetSchemaName) {
+		StringBuffer fileName = new StringBuffer();
+		fileName.append(File.separator).append(config.getTargetFilePrefix()).append("_").append(targetSchemaName).append("_view").append(
 				getMigrationWizard().getMigrationConfig().getDefaultTargetSchemaFileExtName());
 		
 		return PathUtils.mergePath(PathUtils.mergePath(config.getFileRepositroyPath(), targetSchemaName), fileName.toString());
@@ -701,6 +756,62 @@ public class SchemaMappingPage extends MigrationWizardPage {
 	}
 	
 	/**
+	 * get Pk file full path
+	 * 
+	 * @param targetSchemaName
+	 * @return pk file full path
+	 */
+	private String getPkFullName(String targetSchemaName) {
+		StringBuffer fileName = new StringBuffer();
+		fileName.append(File.separator).append(config.getTargetFilePrefix()).append("_").append(targetSchemaName).append("_pk").append(
+				getMigrationWizard().getMigrationConfig().getDefaultTargetSchemaFileExtName());
+		
+		return PathUtils.mergePath(PathUtils.mergePath(config.getFileRepositroyPath(), targetSchemaName), fileName.toString());
+	}
+	
+	/**
+	 * get Fk file full path
+	 * 
+	 * @param targetSchemaName
+	 * @return fk file full path
+	 */
+	private String getFkFullName(String targetSchemaName) {
+		StringBuffer fileName = new StringBuffer();
+		fileName.append(File.separator).append(config.getTargetFilePrefix()).append("_").append(targetSchemaName).append("_fk").append(
+				getMigrationWizard().getMigrationConfig().getDefaultTargetSchemaFileExtName());
+		
+		return PathUtils.mergePath(PathUtils.mergePath(config.getFileRepositroyPath(), targetSchemaName), fileName.toString());
+	}
+	
+	/**
+	 * get Sequence file full path
+	 * 
+	 * @param targetSchemaName
+	 * @return sequence file full path
+	 */
+	private String getSequenceFullName(String targetSchemaName) {
+		StringBuffer fileName = new StringBuffer();
+		fileName.append(File.separator).append(config.getTargetFilePrefix()).append("_").append(targetSchemaName).append("_serial").append(
+				getMigrationWizard().getMigrationConfig().getDefaultTargetSchemaFileExtName());
+		
+		return PathUtils.mergePath(PathUtils.mergePath(config.getFileRepositroyPath(), targetSchemaName), fileName.toString());
+	}
+	
+	/**
+	 * get UpdateStatistic file full path
+	 * 
+	 * @param targetSchemaName
+	 * @return updateStatistic file full path
+	 */
+	private String getUpdateStatisticFullName(String targetSchemaName) {
+		StringBuffer fileName = new StringBuffer();
+		fileName.append(File.separator).append(config.getTargetFilePrefix()).append("_").append(targetSchemaName).append("_updatestatistic").append(
+				getMigrationWizard().getMigrationConfig().getDefaultTargetSchemaFileExtName());
+		
+		return PathUtils.mergePath(PathUtils.mergePath(config.getFileRepositroyPath(), targetSchemaName), fileName.toString());
+	}
+	
+	/**
 	 * Check if overwriting to a file
 	 * 
 	 * @param schemaFullName
@@ -708,22 +819,52 @@ public class SchemaMappingPage extends MigrationWizardPage {
 	 * @param indexFullName
 	 * @return boolean
 	 */
-	private boolean checkFileRepositroy(Map<String, String> schemaFullName, Map<String, String> dataFullName, Map<String, String> indexFullName) {
+	private boolean checkFileRepositroy() {
 		StringBuffer buffer = new StringBuffer();
 		try {
 			for (SrcTable srcTable : srcTableList) {
-				File schemaFile = new File(schemaFullName.get(srcTable.getTarSchema()));
+				if (config.isSplitSchema()) {
+					File tableFile = new File(tableFullName.get(srcTable.getTarSchema()));
+					File viewFile = new File(viewFullName.get(srcTable.getTarSchema()));
+					File pkFile = new File(pkFullName.get(srcTable.getTarSchema()));
+					File fkFile = new File(fkFullName.get(srcTable.getTarSchema()));
+					File serialFile = new File(serialFullName.get(srcTable.getTarSchema()));
+					
+					if (tableFile.exists()) {
+						buffer.append(tableFile.getCanonicalPath()).append(System.lineSeparator());
+					}
+					if (viewFile.exists()) {
+						buffer.append(viewFile.getCanonicalPath()).append(System.lineSeparator());
+					}
+					if (pkFile.exists()) {
+						buffer.append(pkFile.getCanonicalPath()).append(System.lineSeparator());
+					}
+					if (fkFile.exists()) {
+						buffer.append(fkFile.getCanonicalPath()).append(System.lineSeparator());
+					}
+					if (serialFile.exists()) {
+						buffer.append(serialFile.getCanonicalPath()).append(System.lineSeparator());
+					}
+					
+				} else {
+					File schemaFile = new File(schemaFullName.get(srcTable.getTarSchema()));
+					if (schemaFile.exists()) {
+						buffer.append(schemaFile.getCanonicalPath()).append(System.lineSeparator());
+					}
+				}
+				
 				File indexFile = new File(indexFullName.get(srcTable.getTarSchema()));
 				File dataFile = new File(dataFullName.get(srcTable.getTarSchema()));
+				File updateStatisticFile = new File(updateStatisticFullName.get(srcTable.getTarSchema()));
 				
-				if (schemaFile.exists()) {
-					buffer.append(schemaFile.getCanonicalPath()).append(System.lineSeparator());
-				}
 				if (dataFile.exists()) {
 					buffer.append(dataFile.getCanonicalPath()).append(System.lineSeparator());
 				}
 				if (indexFile.exists()) {
 					buffer.append(indexFile.getCanonicalPath()).append(System.lineSeparator());
+				}
+				if (updateStatisticFile.exists()) {
+					buffer.append(updateStatisticFile.getCanonicalPath()).append(System.lineSeparator());
 				}
 			}
 		} catch (IOException e) {

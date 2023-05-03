@@ -158,12 +158,19 @@ public class MigrationConfiguration {
 	private final List<SourceCSVConfig> csvFiles = new ArrayList<SourceCSVConfig>();
 
 	private Map<String, String> targetSchemaFileName = new HashMap<String, String>();
+	private Map<String, String> targetTableFileName = new HashMap<String, String>();
+	private Map<String, String> targetViewFileName = new HashMap<String, String>();
+	private Map<String, String> targetPkFileName = new HashMap<String, String>();
+	private Map<String, String> targetFkFileName = new HashMap<String, String>();
 	private Map<String, String> targetIndexFileName = new HashMap<String, String>();
+	private Map<String, String> targetSerialFileName = new HashMap<String, String>();
 	private Map<String, String> targetDataFileName = new HashMap<String, String>();
+	private Map<String, String> targetUpdateStatisticFileName = new HashMap<String, String>();
 	private String targetFilePrefix;
 	private String targetCharSet = "UTF-8";
 	private String targetLOBRootPath = "";
 	private boolean addUserSchema;
+	private boolean splitSchema;
 
 	private final CSVSettings csvSettings = new CSVSettings();
 
@@ -1286,8 +1293,14 @@ public class MigrationConfiguration {
 		
 		for (Schema schema : srcCatalog.getSchemas()) {
 			addTargetSchemaFileName(schema.getName(), path2 + targetSchemaFileName.get(schema.getName().substring(tempPath.length())));
+			addTargetTableFileName(schema.getName(), path2 + targetTableFileName.get(schema.getName().substring(tempPath.length())));
+			addTargetViewFileName(schema.getName(), path2 + targetViewFileName.get(schema.getName().substring(tempPath.length())));
+			addTargetPkFileName(schema.getName(), path2 + targetPkFileName.get(schema.getName().substring(tempPath.length())));
+			addTargetFkFileName(schema.getName(), path2 + targetFkFileName.get(schema.getName().substring(tempPath.length())));
 			addTargetDataFileName(schema.getName(), path2 + targetDataFileName.get(schema.getName().substring(tempPath.length())));
 			addTargetIndexFileName(schema.getName(), path2 + targetIndexFileName.get(schema.getName().substring(tempPath.length())));
+			addTargetSerialFileName(schema.getName(), path2 + targetSerialFileName.get(schema.getName().substring(tempPath.length())));
+			addTargetUpdateStatisticFileName(schema.getName(), path2 + targetUpdateStatisticFileName.get(schema.getName().substring(tempPath.length())));
 		}
 	}
 
@@ -2572,20 +2585,16 @@ public class MigrationConfiguration {
 		return targetFileTimeZone;
 	}
 
-	public Map<String, String> getTargetIndexFileName() {
-		return new HashMap<String, String>(this.targetIndexFileName);
-	}
-	
-	public String getTargetIndexFileName(String indexName) {
-		return this.targetIndexFileName.get(indexName);
-	}
-
 	public String getTargetLOBRootPath() {
 		return targetLOBRootPath;
 	}
 	
 	public boolean getAddUserSchema() {
 		return addUserSchema;
+	}
+	
+	public boolean isSplitSchema() {
+		return splitSchema;
 	}
 
 	/**
@@ -2608,13 +2617,69 @@ public class MigrationConfiguration {
 		}
 		return count;
 	}
-
+	
 	public Map<String, String> getTargetSchemaFileName() {
 		return new HashMap<String, String>(this.targetSchemaFileName);
 	}
 	
 	public String getTargetSchemaFileName(String schemaName) {
 		return this.targetSchemaFileName.get(schemaName);
+	}
+
+	public Map<String, String> getTargetTableFileName() {
+		return new HashMap<String, String>(this.targetTableFileName);
+	}
+	
+	public String getTargetTableFileName(String schemaName) {
+		return this.targetTableFileName.get(schemaName);
+	}
+	
+	public Map<String, String> getTargetViewFileName() {
+		return new HashMap<String, String>(this.targetViewFileName);
+	}
+	
+	public String getTargetViewFileName(String schemaName) {
+		return this.targetViewFileName.get(schemaName);
+	}
+	
+	public Map<String, String> getTargetPkFileName() {
+		return new HashMap<String, String>(this.targetPkFileName);
+	}
+	
+	public String getTargetPkFileName(String schemaName) {
+		return this.targetPkFileName.get(schemaName);
+	}
+	
+	public Map<String, String> getTargetFkFileName() {
+		return new HashMap<String, String>(this.targetFkFileName);
+	}
+	
+	public String getTargetFkFileName(String schemaName) {
+		return this.targetFkFileName.get(schemaName);
+	}
+	
+	public Map<String, String> getTargetIndexFileName() {
+		return new HashMap<String, String>(this.targetIndexFileName);
+	}
+	
+	public String getTargetIndexFileName(String schemaName) {
+		return this.targetIndexFileName.get(schemaName);
+	}
+	
+	public Map<String, String> getTargetSerialFileName() {
+		return new HashMap<String, String>(this.targetSerialFileName);
+	}
+	
+	public String getTargetSerialFileName(String schemaName) {
+		return this.targetSerialFileName.get(schemaName);
+	}
+	
+	public Map<String, String> getTargetUpdateStatisticFileName() {
+		return new HashMap<String, String>(this.targetUpdateStatisticFileName);
+	}
+	
+	public String getTargetUpdateStatisticFileName(String schemaName) {
+		return this.targetUpdateStatisticFileName.get(schemaName);
 	}
 
 	/**
@@ -3357,8 +3422,14 @@ public class MigrationConfiguration {
 		setTargetFilePrefix(prefix);
 		for (Schema schema : srcCatalog.getSchemas()) {
 			addTargetSchemaFileName(schema.getName(), PathUtils.mergePath(PathUtils.mergePath(odir, prefix), schema.getName() + "_schema"));
-			addTargetDataFileName(schema.getName(), PathUtils.mergePath(PathUtils.mergePath(odir, prefix), schema.getName() + "_data" + getDataFileExt()));
+			addTargetTableFileName(schema.getName(), PathUtils.mergePath(PathUtils.mergePath(odir, prefix), schema.getName() + "_table"));
+			addTargetViewFileName(schema.getName(), PathUtils.mergePath(PathUtils.mergePath(odir, prefix), schema.getName() + "_view"));
+			addTargetPkFileName(schema.getName(), PathUtils.mergePath(PathUtils.mergePath(odir, prefix), schema.getName() + "_pk"));
+			addTargetFkFileName(schema.getName(), PathUtils.mergePath(PathUtils.mergePath(odir, prefix), schema.getName() + "_fk"));
 			addTargetIndexFileName(schema.getName(), PathUtils.mergePath(PathUtils.mergePath(odir, prefix), schema.getName() + "_index"));
+			addTargetSerialFileName(schema.getName(), PathUtils.mergePath(PathUtils.mergePath(odir, prefix), schema.getName() + "_serial"));
+			addTargetDataFileName(schema.getName(), PathUtils.mergePath(PathUtils.mergePath(odir, prefix), schema.getName() + "_data" + getDataFileExt()));
+			addTargetUpdateStatisticFileName(schema.getName(), PathUtils.mergePath(PathUtils.mergePath(odir, prefix), schema.getName() + "updatestatistic"));
 		}
 		setTargetCharSet(charset);
 	}
@@ -3580,6 +3651,46 @@ public class MigrationConfiguration {
 	public void setTargetFileTimeZone(String targetFileTimeZone) {
 		this.targetFileTimeZone = targetFileTimeZone;
 	}
+	
+	public void setTargetSchemaFileName(Map<String, String> targetSchemaFileName) {
+		this.targetSchemaFileName.putAll(targetSchemaFileName);
+	}
+	
+	public void addTargetSchemaFileName(String schemaName, String filePath) {
+		this.targetSchemaFileName.put(schemaName, filePath);
+	}
+	
+	public void setTargetTableFileName(Map<String, String> targetTableFileName) {
+		this.targetTableFileName.putAll(targetTableFileName);
+	}
+	
+	public void addTargetTableFileName(String schemaName, String filePath) {
+		this.targetTableFileName.put(schemaName, filePath);
+	}
+	
+	public void setTargetViewFileName(Map<String, String> targetViewFileName) {
+		this.targetViewFileName.putAll(targetViewFileName);
+	}
+	
+	public void addTargetViewFileName(String schemaName, String filePath) {
+		this.targetViewFileName.put(schemaName, filePath);
+	}
+	
+	public void setTargetPkFileName(Map<String, String> targetPkFileName) {
+		this.targetPkFileName.putAll(targetPkFileName);
+	}
+	
+	public void addTargetPkFileName(String schemaName, String filePath) {
+		this.targetPkFileName.put(schemaName, filePath);
+	}
+	
+	public void setTargetFkFileName(Map<String, String> targetFkFileName) {
+		this.targetFkFileName.putAll(targetFkFileName);
+	}
+	
+	public void addTargetFkFileName(String schemaName, String filePath) {
+		this.targetFkFileName.put(schemaName, filePath);
+	}
 
 	public void setTargetIndexFileName(Map<String, String> targetIndexFileName) {
 		this.targetIndexFileName.putAll(targetIndexFileName);
@@ -3587,6 +3698,22 @@ public class MigrationConfiguration {
 	
 	public void addTargetIndexFileName(String schemaName, String filePath) {
 		this.targetIndexFileName.put(schemaName, filePath);
+	}
+	
+	public void setTargetSerialFileName(Map<String, String> targetSerialFileName) {
+		this.targetSerialFileName.putAll(targetSerialFileName);
+	}
+	
+	public void addTargetSerialFileName(String schemaName, String filePath) {
+		this.targetSerialFileName.put(schemaName, filePath);
+	}
+	
+	public void setTargetUpdateStatisticFileName(Map<String, String> targetUpdateStatisticFileName) {
+		this.targetUpdateStatisticFileName.putAll(targetUpdateStatisticFileName);
+	}
+	
+	public void addTargetUpdateStatisticFileName(String schemaName, String filePath) {
+		this.targetUpdateStatisticFileName.put(schemaName, filePath);
 	}
 
 	/**
@@ -3608,13 +3735,9 @@ public class MigrationConfiguration {
 	public void setAddUserSchema(boolean addSchema) {
 		this.addUserSchema = addSchema;
 	}
-
-	public void setTargetSchemaFileName(Map<String, String> targetSchemaFileName) {
-		this.targetSchemaFileName.putAll(targetSchemaFileName);
-	}
 	
-	public void addTargetSchemaFileName(String schemaName, String filePath) {
-		this.targetSchemaFileName.put(schemaName, filePath);
+	public void setSplitSchema(boolean isSplit) {
+		this.splitSchema = isSplit;
 	}
 
 	/**

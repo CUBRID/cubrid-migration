@@ -159,16 +159,83 @@ public class ConfirmationPage extends
 			text.append(migration.getFileRepositroyPath());
 			text.append(lineSeparator).append(tabSeparator);
 
-			text.append(Messages.confrimSchema).append(lineSeparator);
-			int oldLength = text.length();
-			for (Schema targetSchema : migration.getTargetSchemaList()) {
-				text.append(tabSeparator).append(tabSeparator);
-				text.append(migration.getTargetSchemaFileName(targetSchema.getTargetSchemaName()));
-				text.append(lineSeparator);
-			}
-			if (styleRanges != null) {
-				styleRanges.add(new StyleRange(oldLength, text.length() - oldLength,
-						SWTResourceConstents.COLOR_BLUE, null));
+			int oldLength;
+			if (migration.isSplitSchema()) {
+				text.append(Messages.confrimTable).append(lineSeparator);
+				oldLength = text.length();
+				for (Schema targetSchema : migration.getTargetSchemaList()) {
+					text.append(tabSeparator).append(tabSeparator);
+					text.append(migration.getTargetTableFileName(targetSchema.getTargetSchemaName()));
+					text.append(lineSeparator);
+				}
+				if (styleRanges != null) {
+					styleRanges.add(new StyleRange(oldLength, text.length() - oldLength,
+							SWTResourceConstents.COLOR_BLUE, null));
+				}
+				
+				text.append(tabSeparator);
+				text.append(Messages.confrimView).append(lineSeparator);
+				oldLength = text.length();
+				for (Schema targetSchema : migration.getTargetSchemaList()) {
+					text.append(tabSeparator).append(tabSeparator);
+					text.append(migration.getTargetViewFileName(targetSchema.getTargetSchemaName()));
+					text.append(lineSeparator);
+				}
+				if (styleRanges != null) {
+					styleRanges.add(new StyleRange(oldLength, text.length() - oldLength,
+							SWTResourceConstents.COLOR_BLUE, null));
+				}
+				
+				text.append(tabSeparator);
+				text.append(Messages.confrimPk).append(lineSeparator);
+				oldLength = text.length();
+				for (Schema targetSchema : migration.getTargetSchemaList()) {
+					text.append(tabSeparator).append(tabSeparator);
+					text.append(migration.getTargetPkFileName(targetSchema.getTargetSchemaName()));
+					text.append(lineSeparator);
+				}
+				if (styleRanges != null) {
+					styleRanges.add(new StyleRange(oldLength, text.length() - oldLength,
+							SWTResourceConstents.COLOR_BLUE, null));
+				}
+				
+				text.append(tabSeparator);
+				text.append(Messages.confrimFk).append(lineSeparator);
+				oldLength = text.length();
+				for (Schema targetSchema : migration.getTargetSchemaList()) {
+					text.append(tabSeparator).append(tabSeparator);
+					text.append(migration.getTargetFkFileName(targetSchema.getTargetSchemaName()));
+					text.append(lineSeparator);
+				}
+				if (styleRanges != null) {
+					styleRanges.add(new StyleRange(oldLength, text.length() - oldLength,
+							SWTResourceConstents.COLOR_BLUE, null));
+				}
+				
+				text.append(tabSeparator);
+				text.append(Messages.confrimSerial).append(lineSeparator);
+				oldLength = text.length();
+				for (Schema targetSchema : migration.getTargetSchemaList()) {
+					text.append(tabSeparator).append(tabSeparator);
+					text.append(migration.getTargetSerialFileName(targetSchema.getTargetSchemaName()));
+					text.append(lineSeparator);
+				}
+				if (styleRanges != null) {
+					styleRanges.add(new StyleRange(oldLength, text.length() - oldLength,
+							SWTResourceConstents.COLOR_BLUE, null));
+				}
+			} else {
+				text.append(Messages.confrimSchema).append(lineSeparator);
+				oldLength = text.length();
+				for (Schema targetSchema : migration.getTargetSchemaList()) {
+					text.append(tabSeparator).append(tabSeparator);
+					text.append(migration.getTargetSchemaFileName(targetSchema.getTargetSchemaName()));
+					text.append(lineSeparator);
+				}
+				if (styleRanges != null) {
+					styleRanges.add(new StyleRange(oldLength, text.length() - oldLength,
+							SWTResourceConstents.COLOR_BLUE, null));
+				}
 			}
 
 			text.append(tabSeparator).append(Messages.confrimIndex).append(lineSeparator);
@@ -205,6 +272,18 @@ public class ConfirmationPage extends
 					}
 					text.append(lineSeparator);
 				}	
+			}
+			if (styleRanges != null) {
+				styleRanges.add(new StyleRange(oldLength, text.length() - oldLength,
+						SWTResourceConstents.COLOR_BLUE, null));
+			}
+			
+			text.append(tabSeparator).append(Messages.confrimUpdateStatistic).append(lineSeparator);
+			oldLength = text.length();
+			for (Schema targetSchema : migration.getTargetSchemaList()) {
+				text.append(tabSeparator).append(tabSeparator);
+				text.append(migration.getTargetUpdateStatisticFileName(targetSchema.getTargetSchemaName()));
+				text.append(lineSeparator);
 			}
 			if (styleRanges != null) {
 				styleRanges.add(new StyleRange(oldLength, text.length() - oldLength,

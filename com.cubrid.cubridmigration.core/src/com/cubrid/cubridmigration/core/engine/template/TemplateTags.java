@@ -43,6 +43,7 @@ public final class TemplateTags {
 
 	public static final String ATTR_AUTO_INCREMENT = "auto_increment";
 	public static final String ATTR_ADD_SCHEMA = "add_schema";
+	public static final String ATTR_SPLIT_SCHEMA = "split_schema";
 	public static final String ATTR_BASE_TYPE = "base_type";
 	public static final String ATTR_CACHE = "cache";
 	public static final String ATTR_CACHE_SIZE = "cache_size";

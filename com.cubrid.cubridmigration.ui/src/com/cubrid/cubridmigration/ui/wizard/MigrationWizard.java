@@ -449,9 +449,6 @@ public class MigrationWizard extends
 			} else if (tempConfig.targetIsFile()) {
 				migrationConfig.setOneTableOneFile(tempConfig.isOneTableOneFile());
 				migrationConfig.setFileRepositroyPath(tempConfig.getFileRepositroyPath());
-				migrationConfig.setTargetIndexFileName(tempConfig.getTargetIndexFileName());
-				migrationConfig.setTargetSchemaFileName(tempConfig.getTargetSchemaFileName());
-				migrationConfig.setTargetDataFileName(tempConfig.getTargetDataFileName());
 				migrationConfig.setTargetFileTimeZone(tempConfig.getTargetFileTimeZone());
 				migrationConfig.getCsvSettings().copyFrom(tempConfig.getCsvSettings());
 			}

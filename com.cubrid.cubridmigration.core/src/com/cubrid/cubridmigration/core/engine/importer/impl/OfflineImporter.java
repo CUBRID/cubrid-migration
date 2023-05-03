@@ -96,6 +96,8 @@ public abstract class OfflineImporter extends
 	protected static final int FILE_DATA_RCD = 1;
 	protected static final int FILE_SCHEMA_IDX = 2;
 	protected static final int FILE_DATA_LOB = 3;
+	
+	static enum ObjectType {TABLE, VIEW, PK, FK, INDEX, PROCEDURE, SYNONYM, TRIGGER, SERIAL}
 
 	protected MigrationConfiguration config;
 	
@@ -418,7 +420,7 @@ public abstract class OfflineImporter extends
 	 * @param isIndex true if the DDL is about index
 	 */
 	protected abstract void sendSchemaFile(String fileName, RunnableResultHandler listener,
-			boolean isIndex, String owner);
+			String objectType, String owner);
 
 	/**
 	 * Write content to file.
@@ -455,7 +457,7 @@ public abstract class OfflineImporter extends
 	 * @param sql String to executed
 	 */
 	public void executeDDL(String sql) {
-		executeDDL(sql, true, null, null);
+		executeDDL(sql, null, null, null);
 	}
 
 	/**
@@ -465,7 +467,7 @@ public abstract class OfflineImporter extends
 	 * @param isIndex true if the sql is DDL of index
 	 * @param listener to be called back
 	 */
-	protected void executeDDL(String sql, boolean isIndex, RunnableResultHandler listener, String owner) {
+	protected void executeDDL(String sql, String objectType, RunnableResultHandler listener, String owner) {
 		if (LOG.isDebugEnabled()) {
 			LOG.debug("[IN]executeDDL().sql=" + sql);
 		}
@@ -474,7 +476,7 @@ public abstract class OfflineImporter extends
 			LOG.debug("[VAR]fileName=" + fileName);
 		}
 		writeFile(fileName, sql);
-		sendSchemaFile(fileName, listener, isIndex, owner);
+		sendSchemaFile(fileName, listener, objectType, owner);
 	}
 
 	/**
@@ -642,7 +644,7 @@ public abstract class OfflineImporter extends
 		String ddl = CUBRIDSQLHelper.getInstance(null).getTableDDL(table);
 		table.setDDL(ddl);
 		sql.append(ddl).append("\n");
-		executeDDL(sql.toString(), false, createResultHandler(table), table.getOwner());
+		executeDDL(sql.toString(), DBObject.OBJ_TYPE_TABLE, createResultHandler(table), table.getOwner());
 	}
 
 	/**
@@ -653,7 +655,7 @@ public abstract class OfflineImporter extends
 	public void createView(View view) {
 		String viewDDL = CUBRIDSQLHelper.getInstance(null).getViewDDL(view);
 		view.setDDL(viewDDL);
-		executeDDL(viewDDL + "\n", false, createResultHandler(view), view.getOwner());
+		executeDDL(viewDDL + "\n", DBObject.OBJ_TYPE_VIEW, createResultHandler(view), view.getOwner());
 	}
 	
 	/**
@@ -664,7 +666,7 @@ public abstract class OfflineImporter extends
 	public void alterView(View view) {
 		String viewAlterDDL = CUBRIDSQLHelper.getInstance(null).getViewAlterDDL(view);
 		view.setAlterDDL(viewAlterDDL);
-		executeDDL(viewAlterDDL + "\n", false, createResultHandler(view), view.getOwner());
+		executeDDL(viewAlterDDL + "\n", DBObject.OBJ_TYPE_VIEW, createResultHandler(view), view.getOwner());
 	}
 
 	/**
@@ -676,7 +678,7 @@ public abstract class OfflineImporter extends
 		String ddl = CUBRIDSQLHelper.getInstance(null).getPKDDL(pk.getTable().getOwner(), pk.getTable().getName(),
 				pk.getName(), pk.getPkColumns());
 		pk.setDDL(ddl);
-		executeDDL(ddl + ";\n", true, createResultHandler(pk), pk.getTable().getOwner());
+		executeDDL(ddl + ";\n", DBObject.OBJ_TYPE_PK, createResultHandler(pk), pk.getTable().getOwner());
 	}
 
 	/**
@@ -687,7 +689,7 @@ public abstract class OfflineImporter extends
 	public void createFK(FK fk) {
 		String ddl = CUBRIDSQLHelper.getInstance(null).getFKDDL(fk.getTable().getOwner(), fk.getTable().getName(), fk);
 		fk.setDDL(ddl);
-		executeDDL(ddl + ";\n", true, createResultHandler(fk), fk.getTable().getOwner());
+		executeDDL(ddl + ";\n", DBObject.OBJ_TYPE_FK, createResultHandler(fk), fk.getTable().getOwner());
 	}
 
 	/**
@@ -699,7 +701,7 @@ public abstract class OfflineImporter extends
 		String ddl = CUBRIDSQLHelper.getInstance(null).getIndexDDL(index.getTable().getOwner(), index.getTable().getName(),
 				index, "");
 		index.setDDL(ddl);
-		executeDDL(ddl + ";\n", true, createResultHandler(index), index.getTable().getOwner());
+		executeDDL(ddl + ";\n", DBObject.OBJ_TYPE_INDEX, createResultHandler(index), index.getTable().getOwner());
 	}
 
 	/**
@@ -710,7 +712,7 @@ public abstract class OfflineImporter extends
 	public void createSequence(Sequence sq) {
 		String ddl = CUBRIDSQLHelper.getInstance(null).getSequenceDDL(sq);
 		sq.setDDL(ddl);
-		executeDDL(ddl + ";\n", false, createResultHandler(sq), sq.getOwner());
+		executeDDL(ddl + ";\n", DBObject.OBJ_TYPE_SEQUENCE, createResultHandler(sq), sq.getOwner());
 	}
 	
 	public void createSchema(Schema schema) {

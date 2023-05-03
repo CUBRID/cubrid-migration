@@ -204,8 +204,14 @@ public class MigrationTasksScheduler {
 		if (config.targetIsFile()) {
 			for (Schema schema : config.getTargetSchemaList()) {
 				PathUtils.deleteFile(new File(config.getTargetSchemaFileName(schema.getTargetSchemaName())));
-				PathUtils.deleteFile(new File(config.getTargetDataFileName(schema.getTargetSchemaName())));
+				PathUtils.deleteFile(new File(config.getTargetTableFileName(schema.getTargetSchemaName())));
+				PathUtils.deleteFile(new File(config.getTargetViewFileName(schema.getTargetSchemaName())));
+				PathUtils.deleteFile(new File(config.getTargetPkFileName(schema.getTargetSchemaName())));
+				PathUtils.deleteFile(new File(config.getTargetFkFileName(schema.getTargetSchemaName())));
 				PathUtils.deleteFile(new File(config.getTargetIndexFileName(schema.getTargetSchemaName())));
+				PathUtils.deleteFile(new File(config.getTargetSerialFileName(schema.getTargetSchemaName())));
+				PathUtils.deleteFile(new File(config.getTargetUpdateStatisticFileName(schema.getTargetSchemaName())));
+				PathUtils.deleteFile(new File(config.getTargetDataFileName(schema.getTargetSchemaName())));
 			}
 			;
 		}

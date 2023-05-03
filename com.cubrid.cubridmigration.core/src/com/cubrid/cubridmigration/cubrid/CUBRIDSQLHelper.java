@@ -609,7 +609,7 @@ public class CUBRIDSQLHelper extends
 			return "";
 		}
 		StringBuffer sb = new StringBuffer();
-		sb.append("CREATE VIEW");
+		sb.append("CREATE VIEW ");
 		String viewName = view.getName();
 
 		if (view.getOwner() == null || view.getOwner().isEmpty()) {
@@ -693,7 +693,7 @@ public class CUBRIDSQLHelper extends
 			if (view.getOwner() == null || view.getOwner().isEmpty()) {
 				sb.append(getQuotedObjName(viewName));				
 			} else {
-				sb.append(view.getOwner());
+				sb.append(getQuotedObjName(view.getOwner()));
 				sb.append(".");
 				sb.append(getQuotedObjName(viewName));
 			}
@@ -771,6 +771,6 @@ public class CUBRIDSQLHelper extends
 			return "";
 		}
 		
-		return "\"" + tableOwner + "\".";
+		return "[" + tableOwner + "].";
 	}
 }

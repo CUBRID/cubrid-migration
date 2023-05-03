@@ -48,6 +48,7 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.DirectoryDialog;
+import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.PlatformUI;
@@ -515,6 +516,7 @@ public class SelectDestinationPage extends
 		private Text txtLobPath;
 		
 		private Button btnAddUserSchema;
+		private Button btnSplitSchema;
 
 		/**
 		 * Create Controls
@@ -637,12 +639,20 @@ public class SelectDestinationPage extends
 			new Label(fileRepositoryContainer, SWT.NONE);
 			
 			new Label(fileRepositoryContainer, SWT.NONE);
-			btnAddUserSchema = new Button(fileRepositoryContainer, SWT.CHECK);
-			btnAddUserSchema.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
+			
+			Group group = new Group(fileRepositoryContainer, SWT.NONE);
+			group.setLayout(new GridLayout(2, true));
+			btnAddUserSchema = new Button(group, SWT.CHECK);
+			btnAddUserSchema.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, true, false));
 			btnAddUserSchema.setText(Messages.btnAddUserSchema);
 			
 			btnAddUserSchema.setSelection(cfg.getAddUserSchema());
 
+			btnSplitSchema = new Button(group, SWT.CHECK);
+			btnSplitSchema.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, true, false));
+			btnSplitSchema.setText(Messages.btnSplitSchema);
+			
+			btnSplitSchema.setSelection(cfg.isSplitSchema());
 		}
 
 		/**
@@ -736,6 +746,8 @@ public class SelectDestinationPage extends
 			//change to migration configuration
 			config.setAddUserSchema(btnAddUserSchema.getSelection());
 			config.setOfflineUserSchema(btnAddUserSchema.getSelection());
+			
+			config.setSplitSchema(btnSplitSchema.getSelection());
 			
 			return true;
 		}

@@ -2001,7 +2001,7 @@ public final class CUBRIDSchemaFetcher extends
 					+ trigUniqueName
 					+ " FROM db_class c, db_trigger trig, db_trig t"
 					+ " WHERE trig.name=t.trigger_name AND t.target_class_name=c.class_name(+)"
-					+ " AND c.is_system_class='no'"
+					+ " AND c.is_system_class='NO'"
 					+ " ORDER BY name";
 			
 			stmt = conn.prepareStatement(sql);
