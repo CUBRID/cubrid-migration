@@ -107,6 +107,7 @@ public class SchemaMappingPage extends MigrationWizardPage {
 	Map<String, String> indexFullName;
 	Map<String, String> serialFullName;
 	Map<String, String> updateStatisticFullName;
+	Map<String, String> SchemaFileListFullName;
 	
 	protected class SrcTable {
 		private boolean isSelected;
@@ -644,6 +645,7 @@ public class SchemaMappingPage extends MigrationWizardPage {
 		indexFullName = new HashMap<String, String>();
 		serialFullName = new HashMap<String, String>();
 		updateStatisticFullName = new HashMap<String, String>();
+		SchemaFileListFullName = new HashMap<String, String>();
 		
 		for (SrcTable srcTable : srcTableList) {
 			if (addUserSchema) {
@@ -666,6 +668,7 @@ public class SchemaMappingPage extends MigrationWizardPage {
 				fkFullName.put(srcTable.getTarSchema(), getFkFullName(srcTable.getTarSchema()));
 				serialFullName.put(srcTable.getTarSchema(), getSequenceFullName(srcTable.getTarSchema()));
 				updateStatisticFullName.put(srcTable.getTarSchema(), getUpdateStatisticFullName(srcTable.getTarSchema()));
+				SchemaFileListFullName.put(srcTable.getTarSchema(), getSchemaFileListFullName(srcTable.getTarSchema()));
 			}
 		}
 		
@@ -683,6 +686,7 @@ public class SchemaMappingPage extends MigrationWizardPage {
 		config.setTargetFkFileName(fkFullName);
 		config.setTargetSerialFileName(serialFullName);
 		config.setTargetUpdateStatisticFileName(updateStatisticFullName);
+		config.setTargetSchemaFileListName(SchemaFileListFullName);
 		return true;
 	}
 	
@@ -806,6 +810,20 @@ public class SchemaMappingPage extends MigrationWizardPage {
 	private String getUpdateStatisticFullName(String targetSchemaName) {
 		StringBuffer fileName = new StringBuffer();
 		fileName.append(File.separator).append(config.getTargetFilePrefix()).append("_").append(targetSchemaName).append("_updatestatistic").append(
+				getMigrationWizard().getMigrationConfig().getDefaultTargetSchemaFileExtName());
+		
+		return PathUtils.mergePath(PathUtils.mergePath(config.getFileRepositroyPath(), targetSchemaName), fileName.toString());
+	}
+	
+	/**
+	 * get Info file full path
+	 * 
+	 * @param targetSchemaName
+	 * @return info file full path
+	 */
+	private String getSchemaFileListFullName(String targetSchemaName) {
+		StringBuffer fileName = new StringBuffer();
+		fileName.append(File.separator).append(config.getTargetFilePrefix()).append("_").append(targetSchemaName).append("_info").append(
 				getMigrationWizard().getMigrationConfig().getDefaultTargetSchemaFileExtName());
 		
 		return PathUtils.mergePath(PathUtils.mergePath(config.getFileRepositroyPath(), targetSchemaName), fileName.toString());

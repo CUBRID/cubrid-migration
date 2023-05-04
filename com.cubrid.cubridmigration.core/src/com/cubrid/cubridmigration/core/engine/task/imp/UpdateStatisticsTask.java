@@ -148,7 +148,12 @@ public class UpdateStatisticsTask extends
 		
 		List<Schema> schemaList = config.getTargetSchemaList();
 		for (Schema schema : schemaList) {
-			String tfile = config.getTargetUpdateStatisticFileName(schema.getTargetSchemaName());
+			String schemaName = schema.getTargetSchemaName();
+			if (!checkDataFileRepository(schemaName)) {
+				continue;
+			}
+			
+			String tfile = config.getTargetUpdateStatisticFileName(schemaName);
 			File file = new File(tfile);
 			//if no indexes, return.
 //			if (!file.exists() || file.length() == 0) {
@@ -158,7 +163,7 @@ public class UpdateStatisticsTask extends
 			OutputStream os = null; //NO PMD
 			try {
 				os = new BufferedOutputStream(new FileOutputStream(file, true));
-				List<String> sqlList = getUpdateStatisticsSQLs(schema.getTargetSchemaName());
+				List<String> sqlList = getUpdateStatisticsSQLs(schemaName);
 				byte[] enterBytes = "\n".getBytes();
 				for (String sql : sqlList) {
 					os.write(sql.getBytes());
@@ -186,5 +191,17 @@ public class UpdateStatisticsTask extends
 				LOG.warn("Execute SQL error:" + sql, ex);
 			}
 		}
+	}
+	
+	/**
+	 * Check if a data file repository exists
+	 * 
+	 * @param fileRepository
+	 * @return repository exist true, no repository false boolean
+	 */
+	private boolean checkDataFileRepository(String schemaName) {
+		String fileRepository = config.getTargetDataFileName(schemaName);
+		File file = new File(fileRepository);
+		return file.exists();
 	}
 }

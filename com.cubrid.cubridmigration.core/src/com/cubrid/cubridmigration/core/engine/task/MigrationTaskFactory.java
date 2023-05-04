@@ -75,6 +75,7 @@ import com.cubrid.cubridmigration.core.engine.task.imp.PKImportTask;
 import com.cubrid.cubridmigration.core.engine.task.imp.ProcedureImportTask;
 import com.cubrid.cubridmigration.core.engine.task.imp.RecordImportTask;
 import com.cubrid.cubridmigration.core.engine.task.imp.SQLImportTask;
+import com.cubrid.cubridmigration.core.engine.task.imp.SchemaFileListTask;
 import com.cubrid.cubridmigration.core.engine.task.imp.SchemaImportTask;
 import com.cubrid.cubridmigration.core.engine.task.imp.SequenceImportTask;
 import com.cubrid.cubridmigration.core.engine.task.imp.TableSchemaImportTask;
@@ -443,12 +444,23 @@ public class MigrationTaskFactory {
 	}
 
 	/**
-	 * Create CleanDBTask
+	 * Create UpdateStatisticsTask
 	 * 
-	 * @return CleanDBTask
+	 * @return UpdateStatisticsTask
 	 */
 	public UpdateStatisticsTask createUpdateStatisticsTask() {
 		final UpdateStatisticsTask task = new UpdateStatisticsTask(context.getConfig());
+		initImportTask(task);
+		return task;
+	}
+	
+	/**
+	 * Create SchemaFileListTask
+	 * 
+	 * @return SchemaFileListTask
+	 */
+	public SchemaFileListTask createSchemaFileListTask() {
+		final SchemaFileListTask task = new SchemaFileListTask(context.getConfig());
 		initImportTask(task);
 		return task;
 	}

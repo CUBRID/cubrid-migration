@@ -117,6 +117,10 @@ public class MigrationTasksScheduler {
 			createTriggers();
 		}
 		updateIndexStatistics();
+		
+		if (!config.targetIsOnline() && config.isSplitSchema()) {
+			createSchemaFileList();
+		}
 	}
 
 	/**
@@ -203,15 +207,21 @@ public class MigrationTasksScheduler {
 		MigrationConfiguration config = context.getConfig();
 		if (config.targetIsFile()) {
 			for (Schema schema : config.getTargetSchemaList()) {
-				PathUtils.deleteFile(new File(config.getTargetSchemaFileName(schema.getTargetSchemaName())));
-				PathUtils.deleteFile(new File(config.getTargetTableFileName(schema.getTargetSchemaName())));
-				PathUtils.deleteFile(new File(config.getTargetViewFileName(schema.getTargetSchemaName())));
-				PathUtils.deleteFile(new File(config.getTargetPkFileName(schema.getTargetSchemaName())));
-				PathUtils.deleteFile(new File(config.getTargetFkFileName(schema.getTargetSchemaName())));
-				PathUtils.deleteFile(new File(config.getTargetIndexFileName(schema.getTargetSchemaName())));
-				PathUtils.deleteFile(new File(config.getTargetSerialFileName(schema.getTargetSchemaName())));
-				PathUtils.deleteFile(new File(config.getTargetUpdateStatisticFileName(schema.getTargetSchemaName())));
-				PathUtils.deleteFile(new File(config.getTargetDataFileName(schema.getTargetSchemaName())));
+				String schemaName = schema.getTargetSchemaName();
+				if (config.isSplitSchema()) {
+					PathUtils.deleteFile(new File(config.getTargetTableFileName(schemaName)));
+					PathUtils.deleteFile(new File(config.getTargetViewFileName(schemaName)));
+					PathUtils.deleteFile(new File(config.getTargetPkFileName(schemaName)));
+					PathUtils.deleteFile(new File(config.getTargetFkFileName(schemaName)));
+					PathUtils.deleteFile(new File(config.getTargetSerialFileName(schemaName)));
+					PathUtils.deleteFile(new File(config.getTargetSchemaFileListName(schemaName)));
+				} else {
+					PathUtils.deleteFile(new File(config.getTargetSchemaFileName(schemaName)));
+				}
+				PathUtils.deleteFile(new File(config.getTargetUpdateStatisticFileName(schemaName)));
+				PathUtils.deleteFile(new File(config.getTargetIndexFileName(schemaName)));
+				PathUtils.deleteFile(new File(config.getTargetDataFileName(schemaName)));
+				PathUtils.deleteFile(new File(config.getFileRepositroyPath() + schemaName));
 			}
 			;
 		}
@@ -496,6 +506,13 @@ public class MigrationTasksScheduler {
 	 */
 	private void updateIndexStatistics() {
 		executeTask(taskFactory.createUpdateStatisticsTask());
+	}
+	
+	/**
+	 * List of schema file names to be used in loaddb
+	 */
+	private void createSchemaFileList() {
+		executeTask(taskFactory.createSchemaFileListTask());
 	}
 
 	public void setTaskFactory(MigrationTaskFactory taskFactory) {
