@@ -264,7 +264,7 @@ public class ViewMappingView extends
 		targetVW.setQuerySpec(txtTargetSQL.getText().trim());
 		//Update DDL sql.
 		final CUBRIDSQLHelper ddlUtils = CUBRIDSQLHelper.getInstance(null);
-		targetVW.setDDL(ddlUtils.getViewDDL(targetVW));
+		targetVW.setDDL(ddlUtils.getViewDDL(targetVW, config.isAddUserSchema()));
 		viewConfig.setTarget(targetVW.getName());
 		return super.save();
 	}

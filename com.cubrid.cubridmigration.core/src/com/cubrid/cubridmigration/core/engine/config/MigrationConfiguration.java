@@ -584,7 +584,7 @@ public class MigrationConfiguration {
 					tseq = (Sequence) seq.clone();
 					tseq.setName(sc.getTarget());
 					tseq.setOwner(sc.getTargetOwner());
-					tseq.setDDL(cubridddlUtil.getSequenceDDL(tseq));
+					tseq.setDDL(cubridddlUtil.getSequenceDDL(tseq, this.addUserSchema));
 					tseq.setComment(seq.getComment());
 				}
 				tempSerials.add(tseq);
@@ -2591,7 +2591,7 @@ public class MigrationConfiguration {
 		return targetLOBRootPath;
 	}
 	
-	public boolean getAddUserSchema() {
+	public boolean isAddUserSchema() {
 		return addUserSchema;
 	}
 	

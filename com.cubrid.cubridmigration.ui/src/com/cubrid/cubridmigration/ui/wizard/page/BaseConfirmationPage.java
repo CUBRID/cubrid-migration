@@ -64,7 +64,6 @@ import com.cubrid.cubridmigration.ui.SWTResourceConstents;
 import com.cubrid.cubridmigration.ui.message.Messages;
 import com.cubrid.cubridmigration.ui.script.dialog.EditScriptDialog;
 import com.cubrid.cubridmigration.ui.script.dialog.ExportScriptDialog;
-import com.cubrid.cubridmigration.ui.wizard.MigrationWizard;
 import com.cubrid.cubridmigration.ui.wizard.dialog.PerformanceSettingsDialog;
 
 /**
@@ -291,13 +290,13 @@ public class BaseConfirmationPage extends MigrationWizardPage {
 				}
 			}
 			tables.add(tarTbl);
-			String sql = ddlUtils.getTableDDL(tarTbl);
+			String sql = ddlUtils.getTableDDL(tarTbl, cfg.isAddUserSchema());
 			txtDDL.append(sql);
 			txtDDL.append(NEWLINE);
 
 			final PK pk = tarTbl.getPk();
 			if (setc.isCreatePK() && pk != null) {
-				String ddl = ddlUtils.getPKDDL(tarTbl.getOwner(), tarTbl.getName(), pk.getName(), pk.getPkColumns());
+				String ddl = ddlUtils.getPKDDL(tarTbl.getOwner(), tarTbl.getName(), pk.getName(), pk.getPkColumns(), cfg.isAddUserSchema());
 				sbConstrains.append(ddl);
 				sbConstrains.append(";");
 				sbConstrains.append(NEWLINE);
@@ -305,7 +304,7 @@ public class BaseConfirmationPage extends MigrationWizardPage {
 			}
 
 			for (FK fk : tarTbl.getFks()) {
-				String ddl = ddlUtils.getFKDDL(tarTbl.getOwner(), tarTbl.getName(), fk);
+				String ddl = ddlUtils.getFKDDL(tarTbl.getOwner(), tarTbl.getName(), fk, cfg.isAddUserSchema());
 				sbConstrains.append(ddl);
 				sbConstrains.append(";");
 				sbConstrains.append(NEWLINE);
@@ -313,7 +312,7 @@ public class BaseConfirmationPage extends MigrationWizardPage {
 			}
 
 			for (Index idx : tarTbl.getIndexes()) {
-				String ddl = ddlUtils.getIndexDDL(tarTbl.getOwner(), tarTbl.getName(), idx, "");
+				String ddl = ddlUtils.getIndexDDL(tarTbl.getOwner(), tarTbl.getName(), idx, "", cfg.isAddUserSchema());
 				sbConstrains.append(ddl);
 				sbConstrains.append(";");
 				sbConstrains.append(NEWLINE);
@@ -330,7 +329,7 @@ public class BaseConfirmationPage extends MigrationWizardPage {
 				continue;
 			}
 			tables.add(tarTbl);
-			String sql = ddlUtils.getTableDDL(tarTbl);
+			String sql = ddlUtils.getTableDDL(tarTbl, cfg.isAddUserSchema());
 			txtDDL.append(sql);
 			txtDDL.append(NEWLINE);
 		}
@@ -339,7 +338,7 @@ public class BaseConfirmationPage extends MigrationWizardPage {
 				continue;
 			}
 			View vw = cfg.getTargetViewSchema(sc.getTargetOwner(), sc.getTarget());
-			String ddl = ddlUtils.getViewDDL(vw);
+			String ddl = ddlUtils.getViewDDL(vw, cfg.isAddUserSchema());
 			txtDDL.append(ddl);
 			txtDDL.append(NEWLINE);
 			txtDDL.append(NEWLINE);
@@ -349,7 +348,7 @@ public class BaseConfirmationPage extends MigrationWizardPage {
 				continue;
 			}
 			Sequence sq = cfg.getTargetSerialSchema(sc.getTargetOwner(), sc.getTarget());
-			String ddl = ddlUtils.getSequenceDDL(sq);
+			String ddl = ddlUtils.getSequenceDDL(sq, cfg.isAddUserSchema());
 			txtDDL.append(ddl);
 			txtDDL.append(NEWLINE);
 			txtDDL.append(NEWLINE);
@@ -363,7 +362,7 @@ public class BaseConfirmationPage extends MigrationWizardPage {
 				continue;
 			}
 			tables.add(tarTbl);
-			String sql = ddlUtils.getTableDDL(tarTbl);
+			String sql = ddlUtils.getTableDDL(tarTbl, cfg.isAddUserSchema());
 			txtDDL.append(sql);
 			txtDDL.append(NEWLINE);
 		}

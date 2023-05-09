@@ -82,7 +82,7 @@ public class CleanDBTask extends
 					StringBuffer query = new StringBuffer();
 					query.append("ALTER TABLE ");
 					
-					if (config.getAddUserSchema()) {
+					if (config.isAddUserSchema()) {
 						query.append("\"");
 						query.append(setc.getTargetOwner());
 						query.append("\"");
@@ -105,7 +105,7 @@ public class CleanDBTask extends
 					
 					query.append("ALTER TABLE ");
 					
-					if (config.getAddUserSchema()) {
+					if (config.isAddUserSchema()) {
 						query.append("\"");
 						query.append(setc.getTargetOwner());
 						query.append("\"");
@@ -127,7 +127,7 @@ public class CleanDBTask extends
 				
 				query.append("DROP TABLE ");
 				
-				if (config.getAddUserSchema()) {
+				if (config.isAddUserSchema()) {
 					query.append("\"");
 					query.append(setc.getTargetOwner());
 					query.append("\"");
@@ -149,7 +149,7 @@ public class CleanDBTask extends
 				
 				query.append("DROP TABLE ");
 				
-				if (config.getAddUserSchema()) {
+				if (config.isAddUserSchema()) {
 					query.append("\"");
 					query.append(sstc.getTargetOwner());
 					query.append("\"");
@@ -171,7 +171,7 @@ public class CleanDBTask extends
 				
 				query.append("DROP TABLE ");
 				
-				if (config.getAddUserSchema()) {
+				if (config.isAddUserSchema()) {
 					query.append("\"");
 					query.append(scc.getTargetOwner());
 					query.append("\"");
@@ -193,7 +193,7 @@ public class CleanDBTask extends
 				
 				query.append("DROP VIEW ");
 				
-				if (config.getAddUserSchema()) {
+				if (config.isAddUserSchema()) {
 					query.append("\"");
 					query.append(sc.getTargetOwner());
 					query.append("\"");
@@ -215,7 +215,7 @@ public class CleanDBTask extends
 				
 				query.append("DROP SERIAL ");
 				
-				if (config.getAddUserSchema()) {
+				if (config.isAddUserSchema()) {
 					query.append("\"");
 					query.append(sc.getTargetOwner());
 					query.append("\"");

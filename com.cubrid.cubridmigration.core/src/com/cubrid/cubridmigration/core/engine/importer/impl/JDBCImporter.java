@@ -115,7 +115,7 @@ public class JDBCImporter extends
 	 * @param table Table
 	 */
 	public void createTable(Table table) {
-		String sql = CUBRIDSQLHelper.getInstance(null).getTableDDL(table);
+		String sql = CUBRIDSQLHelper.getInstance(null).getTableDDL(table, config.isAddUserSchema());
 		table.setDDL(sql);
 		try {
 			executeDDL(sql);
@@ -132,7 +132,7 @@ public class JDBCImporter extends
 	 * @param view View
 	 */
 	public void createView(View view) {
-		String viewDDL = CUBRIDSQLHelper.getInstance(null).getViewDDL(view);
+		String viewDDL = CUBRIDSQLHelper.getInstance(null).getViewDDL(view, config.isAddUserSchema());
 		view.setDDL(viewDDL);
 		try {
 			executeDDL(viewDDL);
@@ -148,7 +148,7 @@ public class JDBCImporter extends
 	 * @param view View
 	 */
 	public void alterView(View view) {
-		String viewAlterDDL = CUBRIDSQLHelper.getInstance(null).getViewAlterDDL(view);
+		String viewAlterDDL = CUBRIDSQLHelper.getInstance(null).getViewAlterDDL(view, config.isAddUserSchema());
 		view.setAlterDDL(viewAlterDDL);
 		try {
 			executeDDL(viewAlterDDL);
@@ -165,7 +165,7 @@ public class JDBCImporter extends
 	 */
 	public void createPK(PK pk) {
 		String ddl = CUBRIDSQLHelper.getInstance(null).getPKDDL(pk.getTable().getOwner(), pk.getTable().getName(),
-				pk.getName(), pk.getPkColumns());
+				pk.getName(), pk.getPkColumns(), config.isAddUserSchema());
 		pk.setDDL(ddl);
 		try {
 			executeDDL(ddl);
@@ -182,7 +182,8 @@ public class JDBCImporter extends
 	 * @param fk foreign key
 	 */
 	public void createFK(FK fk) {
-		String ddl = CUBRIDSQLHelper.getInstance(null).getFKDDL(fk.getTable().getOwner(), fk.getTable().getName(), fk);
+		String ddl = CUBRIDSQLHelper.getInstance(null).getFKDDL(fk.getTable().getOwner(), fk.getTable().getName(), 
+				fk, config.isAddUserSchema());
 		fk.setDDL(ddl);
 		try {
 			executeDDL(ddl);
@@ -199,7 +200,7 @@ public class JDBCImporter extends
 	 */
 	public void createIndex(Index index) {
 		String ddl = CUBRIDSQLHelper.getInstance(null).getIndexDDL(index.getTable().getOwner(), index.getTable().getName(),
-				index, "");
+				index, "", config.isAddUserSchema());
 		index.setDDL(ddl);
 		try {
 			executeDDL(ddl);
@@ -216,7 +217,7 @@ public class JDBCImporter extends
 	 * @param sq sequence
 	 */
 	public void createSequence(Sequence sq) {
-		String ddl = CUBRIDSQLHelper.getInstance(null).getSequenceDDL(sq);
+		String ddl = CUBRIDSQLHelper.getInstance(null).getSequenceDDL(sq, config.isAddUserSchema());
 		sq.setDDL(ddl);
 		try {
 			executeDDL(ddl);
@@ -277,7 +278,7 @@ public class JDBCImporter extends
 	public String getTargetInsertDML(SourceTableConfig tt) {
 		StringBuffer nameBuf = new StringBuffer("insert into ");
 		
-		if (config.getAddUserSchema()) {
+		if (config.isAddUserSchema()) {
 			nameBuf.append(tt.getTargetOwner())
 			.append(".");
 		}

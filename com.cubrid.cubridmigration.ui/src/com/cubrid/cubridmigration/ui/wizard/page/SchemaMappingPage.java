@@ -443,9 +443,9 @@ public class SchemaMappingPage extends MigrationWizardPage {
 	private void setOfflineSchemaMappingPage() {
 		setOfflineData();
 		
-		config.getAddUserSchema();
+		config.isAddUserSchema();
 		
-		if (config.getAddUserSchema()) {
+		if (config.isAddUserSchema()) {
 			setOfflineEditor();
 		}
 	}
@@ -472,14 +472,14 @@ public class SchemaMappingPage extends MigrationWizardPage {
 				logger.info("offline script schema");
 				srcTable.setTarSchema(scriptSchemaMap.get(srcTable.getSrcSchema()));
 				if (srcTable.getTarSchema() == null || srcTable.getTarSchema().isEmpty()) {
-					srcTable.setTarSchema(Messages.msgUserSchemaDisable);
+					srcTable.setTarSchema(srcTable.getSrcSchema());
 				}
 				
 			} else {
-				if (config.getAddUserSchema()) {
+				if (config.isAddUserSchema()) {
 					srcTable.setTarSchema(Messages.msgTypeSchema);
 				} else {
-					srcTable.setTarSchema(Messages.msgUserSchemaDisable);
+					srcTable.setTarSchema(srcTable.getSrcSchema());
 				}
 			}
 		}
@@ -579,7 +579,7 @@ public class SchemaMappingPage extends MigrationWizardPage {
 			if (config.targetIsOnline()) {
 				event.doit = saveOnlineData();
 			} else {
-				event.doit = saveOfflineData(config.getAddUserSchema());
+				event.doit = saveOfflineData(config.isAddUserSchema(), config.isSplitSchema());
 			}
 		}
 	}
@@ -634,7 +634,7 @@ public class SchemaMappingPage extends MigrationWizardPage {
 		return true;
 	}
 	
-	private boolean saveOfflineData(boolean addUserSchema) {
+	private boolean saveOfflineData(boolean addUserSchema, boolean splitSchema) {
 		List<Schema> targetSchemaList = new ArrayList<Schema>();
 		schemaFullName = new HashMap<String, String>();
 		tableFullName = new HashMap<String, String>();
@@ -648,28 +648,30 @@ public class SchemaMappingPage extends MigrationWizardPage {
 		SchemaFileListFullName = new HashMap<String, String>();
 		
 		for (SrcTable srcTable : srcTableList) {
-			if (addUserSchema) {
-				if (srcTable.getTarSchema().isEmpty() || srcTable.getTarSchema() == null 
-						|| srcTable.getTarSchema().equals(Messages.msgTypeSchema)) {
-					MessageDialog.openError(getShell(), Messages.msgError, Messages.msgErrEmptySchemaName);
-					
-					return false;
-				}
-				Schema schema = srcCatalog.getSchemaByName(srcTable.getSrcSchema());
-				schema.setTargetSchemaName(srcTable.getTarSchema());
-				targetSchemaList.add(schema);
+			if (addUserSchema && (srcTable.getTarSchema().isEmpty() || srcTable.getTarSchema() == null 
+					|| srcTable.getTarSchema().equals(Messages.msgTypeSchema))) {
+				MessageDialog.openError(getShell(), Messages.msgError, Messages.msgErrEmptySchemaName);
 				
-				schemaFullName.put(srcTable.getTarSchema(), getSchemaFullName(srcTable.getTarSchema()));
+				return false;
+			}
+
+			Schema schema = srcCatalog.getSchemaByName(srcTable.getSrcSchema());
+			schema.setTargetSchemaName(srcTable.getTarSchema());
+			targetSchemaList.add(schema);
+			
+			if (splitSchema) {
 				tableFullName.put(srcTable.getTarSchema(), getTableFullName(srcTable.getTarSchema()));
 				viewFullName.put(srcTable.getTarSchema(), getViewFullName(srcTable.getTarSchema()));
-				dataFullName.put(srcTable.getTarSchema(), getDataFullName(srcTable.getTarSchema()));
-				indexFullName.put(srcTable.getTarSchema(), getIndexFullName(srcTable.getTarSchema()));
 				pkFullName.put(srcTable.getTarSchema(), getPkFullName(srcTable.getTarSchema()));
 				fkFullName.put(srcTable.getTarSchema(), getFkFullName(srcTable.getTarSchema()));
 				serialFullName.put(srcTable.getTarSchema(), getSequenceFullName(srcTable.getTarSchema()));
-				updateStatisticFullName.put(srcTable.getTarSchema(), getUpdateStatisticFullName(srcTable.getTarSchema()));
 				SchemaFileListFullName.put(srcTable.getTarSchema(), getSchemaFileListFullName(srcTable.getTarSchema()));
+			} else {
+				schemaFullName.put(srcTable.getTarSchema(), getSchemaFullName(srcTable.getTarSchema()));
 			}
+			dataFullName.put(srcTable.getTarSchema(), getDataFullName(srcTable.getTarSchema()));
+			indexFullName.put(srcTable.getTarSchema(), getIndexFullName(srcTable.getTarSchema()));
+			updateStatisticFullName.put(srcTable.getTarSchema(), getUpdateStatisticFullName(srcTable.getTarSchema()));
 		}
 		
 		if (!checkFileRepositroy()) {

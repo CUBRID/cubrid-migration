@@ -146,13 +146,13 @@ public final class CUBRIDSchemaFetcher extends
 			List<Table> tableList = schema.getTables();
 
 			for (Table table : tableList) {
-				table.setDDL(ddlUtil.getTableDDL(table));
+				table.setDDL(ddlUtil.getTableDDL(table, false));
 			}
 
 			List<View> viewList = schema.getViews();
 
 			for (View view : viewList) {
-				view.setDDL(ddlUtil.getViewDDL(view));
+				view.setDDL(ddlUtil.getViewDDL(view, false));
 			}
 		}
 
@@ -1280,7 +1280,7 @@ public final class CUBRIDSchemaFetcher extends
 						new BigInteger(maxVal), new BigInteger(incrementVal), new BigInteger(
 								currentVal), isCycle, cachedNum);
 				sequence.setComment(comment);
-				String ddl = CUBRIDSQLHelper.getInstance(null).getSequenceDDL(sequence);
+				String ddl = CUBRIDSQLHelper.getInstance(null).getSequenceDDL(sequence, false);
 				sequence.setDDL(ddl);
 				sequence.setOwner(owner);
 

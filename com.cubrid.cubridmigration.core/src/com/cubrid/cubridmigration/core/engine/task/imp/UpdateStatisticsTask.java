@@ -78,7 +78,7 @@ public class UpdateStatisticsTask extends
 		}
 		List<String> objectsToBeUpdated = new ArrayList<String>();
 		
-		if (config.getAddUserSchema()) {
+		if (config.isAddUserSchema()) {
 			if (config.sourceIsCSV()) {
 				List<SourceCSVConfig> csvConfigs = config.getCSVConfigs();
 				for (SourceCSVConfig csvf : csvConfigs) {

@@ -646,7 +646,7 @@ public class SelectDestinationPage extends
 			btnAddUserSchema.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, true, false));
 			btnAddUserSchema.setText(Messages.btnAddUserSchema);
 			
-			btnAddUserSchema.setSelection(cfg.getAddUserSchema());
+			btnAddUserSchema.setSelection(cfg.isAddUserSchema());
 
 			btnSplitSchema = new Button(group, SWT.CHECK);
 			btnSplitSchema.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, true, false));
