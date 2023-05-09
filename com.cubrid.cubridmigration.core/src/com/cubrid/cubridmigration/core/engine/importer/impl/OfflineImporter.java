@@ -96,8 +96,6 @@ public abstract class OfflineImporter extends
 	protected static final int FILE_DATA_RCD = 1;
 	protected static final int FILE_SCHEMA_IDX = 2;
 	protected static final int FILE_DATA_LOB = 3;
-	
-	static enum ObjectType {TABLE, VIEW, PK, FK, INDEX, PROCEDURE, SYNONYM, TRIGGER, SERIAL}
 
 	protected MigrationConfiguration config;
 	
