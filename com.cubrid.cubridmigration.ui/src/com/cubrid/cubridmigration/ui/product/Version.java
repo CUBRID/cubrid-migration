@@ -44,8 +44,6 @@ public class Version extends
 		NLS.initializeMessages("version", Version.class);
 	}
 
-	public static String releaseStr;
 	public static String releaseVersion;
 	public static String buildVersionId;
-	public static String releaseYear;
 }
