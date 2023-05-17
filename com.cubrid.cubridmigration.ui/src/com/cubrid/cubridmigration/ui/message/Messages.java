@@ -537,6 +537,7 @@ public class Messages extends
 	public static String msgErrEmptyMin;
 	public static String msgErrEmptyPartition;
 	public static String msgErrEmptyRefTable;
+	public static String msgErrEmptySchemaCheckbox;
 	public static String msgErrEmptySchemaName;
 	public static String msgErrEmptyScriptName;
 	public static String msgErrEmptySeparator;

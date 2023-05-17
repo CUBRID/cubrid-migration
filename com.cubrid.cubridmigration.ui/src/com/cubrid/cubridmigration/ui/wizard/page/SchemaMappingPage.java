@@ -253,8 +253,10 @@ public class SchemaMappingPage extends MigrationWizardPage {
 				
 				if (columnIndex == 0) {
 					if (srcTable.getNote().equals(Messages.msgMainSchema)) {
+						srcTable.setSelected(true);
 						return CompositeUtils.CHECK_IMAGE;
 					} else {
+						srcTable.setSelected(false);
 						return CompositeUtils.UNCHECK_IMAGE;
 					}
 				}
@@ -374,7 +376,6 @@ public class SchemaMappingPage extends MigrationWizardPage {
 					srcTableViewer.refresh();
 				} else if (property.equals(propertyList[0])) {
 					tabItem.setImage(CompositeUtils.getCheckImage(!srcTable.isSelected));
-					srcTable.setSelected(!srcTable.isSelected);
 				}
 			}
 			
@@ -425,7 +426,7 @@ public class SchemaMappingPage extends MigrationWizardPage {
 		});
 	}
 	
-	private void setOfflineEditor() {
+	private void setOfflineEditor(boolean isAddUserSchema) {
 		textEditor = new TextCellEditor(srcTableViewer.getTable());
 		
 		CellEditor[] editors = new CellEditor[] {
@@ -433,7 +434,7 @@ public class SchemaMappingPage extends MigrationWizardPage {
 				null,
 				null,
 				null,
-				textEditor,
+				isAddUserSchema ? textEditor : null,
 				null
 		};
 		
@@ -470,7 +471,6 @@ public class SchemaMappingPage extends MigrationWizardPage {
 					srcTableViewer.refresh();
 				} else if (property.equals(propertyList[0])) {
 					tabItem.setImage(CompositeUtils.getCheckImage(!srcTable.isSelected));
-					srcTable.setSelected(!srcTable.isSelected);
 				}
 			}
 		});
@@ -478,12 +478,7 @@ public class SchemaMappingPage extends MigrationWizardPage {
 	
 	private void setOfflineSchemaMappingPage() {
 		setOfflineData();
-		
-		config.isAddUserSchema();
-		
-		if (config.isAddUserSchema()) {
-			setOfflineEditor();
-		}
+		setOfflineEditor(config.isAddUserSchema());
 	}
 	
 	private void setOfflineData() {
@@ -525,10 +520,6 @@ public class SchemaMappingPage extends MigrationWizardPage {
 		setOnlineData();
 		getSchemaValues();
 		
-//		int tarSchemaSize = getMigrationWizard().getTarCatalogSchemaCount();
-		
-		tarCatalog.isDbHasUserSchema();
-		
 		if (tarCatalog.isDbHasUserSchema()) {
 			setOnlineEditor();
 		}
@@ -538,7 +529,6 @@ public class SchemaMappingPage extends MigrationWizardPage {
 		srcCatalog = wizard.getSourceCatalog();
 		tarCatalog = wizard.getTargetCatalog();
 		
-		//TODO: extract schema names and DB type
 		srcSchemaList = srcCatalog.getSchemas();
 		tarSchemaList = tarCatalog.getSchemas();
 		
@@ -621,19 +611,26 @@ public class SchemaMappingPage extends MigrationWizardPage {
 	}
 	
 	private boolean saveOnlineData() {
+		if (!isSelectCheckbox()) {
+			MessageDialog.openError(getShell(), Messages.msgError, Messages.msgErrEmptySchemaCheckbox);
+			return false;
+		}
+		
 		List<String> checkNewSchemaDuplicate = new ArrayList<String>();
 		
 		for (SrcTable srcTable : srcTableList) {
 			if (!(tarCatalog.isDbHasUserSchema())) {
 				srcTable.setTarSchema(null);
-				
 				continue;
 			}
 			
 			if (srcTable.getTarSchema().isEmpty() || isDefaultMessage(srcTable.getTarSchema())) {
 				MessageDialog.openError(getShell(), Messages.msgError, Messages.msgErrEmptySchemaName);
-				
 				return false;
+			}
+			
+			if (!srcTable.isSelected) {
+				continue;
 			}
 			
 			String targetSchemaName = srcTable.getTarSchema();
@@ -671,6 +668,11 @@ public class SchemaMappingPage extends MigrationWizardPage {
 	}
 	
 	private boolean saveOfflineData(boolean addUserSchema, boolean splitSchema) {
+		if (!isSelectCheckbox()) {
+			MessageDialog.openError(getShell(), Messages.msgError, Messages.msgErrEmptySchemaCheckbox);
+			return false;
+		}
+		
 		List<Schema> targetSchemaList = new ArrayList<Schema>();
 		schemaFullName = new HashMap<String, String>();
 		tableFullName = new HashMap<String, String>();
@@ -689,6 +691,10 @@ public class SchemaMappingPage extends MigrationWizardPage {
 				MessageDialog.openError(getShell(), Messages.msgError, Messages.msgErrEmptySchemaName);
 				
 				return false;
+			}
+			
+			if (!srcTable.isSelected) {
+				continue;
 			}
 
 			Schema schema = srcCatalog.getSchemaByName(srcTable.getSrcSchema());
@@ -725,6 +731,7 @@ public class SchemaMappingPage extends MigrationWizardPage {
 		config.setTargetSerialFileName(serialFullName);
 		config.setTargetUpdateStatisticFileName(updateStatisticFullName);
 		config.setTargetSchemaFileListName(SchemaFileListFullName);
+		
 		return true;
 	}
 	
@@ -934,6 +941,24 @@ public class SchemaMappingPage extends MigrationWizardPage {
 							+ Messages.confirmMessage);
 		}
 		return true;
+	}
+	
+	private boolean isSelectCheckbox() {
+		TableItem[] tableItems = srcTableViewer.getTable().getItems();
+		for (int i = 0; i < tableItems.length; i++) {
+			if (tableItems[i].getImage().equals(CompositeUtils.CHECK_IMAGE)) {
+				srcTableList.get(i).setSelected(true);
+			} else {
+				srcTableList.get(i).setSelected(false);
+			}
+		}
+		
+		for (SrcTable srcTable : srcTableList) {
+			if (srcTable.isSelected) {
+				return true;
+			}
+		}
+		return false;
 	}
 	
 	private boolean isDefaultMessage(String enterSchema) {
