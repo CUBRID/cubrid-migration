@@ -52,6 +52,7 @@ import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TextCellEditor;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
@@ -63,6 +64,7 @@ import org.eclipse.ui.PlatformUI;
 
 import com.cubrid.common.ui.swt.table.celleditor.CheckboxCellEditorFactory;
 import com.cubrid.common.ui.swt.table.celleditor.EditableComboBoxCellEditor;
+import com.cubrid.common.ui.swt.table.listener.CheckBoxColumnSelectionListener;
 import com.cubrid.cubridmigration.core.common.PathUtils;
 import com.cubrid.cubridmigration.core.common.log.LogUtil;
 import com.cubrid.cubridmigration.core.dbobject.Catalog;
@@ -295,13 +297,21 @@ public class SchemaMappingPage extends MigrationWizardPage {
 		TableColumn col5 = new TableColumn(srcTableViewer.getTable(), SWT.LEFT);
 		TableColumn col6 = new TableColumn(srcTableViewer.getTable(), SWT.LEFT);
 		
+		final SelectionListener[] selectionListeners = new SelectionListener[] {
+				new CheckBoxColumnSelectionListener(),
+				null,
+				null,
+				null,
+				null,
+				null};
+		CompositeUtils.setTableColumnSelectionListener(srcTableViewer, selectionListeners);
+		
 		col1.setImage(CompositeUtils.getCheckImage(false));
 		col2.setText(propertyList[1]);
 		col3.setText(propertyList[2]);
 		col4.setText(propertyList[3]);
 		col5.setText(propertyList[4]);
 		col6.setText(propertyList[5]);
-		
 	}
 	
 	private void getSchemaValues() {
