@@ -61,12 +61,14 @@ import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.ui.PlatformUI;
 
+import com.cubrid.common.ui.swt.table.celleditor.CheckboxCellEditorFactory;
 import com.cubrid.common.ui.swt.table.celleditor.EditableComboBoxCellEditor;
 import com.cubrid.cubridmigration.core.common.PathUtils;
 import com.cubrid.cubridmigration.core.common.log.LogUtil;
 import com.cubrid.cubridmigration.core.dbobject.Catalog;
 import com.cubrid.cubridmigration.core.dbobject.Schema;
 import com.cubrid.cubridmigration.core.engine.config.MigrationConfiguration;
+import com.cubrid.cubridmigration.ui.common.CompositeUtils;
 import com.cubrid.cubridmigration.ui.message.Messages;
 import com.cubrid.cubridmigration.ui.wizard.MigrationWizard;
 
@@ -77,7 +79,7 @@ public class SchemaMappingPage extends MigrationWizardPage {
 	private MigrationWizard wizard = null;
 	private MigrationConfiguration config = null;
 	
-	private String[] propertyList = {Messages.sourceSchema, Messages.msgNote, Messages.msgSrcType, Messages.targetSchema, Messages.msgTarType};
+	private String[] propertyList = {"", Messages.sourceSchema, Messages.msgNote, Messages.msgSrcType, Messages.targetSchema, Messages.msgTarType};
 	private String[] tarSchemaNameArray =  null;
 	
 	Catalog srcCatalog;
@@ -226,14 +228,16 @@ public class SchemaMappingPage extends MigrationWizardPage {
 				
 				switch (columnIndex) {
 				case 0:
-					return obj.getSrcSchema();
+					return null;
 				case 1:
-					return obj.getNote();
+					return obj.getSrcSchema();
 				case 2:
-					return obj.getSrcDBType();
+					return obj.getNote();
 				case 3:
-					return obj.getTarSchema();
+					return obj.getSrcDBType();
 				case 4:
+					return obj.getTarSchema();
+				case 5:
 					return obj.getTarDBType();
 				default:
 					return null;
@@ -243,6 +247,15 @@ public class SchemaMappingPage extends MigrationWizardPage {
 			
 			@Override
 			public Image getColumnImage(Object element, int columnIndex) {
+				SrcTable srcTable  = (SrcTable) element;
+				
+				if (columnIndex == 0) {
+					if (srcTable.getNote().equals(Messages.msgMainSchema)) {
+						return CompositeUtils.CHECK_IMAGE;
+					} else {
+						return CompositeUtils.UNCHECK_IMAGE;
+					}
+				}
 				return null;
 			}
 			
@@ -264,6 +277,7 @@ public class SchemaMappingPage extends MigrationWizardPage {
 		
 		TableLayout tableLayout = new TableLayout();
 		
+		tableLayout.addColumnData(new ColumnWeightData(5, true));
 		tableLayout.addColumnData(new ColumnWeightData(20, true));
 		tableLayout.addColumnData(new ColumnWeightData(13, true));
 		tableLayout.addColumnData(new ColumnWeightData(20, true));
@@ -274,17 +288,19 @@ public class SchemaMappingPage extends MigrationWizardPage {
 		srcTableViewer.getTable().setLinesVisible(true);
 		srcTableViewer.getTable().setHeaderVisible(true);
 		
+		TableColumn col1 = new TableColumn(srcTableViewer.getTable(), SWT.LEFT);
 		TableColumn col2 = new TableColumn(srcTableViewer.getTable(), SWT.LEFT);
 		TableColumn col3 = new TableColumn(srcTableViewer.getTable(), SWT.LEFT);
 		TableColumn col4 = new TableColumn(srcTableViewer.getTable(), SWT.LEFT);
 		TableColumn col5 = new TableColumn(srcTableViewer.getTable(), SWT.LEFT);
 		TableColumn col6 = new TableColumn(srcTableViewer.getTable(), SWT.LEFT);
 		
-		col2.setText(propertyList[0]);
-		col3.setText(propertyList[1]);
-		col4.setText(propertyList[2]);
-		col5.setText(propertyList[3]);
-		col6.setText(propertyList[4]);
+		col1.setImage(CompositeUtils.getCheckImage(false));
+		col2.setText(propertyList[1]);
+		col3.setText(propertyList[2]);
+		col4.setText(propertyList[3]);
+		col5.setText(propertyList[4]);
+		col6.setText(propertyList[5]);
 		
 	}
 	
@@ -323,6 +339,7 @@ public class SchemaMappingPage extends MigrationWizardPage {
 		comboEditor = new EditableComboBoxCellEditor(srcTableViewer.getTable(), tarSchemaNameArray);
 		
 		CellEditor[] editors = new CellEditor[] {
+				new CheckboxCellEditorFactory().getCellEditor(srcTableViewer.getTable()),
 				null,
 				null,
 				null,
@@ -339,21 +356,24 @@ public class SchemaMappingPage extends MigrationWizardPage {
 			
 			@Override
 			public void modify(Object element, String property, Object value) {
-				
 				TableItem tabItem = (TableItem) element;
 				SrcTable srcTable = (SrcTable) tabItem.getData();
 				
-				if (property.equals(propertyList[3])) {
+				if (property.equals(propertyList[4])) {
 					srcTable.setTarSchema(returnValue((Integer) value, tabItem));
+					srcTableViewer.refresh();
+				} else if (property.equals(propertyList[0])) {
+					tabItem.setImage(CompositeUtils.getCheckImage(!srcTable.isSelected));
+					srcTable.setSelected(!srcTable.isSelected);
 				}
-				
-				srcTableViewer.refresh();
 			}
 			
 			@Override
 			public Object getValue(Object element, String property) {
-				if (property.equals(propertyList[3])) {
+				if (property.equals(propertyList[4])) {
 					return returnIndex(element);
+				} else if (property.equals(propertyList[0])) {
+					return true;
 				} else {
 					return null;
 				}
@@ -361,7 +381,7 @@ public class SchemaMappingPage extends MigrationWizardPage {
 			
 			@Override
 			public boolean canModify(Object element, String property) {
-				if (property.equals(propertyList[3])) {
+				if (property.equals(propertyList[4]) || property.equals(propertyList[0])) {
 					return true;
 				} else {
 					return false;
@@ -399,6 +419,7 @@ public class SchemaMappingPage extends MigrationWizardPage {
 		textEditor = new TextCellEditor(srcTableViewer.getTable());
 		
 		CellEditor[] editors = new CellEditor[] {
+				new CheckboxCellEditorFactory().getCellEditor(srcTableViewer.getTable()),
 				null,
 				null,
 				null,
@@ -411,7 +432,7 @@ public class SchemaMappingPage extends MigrationWizardPage {
 
 			@Override
 			public boolean canModify(Object element, String property) {
-				if (property.equals(propertyList[3])) {
+				if (property.equals(propertyList[4]) || property.equals(propertyList[0])) {
 					return true;
 				} else {
 					return false;
@@ -420,8 +441,10 @@ public class SchemaMappingPage extends MigrationWizardPage {
 
 			@Override
 			public Object getValue(Object element, String property) {
-				if (property.equals(propertyList[3])) {
+				if (property.equals(propertyList[4])) {
 					return ((SrcTable) element).getTarSchema();
+				} else if (property.equals(propertyList[0])) {
+					return true;
 				} else {
 					return null;
 				}
@@ -432,10 +455,13 @@ public class SchemaMappingPage extends MigrationWizardPage {
 				TableItem tabItem = (TableItem) element;
 				SrcTable srcTable = (SrcTable) tabItem.getData();
 				
-				if (property.equals(propertyList[3])) {
+				if (property.equals(propertyList[4])) {
 					srcTable.setTarSchema((String) value);
+					srcTableViewer.refresh();
+				} else if (property.equals(propertyList[0])) {
+					tabItem.setImage(CompositeUtils.getCheckImage(!srcTable.isSelected));
+					srcTable.setSelected(!srcTable.isSelected);
 				}
-				srcTableViewer.refresh();
 			}
 		});
 	}
