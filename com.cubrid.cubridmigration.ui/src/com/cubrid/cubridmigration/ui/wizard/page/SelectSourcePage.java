@@ -565,12 +565,12 @@ public class SelectSourcePage extends
 				}
 			}
 
-			if (isInputChanged() || wzd.getSourceCatalog() != catalog) {
+			if (isInputChanged() || wzd.getOriginalSourceCatalog() != catalog) {
 				//If it is a new migration, initialize the configuration
 				wzd.resetBySourceDBChanged();
 				cfg = wzd.getMigrationConfig();
 			}
-			wzd.setSourceCatalog(catalog);
+			wzd.setOriginalSourceCatalog(catalog);
 			cfg.setSourceConParams(catalog.getConnectionParameters());
 			//Set the invalid schema to right schema or remove them.
 			for (String es : errorSchemas) {

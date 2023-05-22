@@ -214,6 +214,15 @@ public class Catalog implements
 		schema.setCatalog(this);
 		schemas.add(schema);
 	}
+	
+	/**
+	 * remove one schema
+	 * 
+	 * @return
+	 */
+	public void removeOneSchema(Schema schema) {
+		schemas.remove(schema);
+	}
 
 	public String getCreateSql() {
 		return createSql;
@@ -388,6 +397,7 @@ public class Catalog implements
 			//Do nothing
 		}
 	}
+	
 	/**
 	 * return if CUBRID DBMS Version is over 11.2
 	 * 
@@ -407,5 +417,22 @@ public class Catalog implements
 		} else {
 			return false;
 		}
+	}
+	
+	public Catalog createCatalog() {
+		Catalog tempCatalog = new Catalog();
+		tempCatalog.setName(this.name);
+		tempCatalog.setSchemas(this.schemas);
+		tempCatalog.setVersion(this.version);
+		tempCatalog.setHost(this.host);
+		tempCatalog.setDatabaseType(getDatabaseType());
+		tempCatalog.setCreateSql(this.createSql);
+		tempCatalog.setAdditionalInfo(this.additionalInfo);
+		tempCatalog.setSupportedDataType(this.supportedDataType);
+		tempCatalog.setConnectionParameters(this.connectionParameters);
+		tempCatalog.setCreateSql(this.createSql);
+		tempCatalog.setDBAGroup(this.isDBAGroup);
+		
+		return tempCatalog;
 	}
 }

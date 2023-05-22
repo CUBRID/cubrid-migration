@@ -65,6 +65,7 @@ import org.eclipse.ui.PlatformUI;
 import com.cubrid.common.ui.swt.table.celleditor.CheckboxCellEditorFactory;
 import com.cubrid.common.ui.swt.table.celleditor.EditableComboBoxCellEditor;
 import com.cubrid.common.ui.swt.table.listener.CheckBoxColumnSelectionListener;
+import com.cubrid.cubridmigration.core.connection.CMTConParamManager;
 import com.cubrid.cubridmigration.core.common.PathUtils;
 import com.cubrid.cubridmigration.core.common.log.LogUtil;
 import com.cubrid.cubridmigration.core.dbobject.Catalog;
@@ -318,7 +319,7 @@ public class SchemaMappingPage extends MigrationWizardPage {
 	
 	private void getSchemaValues() {
 		Catalog targetCatalog = wizard.getTargetCatalog();
-		Catalog sourceCatalog = wizard.getSourceCatalog();
+		Catalog sourceCatalog = wizard.getOriginalSourceCatalog();
 		
 		List<Schema> targetSchemaList = targetCatalog.getSchemas();
 		List<Schema> sourceSchemaList = sourceCatalog.getSchemas();
@@ -376,6 +377,7 @@ public class SchemaMappingPage extends MigrationWizardPage {
 					srcTableViewer.refresh();
 				} else if (property.equals(propertyList[0])) {
 					tabItem.setImage(CompositeUtils.getCheckImage(!srcTable.isSelected));
+					srcTable.setSelected(!srcTable.isSelected);
 				}
 			}
 			
@@ -471,6 +473,7 @@ public class SchemaMappingPage extends MigrationWizardPage {
 					srcTableViewer.refresh();
 				} else if (property.equals(propertyList[0])) {
 					tabItem.setImage(CompositeUtils.getCheckImage(!srcTable.isSelected));
+					srcTable.setSelected(!srcTable.isSelected);
 				}
 			}
 		});
@@ -482,7 +485,7 @@ public class SchemaMappingPage extends MigrationWizardPage {
 	}
 	
 	private void setOfflineData() {
-		srcCatalog = wizard.getSourceCatalog();
+		srcCatalog = wizard.getOriginalSourceCatalog();
 		srcSchemaList = srcCatalog.getSchemas();
 		Map<String, String> scriptSchemaMap = config.getScriptSchemaMapping();
 		
@@ -526,7 +529,7 @@ public class SchemaMappingPage extends MigrationWizardPage {
 	}
 	
 	private void setOnlineData() {
-		srcCatalog = wizard.getSourceCatalog();
+		srcCatalog = wizard.getOriginalSourceCatalog();
 		tarCatalog = wizard.getTargetCatalog();
 		
 		srcSchemaList = srcCatalog.getSchemas();
@@ -616,8 +619,10 @@ public class SchemaMappingPage extends MigrationWizardPage {
 			return false;
 		}
 		
-		List<String> checkNewSchemaDuplicate = new ArrayList<String>();
+		Catalog originalCatalog = srcCatalog.createCatalog();
+		saveOriginalSrcCatalog(originalCatalog);
 		
+		List<String> checkNewSchemaDuplicate = new ArrayList<String>();
 		for (SrcTable srcTable : srcTableList) {
 			if (!(tarCatalog.isDbHasUserSchema())) {
 				srcTable.setTarSchema(null);
@@ -630,15 +635,15 @@ public class SchemaMappingPage extends MigrationWizardPage {
 			}
 			
 			if (!srcTable.isSelected) {
+				Schema srcSchema = srcCatalog.getSchemaByName(srcTable.getSrcSchema());
+				srcCatalog.removeOneSchema(srcSchema);
 				continue;
 			}
-			
-			String targetSchemaName = srcTable.getTarSchema();
 			
 			logger.info("src schema : " + srcTable.getSrcSchema());
 			logger.info("tar schema : " + srcTable.getTarSchema());
 			
-			Schema targetSchema = tarCatalog.getSchemaByName(targetSchemaName);
+			Schema targetSchema = tarCatalog.getSchemaByName(srcTable.getTarSchema());
 			
 			if (targetSchema != null) {
 				Schema srcSchema = srcCatalog.getSchemaByName(srcTable.getSrcSchema());
@@ -663,6 +668,8 @@ public class SchemaMappingPage extends MigrationWizardPage {
 				logger.info("-------------------------------------------");
 			}
 		}
+		wizard.setSourceCatalog(srcCatalog);
+		getMigrationWizard().setSourceDBNode(srcCatalog);
 		
 		return true;
 	}
@@ -685,8 +692,11 @@ public class SchemaMappingPage extends MigrationWizardPage {
 		updateStatisticFullName = new HashMap<String, String>();
 		SchemaFileListFullName = new HashMap<String, String>();
 		
+		Catalog originalCatalog = srcCatalog.createCatalog();
+		saveOriginalSrcCatalog(originalCatalog);
+		
 		for (SrcTable srcTable : srcTableList) {
-			if (addUserSchema && (srcTable.getTarSchema().isEmpty() || srcTable.getTarSchema() == null 
+			if (addUserSchema && srcTable.isSelected() && (srcTable.getTarSchema().isEmpty() || srcTable.getTarSchema() == null 
 					|| srcTable.getTarSchema().equals(Messages.msgTypeSchema))) {
 				MessageDialog.openError(getShell(), Messages.msgError, Messages.msgErrEmptySchemaName);
 				
@@ -694,6 +704,8 @@ public class SchemaMappingPage extends MigrationWizardPage {
 			}
 			
 			if (!srcTable.isSelected) {
+				Schema srcSchema = srcCatalog.getSchemaByName(srcTable.getSrcSchema());
+				srcCatalog.removeOneSchema(srcSchema);
 				continue;
 			}
 
@@ -731,6 +743,9 @@ public class SchemaMappingPage extends MigrationWizardPage {
 		config.setTargetSerialFileName(serialFullName);
 		config.setTargetUpdateStatisticFileName(updateStatisticFullName);
 		config.setTargetSchemaFileListName(SchemaFileListFullName);
+		
+		wizard.setSourceCatalog(srcCatalog);
+		getMigrationWizard().setSourceDBNode(srcCatalog);
 		
 		return true;
 	}
@@ -886,6 +901,10 @@ public class SchemaMappingPage extends MigrationWizardPage {
 		StringBuffer buffer = new StringBuffer();
 		try {
 			for (SrcTable srcTable : srcTableList) {
+				if (!srcTable.isSelected) {
+					continue;
+				}
+				
 				if (config.isSplitSchema()) {
 					File tableFile = new File(tableFullName.get(srcTable.getTarSchema()));
 					File viewFile = new File(viewFullName.get(srcTable.getTarSchema()));
@@ -941,6 +960,12 @@ public class SchemaMappingPage extends MigrationWizardPage {
 							+ Messages.confirmMessage);
 		}
 		return true;
+	}
+	
+	private void saveOriginalSrcCatalog(Catalog originalSrcCatalog) {
+		CMTConParamManager instance = CMTConParamManager.getInstance();
+		String conName = originalSrcCatalog.getConnectionParameters().getConName();
+		instance.updateCatalog(conName, originalSrcCatalog);
 	}
 	
 	private boolean isSelectCheckbox() {

@@ -131,7 +131,7 @@ public class MigrationWizard extends
 	protected MigrationConfiguration migrationConfig;
 
 	protected Catalog sourceCatalog;
-
+	protected Catalog originalSourceCatalog;
 	protected Catalog targetCatalog;
 
 	protected DatabaseNode sourceDBNode;
@@ -313,6 +313,10 @@ public class MigrationWizard extends
 	public Catalog getSourceCatalog() {
 		return sourceCatalog;
 	}
+	
+	public Catalog getOriginalSourceCatalog() {
+		return originalSourceCatalog;
+	}
 
 	/**
 	 * Retrieves the step no of this page.
@@ -486,16 +490,28 @@ public class MigrationWizard extends
 	 */
 	public void setSourceCatalog(Catalog sourceCatalog) {
 		this.sourceCatalog = sourceCatalog;
-		if (sourceCatalog == null) {
-			sourceDBNode = null;
-		} else {
-			sourceDBNode = CubridNodeManager.getInstance().createDbNode(sourceCatalog,
-					migrationConfig.sourceIsXMLDump() ? "MySQL dump file" : "Online");
-		}
+	}
+	
+	public void setOriginalSourceCatalog(Catalog originalSourceCatalog) {
+		this.originalSourceCatalog = originalSourceCatalog;
 	}
 
 	public void setTargetCatalog(Catalog targetCatalog) {
 		this.targetCatalog = targetCatalog;
+	}
+	
+	/**
+	 * setSourceDBNode
+	 * 
+	 * @param sourceCatalog
+	 */
+	public void setSourceDBNode(Catalog sourceCatalog) {
+		if (sourceCatalog == null) {
+			sourceDBNode = null;
+		} else {
+			sourceDBNode = CubridNodeManager.getInstance().createDbNode(sourceCatalog, 
+					migrationConfig.sourceIsXMLDump() ? "MySQL dump file" : "Online");
+		}
 	}
 
 	/**
