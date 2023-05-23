@@ -65,7 +65,6 @@ import org.eclipse.ui.PlatformUI;
 import com.cubrid.common.ui.swt.table.celleditor.CheckboxCellEditorFactory;
 import com.cubrid.common.ui.swt.table.celleditor.EditableComboBoxCellEditor;
 import com.cubrid.common.ui.swt.table.listener.CheckBoxColumnSelectionListener;
-import com.cubrid.cubridmigration.core.connection.CMTConParamManager;
 import com.cubrid.cubridmigration.core.common.PathUtils;
 import com.cubrid.cubridmigration.core.common.log.LogUtil;
 import com.cubrid.cubridmigration.core.dbobject.Catalog;
@@ -253,12 +252,20 @@ public class SchemaMappingPage extends MigrationWizardPage {
 				SrcTable srcTable  = (SrcTable) element;
 				
 				if (columnIndex == 0) {
-					if (srcTable.getNote().equals(Messages.msgMainSchema)) {
-						srcTable.setSelected(true);
-						return CompositeUtils.CHECK_IMAGE;
+					if (firstVisible) {
+						if (srcTable.getNote().equals(Messages.msgMainSchema)) {
+							srcTable.setSelected(true);
+							return CompositeUtils.CHECK_IMAGE;
+						} else {
+							srcTable.setSelected(false);
+							return CompositeUtils.UNCHECK_IMAGE;
+						}
 					} else {
-						srcTable.setSelected(false);
-						return CompositeUtils.UNCHECK_IMAGE;
+						if (srcTable.isSelected()) {
+							return CompositeUtils.CHECK_IMAGE;
+						} else {
+							return CompositeUtils.UNCHECK_IMAGE;
+						}
 					}
 				}
 				return null;
@@ -356,13 +363,9 @@ public class SchemaMappingPage extends MigrationWizardPage {
 				null,
 				null,
 				null,
-				comboEditor,
+				tarCatalog.isDBAGroup() ? comboEditor : null,
 				null
 		};
-		
-		if (!tarCatalog.isDBAGroup()) {
-			return;
-		}
 		
 		srcTableViewer.setCellEditors(editors);
 		srcTableViewer.setCellModifier(new ICellModifier() {
@@ -374,6 +377,7 @@ public class SchemaMappingPage extends MigrationWizardPage {
 				
 				if (property.equals(propertyList[4])) {
 					srcTable.setTarSchema(returnValue((Integer) value, tabItem));
+					addSelectCheckboxValue();
 					srcTableViewer.refresh();
 				} else if (property.equals(propertyList[0])) {
 					tabItem.setImage(CompositeUtils.getCheckImage(!srcTable.isSelected));
@@ -425,6 +429,17 @@ public class SchemaMappingPage extends MigrationWizardPage {
 					return testValue;
 				}
 			}
+			
+			private void addSelectCheckboxValue() {
+				TableItem[] tableItems = srcTableViewer.getTable().getItems();
+				for (int i = 0; i < tableItems.length; i++) {
+					if (tableItems[i].getImage().equals(CompositeUtils.CHECK_IMAGE)) {
+						srcTableList.get(i).setSelected(true);
+					} else {
+						srcTableList.get(i).setSelected(false);
+					}
+				}
+			}
 		});
 	}
 	
@@ -470,10 +485,22 @@ public class SchemaMappingPage extends MigrationWizardPage {
 				
 				if (property.equals(propertyList[4])) {
 					srcTable.setTarSchema((String) value);
+					addSelectCheckboxValue();
 					srcTableViewer.refresh();
 				} else if (property.equals(propertyList[0])) {
 					tabItem.setImage(CompositeUtils.getCheckImage(!srcTable.isSelected));
 					srcTable.setSelected(!srcTable.isSelected);
+				}
+			}
+			
+			private void addSelectCheckboxValue() {
+				TableItem[] tableItems = srcTableViewer.getTable().getItems();
+				for (int i = 0; i < tableItems.length; i++) {
+					if (tableItems[i].getImage().equals(CompositeUtils.CHECK_IMAGE)) {
+						srcTableList.get(i).setSelected(true);
+					} else {
+						srcTableList.get(i).setSelected(false);
+					}
 				}
 			}
 		});
@@ -485,7 +512,7 @@ public class SchemaMappingPage extends MigrationWizardPage {
 	}
 	
 	private void setOfflineData() {
-		srcCatalog = wizard.getOriginalSourceCatalog();
+		srcCatalog = wizard.getOriginalSourceCatalog().createCatalog();
 		srcSchemaList = srcCatalog.getSchemas();
 		Map<String, String> scriptSchemaMap = config.getScriptSchemaMapping();
 		
@@ -529,7 +556,7 @@ public class SchemaMappingPage extends MigrationWizardPage {
 	}
 	
 	private void setOnlineData() {
-		srcCatalog = wizard.getOriginalSourceCatalog();
+		srcCatalog = wizard.getOriginalSourceCatalog().createCatalog();
 		tarCatalog = wizard.getTargetCatalog();
 		
 		srcSchemaList = srcCatalog.getSchemas();
@@ -605,6 +632,11 @@ public class SchemaMappingPage extends MigrationWizardPage {
 			return;
 		}
 		if (isGotoNextPage(event)) {
+			Catalog originalSrcCatlog = wizard.getOriginalSourceCatalog(); 
+			if (originalSrcCatlog.getSchemas().size() != srcCatalog.getSchemas().size()) {
+				srcCatalog.getSchemas().clear();
+				srcCatalog.setSchemas(originalSrcCatlog.getSchemas());
+			}
 			if (config.targetIsOnline()) {
 				event.doit = saveOnlineData();
 			} else {
@@ -619,8 +651,8 @@ public class SchemaMappingPage extends MigrationWizardPage {
 			return false;
 		}
 		
-		Catalog originalCatalog = srcCatalog.createCatalog();
-		saveOriginalSrcCatalog(originalCatalog);
+//		Catalog originalCatalog = srcCatalog.createCatalog();
+//		saveOriginalSrcCatalog(originalCatalog);
 		
 		List<String> checkNewSchemaDuplicate = new ArrayList<String>();
 		for (SrcTable srcTable : srcTableList) {
@@ -692,8 +724,8 @@ public class SchemaMappingPage extends MigrationWizardPage {
 		updateStatisticFullName = new HashMap<String, String>();
 		SchemaFileListFullName = new HashMap<String, String>();
 		
-		Catalog originalCatalog = srcCatalog.createCatalog();
-		saveOriginalSrcCatalog(originalCatalog);
+//		Catalog originalCatalog = srcCatalog.createCatalog();
+//		saveOriginalSrcCatalog(originalCatalog);
 		
 		for (SrcTable srcTable : srcTableList) {
 			if (addUserSchema && srcTable.isSelected() && (srcTable.getTarSchema().isEmpty() || srcTable.getTarSchema() == null 
@@ -960,12 +992,6 @@ public class SchemaMappingPage extends MigrationWizardPage {
 							+ Messages.confirmMessage);
 		}
 		return true;
-	}
-	
-	private void saveOriginalSrcCatalog(Catalog originalSrcCatalog) {
-		CMTConParamManager instance = CMTConParamManager.getInstance();
-		String conName = originalSrcCatalog.getConnectionParameters().getConName();
-		instance.updateCatalog(conName, originalSrcCatalog);
 	}
 	
 	private boolean isSelectCheckbox() {

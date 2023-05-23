@@ -422,13 +422,13 @@ public class Catalog implements
 	public Catalog createCatalog() {
 		Catalog tempCatalog = new Catalog();
 		tempCatalog.setName(this.name);
-		tempCatalog.setSchemas(this.schemas);
+		tempCatalog.setSchemas(new ArrayList<Schema>(this.schemas));
 		tempCatalog.setVersion(this.version);
 		tempCatalog.setHost(this.host);
 		tempCatalog.setDatabaseType(getDatabaseType());
 		tempCatalog.setCreateSql(this.createSql);
-		tempCatalog.setAdditionalInfo(this.additionalInfo);
-		tempCatalog.setSupportedDataType(this.supportedDataType);
+		tempCatalog.setAdditionalInfo(new HashMap<String, String>(this.additionalInfo));
+		tempCatalog.setSupportedDataType(new HashMap<String, List<DataType>>(this.supportedDataType));
 		tempCatalog.setConnectionParameters(this.connectionParameters);
 		tempCatalog.setCreateSql(this.createSql);
 		tempCatalog.setDBAGroup(this.isDBAGroup);
