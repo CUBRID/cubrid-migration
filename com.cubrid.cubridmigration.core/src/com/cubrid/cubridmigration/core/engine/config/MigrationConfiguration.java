@@ -179,7 +179,6 @@ public class MigrationConfiguration {
 
 	private int sourceType = SOURCE_TYPE_CUBRID;
 	private Catalog srcCatalog;
-	private Catalog selectedSrcCatalog;
 	private int tarSchemaSize;
 	private Catalog offlineSrcCatalog;
 
@@ -2263,10 +2262,6 @@ public class MigrationConfiguration {
 	public Catalog getSrcCatalog() {
 		return srcCatalog;
 	}
-	
-	public Catalog getSelectedSrcCatalog() {
-		return selectedSrcCatalog;
-	}
 
 	/**
 	 * Retrieves the source column information
@@ -3621,23 +3616,6 @@ public class MigrationConfiguration {
 		}
 		this.buildConfigAndTargetSchema(reset);
 
-	}
-	
-	/**
-	 * Set selected source catalog
-	 * 
-	 * @param selectedSrcCatalog
-	 * @param reset
-	 */
-	public void setSeletedSrcCatalog(Catalog selectedSrcCatalog, boolean reset) {
-		if (selectedSrcCatalog == null) {
-			throw new IllegalArgumentException("Catalog can't not be null.");
-		}
-		this.selectedSrcCatalog = selectedSrcCatalog;
-		if (reset) {
-			clearAll();
-		}
-		this.buildConfigAndTargetSchema(reset);
 	}
 
 	/**

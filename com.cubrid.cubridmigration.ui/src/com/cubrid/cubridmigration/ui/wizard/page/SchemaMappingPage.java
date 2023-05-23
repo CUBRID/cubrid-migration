@@ -651,9 +651,6 @@ public class SchemaMappingPage extends MigrationWizardPage {
 			return false;
 		}
 		
-//		Catalog originalCatalog = srcCatalog.createCatalog();
-//		saveOriginalSrcCatalog(originalCatalog);
-		
 		List<String> checkNewSchemaDuplicate = new ArrayList<String>();
 		for (SrcTable srcTable : srcTableList) {
 			if (!(tarCatalog.isDbHasUserSchema())) {
@@ -723,9 +720,6 @@ public class SchemaMappingPage extends MigrationWizardPage {
 		serialFullName = new HashMap<String, String>();
 		updateStatisticFullName = new HashMap<String, String>();
 		SchemaFileListFullName = new HashMap<String, String>();
-		
-//		Catalog originalCatalog = srcCatalog.createCatalog();
-//		saveOriginalSrcCatalog(originalCatalog);
 		
 		for (SrcTable srcTable : srcTableList) {
 			if (addUserSchema && srcTable.isSelected() && (srcTable.getTarSchema().isEmpty() || srcTable.getTarSchema() == null 

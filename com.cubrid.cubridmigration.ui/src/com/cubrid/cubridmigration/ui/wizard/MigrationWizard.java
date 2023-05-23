@@ -492,12 +492,13 @@ public class MigrationWizard extends
 		this.sourceCatalog = sourceCatalog;
 	}
 	
+	/**
+	 * setOriginalSourceCatalog
+	 * 
+	 * @param originalSourceCatalog
+	 */
 	public void setOriginalSourceCatalog(Catalog originalSourceCatalog) {
 		this.originalSourceCatalog = originalSourceCatalog;
-	}
-
-	public void setTargetCatalog(Catalog targetCatalog) {
-		this.targetCatalog = targetCatalog;
 	}
 	
 	/**
@@ -509,9 +510,13 @@ public class MigrationWizard extends
 		if (sourceCatalog == null) {
 			sourceDBNode = null;
 		} else {
-			sourceDBNode = CubridNodeManager.getInstance().createDbNode(sourceCatalog, 
+			sourceDBNode = CubridNodeManager.getInstance().createDbNode(sourceCatalog,
 					migrationConfig.sourceIsXMLDump() ? "MySQL dump file" : "Online");
 		}
+	}
+	
+	public void setTargetCatalog(Catalog targetCatalog) {
+		this.targetCatalog = targetCatalog;
 	}
 
 	/**
