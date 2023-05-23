@@ -670,6 +670,7 @@ public class Messages extends
 	public static String removeButtonLabel;
 	public static String schemaMappingPageTitle;
 	public static String schemaMappingPageDescription;
+	public static String schemaMappingPageDescriptionUncorrectable;
 	public static String setOptionPageOKMsg;
 	public static String sourceDBPageErrNoSelectedItem;
 	public static String sourceDBPageErrNoSelectedXMLFile;

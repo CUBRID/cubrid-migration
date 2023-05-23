@@ -612,7 +612,12 @@ public class SchemaMappingPage extends MigrationWizardPage {
 
 		if (firstVisible) {
 			setTitle(Messages.schemaMappingPageTitle);
-			setDescription(Messages.schemaMappingPageDescription);
+			if ((config.targetIsOnline() && !wizard.getTargetCatalog().isDBAGroup())
+					|| (!config.targetIsOnline()) && !config.isAddUserSchema()) {
+				setDescription(Messages.schemaMappingPageDescriptionUncorrectable);
+			} else {
+				setDescription(Messages.schemaMappingPageDescription);				
+			}
 			
 			if (!config.targetIsOnline()) {
 				setOfflineSchemaMappingPage();
