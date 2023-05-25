@@ -51,7 +51,8 @@ public class Schema extends DBObject implements
 	
 	private boolean isNewTargetSchema = false;
 	private boolean isGrantorSchema = false;
-	
+	private boolean isMigration = false;
+
 	private String createDDL;
 
 	private List<Table> tables = new ArrayList<Table>();
@@ -82,6 +83,14 @@ public class Schema extends DBObject implements
 		this.isNewTargetSchema = isNewTargetSchema;
 	}
 	
+	public boolean isMigration() {
+		return isMigration;
+	}
+
+
+	public void setMigration(boolean isMigration) {
+		this.isMigration = isMigration;
+	}
 
 	public Schema(Catalog catalog) {
 		this.catalog = catalog;

@@ -592,8 +592,10 @@ public final class MigrationTemplateHandler extends
 			schemaCache = new StringBuffer();
 		}
 		else if (TemplateTags.TAG_SCHEMA_INFO.equals(qName)) {
-			config.addScriptSchemaMapping(attributes.getValue(TemplateTags.ATTR_SCHEMA_NAME), 
-					attributes.getValue(TemplateTags.ATTR_TARGET_SCHEMA));
+			Schema schema = new Schema();
+			schema.setTargetSchemaName(attributes.getValue(TemplateTags.ATTR_TARGET_SCHEMA));
+			schema.setMigration(true);
+			config.addScriptSchemaMapping(attributes.getValue(TemplateTags.ATTR_SCHEMA_NAME), schema);
 		} else if (TemplateTags.TAG_SQL_SCHEMA.equals(qName)) {
 			schemaCache = new StringBuffer();
 		} else if (TemplateTags.TAG_FILE.equals(qName)) {

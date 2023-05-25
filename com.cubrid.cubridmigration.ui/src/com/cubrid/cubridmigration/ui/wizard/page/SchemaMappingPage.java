@@ -253,7 +253,7 @@ public class SchemaMappingPage extends MigrationWizardPage {
 				
 				if (columnIndex == 0) {
 					if (firstVisible) {
-						if (srcTable.getNote().equals(Messages.msgMainSchema)) {
+						if (srcTable.getNote().equals(Messages.msgMainSchema) || srcTable.isSelected()) {
 							srcTable.setSelected(true);
 							return CompositeUtils.CHECK_IMAGE;
 						} else {
@@ -514,7 +514,7 @@ public class SchemaMappingPage extends MigrationWizardPage {
 	private void setOfflineData() {
 		srcCatalog = wizard.getOriginalSourceCatalog().createCatalog();
 		srcSchemaList = srcCatalog.getSchemas();
-		Map<String, String> scriptSchemaMap = config.getScriptSchemaMapping();
+		Map<String, Schema> scriptSchemaMap = config.getScriptSchemaMapping();
 		
 		for (Schema schema : srcSchemaList) {
 			SrcTable srcTable = new SrcTable();
@@ -531,7 +531,12 @@ public class SchemaMappingPage extends MigrationWizardPage {
 			
 			if (scriptSchemaMap.size() != 0) {
 				logger.info("offline script schema");
-				srcTable.setTarSchema(scriptSchemaMap.get(srcTable.getSrcSchema()));
+				Schema scriptSchema = scriptSchemaMap.get(srcTable.getSrcSchema()); 
+				if (scriptSchema != null) {
+					srcTable.setTarSchema(scriptSchemaMap.get(srcTable.getSrcSchema()).getTargetSchemaName());
+					srcTable.setSelected(scriptSchemaMap.get(srcTable.getSrcSchema()).isMigration());
+				}
+				
 				if (srcTable.getTarSchema() == null || srcTable.getTarSchema().isEmpty()) {
 					srcTable.setTarSchema(srcTable.getSrcSchema());
 				}
@@ -562,7 +567,7 @@ public class SchemaMappingPage extends MigrationWizardPage {
 		srcSchemaList = srcCatalog.getSchemas();
 		tarSchemaList = tarCatalog.getSchemas();
 		
-		Map<String, String> scriptSchemaMap = config.getScriptSchemaMapping();
+		Map<String, Schema> scriptSchemaMap = config.getScriptSchemaMapping();
 		
 		for (Schema schema : srcSchemaList) {
 			SrcTable srcTable = new SrcTable();
@@ -581,17 +586,19 @@ public class SchemaMappingPage extends MigrationWizardPage {
 			if (scriptSchemaMap.size() != 0 && srcCatalog.getDatabaseType().getID() == 1) {
 				logger.info("script schema");
 				
-				srcTable.setTarSchema(scriptSchemaMap.get(srcTable.getSrcSchema()).toUpperCase());
+				Schema scriptSchema = scriptSchemaMap.get(srcTable.getSrcSchema());
+				String tarSchemaName = null;
+				if (scriptSchema != null) {
+					srcTable.setTarSchema(scriptSchema.getTargetSchemaName().toUpperCase());
+					tarSchemaName = scriptSchema.getTargetSchemaName().toUpperCase();
+					srcTable.setSelected(scriptSchemaMap.get(srcTable.getSrcSchema()).isMigration());
+				}
 				
-				String tarSchemaName = scriptSchemaMap.get(srcTable.getSrcSchema()).toUpperCase();
-				
-				if (tarSchemaName.isEmpty() || tarSchemaName == null) {
+				if (tarSchemaName == null || tarSchemaName.isEmpty()) {
 					srcTable.setTarSchema(tarCatalog.getName());
 				}
 				
-				
 				logger.info("srcTable target schema : " + srcTable.getTarSchema());
-				
 			} else {
 				int version = tarCatalog.getVersion().getDbMajorVersion() * 10 + tarCatalog.getVersion().getDbMinorVersion();
 				

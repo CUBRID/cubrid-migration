@@ -223,7 +223,7 @@ public class MigrationConfiguration {
 	
 	private Boolean addOfflineUserSchema = false;
 	
-	private Map<String, String> scriptSchemaMapping = new HashMap<String, String>();
+	private Map<String, Schema> scriptSchemaMapping = new HashMap<String, Schema>();
 	
 	private boolean isOldScript = false;
 	
@@ -3932,16 +3932,16 @@ public class MigrationConfiguration {
 		this.scriptSchemaMapping.clear();
 	}
 
-	public Map<String, String> getScriptSchemaMapping() {
+	public Map<String, Schema> getScriptSchemaMapping() {
 		return scriptSchemaMapping;
 	}
 
-	public void setScriptSchemaMapping(Map<String, String> scriptSchemaMapping) {
+	public void setScriptSchemaMapping(Map<String, Schema> scriptSchemaMapping) {
 		this.scriptSchemaMapping = scriptSchemaMapping;
 	}
 	
-	public void addScriptSchemaMapping(String source, String target) {
-		scriptSchemaMapping.put(source, target);
+	public void addScriptSchemaMapping(String source, Schema schema) {
+		scriptSchemaMapping.put(source, schema);
 	}
 
 	public Boolean getOfflineUserSchema() {
