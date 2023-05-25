@@ -145,8 +145,8 @@
 			<scale></scale>
 		</SourceDataType>
 		<TargetDataType>
-			<type>list</type>
-			<precision></precision>
+			<type>list(varchar)</type>
+			<precision>255</precision>
 			<scale></scale>
 		</TargetDataType>
     </DataTypeMapping>
@@ -157,8 +157,8 @@
 			<scale></scale>
 		</SourceDataType>
 		<TargetDataType>
-			<type>multiset</type>
-			<precision></precision>
+			<type>multiset(varchar)</type>
+			<precision>255</precision>
 			<scale></scale>
 		</TargetDataType>
     </DataTypeMapping>
