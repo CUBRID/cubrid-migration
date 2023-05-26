@@ -29,52 +29,86 @@
  */
 package com.cubrid.cubridmigration.core.dbobject;
 
-import java.io.Serializable;
-
 /**
- * DBObject is the base class of
- * Table,View,Sequence,Column,Index,Partition,Trigger,Procedure,PK,FK,and etc...
+ * synonym object
  * 
- * @author Kevin Cao
- * @version 1.0 - 2011-11-7 created by Kevin Cao
+ * @author dongmin kim
+ * @version 1.0 - 2023-05-26
  */
-public abstract class DBObject implements
-		Serializable {
+public class Synonym extends 
+		DBObject implements 
+		Cloneable {
 
-	private static final long serialVersionUID = -4165580169748817694L;
-	public final static String OBJ_TYPE_SCHEMA = "schema";
-	public final static String OBJ_TYPE_TABLE = "table";
-	public final static String OBJ_TYPE_PARTITION = "table partition";
-	public final static String OBJ_TYPE_COLUMN = "column";
-	public final static String OBJ_TYPE_VIEW = "view";
-	public final static String OBJ_TYPE_PK = "primary key";
-	public final static String OBJ_TYPE_FK = "foreign key";
-	public final static String OBJ_TYPE_INDEX = "index";
-	public final static String OBJ_TYPE_SEQUENCE = "sequence";
-	public final static String OBJ_TYPE_TRIGGER = "trigger";
-	public final static String OBJ_TYPE_PROCEDURE = "procedure";
-	public final static String OBJ_TYPE_FUNCTION = "function";
-	public final static String OBJ_TYPE_RECORD = "record";
-	public final static String OBJ_TYPE_SYNONYM = "synonym";
+	
+	private static final long serialVersionUID = -7332583909384188696L;
+	private String name;
+	private String ownerName;
+	private boolean ispublicSynonym;
+	private String targetName;
+	private String targetOwnerName;
+	private String comment;
+	private String createDDL;
+	
+	public String getName() {
+		return name;
+	}
 
-	/**
-	 * Retrieves the Object's name
-	 * 
-	 * @return String name
-	 */
-	public abstract String getName();
+	public String getOwnerName() {
+		return ownerName;
+	}
 
-	/**
-	 * Retrieves the Object's type table/view/index ......
-	 * 
-	 * @return String
-	 */
-	public abstract String getObjType();
+	public void setOwnerName(String ownerName) {
+		this.ownerName = ownerName;
+	}
 
-	/**
-	 * Retrieves the Object's DDL
-	 * 
-	 * @return String DDL
-	 */
-	public abstract String getDDL();
+	public boolean isIspublicSynonym() {
+		return ispublicSynonym;
+	}
+
+	public void setIspublicSynonym(boolean ispublicSynonym) {
+		this.ispublicSynonym = ispublicSynonym;
+	}
+
+	public String getTargetName() {
+		return targetName;
+	}
+
+	public void setTargetName(String targetName) {
+		this.targetName = targetName;
+	}
+
+	public String getTargetOwnerName() {
+		return targetOwnerName;
+	}
+
+	public void setTargetOwnerName(String targetOwnerName) {
+		this.targetOwnerName = targetOwnerName;
+	}
+
+	public String getComment() {
+		return comment;
+	}
+
+	public void setComment(String comment) {
+		this.comment = comment;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	@Override
+	public String getObjType() {
+		return OBJ_TYPE_SYNONYM;
+	}
+	
+	public void setDDL(String createDDL) {
+		this.createDDL = createDDL;
+	}
+
+	@Override
+	public String getDDL() {
+		return createDDL;
+	}
+
 }

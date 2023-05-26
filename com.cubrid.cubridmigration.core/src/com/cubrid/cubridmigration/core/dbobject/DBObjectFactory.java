@@ -180,6 +180,15 @@ public class DBObjectFactory {
 		return new Sequence(sequenceName, minValue, maxValue, incrementBy,
 				currentValue, cycleFlag, cacheSize);
 	}
+	
+	/**
+	 * return Synonym
+	 * 
+	 * @return Synonym
+	 */
+	public Synonym createSynonym() {
+		return new Synonym();
+	}
 
 	/**
 	 * return DataType

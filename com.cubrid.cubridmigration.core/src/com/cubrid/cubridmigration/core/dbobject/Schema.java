@@ -61,6 +61,7 @@ public class Schema extends DBObject implements
 	private List<Function> functions = new ArrayList<Function>();
 	private List<Trigger> triggers = new ArrayList<Trigger>();
 	private List<Sequence> sequenceList = new ArrayList<Sequence>();
+	private List<Synonym> synonymList = new ArrayList<Synonym>();
 
 	public Schema() {
 		//do nothing
@@ -230,6 +231,22 @@ public class Schema extends DBObject implements
 		}
 		return null;
 	}
+	
+	/**
+	 * getSynonymByName
+	 * 
+	 * @param synonymName String
+	 * @return Synonym
+	 */
+	public Synonym getSynonymByName(String synonymName) {
+		for (Synonym synonym : synonymList) {
+			if (synonymName.equals(synonym.getName())) {
+				return synonym;
+			}
+
+		}
+		return null;
+	}
 
 	public List<Procedure> getProcedures() {
 		return procedures;
@@ -258,6 +275,10 @@ public class Schema extends DBObject implements
 	public List<Sequence> getSequenceList() {
 		return sequenceList;
 	}
+	
+	public List<Synonym> getSynonymList() {
+		return synonymList;
+	}
 
 	/**
 	 * Add sequence into schema object.
@@ -279,6 +300,28 @@ public class Schema extends DBObject implements
 
 	public void setSequenceList(List<Sequence> sequenceList) {
 		this.sequenceList = sequenceList;
+	}
+	
+	/**
+	 * Add synonym into schema object.
+	 * 
+	 * @param sn Synonym
+	 */
+	public void addSynonym(Synonym sn) {
+		if (sn == null) {
+			return;
+		}
+		if (synonymList == null) {
+			synonymList = new ArrayList<Synonym>();
+		}
+		if (!synonymList.contains(sn)) {
+			synonymList.add(sn);
+			sn.setOwnerName(getName());
+		}
+	}
+
+	public void setSynonymList(List<Synonym> synonymList) {
+		this.synonymList = synonymList;
 	}
 
 	/**
