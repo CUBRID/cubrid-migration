@@ -2065,7 +2065,7 @@ public final class CUBRIDSchemaFetcher extends
 				Synonym synonym = factory.createSynonym();
 				synonym.setName(rs.getString("synonym_name"));
 				synonym.setOwnerName(rs.getString("synonym_owner_name"));
-				synonym.setIspublicSynonym(isYes(rs.getString("is_public_synonym")));
+				synonym.setPublicSynonym(isYes(rs.getString("is_public_synonym")));
 				synonym.setTargetName(rs.getString("target_name"));
 				synonym.setTargetOwnerName(rs.getString("target_owner_name"));
 				synonym.setComment(rs.getString("comment"));

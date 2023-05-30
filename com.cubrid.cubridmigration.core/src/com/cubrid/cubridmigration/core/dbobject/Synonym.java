@@ -39,11 +39,10 @@ public class Synonym extends
 		DBObject implements 
 		Cloneable {
 
-	
 	private static final long serialVersionUID = -7332583909384188696L;
 	private String name;
 	private String ownerName;
-	private boolean ispublicSynonym;
+	private boolean isPublicSynonym;
 	private String targetName;
 	private String targetOwnerName;
 	private String comment;
@@ -61,12 +60,12 @@ public class Synonym extends
 		this.ownerName = ownerName;
 	}
 
-	public boolean isIspublicSynonym() {
-		return ispublicSynonym;
+	public boolean isPublicSynonym() {
+		return isPublicSynonym;
 	}
 
-	public void setIspublicSynonym(boolean ispublicSynonym) {
-		this.ispublicSynonym = ispublicSynonym;
+	public void setPublicSynonym(boolean isPublicSynonym) {
+		this.isPublicSynonym = isPublicSynonym;
 	}
 
 	public String getTargetName() {
