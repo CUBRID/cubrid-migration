@@ -42,6 +42,7 @@ import com.cubrid.cubridmigration.core.dbobject.PartitionInfo;
 import com.cubrid.cubridmigration.core.dbobject.Procedure;
 import com.cubrid.cubridmigration.core.dbobject.Schema;
 import com.cubrid.cubridmigration.core.dbobject.Sequence;
+import com.cubrid.cubridmigration.core.dbobject.Synonym;
 import com.cubrid.cubridmigration.core.dbobject.Table;
 import com.cubrid.cubridmigration.core.dbobject.Trigger;
 import com.cubrid.cubridmigration.core.dbobject.View;
@@ -62,6 +63,8 @@ import com.cubrid.cubridmigration.ui.common.navigator.node.SchemaNode;
 import com.cubrid.cubridmigration.ui.common.navigator.node.SequenceNode;
 import com.cubrid.cubridmigration.ui.common.navigator.node.SequencesNode;
 import com.cubrid.cubridmigration.ui.common.navigator.node.StoredProceduresNode;
+import com.cubrid.cubridmigration.ui.common.navigator.node.SynonymNode;
+import com.cubrid.cubridmigration.ui.common.navigator.node.SynonymsNode;
 import com.cubrid.cubridmigration.ui.common.navigator.node.TableNode;
 import com.cubrid.cubridmigration.ui.common.navigator.node.TablesNode;
 import com.cubrid.cubridmigration.ui.common.navigator.node.TriggerNode;
@@ -86,6 +89,7 @@ public final class CubridNodeManager {
 	private static final String PATH_STORED_PROCEDURE = "/StoredProcedure";
 	private static final String PATH_VIEWS = "/views";
 	private static final String PATH_TABLES = "/tables";
+	private static final String PATH_SYNONYMS = "/synonyms";
 	private static final String XML_HOST_NODE_ID = "MySQL dump file";
 
 	private static volatile CubridNodeManager instance = null;
@@ -134,6 +138,33 @@ public final class CubridNodeManager {
 			SequenceNode sequenceNode = new SequenceNode(sequenceID, sequenceLabel);
 			sequenceNode.setSequence(sequence);
 			sequencesNode.addChild(sequenceNode);
+		}
+	}
+	
+	/**
+	 * add synonym nodes
+	 * 
+	 * @param parentNode
+	 * @param schema
+	 */
+	private void addSynonymNodes(DefaultCUBRIDNode parentNode, Schema schema) {
+		String parentID = parentNode.getId();
+		
+		List<Synonym> synonymList = schema.getSynonymList();
+		String synonymsID = parentID + PATH_SYNONYMS;
+		String synonymsLabels = Messages.labelTreeObjSynonym + "(" + synonymList.size() + ")";
+		SynonymsNode synonymsNode = new SynonymsNode(synonymsID, synonymsLabels);
+		parentNode.addChild(synonymsNode);
+		if (synonymList.isEmpty()) {
+			synonymsNode.setContainer(false);
+		}
+		for (Synonym synonym : synonymList) {
+			// add a synonym
+			String synonymID = synonymsID + "/" + synonym.getName();
+			String synonymLabel = synonym.getName();
+			SynonymNode synonymNode = new SynonymNode(synonymID, synonymLabel);
+			synonymNode.setSynonym(synonym);
+			synonymsNode.addChild(synonymNode);
 		}
 	}
 
@@ -385,6 +416,8 @@ public final class CubridNodeManager {
 			addTriggerNodes(parentNode, schema);
 
 			addSerialNodes(parentNode, schema);
+			
+			addSynonymNodes(parentNode, schema);
 		}
 
 		return databaseNode;

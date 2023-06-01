@@ -43,6 +43,8 @@ import com.cubrid.cubridmigration.ui.common.navigator.node.SchemaNode;
 import com.cubrid.cubridmigration.ui.common.navigator.node.SequenceNode;
 import com.cubrid.cubridmigration.ui.common.navigator.node.SequencesNode;
 import com.cubrid.cubridmigration.ui.common.navigator.node.StoredProceduresNode;
+import com.cubrid.cubridmigration.ui.common.navigator.node.SynonymNode;
+import com.cubrid.cubridmigration.ui.common.navigator.node.SynonymsNode;
 import com.cubrid.cubridmigration.ui.common.navigator.node.TableNode;
 import com.cubrid.cubridmigration.ui.common.navigator.node.TablesNode;
 import com.cubrid.cubridmigration.ui.common.navigator.node.TriggerNode;
@@ -102,6 +104,10 @@ public class TreeLabelProvider extends
 			iconPath = "icon/db/procedure_func_item.png";
 		} else if (element instanceof StoredProceduresNode) {
 			iconPath = "icon/db/procedure_group.png";
+		} else if (element instanceof SynonymsNode) {
+			iconPath = "icon/db/synonym_group.png";
+		} else if (element instanceof SynonymNode) {
+			iconPath = "icon/db/synonym_item.png";
 		}
 
 		if (StringUtils.isNotBlank(iconPath)) {

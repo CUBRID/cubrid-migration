@@ -2055,9 +2055,11 @@ public final class CUBRIDSchemaFetcher extends
 		try {
 			String sql = "SELECT synonym_name, synonym_owner_name, is_public_synonym,"
 					 + " target_name, target_owner_name, comment" 
-					 + " FROM db_synonym";
+					 + " FROM db_synonym"
+					 + " WHERE synonym_owner_name=?";
 			
 			stmt = conn.prepareStatement(sql);
+			stmt.setString(1, schema.getName());
 			rs = stmt.executeQuery();
 			List<Synonym> synonyms = new ArrayList<Synonym>();
 
@@ -2065,7 +2067,7 @@ public final class CUBRIDSchemaFetcher extends
 				Synonym synonym = factory.createSynonym();
 				synonym.setName(rs.getString("synonym_name"));
 				synonym.setOwnerName(rs.getString("synonym_owner_name"));
-				synonym.setPublicSynonym(isYes(rs.getString("is_public_synonym")));
+				synonym.setPublic(isYes(rs.getString("is_public_synonym")));
 				synonym.setTargetName(rs.getString("target_name"));
 				synonym.setTargetOwnerName(rs.getString("target_owner_name"));
 				synonym.setComment(rs.getString("comment"));

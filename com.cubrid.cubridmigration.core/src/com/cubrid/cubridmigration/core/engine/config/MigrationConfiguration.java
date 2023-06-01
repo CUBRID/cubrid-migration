@@ -72,6 +72,7 @@ import com.cubrid.cubridmigration.core.dbobject.PartitionInfo;
 import com.cubrid.cubridmigration.core.dbobject.Procedure;
 import com.cubrid.cubridmigration.core.dbobject.Schema;
 import com.cubrid.cubridmigration.core.dbobject.Sequence;
+import com.cubrid.cubridmigration.core.dbobject.Synonym;
 import com.cubrid.cubridmigration.core.dbobject.Table;
 import com.cubrid.cubridmigration.core.dbobject.Trigger;
 import com.cubrid.cubridmigration.core.dbobject.View;
@@ -149,6 +150,7 @@ public class MigrationConfiguration {
 	private final List<String> expFunctions = new ArrayList<String>();
 
 	private final List<String> expProcedures = new ArrayList<String>();
+	private final List<SourceSynonymConfig> expSynonyms = new ArrayList<SourceSynonymConfig>();
 	private final List<SourceSequenceConfig> expSerials = new ArrayList<SourceSequenceConfig>();
 	private final List<SourceSQLTableConfig> expSQLTables = new ArrayList<SourceSQLTableConfig>();
 	private final List<SourceEntryTableConfig> expTables = new ArrayList<SourceEntryTableConfig>();
@@ -201,6 +203,7 @@ public class MigrationConfiguration {
 	private final List<Table> targetTables = new ArrayList<Table>();
 	private final List<View> targetViews = new ArrayList<View>();
 	private final List<Sequence> targetSequences = new ArrayList<Sequence>();
+	private final List<Synonym> targetSynonyms = new ArrayList<Synonym>();
 	private String targetFileTimeZone = "Default";
 
 	//Used by database unload file migration, 
@@ -468,6 +471,7 @@ public class MigrationConfiguration {
 		buildTableCfg(isReset);
 		buildViewCfg(isReset);
 		buildSerialCfg(isReset);
+		buildSynonymCfg(isReset);
 		List<Schema> schemas = srcCatalog.getSchemas();
 		for (Schema sourceDBSchema : schemas) {
 			String prefix = "";
@@ -594,6 +598,59 @@ public class MigrationConfiguration {
 		expSerials.addAll(tempList);
 		targetSequences.clear();
 		targetSequences.addAll(tempSerials);
+	}
+	
+	/**
+	 * copy All Synonym
+	 * 
+	 * @param isReset boolean
+	 * 
+	 */
+	private void buildSynonymCfg(boolean isReset) {
+		List<SourceSynonymConfig> tempList = new ArrayList<SourceSynonymConfig>();
+		List<Synonym> tempSynonyms = new ArrayList<Synonym>();
+		final CUBRIDSQLHelper cubridddlUtil = CUBRIDSQLHelper.getInstance(null);
+		List<Schema> schemas = srcCatalog.getSchemas();
+		Map<String, Integer> allSynonymsCountMap = srcCatalog.getAllSequencesCountMap();
+		for (Schema sourceDBSchema : schemas) {
+			for (Synonym synonym : sourceDBSchema.getSynonymList()) {
+				SourceSynonymConfig sc = getExpSynonymCfg(synonym.getOwnerName(), synonym.getName());
+				if (sc == null) {
+					sc = new SourceSynonymConfig();
+					sc.setOwner(sourceDBSchema.getName());
+					sc.setTargetOwner(sourceDBSchema.getTargetSchemaName());
+					sc.setName(synonym.getName());
+					sc.setTarget(getTargetName(allSynonymsCountMap, synonym.getOwnerName(), synonym.getName()));
+					sc.setCreate(false);
+					sc.setReplace(false);
+					sc.setComment(synonym.getComment());
+				} else if (sourceDBSchema.getTargetSchemaName() != null) {
+					if (!sourceDBSchema.getTargetSchemaName().equals(sc.getTargetOwner())) {
+						sc.setTargetOwner(sourceDBSchema.getTargetSchemaName());
+					}
+				}
+				tempList.add(sc);
+				Synonym tsynonym = null;
+				if (sc.getOwner() == null) {
+					tsynonym = getTargetSynonymSchema(sc.getTarget());
+				} else {
+					tsynonym = getTargetSynonymSchema(sc.getTargetOwner(), sc.getTarget());
+				}
+				if (tsynonym == null) {
+					tsynonym = (Synonym) synonym.clone();
+					tsynonym.setName(sc.getTarget());
+					tsynonym.setOwnerName(sc.getOwner());
+					tsynonym.setTargetOwnerName(sc.getTargetOwner());
+					tsynonym.setDDL(cubridddlUtil.getSynonymDDL(tsynonym, this.addUserSchema));
+					tsynonym.setComment(synonym.getComment());
+				}
+				tempSynonyms.add(tsynonym);
+			}
+		}
+		expSynonyms.clear();
+		expSynonyms.addAll(tempList);
+		targetSynonyms.clear();
+		targetSynonyms.addAll(tempSynonyms);
 	}
 	
 	private boolean isDuplicatedObject(Map<String, Integer> allObjectsMap, String objectName) {
@@ -1945,6 +2002,41 @@ public class MigrationConfiguration {
 		}
 		return result;
 	}
+	
+	/**
+	 * Return the export synonym configurations
+	 * 
+	 * @return List<SourceConfig>
+	 */
+	public List<SourceSynonymConfig> getExpSynonymCfg() {
+		return new ArrayList<SourceSynonymConfig>(expSynonyms);
+	}
+	
+	/**
+	 * getExportSynonyms
+	 * 
+	 * @param schema name of the object
+	 * @param sourceName String
+	 * @return SourceConfig
+	 */
+	public SourceSynonymConfig getExpSynonymCfg(String schema, String sourceName) {
+		SourceSynonymConfig result = null;
+		for (SourceSynonymConfig config : expSynonyms) {
+			if (config.getName().equals(sourceName)) {
+				if (schema == null) {
+					return config;
+				}
+				if (schema.equalsIgnoreCase(config.getOwner())) {
+					return config;
+				}
+				if (config.getOwner() == null) {
+					result = config;
+					break;
+				}
+			}
+		}
+		return result;
+	}
 
 	/**
 	 * Retrieves all export tables.
@@ -2734,6 +2826,49 @@ public class MigrationConfiguration {
 		}
 		return null;
 	}
+	
+	/**
+	 * getTargetSynonymList
+	 * 
+	 * @return List<Synonym>
+	 */
+	public List<Synonym> getTargetSynonymSchema() {
+		return new ArrayList<Synonym>(targetSynonyms);
+	}
+	
+	/**
+	 * get target synonym by synonym name
+	 * 
+	 * @param target String name
+	 * @return target synonym
+	 */
+	public Synonym getTargetSynonymSchema(String target) {
+		for (Synonym synonym : this.targetSynonyms) {
+			if (synonym.getName().equals(target)) {
+				return synonym;
+			}
+		}
+		return null;
+	}
+	
+	/**
+	 * get target synonym by synonym name and synonym owner
+	 * 
+	 * @param String owner, String target
+	 * @return target synonym
+	 */
+	public Synonym getTargetSynonymSchema(String owner, String target) {
+		if (owner == null) {
+			return getTargetSynonymSchema(target);
+		}
+		
+		for (Synonym synonym : this.targetSynonyms) {
+			if (synonym.getName().equalsIgnoreCase(target) && synonym.getOwnerName().equalsIgnoreCase(owner)) {
+				return synonym;
+			}
+		}
+		return null;
+	}
 
 	/**
 	 * getTargetTables
@@ -2989,6 +3124,21 @@ public class MigrationConfiguration {
 	 */
 	public boolean isTargetSerialNameInUse(String newName) {
 		for (SourceConfig sc : expSerials) {
+			if (sc.getTarget().equalsIgnoreCase(newName)) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	/**
+	 * Retrieves whether the new name is used by other synonym.
+	 * 
+	 * @param newName synonym name
+	 * @return true if used
+	 */
+	public boolean isTargetSynonymNameInUse(String newName) {
+		for (SourceConfig sc : expSynonyms) {
 			if (sc.getTarget().equalsIgnoreCase(newName)) {
 				return true;
 			}
@@ -3312,6 +3462,11 @@ public class MigrationConfiguration {
 		}
 
 		for (SourceConfig sc : expSerials) {
+			sc.setCreate(value);
+			sc.setReplace(value);
+		}
+		
+		for (SourceConfig sc : expSynonyms) {
 			sc.setCreate(value);
 			sc.setReplace(value);
 		}

@@ -58,11 +58,13 @@ import com.cubrid.common.ui.swt.table.celleditor.CheckboxCellEditorFactory;
 import com.cubrid.common.ui.swt.table.celleditor.TextCellEditorFactory;
 import com.cubrid.common.ui.swt.table.listener.CheckBoxColumnSelectionListener;
 import com.cubrid.cubridmigration.core.dbobject.Sequence;
+import com.cubrid.cubridmigration.core.dbobject.Synonym;
 import com.cubrid.cubridmigration.core.dbobject.View;
 import com.cubrid.cubridmigration.core.engine.config.MigrationConfiguration;
 import com.cubrid.cubridmigration.core.engine.config.SourceConfig;
 import com.cubrid.cubridmigration.core.engine.config.SourceEntryTableConfig;
 import com.cubrid.cubridmigration.core.engine.config.SourceSequenceConfig;
+import com.cubrid.cubridmigration.core.engine.config.SourceSynonymConfig;
 import com.cubrid.cubridmigration.core.engine.config.SourceViewConfig;
 import com.cubrid.cubridmigration.core.engine.listener.ISQLTableChangedListener;
 import com.cubrid.cubridmigration.ui.common.CompositeUtils;
@@ -70,6 +72,7 @@ import com.cubrid.cubridmigration.ui.common.navigator.node.DatabaseNode;
 import com.cubrid.cubridmigration.ui.common.navigator.node.SQLTablesNode;
 import com.cubrid.cubridmigration.ui.common.navigator.node.SchemaNode;
 import com.cubrid.cubridmigration.ui.common.navigator.node.SequencesNode;
+import com.cubrid.cubridmigration.ui.common.navigator.node.SynonymsNode;
 import com.cubrid.cubridmigration.ui.common.navigator.node.TablesNode;
 import com.cubrid.cubridmigration.ui.common.navigator.node.ViewsNode;
 import com.cubrid.cubridmigration.ui.common.tableviewer.cell.validator.CUBRIDNameValidator;
@@ -100,6 +103,7 @@ public class GeneralObjMappingView extends
 	private TableViewer tvTables;
 	private TableViewer tvViews;
 	private TableViewer tvSerials;
+	private TableViewer tvSynonyms;
 	private SQLTableManageView sqlMgrView;
 
 	public GeneralObjMappingView(Composite parent) {
@@ -123,6 +127,7 @@ public class GeneralObjMappingView extends
 		createDetailOfTables(tabSchemaDetailFolder);
 		createDetailOfViews(tabSchemaDetailFolder);
 		createDetailOfSerials(tabSchemaDetailFolder);
+		createDetailOfSynonym(tabSchemaDetailFolder);
 		createSQLManager(tabSchemaDetailFolder);
 	}
 
@@ -306,6 +311,25 @@ public class GeneralObjMappingView extends
 		initSourceConfigTableViewer(tvViews);
 		tvViews.setData(CONTENT_TYPE, CT_VIEW);
 	}
+	
+	/**
+	 * Create synonym to list database synonym mappings.
+	 * 
+	 * @param parent
+	 */
+	private void createDetailOfSynonym(CTabFolder parent) {
+		Composite container = CompositeUtils.createTabItem(parent,
+				Messages.objectMapPageTabFolderSynonyms, "icon/db/synonym_group.png");
+		
+		TableViewerBuilder tvBuilder = new TableViewerBuilder();
+		tvBuilder.setColumnNames(new String[] {Messages.tabTitleSourceSynonym,
+				Messages.tabTitleTargetSynonym, Messages.lblCreate, Messages.lblReplace});
+		initSourceConfigTableBuilder(tvBuilder);
+		tvSynonyms = tvBuilder.buildTableViewer(container, SWT.BORDER | SWT.FULL_SELECTION);
+		
+		initSourceConfigTableViewer(tvSynonyms);
+		tvSynonyms.setData(CONTENT_TYPE, CT_SYNONYM);
+	}
 
 	/**
 	 * Hide this mapping view
@@ -323,6 +347,7 @@ public class GeneralObjMappingView extends
 		CompositeUtils.applyTableViewerEditing(tvTables);
 		CompositeUtils.applyTableViewerEditing(tvSerials);
 		CompositeUtils.applyTableViewerEditing(tvViews);
+		CompositeUtils.applyTableViewerEditing(tvSynonyms);
 		VerifyResultMessages result = validate();
 		if (result.hasError()) {
 			return result;
@@ -367,6 +392,19 @@ public class GeneralObjMappingView extends
 			setc.setCreate((Boolean) obj[2]);
 			setc.setReplace((Boolean) obj[3]);
 		}
+		for (int i = 0; i < tvSynonyms.getTable().getItemCount(); i++) {
+			TableItem ti = tvSynonyms.getTable().getItem(i);
+			Object[] obj = (Object[]) ti.getData();
+			SourceConfig setc = (SourceConfig) obj[obj.length - 1];
+			Synonym tsynonym = config.getTargetSynonymSchema(setc.getTarget());
+			final String name = obj[1].toString();
+			if (tsynonym != null) {
+				tsynonym.setName(name);
+			}
+			setc.setTarget(name);
+			setc.setCreate((Boolean) obj[2]);
+			setc.setReplace((Boolean) obj[3]);
+		}
 		return super.save();
 	}
 
@@ -405,12 +443,18 @@ public class GeneralObjMappingView extends
 				schema = (SchemaNode) ((SequencesNode) obj).getParent();
 			}
 			tabSchemaDetailFolder.setSelection(2);
-		} else if (obj instanceof SQLTablesNode) {
+		} else if (obj instanceof SynonymsNode) {
+			if (((SynonymsNode) obj).getParent() instanceof SchemaNode) {
+				schema = (SchemaNode) ((SynonymsNode) obj).getParent();
+			}
 			tabSchemaDetailFolder.setSelection(3);
+		} else if (obj instanceof SQLTablesNode) {
+			tabSchemaDetailFolder.setSelection(4);
 		}
 		List<SourceEntryTableConfig> ipTables = config.getExpEntryTableCfg();
 		List<SourceViewConfig> ipViews = config.getExpViewCfg();
 		List<SourceSequenceConfig> ipSerials = config.getExpSerialCfg();
+		List<SourceSynonymConfig> ipSynonyms = config.getExpSynonymCfg();
 		if (schema != null) {
 			Iterator<SourceEntryTableConfig> itTables = ipTables.iterator();
 			while (itTables.hasNext()) {
@@ -437,15 +481,25 @@ public class GeneralObjMappingView extends
 				}
 				itSerials.remove();
 			}
+			Iterator<SourceSynonymConfig> itSynonyms = ipSynonyms.iterator();
+			while (itSynonyms.hasNext()) {
+				String owner = itSynonyms.next().getOwner();
+				if (owner == null || schema.getName().equals(owner)) {
+					continue;
+				}
+				itSynonyms.remove();
+			}
 		}
 		tvTables.setInput(ipTables);
 		tvViews.setInput(ipViews);
 		tvSerials.setInput(ipSerials);
+		tvSynonyms.setInput(ipSynonyms);
 		sqlMgrView.showData(obj);
 
 		CompositeUtils.initTableViewerCheckColumnImage(tvTables);
 		CompositeUtils.initTableViewerCheckColumnImage(tvViews);
 		CompositeUtils.initTableViewerCheckColumnImage(tvSerials);
+		CompositeUtils.initTableViewerCheckColumnImage(tvSynonyms);
 
 	}
 
@@ -493,6 +547,23 @@ public class GeneralObjMappingView extends
 			}
 			names.put(name.toLowerCase(Locale.US), isCreate);
 		}
+		for (int i = 0; i < tvSynonyms.getTable().getItemCount(); i++) {
+			TableItem ti = tvSynonyms.getTable().getItem(i);
+			Object[] obj = (Object[]) ti.getData();
+			final String name = obj[1].toString();
+			final Boolean isCreate = (Boolean) obj[2];
+			if (isCreate) {
+				if (!MigrationCfgUtils.verifyTargetDBObjName(name)) {
+					return new VerifyResultMessages(Messages.bind(Messages.msgErrInvalidSynonymName,
+							name), null, null);
+				}
+				if (names.get(name) != null) {
+					return new VerifyResultMessages(Messages.bind(Messages.msgErrDupSynonymName, name),
+							null, null);
+				}
+			}
+			names.put(name.toLowerCase(Locale.US), isCreate);
+		}
 
 		//Serial name can be duplicated with view or table.
 		names.clear();
@@ -522,6 +593,7 @@ public class GeneralObjMappingView extends
 		tvTables.addDoubleClickListener(iDoubleClickListener);
 		tvViews.addDoubleClickListener(iDoubleClickListener);
 		tvSerials.addDoubleClickListener(iDoubleClickListener);
+		tvSynonyms.addDoubleClickListener(iDoubleClickListener);
 	}
 
 	/**
