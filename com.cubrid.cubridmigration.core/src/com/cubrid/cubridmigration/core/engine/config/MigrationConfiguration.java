@@ -169,6 +169,7 @@ public class MigrationConfiguration {
 	private Map<String, String> targetDataFileName = new HashMap<String, String>();
 	private Map<String, String> targetUpdateStatisticFileName = new HashMap<String, String>();
 	private Map<String, String> targetSchemaFileListName = new HashMap<String, String>();
+	private Map<String, String> targetSynonymFileName = new HashMap<String, String>();
 	private String targetFilePrefix;
 	private String targetCharSet = "UTF-8";
 	private String targetLOBRootPath = "";
@@ -1369,6 +1370,7 @@ public class MigrationConfiguration {
 			addTargetSerialFileName(schema.getName(), path2 + targetSerialFileName.get(schema.getName().substring(tempPath.length())));
 			addTargetUpdateStatisticFileName(schema.getName(), path2 + targetUpdateStatisticFileName.get(schema.getName().substring(tempPath.length())));
 			addTargetSchemaFileListName(schema.getName(), path2 + targetSchemaFileListName.get(schema.getName().substring(tempPath.length())));
+			addTargetSynonymFileListName(schema.getName(), path2 + targetSynonymFileName.get(schema.getName().substring(tempPath.length())));
 		}
 	}
 
@@ -2792,6 +2794,14 @@ public class MigrationConfiguration {
 	public String getTargetSchemaFileListName(String schemaName) {
 		return this.targetSchemaFileListName.get(schemaName);
 	}
+	
+	public Map<String, String> getTargetSynonymFileListName() {
+		return new HashMap<String, String>(this.targetSynonymFileName);
+	}
+	
+	public String getTargetSynonymFileListName(String schemaName) {
+		return this.targetSynonymFileName.get(schemaName);
+	}
 
 	/**
 	 * getTargetSerialList
@@ -3624,6 +3634,7 @@ public class MigrationConfiguration {
 			addTargetDataFileName(schema.getName(), PathUtils.mergePath(PathUtils.mergePath(odir, prefix), schema.getName() + "_data" + getDataFileExt()));
 			addTargetUpdateStatisticFileName(schema.getName(), PathUtils.mergePath(PathUtils.mergePath(odir, prefix), schema.getName() + "_updatestatistic"));
 			addTargetSchemaFileListName(schema.getName(), PathUtils.mergePath(PathUtils.mergePath(odir, prefix), schema.getName() + "_info"));
+			addTargetSynonymFileListName(schema.getName(), PathUtils.mergePath(PathUtils.mergePath(odir, prefix), schema.getName() + "_synonym"));
 		}
 		setTargetCharSet(charset);
 	}
@@ -3916,6 +3927,14 @@ public class MigrationConfiguration {
 	
 	public void addTargetSchemaFileListName(String schemaName, String filePath) {
 		this.targetSchemaFileListName.put(schemaName, filePath);
+	}
+	
+	public void setTargetSynonymFileListName(Map<String, String> targetSynonymFileListName) {
+		this.targetSynonymFileName.putAll(targetSynonymFileListName);
+	}
+	
+	public void addTargetSynonymFileListName(String schemaName, String filePath) {
+		this.targetSynonymFileName.put(schemaName, filePath);
 	}
 
 	/**

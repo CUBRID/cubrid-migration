@@ -111,7 +111,8 @@ public class SchemaMappingPage extends MigrationWizardPage {
 	Map<String, String> indexFullName;
 	Map<String, String> serialFullName;
 	Map<String, String> updateStatisticFullName;
-	Map<String, String> SchemaFileListFullName;
+	Map<String, String> schemaFileListFullName;
+	Map<String, String> synonymFileListFullName; 
 	
 	protected class SrcTable {
 		private boolean isSelected;
@@ -731,7 +732,8 @@ public class SchemaMappingPage extends MigrationWizardPage {
 		indexFullName = new HashMap<String, String>();
 		serialFullName = new HashMap<String, String>();
 		updateStatisticFullName = new HashMap<String, String>();
-		SchemaFileListFullName = new HashMap<String, String>();
+		schemaFileListFullName = new HashMap<String, String>();
+		synonymFileListFullName = new HashMap<String, String>();
 		
 		for (SrcTable srcTable : srcTableList) {
 			if (addUserSchema && srcTable.isSelected() && (srcTable.getTarSchema().isEmpty() || srcTable.getTarSchema() == null 
@@ -757,7 +759,8 @@ public class SchemaMappingPage extends MigrationWizardPage {
 				pkFullName.put(srcTable.getTarSchema(), getPkFullName(srcTable.getTarSchema()));
 				fkFullName.put(srcTable.getTarSchema(), getFkFullName(srcTable.getTarSchema()));
 				serialFullName.put(srcTable.getTarSchema(), getSequenceFullName(srcTable.getTarSchema()));
-				SchemaFileListFullName.put(srcTable.getTarSchema(), getSchemaFileListFullName(srcTable.getTarSchema()));
+				schemaFileListFullName.put(srcTable.getTarSchema(), getSchemaFileListFullName(srcTable.getTarSchema()));
+				synonymFileListFullName.put(srcTable.getTarSchema(), getSynonymFullName(srcTable.getTarSchema()));
 			} else {
 				schemaFullName.put(srcTable.getTarSchema(), getSchemaFullName(srcTable.getTarSchema()));
 			}
@@ -780,7 +783,8 @@ public class SchemaMappingPage extends MigrationWizardPage {
 		config.setTargetFkFileName(fkFullName);
 		config.setTargetSerialFileName(serialFullName);
 		config.setTargetUpdateStatisticFileName(updateStatisticFullName);
-		config.setTargetSchemaFileListName(SchemaFileListFullName);
+		config.setTargetSchemaFileListName(schemaFileListFullName);
+		config.setTargetSynonymFileListName(synonymFileListFullName);
 		
 		wizard.setSourceCatalog(srcCatalog);
 		getMigrationWizard().setSourceDBNode(srcCatalog);
@@ -928,6 +932,20 @@ public class SchemaMappingPage extends MigrationWizardPage {
 	}
 	
 	/**
+	 * get synonym file full path
+	 * 
+	 * @param targetSchemaName
+	 * @return synonym file full path
+	 */
+	private String getSynonymFullName(String targetSchemaName) {
+		StringBuffer fileName = new StringBuffer();
+		fileName.append(File.separator).append(config.getTargetFilePrefix()).append("_").append(targetSchemaName).append("_synonym").append(
+				getMigrationWizard().getMigrationConfig().getDefaultTargetSchemaFileExtName());
+		
+		return PathUtils.mergePath(PathUtils.mergePath(config.getFileRepositroyPath(), targetSchemaName), fileName.toString());
+	}
+	
+	/**
 	 * Check if overwriting to a file
 	 * 
 	 * @param schemaFullName
@@ -949,6 +967,8 @@ public class SchemaMappingPage extends MigrationWizardPage {
 					File pkFile = new File(pkFullName.get(srcTable.getTarSchema()));
 					File fkFile = new File(fkFullName.get(srcTable.getTarSchema()));
 					File serialFile = new File(serialFullName.get(srcTable.getTarSchema()));
+					File infoFile = new File(schemaFileListFullName.get(srcTable.getTarSchema()));
+					File synonymFile = new File(synonymFileListFullName.get(srcTable.getTarSchema()));
 					
 					if (tableFile.exists()) {
 						buffer.append(tableFile.getCanonicalPath()).append(System.lineSeparator());
@@ -964,6 +984,12 @@ public class SchemaMappingPage extends MigrationWizardPage {
 					}
 					if (serialFile.exists()) {
 						buffer.append(serialFile.getCanonicalPath()).append(System.lineSeparator());
+					}
+					if (infoFile.exists()) {
+						buffer.append(infoFile.getCanonicalPath()).append(System.lineSeparator());
+					}
+					if (synonymFile.exists()) {
+						buffer.append(synonymFile.getCanonicalPath()).append(System.lineSeparator());
 					}
 					
 				} else {
