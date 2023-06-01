@@ -730,7 +730,7 @@ public final class MSSQLSchemaFetcher extends
 			while (rs.next()) {
 				Synonym synonym = factory.createSynonym();
 				synonym.setName(rs.getString("name"));
-				synonym.setPublicSynonym(false);
+				synonym.setPublic(false);
 				
 				String baseObjectName = rs.getString("base_object_name");
 				if (baseObjectName.contains(".")) {

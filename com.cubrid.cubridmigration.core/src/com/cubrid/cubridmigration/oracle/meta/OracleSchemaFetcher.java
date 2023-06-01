@@ -416,7 +416,7 @@ public final class OracleSchemaFetcher extends
 				Synonym synonym = factory.createSynonym();
 				synonym.setName(synonymName);
 				synonym.setOwnerName(schema.getName());
-				synonym.setPublicSynonym(false);
+				synonym.setPublic(false);
 				synonym.setTargetName(targetName);
 				synonym.setTargetOwnerName(targetOwnerName);
 				schema.addSynonym(synonym);

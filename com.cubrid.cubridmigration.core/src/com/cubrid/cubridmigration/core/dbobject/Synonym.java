@@ -42,12 +42,47 @@ public class Synonym extends
 	private static final long serialVersionUID = -7332583909384188696L;
 	private String name;
 	private String ownerName;
-	private boolean isPublicSynonym;
+	private boolean isPublic;
 	private String targetName;
 	private String targetOwnerName;
 	private String comment;
 	private String createDDL;
 	
+	public Synonym() {
+		//do nothing
+	}
+	
+	public Synonym(String name, String ownerName, boolean isPublic,
+			String targetName, String targetOwnerName, String comment,
+			String createDDL) {
+		super();
+		this.name = name;
+		this.ownerName = ownerName;
+		this.isPublic = isPublic;
+		this.targetName = targetName;
+		this.targetOwnerName = targetOwnerName;
+		this.comment = comment;
+		this.createDDL = createDDL;
+	}
+
+	/**
+	 * clone
+	 * 
+	 * @return Synonym
+	 */
+	public Object clone() {
+		final Synonym synonym = new Synonym(name, ownerName,
+				isPublic, targetName, targetOwnerName, comment, createDDL);
+		synonym.setName(name);
+		synonym.setOwnerName(ownerName);
+		synonym.setPublic(isPublic);
+		synonym.setTargetName(targetName);
+		synonym.setTargetOwnerName(targetOwnerName);
+		synonym.setComment(comment);
+		synonym.setDDL(createDDL);
+		return synonym;
+	}
+
 	public String getName() {
 		return name;
 	}
@@ -60,12 +95,12 @@ public class Synonym extends
 		this.ownerName = ownerName;
 	}
 
-	public boolean isPublicSynonym() {
-		return isPublicSynonym;
+	public boolean isPublic() {
+		return isPublic;
 	}
 
-	public void setPublicSynonym(boolean isPublicSynonym) {
-		this.isPublicSynonym = isPublicSynonym;
+	public void setPublic(boolean isPublic) {
+		this.isPublic = isPublic;
 	}
 
 	public String getTargetName() {

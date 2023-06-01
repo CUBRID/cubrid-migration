@@ -47,6 +47,7 @@ import com.cubrid.cubridmigration.core.dbobject.PartitionInfo;
 import com.cubrid.cubridmigration.core.dbobject.PartitionTable;
 import com.cubrid.cubridmigration.core.dbobject.Schema;
 import com.cubrid.cubridmigration.core.dbobject.Sequence;
+import com.cubrid.cubridmigration.core.dbobject.Synonym;
 import com.cubrid.cubridmigration.core.dbobject.Table;
 import com.cubrid.cubridmigration.core.dbobject.View;
 import com.cubrid.cubridmigration.core.sql.SQLHelper;
@@ -678,6 +679,34 @@ public class CUBRIDSQLHelper extends
 		}
 		
 		sb.append(" ADD").append(" QUERY ").append(view.getQuerySpec());
+		sb.append(END_LINE_CHAR);
+		
+		return sb.toString();
+	}
+	
+	public String getSynonymDDL(Synonym synonym, boolean addUserSchema) {
+		StringBuffer sb = new StringBuffer();
+		sb.append("CREATE OR REPLACE SYNONYM ");
+		
+		String synonymName = synonym.getName();
+		if (synonymName != null) {
+			sb.append(getOwnerNameWithDot(synonym.getOwnerName(), addUserSchema));
+			sb.append(getQuotedObjName(synonymName));
+		}
+		
+		sb.append(" FOR ");
+		
+		String synonymTargetName = synonym.getTargetName();
+		if (synonymTargetName != null) {
+			sb.append(getOwnerNameWithDot(synonym.getTargetOwnerName(), addUserSchema));
+			sb.append(getQuotedObjName(synonymTargetName));
+		}
+		
+		String comment = synonym.getComment();
+		if (comment != null) {
+			sb.append(" COMMENT ");
+			sb.append("\'" + comment + "\'");
+		}
 		sb.append(END_LINE_CHAR);
 		
 		return sb.toString();
