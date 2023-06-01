@@ -37,6 +37,7 @@ package com.cubrid.cubridmigration.core.engine.config;
 public class SourceSynonymConfig extends 
 		SourceConfig {
 	private String owner;
+	private String sourceOwner;
 	private String targetOwner;
 	private boolean isPublic;
 	private String comment;
@@ -47,6 +48,14 @@ public class SourceSynonymConfig extends
 	
 	public void setOwner(String owner) {
 		this.owner = owner;
+	}
+	
+	public String getSourceOwner() {
+		return sourceOwner;
+	}
+	
+	public void setSourceOwner(String owner) {
+		this.sourceOwner = owner;
 	}
 	
 	public String getTargetOwner() {

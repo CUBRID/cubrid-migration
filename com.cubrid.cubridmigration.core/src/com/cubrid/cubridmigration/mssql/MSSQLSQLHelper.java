@@ -234,6 +234,18 @@ public class MSSQLSQLHelper extends
 	public String getQuotedObjName(String objectName) {
 		return new StringBuffer("[").append(objectName).append("]").toString();
 	}
+	
+	/**
+	 * return object with unquoted
+	 * 
+	 * @param objectName
+	 * @return String
+	 */
+	public String getUnquotedObjName(String objectName) {
+		objectName = objectName.replaceAll("\\[", "");
+		objectName = objectName.replaceAll("\\]", "");
+		return objectName;
+	}
 
 	//	/**
 	//	 * return DDL of a table

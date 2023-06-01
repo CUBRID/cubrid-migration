@@ -453,6 +453,7 @@ public class Messages extends
 	public static String lblStartTime;
 	public static String lblStartValue;
 	public static String lblSynonymName;
+	public static String lblSynonymOwnerName;
 	public static String lblSyonymPublic;
 	public static String lblSynonymTargetObjectName;
 	public static String lblSyonymTargetOwnerName;

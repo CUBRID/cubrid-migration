@@ -157,8 +157,8 @@ public class SynonymMappingView extends
 		}
 		grpSource.setSynonym(synonym);
 		btnCreate.setSelection(synonymConfig.isCreate());
-
-		Synonym tsynonym = config.getTargetSynonymSchema(synonymConfig.getTarget());
+		
+		Synonym tsynonym = config.getTargetSynonymWithSourceOwner(synonymConfig.getSourceOwner(), synonymConfig.getTarget());
 		if (tsynonym == null) {
 			grpTarget.setEditable(false);
 			return;
@@ -204,6 +204,7 @@ public class SynonymMappingView extends
 		
 		private Group grp;
 		private Text txtName;
+		private Text txtOwnerName;
 		private Text txtTargetName;
 		private Text txtTargetOwnerName;
 		private Button btnIsPublic;
@@ -226,6 +227,15 @@ public class SynonymMappingView extends
 			txtName.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
 			txtName.setTextLimit(CUBRIDDataTypeHelper.DB_OBJ_NAME_MAX_LENGTH);
 			txtName.setText("");
+			
+			Label lblOwnerName = new Label(grp, SWT.NONE);
+			lblOwnerName.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false));
+			lblOwnerName.setText(Messages.lblSynonymOwnerName);
+			
+			txtOwnerName = new Text(grp, SWT.BORDER);
+			txtOwnerName.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+			txtOwnerName.setTextLimit(CUBRIDDataTypeHelper.DB_OBJ_NAME_MAX_LENGTH);
+			txtOwnerName.setText("");
 			
 			Label lblTargetName = new Label(grp, SWT.NONE);
 			lblTargetName.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false));
@@ -262,6 +272,7 @@ public class SynonymMappingView extends
 		void setSynonym(Synonym synonym) {
 			this.synonym = synonym;
 			txtName.setText(synonym.getName());
+			txtOwnerName.setText(synonym.getOwnerName());
 			txtTargetOwnerName.setText(synonym.getTargetOwnerName());
 			txtTargetName.setText(synonym.getTargetName());
 			btnIsPublic.setSelection(synonym.isPublic());
@@ -274,6 +285,7 @@ public class SynonymMappingView extends
 		 */
 		void setEditable(boolean editable) {
 			txtName.setEditable(editable);
+			txtOwnerName.setEditable(editable);
 			txtTargetOwnerName.setEditable(editable);
 			txtTargetName.setEditable(editable);
 			btnIsPublic.setSelection(false);
