@@ -55,6 +55,7 @@ import com.cubrid.cubridmigration.core.engine.config.SourceFKConfig;
 import com.cubrid.cubridmigration.core.engine.config.SourceIndexConfig;
 import com.cubrid.cubridmigration.core.engine.config.SourceSQLTableConfig;
 import com.cubrid.cubridmigration.core.engine.config.SourceSequenceConfig;
+import com.cubrid.cubridmigration.core.engine.config.SourceSynonymConfig;
 import com.cubrid.cubridmigration.core.engine.config.SourceTableConfig;
 import com.cubrid.cubridmigration.core.engine.config.SourceViewConfig;
 import com.cubrid.cubridmigration.mysql.trans.MySQL2CUBRIDMigParas;
@@ -282,7 +283,6 @@ public class ConfirmationPage extends
 					text.append(lineSeparator);
 				}
 				
-				
 				// serial
 				text.append(tabSeparator);
 				text.append(Messages.confrimSerial).append(lineSeparator);
@@ -300,6 +300,37 @@ public class ConfirmationPage extends
 					if (isCreateFileRepository) {
 						text.append(tabSeparator).append(tabSeparator);
 						text.append(migration.getTargetSerialFileName(targetSchema.getTargetSchemaName()));
+						text.append(lineSeparator);
+						isCreateFileRepository = false;
+					}
+				}
+				if (styleRanges != null) {
+					styleRanges.add(new StyleRange(oldLength, text.length() - oldLength,
+							SWTResourceConstents.COLOR_BLUE, null));
+				}
+				if (text.length() == oldLength) {
+					text.append(tabSeparator).append(tabSeparator);
+					text.append("-");
+					text.append(lineSeparator);
+				}
+				
+				// synonym
+				text.append(tabSeparator);
+				text.append(Messages.confrimSynonym).append(lineSeparator);
+				isCreateFileRepository = false;
+				oldLength = text.length();
+				for (Schema targetSchema : migration.getTargetSchemaList()) {
+					for (SourceSynonymConfig expSynonym : migration.getExpSynonymCfg()) {
+						if (expSynonym.getTargetOwner().equals(targetSchema.getTargetSchemaName())
+								&& expSynonym.isCreate()) {
+							isCreateFileRepository = true;
+							break;
+						}
+					}
+					
+					if (isCreateFileRepository) {
+						text.append(tabSeparator).append(tabSeparator);
+						text.append(migration.getTargetSynonymFileListName(targetSchema.getTargetSchemaName()));
 						text.append(lineSeparator);
 						isCreateFileRepository = false;
 					}
@@ -562,6 +593,19 @@ public class ConfirmationPage extends
 		if (!sourceConfigSequencesList.isEmpty()) {
 			text.append(Messages.confrimExportSerial).append(lineSeparator);
 			for (SourceConfig sourceConfig : sourceConfigSequencesList) {
+				if (!sourceConfig.isCreate()) {
+					continue;
+				}
+				text.append(tabSeparator).append(sourceConfig.getName()).append(tabSeparator).append(
+						" -> ").append(tabSeparator).append(sourceConfig.getTarget()).append(
+						lineSeparator);
+			}
+		}
+		//synonym
+		List<SourceSynonymConfig> sourceConfigSynonymList = migration.getExpSynonymCfg();
+		if (!sourceConfigSynonymList.isEmpty()) {
+			text.append(Messages.confrimExportSynonym).append(lineSeparator);
+			for (SourceConfig sourceConfig : sourceConfigSynonymList) {
 				if (!sourceConfig.isCreate()) {
 					continue;
 				}

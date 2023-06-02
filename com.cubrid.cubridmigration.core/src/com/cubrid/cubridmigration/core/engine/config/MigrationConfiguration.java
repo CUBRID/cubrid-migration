@@ -619,10 +619,11 @@ public class MigrationConfiguration {
 				if (sc == null) {
 					sc = new SourceSynonymConfig();
 					sc.setName(synonym.getName());
-					sc.setOwner(synonym.getOwnerName());
-					sc.setSourceOwner(synonym.getSourceOwnerName());
+					sc.setOwner(sourceDBSchema.getTargetSchemaName());
 					sc.setTarget(getTargetName(allSynonymsCountMap, synonym.getOwnerName(), synonym.getName()));
-					sc.setTargetOwner(synonym.getTargetOwnerName());
+					sc.setTargetOwner(getSynonymOwner(schemas, synonym.getTargetOwnerName()));
+					sc.setBeforeOwner(synonym.getOwnerName());
+					sc.setBeforeTargetOwner(synonym.getTargetOwnerName());
 					sc.setCreate(false);
 					sc.setReplace(false);
 					sc.setComment(synonym.getComment());
@@ -2037,10 +2038,10 @@ public class MigrationConfiguration {
 				if (schema == null) {
 					return config;
 				}
-				if (schema.equalsIgnoreCase(config.getOwner())) {
+				if (schema.equalsIgnoreCase(config.getBeforeOwner())) {
 					return config;
 				}
-				if (config.getOwner() == null) {
+				if (config.getBeforeOwner() == null) {
 					result = config;
 					break;
 				}
@@ -2883,25 +2884,6 @@ public class MigrationConfiguration {
 		
 		for (Synonym synonym : this.targetSynonyms) {
 			if (synonym.getName().equalsIgnoreCase(target) && synonym.getOwnerName().equalsIgnoreCase(owner)) {
-				return synonym;
-			}
-		}
-		return null;
-	}
-	
-	/**
-	 * get target synonym by synonym name and synonym owner of the source db
-	 * 
-	 * @param String owner, String target
-	 * @return target synonym
-	 */
-	public Synonym getTargetSynonymWithSourceOwner(String owner, String target) {
-		if (owner == null) {
-			return getTargetSynonymSchema(target);
-		}
-		
-		for (Synonym synonym : this.targetSynonyms) {
-			if (synonym.getName().equalsIgnoreCase(target) && synonym.getSourceOwnerName().equalsIgnoreCase(owner)) {
 				return synonym;
 			}
 		}

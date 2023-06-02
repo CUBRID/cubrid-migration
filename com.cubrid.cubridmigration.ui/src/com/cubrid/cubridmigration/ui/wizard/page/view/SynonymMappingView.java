@@ -158,7 +158,7 @@ public class SynonymMappingView extends
 		grpSource.setSynonym(synonym);
 		btnCreate.setSelection(synonymConfig.isCreate());
 		
-		Synonym tsynonym = config.getTargetSynonymWithSourceOwner(synonymConfig.getSourceOwner(), synonymConfig.getTarget());
+		Synonym tsynonym = config.getTargetSynonymSchema(synonymConfig.getOwner(), synonymConfig.getTarget());
 		if (tsynonym == null) {
 			grpTarget.setEditable(false);
 			return;
@@ -304,6 +304,10 @@ public class SynonymMappingView extends
 			if (!MigrationCfgUtils.verifyTargetDBObjName(newName)) {
 				return new VerifyResultMessages(Messages.msgErrInvalidSynonymName, null, null);
 			}
+			final String newOwnerName = txtOwnerName.getText().trim().toLowerCase(Locale.US);
+			if (!MigrationCfgUtils.verifyTargetDBObjName(newOwnerName)) {
+				return new VerifyResultMessages(Messages.msgErrInvalidSynonymName, null, null);
+			}
 			if (StringUtils.isBlank(txtTargetOwnerName.getText())) {
 				txtTargetOwnerName.setFocus();
 				return new VerifyResultMessages(Messages.msgErrEmptyStartValue, null, null);
@@ -321,6 +325,7 @@ public class SynonymMappingView extends
 			
 			//Save target synonym
 			synonym.setName(newName);
+			synonym.setOwnerName(newOwnerName);
 			synonym.setTargetName(txtTargetName.getText());
 			synonym.setTargetOwnerName(txtTargetOwnerName.getText());
 			return new VerifyResultMessages();

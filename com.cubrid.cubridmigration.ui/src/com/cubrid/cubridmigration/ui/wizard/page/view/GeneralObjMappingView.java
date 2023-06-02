@@ -483,7 +483,7 @@ public class GeneralObjMappingView extends
 			}
 			Iterator<SourceSynonymConfig> itSynonyms = ipSynonyms.iterator();
 			while (itSynonyms.hasNext()) {
-				String owner = itSynonyms.next().getOwner();
+				String owner = itSynonyms.next().getBeforeOwner();
 				if (owner == null || schema.getName().equals(owner)) {
 					continue;
 				}

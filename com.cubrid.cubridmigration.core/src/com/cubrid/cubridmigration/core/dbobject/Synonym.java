@@ -47,7 +47,6 @@ public class Synonym extends
 	private String targetOwnerName;
 	private String comment;
 	private String createDDL;
-	private String sourceOwnerName;
 	
 	public Synonym() {
 		//do nothing
@@ -55,7 +54,7 @@ public class Synonym extends
 	
 	public Synonym(String name, String ownerName, boolean isPublic,
 			String targetName, String targetOwnerName, String comment,
-			String createDDL, String sourceOwnerName) {
+			String createDDL) {
 		this.name = name;
 		this.ownerName = ownerName;
 		this.isPublic = isPublic;
@@ -63,7 +62,6 @@ public class Synonym extends
 		this.targetOwnerName = targetOwnerName;
 		this.comment = comment;
 		this.createDDL = createDDL;
-		this.sourceOwnerName = sourceOwnerName;
 	}
 
 	/**
@@ -74,7 +72,7 @@ public class Synonym extends
 	public Object clone() {
 		final Synonym synonym = new Synonym(name, ownerName,
 				isPublic, targetName, targetOwnerName, comment, 
-				createDDL, sourceOwnerName);
+				createDDL);
 		synonym.setName(name);
 		synonym.setOwnerName(ownerName);
 		synonym.setPublic(isPublic);
@@ -82,7 +80,6 @@ public class Synonym extends
 		synonym.setTargetOwnerName(targetOwnerName);
 		synonym.setComment(comment);
 		synonym.setDDL(createDDL);
-		synonym.setSourceOwnerName(sourceOwnerName);
 		return synonym;
 	}
 
@@ -132,14 +129,6 @@ public class Synonym extends
 
 	public void setComment(String comment) {
 		this.comment = comment;
-	}
-
-	public String getSourceOwnerName() {
-		return sourceOwnerName;
-	}
-
-	public void setSourceOwnerName(String sourceOwnerName) {
-		this.sourceOwnerName = sourceOwnerName;
 	}
 
 	@Override

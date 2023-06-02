@@ -242,6 +242,7 @@ public class Messages extends
 	public static String confrimExportFKs;
 	public static String confrimExportIndexs;
 	public static String confrimExportSerial;
+	public static String confrimExportSynonym;
 	public static String confrimExportTables;
 	public static String confrimExportViews;
 	public static String confrimIndex;
@@ -251,6 +252,7 @@ public class Messages extends
 	public static String confrimPk;
 	public static String confrimFk;
 	public static String confrimSerial;
+	public static String confrimSynonym;
 	public static String confrimUpdateStatistic;
 	public static String confrimSQLTables;
 	public static String cUBRID2CUBRID;

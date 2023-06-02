@@ -731,7 +731,6 @@ public final class MSSQLSchemaFetcher extends
 				Synonym synonym = factory.createSynonym();
 				synonym.setName(rs.getString("name"));
 				synonym.setOwnerName(schema.getName());
-				synonym.setSourceOwnerName(schema.getName());
 				
 				synonym.setPublic(false);
 				
