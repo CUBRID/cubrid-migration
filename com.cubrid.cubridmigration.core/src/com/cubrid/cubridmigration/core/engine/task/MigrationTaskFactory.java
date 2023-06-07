@@ -38,6 +38,7 @@ import com.cubrid.cubridmigration.core.dbobject.Procedure;
 import com.cubrid.cubridmigration.core.dbobject.Record;
 import com.cubrid.cubridmigration.core.dbobject.Schema;
 import com.cubrid.cubridmigration.core.dbobject.Sequence;
+import com.cubrid.cubridmigration.core.dbobject.Synonym;
 import com.cubrid.cubridmigration.core.dbobject.Table;
 import com.cubrid.cubridmigration.core.dbobject.Trigger;
 import com.cubrid.cubridmigration.core.dbobject.View;
@@ -47,6 +48,7 @@ import com.cubrid.cubridmigration.core.engine.config.SourceCSVConfig;
 import com.cubrid.cubridmigration.core.engine.config.SourceConfig;
 import com.cubrid.cubridmigration.core.engine.config.SourceEntryTableConfig;
 import com.cubrid.cubridmigration.core.engine.config.SourceSequenceConfig;
+import com.cubrid.cubridmigration.core.engine.config.SourceSynonymConfig;
 import com.cubrid.cubridmigration.core.engine.config.SourceTableConfig;
 import com.cubrid.cubridmigration.core.engine.exporter.IMigrationExporter;
 import com.cubrid.cubridmigration.core.engine.importer.IMigrationImporter;
@@ -59,6 +61,7 @@ import com.cubrid.cubridmigration.core.engine.task.exp.PKExportTask;
 import com.cubrid.cubridmigration.core.engine.task.exp.ProcedureExportTask;
 import com.cubrid.cubridmigration.core.engine.task.exp.SQLExportTask;
 import com.cubrid.cubridmigration.core.engine.task.exp.SequenceExportTask;
+import com.cubrid.cubridmigration.core.engine.task.exp.SynonymExportTask;
 import com.cubrid.cubridmigration.core.engine.task.exp.TableRecordExportTask;
 import com.cubrid.cubridmigration.core.engine.task.exp.TableSchemaExportTask;
 import com.cubrid.cubridmigration.core.engine.task.exp.TriggerExportTask;
@@ -78,6 +81,7 @@ import com.cubrid.cubridmigration.core.engine.task.imp.SQLImportTask;
 import com.cubrid.cubridmigration.core.engine.task.imp.SchemaFileListTask;
 import com.cubrid.cubridmigration.core.engine.task.imp.SchemaImportTask;
 import com.cubrid.cubridmigration.core.engine.task.imp.SequenceImportTask;
+import com.cubrid.cubridmigration.core.engine.task.imp.SynonymImportTask;
 import com.cubrid.cubridmigration.core.engine.task.imp.TableSchemaImportTask;
 import com.cubrid.cubridmigration.core.engine.task.imp.TriggerImportTask;
 import com.cubrid.cubridmigration.core.engine.task.imp.UpdateAutoIncColCurrentValueTask;
@@ -210,6 +214,18 @@ public class MigrationTaskFactory {
 	 */
 	public SequenceExportTask createExportSequenceTask(SourceSequenceConfig sq) {
 		SequenceExportTask task = new SequenceExportTask(context.getConfig(), sq);
+		initExportTask(task, false);
+		return task;
+	}
+	
+	/**
+	 * createExportSynonymTask
+	 * 
+	 * @param sn Synonym
+	 * @return SynonymExportTask
+	 */
+	public SynonymExportTask createExportSynonymTask(SourceSynonymConfig sq) {
+		SynonymExportTask task = new SynonymExportTask(context.getConfig(), sq);
 		initExportTask(task, false);
 		return task;
 	}
@@ -392,6 +408,18 @@ public class MigrationTaskFactory {
 	 */
 	public ImportTask createImportSequenceTask(Sequence sq) {
 		SequenceImportTask task = new SequenceImportTask(sq);
+		initImportTask(task);
+		return task;
+	}
+	
+	/**
+	 * createImportSynonymTask
+	 * 
+	 * @param sn Synonym
+	 * @return SynonymImportTask
+	 */
+	public ImportTask createImportSynonymTask(Synonym sn) {
+		SynonymImportTask task = new SynonymImportTask(sn);
 		initImportTask(task);
 		return task;
 	}

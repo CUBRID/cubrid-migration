@@ -330,7 +330,7 @@ public class ConfirmationPage extends
 					
 					if (isCreateFileRepository) {
 						text.append(tabSeparator).append(tabSeparator);
-						text.append(migration.getTargetSynonymFileListName(targetSchema.getTargetSchemaName()));
+						text.append(migration.getTargetSynonymFileName(targetSchema.getTargetSchemaName()));
 						text.append(lineSeparator);
 						isCreateFileRepository = false;
 					}

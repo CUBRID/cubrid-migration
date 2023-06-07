@@ -46,6 +46,7 @@ import com.cubrid.cubridmigration.core.dbobject.PK;
 import com.cubrid.cubridmigration.core.dbobject.Record;
 import com.cubrid.cubridmigration.core.dbobject.Schema;
 import com.cubrid.cubridmigration.core.dbobject.Sequence;
+import com.cubrid.cubridmigration.core.dbobject.Synonym;
 import com.cubrid.cubridmigration.core.dbobject.Table;
 import com.cubrid.cubridmigration.core.dbobject.View;
 import com.cubrid.cubridmigration.core.engine.JDBCConManager;
@@ -224,6 +225,22 @@ public class JDBCImporter extends
 			createObjectSuccess(sq);
 		} catch (RuntimeException e) {
 			createObjectFailed(sq, e);
+		}
+	}
+	
+	/**
+	 * Create synonym
+	 * 
+	 * @param sn synonym
+	 */
+	public void createSynonym(Synonym sn) {
+		String ddl = CUBRIDSQLHelper.getInstance(null).getSynonymDDL(sn, config.isAddUserSchema());
+		sn.setDDL(ddl);
+		try {
+			executeDDL(ddl);
+			createObjectSuccess(sn);
+		} catch (RuntimeException e) {
+			createObjectFailed(sn, e);
 		}
 	}
 

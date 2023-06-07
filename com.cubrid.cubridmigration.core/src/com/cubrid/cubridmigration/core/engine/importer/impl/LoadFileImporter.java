@@ -106,6 +106,7 @@ public class LoadFileImporter extends
 	private final Map<String, String> fkFiles = new HashMap<String, String>();
 	private final Map<String, String> indexFiles = new HashMap<String, String>();
 	private final Map<String, String> sequenceFiles = new HashMap<String, String>();
+	private final Map<String, String> synonymFiles = new HashMap<String, String>();
 
 	private final Object lockObj = new Object();
 
@@ -275,6 +276,19 @@ public class LoadFileImporter extends
 	}
 	
 	/**
+	 * Send Synonym file to server loadDB command.
+	 * 
+	 * @param owner
+	 * @return synonym file full path
+	 */
+	protected String handleSynonymFile(String owner) {
+		if (!synonymFiles.containsKey(owner)) {
+			synonymFiles.put(owner, config.getTargetSynonymFileName(owner));
+		}
+		return synonymFiles.get(owner);
+	}
+	
+	/**
 	 * Send schema file and data file to server for loadDB command.
 	 * 
 	 * @param fileName the file to be sent.
@@ -317,6 +331,8 @@ public class LoadFileImporter extends
 				return handleIndexFile(owner);
 			} else if (objectType.equals(DBObject.OBJ_TYPE_SEQUENCE)) {
 				return handleSequenceFile(owner);
+			} else if (objectType.equals(DBObject.OBJ_TYPE_SYNONYM)) {
+				return handleSynonymFile(owner);
 			}
 		} else {
 			if (objectType.equals(DBObject.OBJ_TYPE_TABLE)

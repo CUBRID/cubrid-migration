@@ -686,7 +686,15 @@ public class CUBRIDSQLHelper extends
 	
 	public String getSynonymDDL(Synonym synonym, boolean addUserSchema) {
 		StringBuffer sb = new StringBuffer();
-		sb.append("CREATE OR REPLACE SYNONYM ");
+		sb.append("CREATE OR REPLACE");
+		
+		if (synonym.isPublic()) {
+			sb.append(" PUBLIC ");
+		} else {
+			sb.append(" PRIVATE ");
+		}
+		
+		sb.append("SYNONYM ");
 		
 		String synonymName = synonym.getName();
 		if (synonymName != null) {
@@ -707,7 +715,6 @@ public class CUBRIDSQLHelper extends
 			sb.append(" COMMENT ");
 			sb.append("\'" + comment + "\'");
 		}
-		sb.append(END_LINE_CHAR);
 		
 		return sb.toString();
 	}

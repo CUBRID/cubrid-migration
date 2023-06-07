@@ -784,7 +784,7 @@ public class SchemaMappingPage extends MigrationWizardPage {
 		config.setTargetSerialFileName(serialFullName);
 		config.setTargetUpdateStatisticFileName(updateStatisticFullName);
 		config.setTargetSchemaFileListName(schemaFileListFullName);
-		config.setTargetSynonymFileListName(synonymFileListFullName);
+		config.setTargetSynonymFileName(synonymFileListFullName);
 		
 		wizard.setSourceCatalog(srcCatalog);
 		getMigrationWizard().setSourceDBNode(srcCatalog);

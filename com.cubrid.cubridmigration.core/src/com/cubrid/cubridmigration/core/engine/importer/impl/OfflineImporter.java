@@ -65,6 +65,7 @@ import com.cubrid.cubridmigration.core.dbobject.Record;
 import com.cubrid.cubridmigration.core.dbobject.Record.ColumnValue;
 import com.cubrid.cubridmigration.core.dbobject.Schema;
 import com.cubrid.cubridmigration.core.dbobject.Sequence;
+import com.cubrid.cubridmigration.core.dbobject.Synonym;
 import com.cubrid.cubridmigration.core.dbobject.Table;
 import com.cubrid.cubridmigration.core.dbobject.View;
 import com.cubrid.cubridmigration.core.engine.MigrationContext;
@@ -712,6 +713,17 @@ public abstract class OfflineImporter extends
 		String ddl = CUBRIDSQLHelper.getInstance(null).getSequenceDDL(sq, config.isAddUserSchema());
 		sq.setDDL(ddl);
 		executeDDL(ddl + ";\n", DBObject.OBJ_TYPE_SEQUENCE, createResultHandler(sq), sq.getOwner());
+	}
+	
+	/**
+	 * Create synonym
+	 * 
+	 * @param sq the sequence to be created.
+	 */
+	public void createSynonym(Synonym sn) {
+		String ddl = CUBRIDSQLHelper.getInstance(null).getSynonymDDL(sn, config.isAddUserSchema());
+		sn.setDDL(ddl);
+		executeDDL(ddl + ";\n", DBObject.OBJ_TYPE_SYNONYM, createResultHandler(sn), sn.getOwnerName());
 	}
 	
 	public void createSchema(Schema schema) {
