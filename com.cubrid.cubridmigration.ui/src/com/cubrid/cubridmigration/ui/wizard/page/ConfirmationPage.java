@@ -602,16 +602,18 @@ public class ConfirmationPage extends
 			}
 		}
 		//synonym
-		List<SourceSynonymConfig> sourceConfigSynonymList = migration.getExpSynonymCfg();
-		if (!sourceConfigSynonymList.isEmpty()) {
-			text.append(Messages.confrimExportSynonym).append(lineSeparator);
-			for (SourceConfig sourceConfig : sourceConfigSynonymList) {
-				if (!sourceConfig.isCreate()) {
-					continue;
+		if (!migration.targetIsOnline() || Integer.parseInt(migration.getTargetDBVersion()) >= 112) {
+			List<SourceSynonymConfig> sourceConfigSynonymList = migration.getExpSynonymCfg();
+			if (!sourceConfigSynonymList.isEmpty()) {
+				text.append(Messages.confrimExportSynonym).append(lineSeparator);
+				for (SourceConfig sourceConfig : sourceConfigSynonymList) {
+					if (!sourceConfig.isCreate()) {
+						continue;
+					}
+					text.append(tabSeparator).append(sourceConfig.getName()).append(tabSeparator).append(
+							" -> ").append(tabSeparator).append(sourceConfig.getTarget()).append(
+							lineSeparator);
 				}
-				text.append(tabSeparator).append(sourceConfig.getName()).append(tabSeparator).append(
-						" -> ").append(tabSeparator).append(sourceConfig.getTarget()).append(
-						lineSeparator);
 			}
 		}
 		return text.toString();

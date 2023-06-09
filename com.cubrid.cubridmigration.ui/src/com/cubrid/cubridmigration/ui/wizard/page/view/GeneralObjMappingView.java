@@ -547,6 +547,8 @@ public class GeneralObjMappingView extends
 			}
 			names.put(name.toLowerCase(Locale.US), isCreate);
 		}
+		
+		names.clear();
 		for (int i = 0; i < tvSynonyms.getTable().getItemCount(); i++) {
 			TableItem ti = tvSynonyms.getTable().getItem(i);
 			Object[] obj = (Object[]) ti.getData();
@@ -557,7 +559,7 @@ public class GeneralObjMappingView extends
 					return new VerifyResultMessages(Messages.bind(Messages.msgErrInvalidSynonymName,
 							name), null, null);
 				}
-				if (names.get(name) != null) {
+				if (names.get(name) != null && names.get(name)) {
 					return new VerifyResultMessages(Messages.bind(Messages.msgErrDupSynonymName, name),
 							null, null);
 				}

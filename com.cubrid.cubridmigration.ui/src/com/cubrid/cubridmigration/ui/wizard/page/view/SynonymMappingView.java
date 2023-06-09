@@ -272,8 +272,8 @@ public class SynonymMappingView extends
 		void setSynonym(Synonym synonym) {
 			this.synonym = synonym;
 			txtName.setText(synonym.getName());
-			txtOwnerName.setText(synonym.getOwnerName());
-			txtTargetOwnerName.setText(synonym.getTargetOwnerName());
+			txtOwnerName.setText(synonym.getOwnerName() == null ? "" : synonym.getOwnerName());
+			txtTargetOwnerName.setText(synonym.getTargetOwnerName() == null ? "" : synonym.getTargetOwnerName());
 			txtTargetName.setText(synonym.getTargetName());
 			btnIsPublic.setSelection(synonym.isPublic());
 		}
