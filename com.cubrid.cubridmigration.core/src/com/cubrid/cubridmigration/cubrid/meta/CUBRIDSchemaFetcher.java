@@ -1795,7 +1795,10 @@ public final class CUBRIDSchemaFetcher extends
 	
 	protected void buildSynonym(Connection conn, Catalog catalog, Schema schema, 
 			IBuildSchemaFilter filter) throws SQLException {
-		
+		if (getDBVersion(conn) < USERSCHEMA_VERSION) {
+			schema.setSynonymList(new ArrayList<Synonym>());
+			return;
+		}
 		List<Synonym> synonymList = getAllSynonym(conn, schema);
 		schema.setSynonymList(synonymList);
 	}
@@ -2071,7 +2074,7 @@ public final class CUBRIDSchemaFetcher extends
 				synonym.setTargetName(rs.getString("target_name"));
 				synonym.setTargetOwnerName(rs.getString("target_owner_name"));
 				synonym.setComment(rs.getString("comment"));
-				
+				synonym.setDDL(CUBRIDSQLHelper.getInstance(null).getSynonymDDL(synonym, true));
 				synonyms.add(synonym);
 			}
 

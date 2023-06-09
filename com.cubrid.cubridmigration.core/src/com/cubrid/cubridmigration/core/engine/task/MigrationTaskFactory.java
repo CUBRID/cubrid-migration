@@ -62,6 +62,7 @@ import com.cubrid.cubridmigration.core.engine.task.exp.ProcedureExportTask;
 import com.cubrid.cubridmigration.core.engine.task.exp.SQLExportTask;
 import com.cubrid.cubridmigration.core.engine.task.exp.SequenceExportTask;
 import com.cubrid.cubridmigration.core.engine.task.exp.SynonymExportTask;
+import com.cubrid.cubridmigration.core.engine.task.exp.SynonymNoSupportExportTask;
 import com.cubrid.cubridmigration.core.engine.task.exp.TableRecordExportTask;
 import com.cubrid.cubridmigration.core.engine.task.exp.TableSchemaExportTask;
 import com.cubrid.cubridmigration.core.engine.task.exp.TriggerExportTask;
@@ -224,8 +225,20 @@ public class MigrationTaskFactory {
 	 * @param sn Synonym
 	 * @return SynonymExportTask
 	 */
-	public SynonymExportTask createExportSynonymTask(SourceSynonymConfig sq) {
-		SynonymExportTask task = new SynonymExportTask(context.getConfig(), sq);
+	public SynonymExportTask createExportSynonymTask(SourceSynonymConfig sn) {
+		SynonymExportTask task = new SynonymExportTask(context.getConfig(), sn);
+		initExportTask(task, false);
+		return task;
+	}
+	
+	/**
+	 * createNoSupportExportSynonymTask
+	 * 
+	 * @param sn Synonym
+	 * @return SynonymNoSupportExportTask
+	 */
+	public SynonymNoSupportExportTask createExportNoSupportSynonymTask(SourceSynonymConfig sn) {
+		SynonymNoSupportExportTask task = new SynonymNoSupportExportTask(context.getConfig(), sn);
 		initExportTask(task, false);
 		return task;
 	}

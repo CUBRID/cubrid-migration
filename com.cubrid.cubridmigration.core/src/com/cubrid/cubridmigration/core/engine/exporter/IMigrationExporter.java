@@ -80,4 +80,12 @@ public interface IMigrationExporter {
 	 * @return schema's DDL
 	 */
 	public DBObject exportTrigger(String tg);
+	
+	/**
+	 * Default return schema's DDL
+	 * 
+	 * @param syn Synonym name with schema name :schema.synonym
+	 * @return schema's DDL
+	 */
+	public DBObject exportSynonym(String syn);
 }

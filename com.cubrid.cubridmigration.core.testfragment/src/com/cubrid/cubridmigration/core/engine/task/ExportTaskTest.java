@@ -108,6 +108,10 @@ public class ExportTaskTest {
 			public DBObject exportFunction(String ft) {
 				return null;
 			}
+			
+			public DBObject exportSynonym(String syn) {
+				return null;
+			}
 
 			public void exportAllRecords(RecordExportedListener oneNewRecord) {
 

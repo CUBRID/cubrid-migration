@@ -64,5 +64,4 @@ public class SynonymExportTask extends
 		}
 		importTaskExecutor.execute((Runnable) taskFactory.createImportSynonymTask(targetSynonym));
 	}
-	
 }

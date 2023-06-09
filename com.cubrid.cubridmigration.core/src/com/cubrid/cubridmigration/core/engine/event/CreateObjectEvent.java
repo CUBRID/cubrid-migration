@@ -37,6 +37,7 @@ import com.cubrid.cubridmigration.core.dbobject.PK;
 import com.cubrid.cubridmigration.core.dbobject.Procedure;
 import com.cubrid.cubridmigration.core.dbobject.Schema;
 import com.cubrid.cubridmigration.core.dbobject.Sequence;
+import com.cubrid.cubridmigration.core.dbobject.Synonym;
 import com.cubrid.cubridmigration.core.dbobject.Table;
 import com.cubrid.cubridmigration.core.dbobject.Trigger;
 import com.cubrid.cubridmigration.core.dbobject.View;
@@ -120,6 +121,9 @@ public class CreateObjectEvent extends
 			sb.append("view[").append(dbObject.getName()).append("]");
 		} else if (dbObject instanceof Sequence) {
 			sb.append("sequence[").append(dbObject.getName()).append("]");
+		} else if (dbObject instanceof Synonym) {
+			sb.append("synonym[").append(((Synonym) dbObject).getOwnerName())
+				.append(".").append(dbObject.getName()).append("]");
 		}
 		if (error != null) {
 			sb.append(" unsuccessfully." + " Detail:" + error.getMessage());

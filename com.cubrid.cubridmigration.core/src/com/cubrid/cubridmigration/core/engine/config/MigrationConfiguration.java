@@ -331,6 +331,48 @@ public class MigrationConfiguration {
 		sc.setOwner(schema);
 		return sc;
 	}
+	
+	/**
+	 * Get exporting synonym
+	 * 
+	 * @param schema name
+	 * @param name of the object
+	 * @return synonym
+	 */
+	public Synonym getExpSynonym(String schema, String name) {
+		Schema sc = srcCatalog.getSchemaByName(schema);
+		if (sc != null) {
+			return sc.getSynonym(sc.getName(), name);
+		}
+		return null;
+	}
+	
+	/**
+	 * Add synonym to export configuration
+	 * 
+	 * @param schema Schema name
+	 * @param sourceName String
+	 * @param target String name
+	 * @return Retrieves the new SourceSynonymConfig has been added.
+	 */
+	public SourceSynonymConfig addExpSynonymCfg(String schema, String sourceName, 
+			String targetOwner, String target, String sourceDBOwner, String sourceDBTargetOwner) {
+		if (srcCatalog != null) {
+			throw new RuntimeException("Source database was specified.");
+		}
+		SourceSynonymConfig sc = getExpSynonymCfg(schema, sourceName);
+		if (sc == null) {
+			sc = new SourceSynonymConfig();
+			expSynonyms.add(sc);
+		}
+		sc.setOwner(schema);
+		sc.setName(sourceName);
+		sc.setTargetOwner(targetOwner);
+		sc.setTarget(StringUtils.lowerCase(target));
+		sc.setSourceDBOwner(sourceDBOwner);
+		sc.setSourceDBTargetOwner(sourceDBTargetOwner);
+		return sc;
+	}
 
 	/**
 	 * Add export SQL table configuration.
@@ -415,6 +457,18 @@ public class MigrationConfiguration {
 			return;
 		}
 		sqlFiles.add(value);
+	}
+	
+	/**
+	 * Add add target synonym
+	 * 
+	 * @param se Sequence
+	 */
+	public void addTargetSynonymSchema(Synonym syn) {
+		if (srcCatalog != null) {
+			throw new RuntimeException("Source database was specified.");
+		}
+		targetSynonyms.add(syn);
 	}
 
 	/**
@@ -622,8 +676,8 @@ public class MigrationConfiguration {
 					sc.setOwner(sourceDBSchema.getTargetSchemaName());
 					sc.setTarget(getTargetName(allSynonymsCountMap, synonym.getOwnerName(), synonym.getName()));
 					sc.setTargetOwner(getSynonymOwner(schemas, synonym.getTargetOwnerName()));
-					sc.setBeforeOwner(synonym.getOwnerName());
-					sc.setBeforeTargetOwner(synonym.getTargetOwnerName());
+					sc.setSourceDBOwner(synonym.getOwnerName());
+					sc.setSourceDBTargetOwner(synonym.getTargetOwnerName());
 					sc.setCreate(false);
 					sc.setReplace(false);
 					sc.setComment(synonym.getComment());
@@ -1536,6 +1590,13 @@ public class MigrationConfiguration {
 					expSerials.remove(sc);
 				}
 			}
+			
+			for (SourceConfig sc : getExpSynonymCfg()) {
+				if (!sc.isCreate()) {
+					targetSynonyms.remove(getTargetSynonymSchema(sc.getTarget()));
+					expSynonyms.remove(sc);
+				}
+			}
 			cleanN21Tables();
 		} else if (sourceType == SOURCE_TYPE_CSV) {
 			final Iterator<Table> it = targetTables.iterator();
@@ -1582,10 +1643,12 @@ public class MigrationConfiguration {
 		expFunctions.clear();
 		expProcedures.clear();
 		expTriggers.clear();
+		expSynonyms.clear();
 
 		targetSequences.clear();
 		targetTables.clear();
 		targetViews.clear();
+		targetSynonyms.clear();
 	}
 
 	/**
@@ -2038,10 +2101,10 @@ public class MigrationConfiguration {
 				if (schema == null) {
 					return config;
 				}
-				if (schema.equalsIgnoreCase(config.getBeforeOwner())) {
+				if (schema.equalsIgnoreCase(config.getSourceDBOwner())) {
 					return config;
 				}
-				if (config.getBeforeOwner() == null) {
+				if (config.getSourceDBOwner() == null) {
 					result = config;
 					break;
 				}

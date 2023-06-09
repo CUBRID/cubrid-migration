@@ -377,6 +377,22 @@ public class Schema extends DBObject implements
 
 		return true;
 	}
+	
+	/**
+	 * Retrieves the synonym by name
+	 * 
+	 * @param name synonym name
+	 * @return Synonym definition
+	 */
+	public Synonym getSynonym(String owner, String name) {
+		for (Synonym syn : synonymList) {
+			if (syn.getOwnerName().equalsIgnoreCase(owner) 
+					&& syn.getName().equalsIgnoreCase(name)) {
+				return syn;
+			}
+		}
+		return null;
+	}
 
 	/**
 	 * Retrieves the function by name

@@ -34,6 +34,7 @@ import org.apache.commons.lang.StringUtils;
 import com.cubrid.cubridmigration.core.dbobject.DBObject;
 import com.cubrid.cubridmigration.core.dbobject.Function;
 import com.cubrid.cubridmigration.core.dbobject.Procedure;
+import com.cubrid.cubridmigration.core.dbobject.Synonym;
 import com.cubrid.cubridmigration.core.dbobject.Trigger;
 import com.cubrid.cubridmigration.core.engine.ICanInterrupt;
 import com.cubrid.cubridmigration.core.engine.IMigrationEventHandler;
@@ -122,6 +123,29 @@ public abstract class MigrationExporter implements
 			name = array[1];
 		}
 		Trigger obj = config.getExpTrigger(schema, name);
+		return obj;
+	}
+	
+	/**
+	 * Default return schema's DDL
+	 * 
+	 * @param syn synonym
+	 * @return schema's DDL
+	 */
+	public DBObject exportSynonym(String sym) {
+		if (StringUtils.isBlank(sym)) {
+			return null;
+		}
+		String[] array = sym.split("\\.");
+		String schema = null;
+		String name = "";
+		if (array.length == 1) {
+			name = array[0];
+		} else if (array.length > 1) {
+			schema = array[0];
+			name = array[1];
+		}
+		Synonym obj = config.getExpSynonym(schema, name);
 		return obj;
 	}
 

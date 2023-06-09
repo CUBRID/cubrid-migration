@@ -47,6 +47,7 @@ import com.cubrid.cubridmigration.core.dbobject.FK;
 import com.cubrid.cubridmigration.core.dbobject.Index;
 import com.cubrid.cubridmigration.core.dbobject.PK;
 import com.cubrid.cubridmigration.core.dbobject.Sequence;
+import com.cubrid.cubridmigration.core.dbobject.Synonym;
 import com.cubrid.cubridmigration.core.dbobject.Table;
 import com.cubrid.cubridmigration.core.dbobject.View;
 import com.cubrid.cubridmigration.core.engine.config.MigrationConfiguration;
@@ -74,7 +75,7 @@ public class MigrationReport implements
 
 	private final static String[] OVERVIEW_TYPES = new String[] {DBObject.OBJ_TYPE_SCHEMA, DBObject.OBJ_TYPE_TABLE,
 			DBObject.OBJ_TYPE_VIEW, DBObject.OBJ_TYPE_PK, DBObject.OBJ_TYPE_FK,
-			DBObject.OBJ_TYPE_INDEX, DBObject.OBJ_TYPE_SEQUENCE, DBObject.OBJ_TYPE_TRIGGER,
+			DBObject.OBJ_TYPE_INDEX, DBObject.OBJ_TYPE_SEQUENCE, DBObject.OBJ_TYPE_SYNONYM, DBObject.OBJ_TYPE_TRIGGER,
 			DBObject.OBJ_TYPE_FUNCTION, DBObject.OBJ_TYPE_PROCEDURE, DBObject.OBJ_TYPE_RECORD};
 
 	/**
@@ -96,6 +97,9 @@ public class MigrationReport implements
 			} else {
 				return tempTable.getName();
 			}
+		} else if (obj instanceof Synonym) {
+			Synonym synonym = (Synonym) obj;
+			return synonym.getOwnerName() + "." + synonym.getName();
 		}
 		
 		return obj.getName();

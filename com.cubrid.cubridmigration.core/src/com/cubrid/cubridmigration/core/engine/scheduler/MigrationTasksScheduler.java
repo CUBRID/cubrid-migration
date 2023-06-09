@@ -62,6 +62,8 @@ import com.cubrid.cubridmigration.core.engine.task.MigrationTaskFactory;
  */
 public class MigrationTasksScheduler {
 
+	private final int USERSCHEMA_VERSION = 112;
+	
 	protected MigrationTaskFactory taskFactory;
 	protected MigrationContext context;
 
@@ -94,7 +96,13 @@ public class MigrationTasksScheduler {
 		createViews();
 		alterViews();
 		createSerials();
-		createSynonyms();
+		
+		if (config.targetIsOnline() 
+				&& Integer.parseInt(config.getTargetDBVersion()) < USERSCHEMA_VERSION) {
+			createNoSupportSynonyms();
+		} else {
+			createSynonyms();
+		}
 
 		executeUserSQLs();
 		boolean constrainsCreated = false;
@@ -473,6 +481,15 @@ public class MigrationTasksScheduler {
 		List<SourceSynonymConfig> synonyms = config.getExpSynonymCfg();
 		for (SourceSynonymConfig sn : synonyms) {
 			executeTask(taskFactory.createExportSynonymTask(sn));
+		}
+		await();
+	}
+	
+	protected void createNoSupportSynonyms() {
+		MigrationConfiguration config = context.getConfig();
+		List<SourceSynonymConfig> synonyms = config.getExpSynonymCfg();
+		for (SourceSynonymConfig sn : synonyms) {
+			executeTask(taskFactory.createExportNoSupportSynonymTask(sn));
 		}
 		await();
 	}

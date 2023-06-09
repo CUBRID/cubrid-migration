@@ -40,8 +40,8 @@ public class SourceSynonymConfig extends
 	private String targetOwner;
 	private boolean isPublic;
 	private String comment;
-	private String beforeOwner;
-	private String beforeTargetOwner;
+	private String sourceDBOwner;
+	private String sourceDBTargetOwner;
 	
 	public String getOwner() {
 		return owner;
@@ -75,19 +75,19 @@ public class SourceSynonymConfig extends
 		this.comment = comment;
 	}
 
-	public String getBeforeOwner() {
-		return beforeOwner;
+	public String getSourceDBOwner() {
+		return sourceDBOwner;
 	}
 
-	public void setBeforeOwner(String beforeOwner) {
-		this.beforeOwner = beforeOwner;
+	public void setSourceDBOwner(String sourceDBOwner) {
+		this.sourceDBOwner = sourceDBOwner;
 	}
 
-	public String getBeforeTargetOwner() {
-		return beforeTargetOwner;
+	public String getSourceDBTargetOwner() {
+		return sourceDBTargetOwner;
 	}
 
-	public void setBeforeTargetOwner(String beforeTargetOwner) {
-		this.beforeTargetOwner = beforeTargetOwner;
+	public void setSourceDBTargetOwner(String sourceDBTargetOwner) {
+		this.sourceDBTargetOwner = sourceDBTargetOwner;
 	}
 }
