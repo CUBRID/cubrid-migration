@@ -225,6 +225,7 @@ public class MigrationTasksScheduler {
 					PathUtils.deleteFile(new File(config.getTargetFkFileName(schemaName)));
 					PathUtils.deleteFile(new File(config.getTargetSerialFileName(schemaName)));
 					PathUtils.deleteFile(new File(config.getTargetSchemaFileListName(schemaName)));
+					PathUtils.deleteFile(new File(config.getTargetSynonymFileName(schemaName)));
 				} else {
 					PathUtils.deleteFile(new File(config.getTargetSchemaFileName(schemaName)));
 				}
