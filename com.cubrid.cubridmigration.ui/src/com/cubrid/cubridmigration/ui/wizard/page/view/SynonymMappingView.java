@@ -205,8 +205,8 @@ public class SynonymMappingView extends
 		private Group grp;
 		private Text txtName;
 		private Text txtOwnerName;
-		private Text txtTargetName;
-		private Text txtTargetOwnerName;
+		private Text txtObjectName;
+		private Text txtObjectOwnerName;
 		
 		private Synonym synonym;
 		
@@ -236,23 +236,23 @@ public class SynonymMappingView extends
 			txtOwnerName.setTextLimit(CUBRIDDataTypeHelper.DB_OBJ_NAME_MAX_LENGTH);
 			txtOwnerName.setText("");
 			
-			Label lblTargetName = new Label(grp, SWT.NONE);
-			lblTargetName.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false));
-			lblTargetName.setText(Messages.lblSynoymTargetOwnerName);
-			
-			txtTargetOwnerName = new Text(grp, SWT.BORDER);
-			txtTargetOwnerName.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
-			txtTargetOwnerName.setTextLimit(CUBRIDDataTypeHelper.DB_OBJ_NAME_MAX_LENGTH);
-			txtTargetOwnerName.setText("");
-			
 			Label lblTargetObjectName = new Label(grp, SWT.NONE);
 			lblTargetObjectName.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false));
-			lblTargetObjectName.setText(Messages.lblSynonymTargetObjectName);
+			lblTargetObjectName.setText(Messages.lblSynonymObjectName);
 			
-			txtTargetName = new Text(grp, SWT.BORDER);
-			txtTargetName.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
-			txtTargetName.setTextLimit(CUBRIDDataTypeHelper.DB_OBJ_NAME_MAX_LENGTH);
-			txtTargetName.setText("");
+			txtObjectName = new Text(grp, SWT.BORDER);
+			txtObjectName.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+			txtObjectName.setTextLimit(CUBRIDDataTypeHelper.DB_OBJ_NAME_MAX_LENGTH);
+			txtObjectName.setText("");
+			
+			Label lblTargetName = new Label(grp, SWT.NONE);
+			lblTargetName.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false));
+			lblTargetName.setText(Messages.lblSynonymObjectOwnerName);
+			
+			txtObjectOwnerName = new Text(grp, SWT.BORDER);
+			txtObjectOwnerName.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+			txtObjectOwnerName.setTextLimit(CUBRIDDataTypeHelper.DB_OBJ_NAME_MAX_LENGTH);
+			txtObjectOwnerName.setText("");
 			
 			Label sep = new Label(grp, SWT.NONE);
 			sep.setText("");
@@ -267,8 +267,8 @@ public class SynonymMappingView extends
 			this.synonym = synonym;
 			txtName.setText(synonym.getName());
 			txtOwnerName.setText(synonym.getOwnerName() == null ? "" : synonym.getOwnerName());
-			txtTargetOwnerName.setText(synonym.getTargetOwnerName() == null ? "" : synonym.getTargetOwnerName());
-			txtTargetName.setText(synonym.getTargetName());
+			txtObjectOwnerName.setText(synonym.getTargetOwnerName() == null ? "" : synonym.getTargetOwnerName());
+			txtObjectName.setText(synonym.getTargetName());
 		}
 		
 		/**
@@ -279,8 +279,8 @@ public class SynonymMappingView extends
 		void setEditable(boolean editable) {
 			txtName.setEditable(editable);
 			txtOwnerName.setEditable(editable);
-			txtTargetOwnerName.setEditable(editable);
-			txtTargetName.setEditable(editable);
+			txtObjectOwnerName.setEditable(editable);
+			txtObjectName.setEditable(editable);
 		}
 		
 		/**
@@ -300,12 +300,12 @@ public class SynonymMappingView extends
 			if (!MigrationCfgUtils.verifyTargetDBObjName(newOwnerName)) {
 				return new VerifyResultMessages(Messages.msgErrInvalidSynonymName, null, null);
 			}
-			if (StringUtils.isBlank(txtTargetOwnerName.getText())) {
-				txtTargetOwnerName.setFocus();
+			if (StringUtils.isBlank(txtObjectOwnerName.getText())) {
+				txtObjectOwnerName.setFocus();
 				return new VerifyResultMessages(Messages.msgErrEmptyStartValue, null, null);
 			}
-			if (StringUtils.isBlank(txtTargetName.getText())) {
-				txtTargetName.setFocus();
+			if (StringUtils.isBlank(txtObjectName.getText())) {
+				txtObjectName.setFocus();
 				return new VerifyResultMessages(Messages.msgErrEmptyStartValue, null, null);
 			}
 			if (!newName.equalsIgnoreCase(synonym.getName())) {
@@ -318,8 +318,8 @@ public class SynonymMappingView extends
 			//Save target synonym
 			synonym.setName(newName);
 			synonym.setOwnerName(newOwnerName);
-			synonym.setTargetName(txtTargetName.getText());
-			synonym.setTargetOwnerName(txtTargetOwnerName.getText());
+			synonym.setTargetName(txtObjectName.getText());
+			synonym.setTargetOwnerName(txtObjectOwnerName.getText());
 			return new VerifyResultMessages();
 		}
 	}
