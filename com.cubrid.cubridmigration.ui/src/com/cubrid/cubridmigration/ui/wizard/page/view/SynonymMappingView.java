@@ -207,7 +207,6 @@ public class SynonymMappingView extends
 		private Text txtOwnerName;
 		private Text txtTargetName;
 		private Text txtTargetOwnerName;
-		private Button btnIsPublic;
 		
 		private Synonym synonym;
 		
@@ -239,7 +238,7 @@ public class SynonymMappingView extends
 			
 			Label lblTargetName = new Label(grp, SWT.NONE);
 			lblTargetName.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false));
-			lblTargetName.setText(Messages.lblSyonymTargetOwnerName);
+			lblTargetName.setText(Messages.lblSynoymTargetOwnerName);
 			
 			txtTargetOwnerName = new Text(grp, SWT.BORDER);
 			txtTargetOwnerName.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
@@ -257,11 +256,6 @@ public class SynonymMappingView extends
 			
 			Label sep = new Label(grp, SWT.NONE);
 			sep.setText("");
-			
-			btnIsPublic = new Button(grp, SWT.CHECK);
-			btnIsPublic.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
-			btnIsPublic.setText(Messages.lblSyonymPublic);
-			btnIsPublic.setEnabled(false);
 		}
 		
 		/**
@@ -275,7 +269,6 @@ public class SynonymMappingView extends
 			txtOwnerName.setText(synonym.getOwnerName() == null ? "" : synonym.getOwnerName());
 			txtTargetOwnerName.setText(synonym.getTargetOwnerName() == null ? "" : synonym.getTargetOwnerName());
 			txtTargetName.setText(synonym.getTargetName());
-			btnIsPublic.setSelection(synonym.isPublic());
 		}
 		
 		/**
@@ -288,7 +281,6 @@ public class SynonymMappingView extends
 			txtOwnerName.setEditable(editable);
 			txtTargetOwnerName.setEditable(editable);
 			txtTargetName.setEditable(editable);
-			btnIsPublic.setSelection(false);
 		}
 		
 		/**

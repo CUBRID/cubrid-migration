@@ -458,7 +458,7 @@ public class Messages extends
 	public static String lblSynonymOwnerName;
 	public static String lblSyonymPublic;
 	public static String lblSynonymTargetObjectName;
-	public static String lblSyonymTargetOwnerName;
+	public static String lblSynoymTargetOwnerName;
 	public static String lblTableName;
 	public static String lblTarget;
 	public static String lblTargetTableName;
