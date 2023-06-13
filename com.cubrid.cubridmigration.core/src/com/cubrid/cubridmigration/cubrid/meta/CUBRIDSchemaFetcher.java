@@ -2069,10 +2069,10 @@ public final class CUBRIDSchemaFetcher extends
 			while (rs.next()) {
 				Synonym synonym = factory.createSynonym();
 				synonym.setName(rs.getString("synonym_name"));
-				synonym.setOwnerName(rs.getString("synonym_owner_name"));
+				synonym.setOwner(rs.getString("synonym_owner_name"));
 				synonym.setPublic(isYes(rs.getString("is_public_synonym")));
-				synonym.setTargetName(rs.getString("target_name"));
-				synonym.setTargetOwnerName(rs.getString("target_owner_name"));
+				synonym.setObjectName(rs.getString("target_name"));
+				synonym.setObjectOwner(rs.getString("target_owner_name"));
 				synonym.setComment(rs.getString("comment"));
 				synonym.setDDL(CUBRIDSQLHelper.getInstance(null).getSynonymDDL(synonym, true));
 				synonyms.add(synonym);

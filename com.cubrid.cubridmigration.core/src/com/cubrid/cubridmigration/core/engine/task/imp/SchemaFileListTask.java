@@ -81,6 +81,15 @@ public class SchemaFileListTask extends ImportTask {
 					sb.append(getFileName(tableFileRepository));
 					sb.append(System.lineSeparator());
 				}
+				
+				// synonym
+				String synonymFileRepository = config.getTargetSynonymFileName(schemaName);
+				if (checkFileRepository(synonymFileRepository)) {
+					isCreateSchemaListFile = true;
+					sb.append(getFileName(synonymFileRepository));
+					sb.append(System.lineSeparator());
+				}
+				
 				// view
 				String viewFileRepository = config.getTargetViewFileName(schemaName);
 				if (checkFileRepository(viewFileRepository)) {

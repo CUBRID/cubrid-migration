@@ -38,10 +38,12 @@ public class SourceSynonymConfig extends
 		SourceConfig {
 	private String owner;
 	private String targetOwner;
+	private String objectName;
+	private String objectOwner;
+	private String objectTargetName;
+	private String objectTargetOwner;
 	private boolean isPublic;
 	private String comment;
-	private String sourceDBOwner;
-	private String sourceDBTargetOwner;
 	
 	public String getOwner() {
 		return owner;
@@ -55,10 +57,42 @@ public class SourceSynonymConfig extends
 		return targetOwner;
 	}
 	
-	public void setTargetOwner(String tartgetOwner) {
-		this.targetOwner = tartgetOwner;
+	public void setTargetOwner(String targetOwner) {
+		this.targetOwner = targetOwner;
 	}
-	
+
+	public String getObjectName() {
+		return objectName;
+	}
+
+	public void setObjectName(String objectName) {
+		this.objectName = objectName;
+	}
+
+	public String getObjectOwner() {
+		return objectOwner;
+	}
+
+	public void setObjectOwner(String objectOwner) {
+		this.objectOwner = objectOwner;
+	}
+
+	public String getObjectTargetName() {
+		return objectTargetName;
+	}
+
+	public void setObjectTargetName(String objectTargetName) {
+		this.objectTargetName = objectTargetName;
+	}
+
+	public String getObjectTargetOwner() {
+		return objectTargetOwner;
+	}
+
+	public void setObjectTargetOwner(String objectTargetOwner) {
+		this.objectTargetOwner = objectTargetOwner;
+	}
+
 	public boolean isPublic() {
 		return isPublic;
 	}
@@ -73,21 +107,5 @@ public class SourceSynonymConfig extends
 	
 	public void setComment(String comment) {
 		this.comment = comment;
-	}
-
-	public String getSourceDBOwner() {
-		return sourceDBOwner;
-	}
-
-	public void setSourceDBOwner(String sourceDBOwner) {
-		this.sourceDBOwner = sourceDBOwner;
-	}
-
-	public String getSourceDBTargetOwner() {
-		return sourceDBTargetOwner;
-	}
-
-	public void setSourceDBTargetOwner(String sourceDBTargetOwner) {
-		this.sourceDBTargetOwner = sourceDBTargetOwner;
 	}
 }

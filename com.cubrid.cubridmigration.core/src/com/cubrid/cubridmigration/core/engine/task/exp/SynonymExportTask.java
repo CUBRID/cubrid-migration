@@ -57,7 +57,7 @@ public class SynonymExportTask extends
 	protected void executeExportTask() {
 		Synonym targetSynonym = null;
 		
-		targetSynonym = config.getTargetSynonymSchema(sn.getOwner(), sn.getName());
+		targetSynonym = config.getTargetSynonymSchema(sn.getTargetOwner(), sn.getTarget());
 		
 		if (targetSynonym == null) {
 			return;

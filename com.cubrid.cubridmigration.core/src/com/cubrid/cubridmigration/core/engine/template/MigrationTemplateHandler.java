@@ -447,9 +447,9 @@ public final class MigrationTemplateHandler extends
 	private void parseTargetSynonym(Attributes attributes) {
 		Synonym syn = new Synonym();
 		syn.setName(attributes.getValue(TemplateTags.ATTR_NAME));
-		syn.setOwnerName(attributes.getValue(TemplateTags.ATTR_OWNER));
-		syn.setTargetName(attributes.getValue(TemplateTags.ATTR_TARGET));
-		syn.setTargetOwnerName(attributes.getValue(TemplateTags.ATTR_TARGET_OWNER));
+		syn.setOwner(attributes.getValue(TemplateTags.ATTR_OWNER));
+		syn.setObjectName(attributes.getValue(TemplateTags.ATTR_SYNONYM_OBJECT));
+		syn.setObjectOwner(attributes.getValue(TemplateTags.ATTR_SYNONYM_OBJECT_OWNER));
 		syn.setPublic(false);
 		config.addTargetSynonymSchema(syn);
 	}
@@ -682,8 +682,10 @@ public final class MigrationTemplateHandler extends
 					attributes.getValue(TemplateTags.ATTR_NAME),
 					attributes.getValue(TemplateTags.ATTR_TARGET_OWNER),
 					attributes.getValue(TemplateTags.ATTR_TARGET),
-					attributes.getValue(TemplateTags.ATTR_SOURCE_DB_OWNER),
-					attributes.getValue(TemplateTags.ATTR_SOURCE_DB_TARGET_OWNER));
+					attributes.getValue(TemplateTags.ATTR_SYNONYM_OBJECT_OWNER),
+					attributes.getValue(TemplateTags.ATTR_SYNONYM_OBJECT),
+					attributes.getValue(TemplateTags.ATTR_SYNONYM_OBJECT_TARGET_OWNER),
+					attributes.getValue(TemplateTags.ATTR_SYNONYM_OBJECT_TARGET));
 		} else if (TemplateTags.TAG_VIEW.equals(qName)) {
 			config.addExpViewCfg(attributes.getValue(TemplateTags.ATTR_OWNER),
 					attributes.getValue(TemplateTags.ATTR_NAME),

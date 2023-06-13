@@ -99,7 +99,7 @@ public class MigrationReport implements
 			}
 		} else if (obj instanceof Synonym) {
 			Synonym synonym = (Synonym) obj;
-			return synonym.getOwnerName() + "." + synonym.getName();
+			return synonym.getOwner() + "." + synonym.getName();
 		}
 		
 		return obj.getName();

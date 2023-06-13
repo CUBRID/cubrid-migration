@@ -483,7 +483,7 @@ public class GeneralObjMappingView extends
 			}
 			Iterator<SourceSynonymConfig> itSynonyms = ipSynonyms.iterator();
 			while (itSynonyms.hasNext()) {
-				String owner = itSynonyms.next().getSourceDBOwner();
+				String owner = itSynonyms.next().getOwner();
 				if (owner == null || schema.getName().equals(owner)) {
 					continue;
 				}
@@ -552,7 +552,7 @@ public class GeneralObjMappingView extends
 		for (int i = 0; i < tvSynonyms.getTable().getItemCount(); i++) {
 			TableItem ti = tvSynonyms.getTable().getItem(i);
 			Object[] obj = (Object[]) ti.getData();
-			final String name = obj[1].toString();
+			final String name = obj[0].toString();
 			final Boolean isCreate = (Boolean) obj[2];
 			if (isCreate) {
 				if (!MigrationCfgUtils.verifyTargetDBObjName(name)) {

@@ -411,10 +411,10 @@ public final class MigrationTemplateParser {
 		for (Synonym sc : targetSynonyms) {
 			Element synonym = createElement(document, synonyms, TemplateTags.TAG_SYNONYM);
 			//CMT112 script control. add owner in synonym
-			synonym.setAttribute(TemplateTags.ATTR_OWNER, sc.getOwnerName());
+			synonym.setAttribute(TemplateTags.ATTR_OWNER, sc.getOwner());
 			synonym.setAttribute(TemplateTags.ATTR_NAME, sc.getName());
-			synonym.setAttribute(TemplateTags.ATTR_TARGET_OWNER, sc.getTargetOwnerName());
-			synonym.setAttribute(TemplateTags.ATTR_TARGET, sc.getTargetName());
+			synonym.setAttribute(TemplateTags.ATTR_SYNONYM_OBJECT_OWNER, sc.getObjectOwner());
+			synonym.setAttribute(TemplateTags.ATTR_SYNONYM_OBJECT, sc.getObjectName());
 		}
 	}
 
@@ -891,8 +891,10 @@ public final class MigrationTemplateParser {
 				synonym.setAttribute(TemplateTags.ATTR_NAME, sc.getName());
 				synonym.setAttribute(TemplateTags.ATTR_TARGET_OWNER, sc.getTargetOwner());
 				synonym.setAttribute(TemplateTags.ATTR_TARGET, sc.getTarget());
-				synonym.setAttribute(TemplateTags.ATTR_SOURCE_DB_OWNER, sc.getSourceDBOwner());
-				synonym.setAttribute(TemplateTags.ATTR_SOURCE_DB_TARGET_OWNER, sc.getSourceDBTargetOwner());
+				synonym.setAttribute(TemplateTags.ATTR_SYNONYM_OBJECT_OWNER, sc.getObjectOwner());
+				synonym.setAttribute(TemplateTags.ATTR_SYNONYM_OBJECT, sc.getObjectName());
+				synonym.setAttribute(TemplateTags.ATTR_SYNONYM_OBJECT_TARGET_OWNER, sc.getObjectTargetOwner());
+				synonym.setAttribute(TemplateTags.ATTR_SYNONYM_OBJECT_TARGET, sc.getObjectTargetName());
 			}
 		}
 		//source views

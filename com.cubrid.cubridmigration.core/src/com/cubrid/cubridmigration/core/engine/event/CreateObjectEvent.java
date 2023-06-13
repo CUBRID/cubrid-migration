@@ -122,7 +122,7 @@ public class CreateObjectEvent extends
 		} else if (dbObject instanceof Sequence) {
 			sb.append("sequence[").append(dbObject.getName()).append("]");
 		} else if (dbObject instanceof Synonym) {
-			sb.append("synonym[").append(((Synonym) dbObject).getOwnerName())
+			sb.append("synonym[").append(((Synonym) dbObject).getOwner())
 				.append(".").append(dbObject.getName()).append("]");
 		}
 		if (error != null) {

@@ -21,6 +21,6 @@ public class SynonymNoSupportExportTask extends
 	@Override
 	protected void executeExportTask() {
 		eventHandler.handleEvent(new MigrationNoSupportEvent(
-				exporter.exportSynonym(sn.getSourceDBOwner() + "." + sn.getName())));
+				exporter.exportSynonym(sn.getOwner() + "." + sn.getName())));
 	}
 }

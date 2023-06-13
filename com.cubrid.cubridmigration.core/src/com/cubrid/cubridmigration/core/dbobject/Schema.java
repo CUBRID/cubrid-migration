@@ -316,7 +316,7 @@ public class Schema extends DBObject implements
 		}
 		if (!synonymList.contains(sn)) {
 			synonymList.add(sn);
-			sn.setOwnerName(getName());
+			sn.setOwner(getName());
 		}
 	}
 
@@ -386,7 +386,7 @@ public class Schema extends DBObject implements
 	 */
 	public Synonym getSynonym(String owner, String name) {
 		for (Synonym syn : synonymList) {
-			if (syn.getOwnerName().equalsIgnoreCase(owner) 
+			if (syn.getOwner().equalsIgnoreCase(owner) 
 					&& syn.getName().equalsIgnoreCase(name)) {
 				return syn;
 			}

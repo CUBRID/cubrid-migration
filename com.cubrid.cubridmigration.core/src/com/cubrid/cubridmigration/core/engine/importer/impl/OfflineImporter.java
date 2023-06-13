@@ -718,12 +718,12 @@ public abstract class OfflineImporter extends
 	/**
 	 * Create synonym
 	 * 
-	 * @param sq the sequence to be created.
+	 * @param sq the synonym to be created.
 	 */
 	public void createSynonym(Synonym sn) {
 		String ddl = CUBRIDSQLHelper.getInstance(null).getSynonymDDL(sn, config.isAddUserSchema());
 		sn.setDDL(ddl);
-		executeDDL(ddl + ";\n", DBObject.OBJ_TYPE_SYNONYM, createResultHandler(sn), sn.getOwnerName());
+		executeDDL(ddl + ";\n", DBObject.OBJ_TYPE_SYNONYM, createResultHandler(sn), sn.getOwner());
 	}
 	
 	public void createSchema(Schema schema) {

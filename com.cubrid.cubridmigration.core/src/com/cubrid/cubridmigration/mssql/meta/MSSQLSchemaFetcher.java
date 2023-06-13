@@ -730,19 +730,19 @@ public final class MSSQLSchemaFetcher extends
 			while (rs.next()) {
 				Synonym synonym = factory.createSynonym();
 				synonym.setName(rs.getString("name"));
-				synonym.setOwnerName(schema.getName());
+				synonym.setOwner(schema.getName());
 				
 				synonym.setPublic(false);
 				
 				String baseObjectName = rs.getString("base_object_name");
 				if (baseObjectName.contains(".")) {
 					String[] baseObjectNameArray = baseObjectName.split("\\.");
-					synonym.setTargetOwnerName(MSSQLSQLHelper.getInstance(null)
+					synonym.setObjectOwner(MSSQLSQLHelper.getInstance(null)
 							.getUnquotedObjName(baseObjectNameArray[0]));
-					synonym.setTargetName(MSSQLSQLHelper.getInstance(null)
+					synonym.setObjectName(MSSQLSQLHelper.getInstance(null)
 							.getUnquotedObjName(baseObjectNameArray[1]));
 				} else {
-					synonym.setTargetName(baseObjectName);
+					synonym.setObjectName(baseObjectName);
 				}
 				synonyms.add(synonym);
 			}

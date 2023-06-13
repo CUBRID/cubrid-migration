@@ -94,15 +94,14 @@ public class MigrationTasksScheduler {
 		createSchema();
 		createTables();
 		createViews();
-		alterViews();
-		createSerials();
-		
 		if (config.targetIsOnline() 
 				&& Integer.parseInt(config.getTargetDBVersion()) < USERSCHEMA_VERSION) {
 			createNoSupportSynonyms();
 		} else {
 			createSynonyms();
 		}
+		alterViews();
+		createSerials();
 
 		executeUserSQLs();
 		boolean constrainsCreated = false;

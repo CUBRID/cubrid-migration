@@ -415,10 +415,10 @@ public final class OracleSchemaFetcher extends
 				String targetName = rs.getString("TABLE_NAME");
 				Synonym synonym = factory.createSynonym();
 				synonym.setName(synonymName);
-				synonym.setOwnerName(schema.getName());
+				synonym.setOwner(schema.getName());
 				synonym.setPublic(false);
-				synonym.setTargetName(targetName);
-				synonym.setTargetOwnerName(targetOwnerName);
+				synonym.setObjectName(targetName);
+				synonym.setObjectOwner(targetOwnerName);
 				schema.addSynonym(synonym);
 			}
 		} finally {

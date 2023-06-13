@@ -686,7 +686,7 @@ public class CUBRIDSQLHelper extends
 	
 	public String getSynonymDDL(Synonym synonym, boolean addUserSchema) {
 		StringBuffer sb = new StringBuffer();
-		sb.append("CREATE OR REPLACE");
+		sb.append("CREATE");
 		
 		if (synonym.isPublic()) {
 			sb.append(" PUBLIC ");
@@ -698,15 +698,15 @@ public class CUBRIDSQLHelper extends
 		
 		String synonymName = synonym.getName();
 		if (synonymName != null) {
-			sb.append(getOwnerNameWithDot(synonym.getOwnerName(), addUserSchema));
+			sb.append(getOwnerNameWithDot(synonym.getOwner(), addUserSchema));
 			sb.append(getQuotedObjName(synonymName));
 		}
 		
 		sb.append(" FOR ");
 		
-		String synonymTargetName = synonym.getTargetName();
+		String synonymTargetName = synonym.getObjectName();
 		if (synonymTargetName != null) {
-			sb.append(getOwnerNameWithDot(synonym.getTargetOwnerName(), addUserSchema));
+			sb.append(getOwnerNameWithDot(synonym.getObjectOwner(), addUserSchema));
 			sb.append(getQuotedObjName(synonymTargetName));
 		}
 		

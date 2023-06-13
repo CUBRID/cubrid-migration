@@ -41,10 +41,10 @@ public class Synonym extends
 
 	private static final long serialVersionUID = -7332583909384188696L;
 	private String name;
-	private String ownerName;
+	private String owner;
 	private boolean isPublic;
-	private String targetName;
-	private String targetOwnerName;
+	private String objectName;
+	private String objectOwner;
 	private String comment;
 	private String createDDL;
 	
@@ -52,14 +52,14 @@ public class Synonym extends
 		//do nothing
 	}
 	
-	public Synonym(String name, String ownerName, boolean isPublic,
-			String targetName, String targetOwnerName, String comment,
+	public Synonym(String name, String owner, boolean isPublic,
+			String objectName, String objectOwner, String comment,
 			String createDDL) {
 		this.name = name;
-		this.ownerName = ownerName;
+		this.owner = owner;
 		this.isPublic = isPublic;
-		this.targetName = targetName;
-		this.targetOwnerName = targetOwnerName;
+		this.objectName = objectName;
+		this.objectOwner = objectOwner;
 		this.comment = comment;
 		this.createDDL = createDDL;
 	}
@@ -70,14 +70,14 @@ public class Synonym extends
 	 * @return Synonym
 	 */
 	public Object clone() {
-		final Synonym synonym = new Synonym(name, ownerName,
-				isPublic, targetName, targetOwnerName, comment, 
+		final Synonym synonym = new Synonym(name, owner,
+				isPublic, objectName, objectOwner, comment, 
 				createDDL);
 		synonym.setName(name);
-		synonym.setOwnerName(ownerName);
+		synonym.setOwner(owner);
 		synonym.setPublic(isPublic);
-		synonym.setTargetName(targetName);
-		synonym.setTargetOwnerName(targetOwnerName);
+		synonym.setObjectName(objectName);
+		synonym.setObjectOwner(objectOwner);
 		synonym.setComment(comment);
 		synonym.setDDL(createDDL);
 		return synonym;
@@ -91,12 +91,12 @@ public class Synonym extends
 		this.name = name;
 	}
 
-	public String getOwnerName() {
-		return ownerName;
+	public String getOwner() {
+		return owner;
 	}
 
-	public void setOwnerName(String ownerName) {
-		this.ownerName = ownerName;
+	public void setOwner(String owner) {
+		this.owner = owner;
 	}
 
 	public boolean isPublic() {
@@ -107,20 +107,20 @@ public class Synonym extends
 		this.isPublic = isPublic;
 	}
 
-	public String getTargetName() {
-		return targetName;
+	public String getObjectName() {
+		return objectName;
 	}
 
-	public void setTargetName(String targetName) {
-		this.targetName = targetName;
+	public void setObjectName(String objectName) {
+		this.objectName = objectName;
 	}
 
-	public String getTargetOwnerName() {
-		return targetOwnerName;
+	public String getObjectOwner() {
+		return objectOwner;
 	}
 
-	public void setTargetOwnerName(String targetOwnerName) {
-		this.targetOwnerName = targetOwnerName;
+	public void setObjectOwner(String objectOwner) {
+		this.objectOwner = objectOwner;
 	}
 
 	public String getComment() {

@@ -150,7 +150,7 @@ public class SynonymMappingView extends
 			grpTarget.setEditable(false);
 			return;
 		}
-		synonymConfig = config.getExpSynonymCfg(synonym.getOwnerName(), synonym.getName());
+		synonymConfig = config.getExpSynonymCfg(synonym.getOwner(), synonym.getName());
 		if (synonymConfig == null) {
 			grpTarget.setEditable(false);
 			return;
@@ -158,7 +158,7 @@ public class SynonymMappingView extends
 		grpSource.setSynonym(synonym);
 		btnCreate.setSelection(synonymConfig.isCreate());
 		
-		Synonym tsynonym = config.getTargetSynonymSchema(synonymConfig.getOwner(), synonymConfig.getTarget());
+		Synonym tsynonym = config.getTargetSynonymSchema(synonymConfig.getTargetOwner(), synonymConfig.getTarget());
 		if (tsynonym == null) {
 			grpTarget.setEditable(false);
 			return;
@@ -266,9 +266,9 @@ public class SynonymMappingView extends
 		void setSynonym(Synonym synonym) {
 			this.synonym = synonym;
 			txtName.setText(synonym.getName());
-			txtOwnerName.setText(synonym.getOwnerName() == null ? "" : synonym.getOwnerName());
-			txtObjectOwnerName.setText(synonym.getTargetOwnerName() == null ? "" : synonym.getTargetOwnerName());
-			txtObjectName.setText(synonym.getTargetName());
+			txtOwnerName.setText(synonym.getOwner() == null ? "" : synonym.getOwner());
+			txtObjectOwnerName.setText(synonym.getObjectOwner() == null ? "" : synonym.getObjectOwner());
+			txtObjectName.setText(synonym.getObjectName());
 		}
 		
 		/**
@@ -317,9 +317,9 @@ public class SynonymMappingView extends
 			
 			//Save target synonym
 			synonym.setName(newName);
-			synonym.setOwnerName(newOwnerName);
-			synonym.setTargetName(txtObjectName.getText());
-			synonym.setTargetOwnerName(txtObjectOwnerName.getText());
+			synonym.setOwner(newOwnerName);
+			synonym.setObjectName(txtObjectName.getText());
+			synonym.setObjectOwner(txtObjectOwnerName.getText());
 			return new VerifyResultMessages();
 		}
 	}

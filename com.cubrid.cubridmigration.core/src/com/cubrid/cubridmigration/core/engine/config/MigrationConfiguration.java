@@ -355,22 +355,25 @@ public class MigrationConfiguration {
 	 * @param target String name
 	 * @return Retrieves the new SourceSynonymConfig has been added.
 	 */
-	public SourceSynonymConfig addExpSynonymCfg(String schema, String sourceName, 
-			String targetOwner, String target, String sourceDBOwner, String sourceDBTargetOwner) {
+	public SourceSynonymConfig addExpSynonymCfg(String schema, String name, 
+			String targetOwner, String target, String objectOwner, String object, 
+			String objectTargetOwner, String objectTarget) {
 		if (srcCatalog != null) {
 			throw new RuntimeException("Source database was specified.");
 		}
-		SourceSynonymConfig sc = getExpSynonymCfg(schema, sourceName);
+		SourceSynonymConfig sc = getExpSynonymCfg(schema, name);
 		if (sc == null) {
 			sc = new SourceSynonymConfig();
 			expSynonyms.add(sc);
 		}
 		sc.setOwner(schema);
-		sc.setName(sourceName);
+		sc.setName(name);
 		sc.setTargetOwner(targetOwner);
-		sc.setTarget(StringUtils.lowerCase(target));
-		sc.setSourceDBOwner(sourceDBOwner);
-		sc.setSourceDBTargetOwner(sourceDBTargetOwner);
+		sc.setTarget(target);
+		sc.setObjectOwner(objectOwner);
+		sc.setObjectName(object);
+		sc.setObjectTargetOwner(objectTargetOwner);
+		sc.setObjectTargetName(objectTarget);
 		return sc;
 	}
 
@@ -669,15 +672,17 @@ public class MigrationConfiguration {
 		Map<String, Integer> allSynonymsCountMap = srcCatalog.getAllSequencesCountMap();
 		for (Schema sourceDBSchema : schemas) {
 			for (Synonym synonym : sourceDBSchema.getSynonymList()) {
-				SourceSynonymConfig sc = getExpSynonymCfg(synonym.getOwnerName(), synonym.getName());
+				SourceSynonymConfig sc = getExpSynonymCfg(synonym.getOwner(), synonym.getName());
 				if (sc == null) {
 					sc = new SourceSynonymConfig();
 					sc.setName(synonym.getName());
-					sc.setOwner(sourceDBSchema.getTargetSchemaName());
-					sc.setTarget(getTargetName(allSynonymsCountMap, synonym.getOwnerName(), synonym.getName()));
-					sc.setTargetOwner(getSynonymOwner(schemas, synonym.getTargetOwnerName()));
-					sc.setSourceDBOwner(synonym.getOwnerName());
-					sc.setSourceDBTargetOwner(synonym.getTargetOwnerName());
+					sc.setOwner(synonym.getOwner());
+					sc.setObjectName(synonym.getObjectName());
+					sc.setObjectOwner(synonym.getObjectOwner());
+					sc.setTarget(getTargetName(allSynonymsCountMap, synonym.getOwner(), synonym.getName()));
+					sc.setTargetOwner(getSynonymOwner(schemas, synonym.getOwner()));
+					sc.setObjectTargetName(synonym.getObjectName());
+					sc.setObjectTargetOwner(synonym.getObjectOwner());
 					sc.setCreate(false);
 					sc.setReplace(false);
 					sc.setComment(synonym.getComment());
@@ -695,8 +700,8 @@ public class MigrationConfiguration {
 				}
 				if (tsynonym == null) {
 					tsynonym = (Synonym) synonym.clone();
-					tsynonym.setOwnerName(sourceDBSchema.getTargetSchemaName());
-					tsynonym.setTargetOwnerName(getSynonymOwner(schemas, synonym.getTargetOwnerName()));
+					tsynonym.setOwner(sourceDBSchema.getTargetSchemaName());
+					tsynonym.setObjectOwner(getSynonymOwner(schemas, synonym.getObjectOwner()));
 					tsynonym.setDDL(cubridddlUtil.getSynonymDDL(tsynonym, this.addUserSchema));
 				}
 				tempSynonyms.add(tsynonym);
@@ -1231,7 +1236,7 @@ public class MigrationConfiguration {
 	private String getTargetName(Map<String, Integer> map, String owner, String name) {
 		if (isTarSchemaDuplicate || (!addUserSchema)) {
 			if (isDuplicatedObject(map, name)) {
-				return StringUtils.lowerCase(owner + "_" + name);
+				return owner + "_" + StringUtils.lowerCase(name);
 			}
 		}
 		
@@ -2101,10 +2106,10 @@ public class MigrationConfiguration {
 				if (schema == null) {
 					return config;
 				}
-				if (schema.equalsIgnoreCase(config.getSourceDBOwner())) {
+				if (schema.equalsIgnoreCase(config.getOwner())) {
 					return config;
 				}
-				if (config.getSourceDBOwner() == null) {
+				if (config.getOwner() == null) {
 					result = config;
 					break;
 				}
@@ -2946,7 +2951,7 @@ public class MigrationConfiguration {
 		}
 		
 		for (Synonym synonym : this.targetSynonyms) {
-			if (synonym.getName().equalsIgnoreCase(target) && synonym.getOwnerName().equalsIgnoreCase(owner)) {
+			if (synonym.getName().equalsIgnoreCase(target) && synonym.getOwner().equalsIgnoreCase(owner)) {
 				return synonym;
 			}
 		}
