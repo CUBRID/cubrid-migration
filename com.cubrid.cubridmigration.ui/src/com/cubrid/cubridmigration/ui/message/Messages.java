@@ -295,6 +295,7 @@ public class Messages extends
 	public static String errCascadeOnUpdateNotSupported;
 	public static String errConnectDatabase;
 	public static String errDuplicateSequenceName;
+	public static String errDuplicateSynonymName;
 	public static String errErrorFileNotFound;
 	public static String errInvalidChar;
 	public static String errInvalidDate;
