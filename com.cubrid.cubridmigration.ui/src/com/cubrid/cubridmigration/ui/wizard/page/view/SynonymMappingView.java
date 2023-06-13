@@ -296,7 +296,7 @@ public class SynonymMappingView extends
 			if (!MigrationCfgUtils.verifyTargetDBObjName(newName)) {
 				return new VerifyResultMessages(Messages.msgErrInvalidSynonymName, null, null);
 			}
-			final String newOwnerName = txtOwnerName.getText().trim().toLowerCase(Locale.US);
+			final String newOwnerName = txtOwnerName.getText().trim();
 			if (!MigrationCfgUtils.verifyTargetDBObjName(newOwnerName)) {
 				return new VerifyResultMessages(Messages.msgErrInvalidSynonymName, null, null);
 			}
@@ -311,7 +311,7 @@ public class SynonymMappingView extends
 			if (!newName.equalsIgnoreCase(synonym.getName())) {
 				if (config.isTargetSynonymNameInUse(newName)) {
 					return new VerifyResultMessages(Messages.bind(
-							Messages.errDuplicateSequenceName, newName), null, null);
+							Messages.errDuplicateSynonymName, newName), null, null);
 				}
 			}
 			

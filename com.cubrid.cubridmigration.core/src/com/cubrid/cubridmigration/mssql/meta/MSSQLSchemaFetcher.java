@@ -67,6 +67,7 @@ import com.cubrid.cubridmigration.core.dbobject.View;
 import com.cubrid.cubridmigration.core.dbtype.DatabaseType;
 import com.cubrid.cubridmigration.core.export.DBExportHelper;
 import com.cubrid.cubridmigration.core.sql.SQLHelper;
+import com.cubrid.cubridmigration.cubrid.CUBRIDSQLHelper;
 import com.cubrid.cubridmigration.mssql.MSSQLDataTypeHelper;
 import com.cubrid.cubridmigration.mssql.MSSQLSQLHelper;
 import com.cubrid.cubridmigration.mssql.dbobj.MSSQLPartitionSchemas;
@@ -744,6 +745,7 @@ public final class MSSQLSchemaFetcher extends
 				} else {
 					synonym.setObjectName(baseObjectName);
 				}
+				synonym.setDDL(CUBRIDSQLHelper.getInstance(null).getSynonymDDL(synonym, true));
 				synonyms.add(synonym);
 			}
 

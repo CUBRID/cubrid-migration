@@ -75,6 +75,7 @@ import com.cubrid.cubridmigration.core.dbobject.Version;
 import com.cubrid.cubridmigration.core.dbobject.View;
 import com.cubrid.cubridmigration.core.dbtype.DatabaseType;
 import com.cubrid.cubridmigration.core.export.DBExportHelper;
+import com.cubrid.cubridmigration.cubrid.CUBRIDSQLHelper;
 import com.cubrid.cubridmigration.oracle.OracleDataTypeHelper;
 
 /**
@@ -419,6 +420,7 @@ public final class OracleSchemaFetcher extends
 				synonym.setPublic(false);
 				synonym.setObjectName(targetName);
 				synonym.setObjectOwner(targetOwnerName);
+				synonym.setDDL(CUBRIDSQLHelper.getInstance(null).getSynonymDDL(synonym, true));
 				schema.addSynonym(synonym);
 			}
 		} finally {
