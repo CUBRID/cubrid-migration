@@ -41,6 +41,7 @@ import com.cubrid.cubridmigration.core.common.DBUtils;
 import com.cubrid.cubridmigration.core.common.log.LogUtil;
 import com.cubrid.cubridmigration.core.dbobject.Column;
 import com.cubrid.cubridmigration.core.dbobject.FK;
+import com.cubrid.cubridmigration.core.dbobject.Grant;
 import com.cubrid.cubridmigration.core.dbobject.Index;
 import com.cubrid.cubridmigration.core.dbobject.PK;
 import com.cubrid.cubridmigration.core.dbobject.PartitionInfo;
@@ -716,6 +717,16 @@ public class CUBRIDSQLHelper extends
 			sb.append("\'" + comment + "\'");
 		}
 		
+		return sb.toString();
+	}
+	
+	public String getGrantDDL(Grant grant, boolean addUserSchema) {
+		StringBuffer sb = new StringBuffer();
+		sb.append("GRANT ").append(grant.getAuthType()).append(" ON ");
+		sb.append(getOwnerNameWithDot(grant.getClassOwner(), addUserSchema));
+		sb.append(getQuotedObjName(grant.getClassName()));
+		sb.append(" TO ");
+		sb.append(getQuotedObjName(grant.getGranteeName()));
 		return sb.toString();
 	}
 

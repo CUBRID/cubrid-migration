@@ -62,6 +62,7 @@ public class Schema extends DBObject implements
 	private List<Trigger> triggers = new ArrayList<Trigger>();
 	private List<Sequence> sequenceList = new ArrayList<Sequence>();
 	private List<Synonym> synonymList = new ArrayList<Synonym>();
+	private List<Grant> grantList = new ArrayList<Grant>();
 
 	public Schema() {
 		//do nothing
@@ -247,6 +248,22 @@ public class Schema extends DBObject implements
 		}
 		return null;
 	}
+	
+	/**
+	 * getGrantByName
+	 * 
+	 * @param grantName String
+	 * @return Grant
+	 */
+	public Grant getGrantByName(String grantName) {
+		for (Grant grant : grantList) {
+			if (grantName.equals(grant.getName())) {
+				return grant;
+			}
+
+		}
+		return null;
+	}
 
 	public List<Procedure> getProcedures() {
 		return procedures;
@@ -278,6 +295,32 @@ public class Schema extends DBObject implements
 	
 	public List<Synonym> getSynonymList() {
 		return synonymList;
+	}
+	
+	public List<Grant> getGrantList() {
+		return grantList;
+	}
+	
+	public void setGrantList(List<Grant> grantList) {
+		this.grantList = grantList;
+	}
+	
+	/**
+	 * Add grant into schema object.
+	 * 
+	 * @param gr
+	 */
+	public void addGrant(Grant gr) {
+		if (gr == null) {
+			return;
+		}
+		if (grantList == null) {
+			grantList = new ArrayList<Grant>();
+		}
+		if (!grantList.contains(gr)) {
+			grantList.add(gr);
+			gr.setOwner(getName());
+		}
 	}
 
 	/**
@@ -448,7 +491,6 @@ public class Schema extends DBObject implements
 
 	@Override
 	public String getDDL() {
-		// TODO Auto-generated method stub
 		return createDDL;
 	}
 }
