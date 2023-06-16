@@ -368,6 +368,7 @@ public class Messages extends
 	public static String labelTreeObjColumn;
 	public static String labelTreeObjFk;
 	public static String labelTreeObjFunction;
+	public static String labelTreeObjGrant;
 	public static String labelTreeObjIndex;
 	public static String labelTreeObjPartition;
 	public static String labelTreeObjProcedure;
@@ -662,6 +663,7 @@ public class Messages extends
 	public static String objectMapPageTabFolderBtnVerify2;
 	public static String objectMapPageTabFolderErrTableName;
 	public static String objectMapPageTabFolderErrViewName;
+	public static String objectMapPageTabFolderGrants;
 	public static String objectMapPageTabFolderSequences;
 	public static String objectMapPageTabFolderSqls;
 	public static String objectMapPageTabFolderSynonyms;
@@ -716,6 +718,7 @@ public class Messages extends
 	public static String tabTitlePKDes;
 	public static String tabTitleSourceColumn;
 	public static String tabTitleSourceFK;
+	public static String tabTitleSourceGrant;
 	public static String tabTitleSourceIndex;
 	public static String tabTitleSourceSerial;
 	public static String tabTitleSourceSynonym;
@@ -725,6 +728,7 @@ public class Messages extends
 	public static String tabTitleSQL;
 	public static String tabTitleTargetColumn;
 	public static String tabTitleTargetFK;
+	public static String tabTitleTargetGrant;
 	public static String tabTitleTargetIndex;
 	public static String tabTitleTargetSerial;
 	public static String tabTitleTargetSynonym;

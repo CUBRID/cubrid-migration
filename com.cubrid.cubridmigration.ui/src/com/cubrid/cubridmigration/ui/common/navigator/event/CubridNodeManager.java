@@ -36,6 +36,7 @@ import com.cubrid.cubridmigration.core.dbobject.Catalog;
 import com.cubrid.cubridmigration.core.dbobject.Column;
 import com.cubrid.cubridmigration.core.dbobject.FK;
 import com.cubrid.cubridmigration.core.dbobject.Function;
+import com.cubrid.cubridmigration.core.dbobject.Grant;
 import com.cubrid.cubridmigration.core.dbobject.Index;
 import com.cubrid.cubridmigration.core.dbobject.PK;
 import com.cubrid.cubridmigration.core.dbobject.PartitionInfo;
@@ -53,6 +54,8 @@ import com.cubrid.cubridmigration.ui.common.navigator.node.FKNode;
 import com.cubrid.cubridmigration.ui.common.navigator.node.FKsNode;
 import com.cubrid.cubridmigration.ui.common.navigator.node.FunctionNode;
 import com.cubrid.cubridmigration.ui.common.navigator.node.FunctionsNode;
+import com.cubrid.cubridmigration.ui.common.navigator.node.GrantNode;
+import com.cubrid.cubridmigration.ui.common.navigator.node.GrantsNode;
 import com.cubrid.cubridmigration.ui.common.navigator.node.IndexNode;
 import com.cubrid.cubridmigration.ui.common.navigator.node.IndexesNode;
 import com.cubrid.cubridmigration.ui.common.navigator.node.PKNode;
@@ -90,6 +93,7 @@ public final class CubridNodeManager {
 	private static final String PATH_VIEWS = "/views";
 	private static final String PATH_TABLES = "/tables";
 	private static final String PATH_SYNONYMS = "/synonyms";
+	private static final String PATH_GRANTS = "/grants";
 	private static final String XML_HOST_NODE_ID = "MySQL dump file";
 
 	private static volatile CubridNodeManager instance = null;
@@ -112,6 +116,27 @@ public final class CubridNodeManager {
 
 	private CubridNodeManager() {
 		//do nothing.
+	}
+	
+	private void addGrantNodes(DefaultCUBRIDNode parentNode, Schema schema) {
+		String parentID = parentNode.getId();
+		
+		List<Grant> grantList = schema.getGrantList();
+		String grantsID = parentID + PATH_GRANTS;
+		String grantsLabels = Messages.labelTreeObjGrant + "(" + grantList.size() + ")";
+		GrantsNode grantsNode = new GrantsNode(grantsID, grantsLabels);
+		parentNode.addChild(grantsNode);
+		if (grantList.isEmpty()) {
+			grantsNode.setContainer(false);
+		}
+		for (Grant grant : grantList) {
+			// add a grant
+			String grantID = grantsID + "/" + grant.getName();
+			String grantLabel = grant.getName();
+			GrantNode grantNode = new GrantNode(grantID, grantLabel);
+			grantNode.setGrant(grant);
+			grantsNode.addChild(grantNode);
+		}
 	}
 
 	/**
@@ -418,6 +443,8 @@ public final class CubridNodeManager {
 			addSerialNodes(parentNode, schema);
 			
 			addSynonymNodes(parentNode, schema);
+			
+			addGrantNodes(parentNode, schema);
 		}
 
 		return databaseNode;

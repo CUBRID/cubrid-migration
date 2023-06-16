@@ -74,6 +74,8 @@ import com.cubrid.cubridmigration.ui.common.navigator.node.ColumnsNode;
 import com.cubrid.cubridmigration.ui.common.navigator.node.DatabaseNode;
 import com.cubrid.cubridmigration.ui.common.navigator.node.FKNode;
 import com.cubrid.cubridmigration.ui.common.navigator.node.FKsNode;
+import com.cubrid.cubridmigration.ui.common.navigator.node.GrantNode;
+import com.cubrid.cubridmigration.ui.common.navigator.node.GrantsNode;
 import com.cubrid.cubridmigration.ui.common.navigator.node.IndexNode;
 import com.cubrid.cubridmigration.ui.common.navigator.node.IndexesNode;
 import com.cubrid.cubridmigration.ui.common.navigator.node.PKNode;
@@ -98,6 +100,7 @@ import com.cubrid.cubridmigration.ui.wizard.page.view.AbstractMappingView;
 import com.cubrid.cubridmigration.ui.wizard.page.view.ColumnMappingView;
 import com.cubrid.cubridmigration.ui.wizard.page.view.FKMappingView;
 import com.cubrid.cubridmigration.ui.wizard.page.view.GeneralObjMappingView;
+import com.cubrid.cubridmigration.ui.wizard.page.view.GrantMappingView;
 import com.cubrid.cubridmigration.ui.wizard.page.view.IRefreshableView;
 import com.cubrid.cubridmigration.ui.wizard.page.view.IndexMappingView;
 import com.cubrid.cubridmigration.ui.wizard.page.view.SQLTableMappingView;
@@ -234,6 +237,7 @@ public class ObjectMappingPage extends
 		util.createDetailMessage(sb, sourceCatalog, DBObject.OBJ_TYPE_VIEW, messageType);
 		util.createDetailMessage(sb, sourceCatalog, DBObject.OBJ_TYPE_SEQUENCE, messageType);
 		util.createDetailMessage(sb, sourceCatalog, DBObject.OBJ_TYPE_SYNONYM, messageType);
+		util.createDetailMessage(sb, sourceCatalog, DBObject.OBJ_TYPE_GRANT, messageType);
 		return sb.toString();
 	}
 
@@ -347,6 +351,13 @@ public class ObjectMappingPage extends
 							break;
 						}
 					}
+				} else if (AbstractMappingView.CT_GRANT.equals(ct)) {
+					for (ICUBRIDNode chn : cn.getChildren()) {
+						if (chn instanceof GrantsNode) {
+							selectionParent = chn;
+							break;
+						}
+					}
 				}
 				for (ICUBRIDNode col : selectionParent.getChildren()) {
 					if (col.getName().equals((String) obj[1])) {
@@ -419,6 +430,7 @@ public class ObjectMappingPage extends
 		SequenceMappingView sequenceMappingView = new SequenceMappingView(detailContainer);
 		ViewMappingView viewMappingView = new ViewMappingView(detailContainer);
 		SynonymMappingView synonymMappingView = new SynonymMappingView(detailContainer);
+		GrantMappingView grantMappingView = new GrantMappingView(detailContainer);
 
 		generalObjMappingView.addSQLChangedListener(tvSourceDBObjects);
 		//Building Tree node to Mapping view mapping
@@ -432,6 +444,8 @@ public class ObjectMappingPage extends
 		node2ViewMapping.put(SequenceNode.class.getName(), sequenceMappingView);
 		node2ViewMapping.put(SynonymsNode.class.getName(), generalObjMappingView);
 		node2ViewMapping.put(SynonymNode.class.getName(), synonymMappingView);
+		node2ViewMapping.put(GrantsNode.class.getName(), generalObjMappingView);
+		node2ViewMapping.put(GrantNode.class.getName(), grantMappingView);
 		node2ViewMapping.put(PKNode.class.getName(), tableMappingView);
 		//node2ViewMapping.put(ColumnsNode.class.getName(), tableMappingView);
 		node2ViewMapping.put(FKsNode.class.getName(), tableMappingView);

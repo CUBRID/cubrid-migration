@@ -66,6 +66,7 @@ import com.cubrid.cubridmigration.core.dbobject.Catalog;
 import com.cubrid.cubridmigration.core.dbobject.Column;
 import com.cubrid.cubridmigration.core.dbobject.FK;
 import com.cubrid.cubridmigration.core.dbobject.Function;
+import com.cubrid.cubridmigration.core.dbobject.Grant;
 import com.cubrid.cubridmigration.core.dbobject.Index;
 import com.cubrid.cubridmigration.core.dbobject.PK;
 import com.cubrid.cubridmigration.core.dbobject.PartitionInfo;
@@ -150,6 +151,7 @@ public class MigrationConfiguration {
 	private final List<String> expFunctions = new ArrayList<String>();
 
 	private final List<String> expProcedures = new ArrayList<String>();
+	private final List<SourceGrantConfig> expGrants = new ArrayList<SourceGrantConfig>();
 	private final List<SourceSynonymConfig> expSynonyms = new ArrayList<SourceSynonymConfig>();
 	private final List<SourceSequenceConfig> expSerials = new ArrayList<SourceSequenceConfig>();
 	private final List<SourceSQLTableConfig> expSQLTables = new ArrayList<SourceSQLTableConfig>();
@@ -205,6 +207,7 @@ public class MigrationConfiguration {
 	private final List<View> targetViews = new ArrayList<View>();
 	private final List<Sequence> targetSequences = new ArrayList<Sequence>();
 	private final List<Synonym> targetSynonyms = new ArrayList<Synonym>();
+	private final List<Grant> targetGrants = new ArrayList<Grant>();
 	private String targetFileTimeZone = "Default";
 
 	//Used by database unload file migration, 
@@ -530,6 +533,7 @@ public class MigrationConfiguration {
 		buildViewCfg(isReset);
 		buildSerialCfg(isReset);
 		buildSynonymCfg(isReset);
+		buildGrantCfg(isReset);
 		List<Schema> schemas = srcCatalog.getSchemas();
 		for (Schema sourceDBSchema : schemas) {
 			String prefix = "";
@@ -656,6 +660,65 @@ public class MigrationConfiguration {
 		expSerials.addAll(tempList);
 		targetSequences.clear();
 		targetSequences.addAll(tempSerials);
+	}
+	
+	/**
+	 * copy All Grant
+	 * 
+	 * @param isReset boolean
+	 */
+	private void buildGrantCfg(boolean isReset) {
+		List<SourceGrantConfig> tempList = new ArrayList<SourceGrantConfig>();
+		List<Grant> tempGrants = new ArrayList<Grant>();
+		final CUBRIDSQLHelper cubridddlUtil = CUBRIDSQLHelper.getInstance(null);
+		List<Schema> schemas = srcCatalog.getSchemas();
+		for (Schema sourceDBSchema : schemas) {
+			for (Grant grant : sourceDBSchema.getGrantList()) {
+				SourceGrantConfig sc = getExpGrantCfg(grant.getOwner(), grant.getName());
+				if (sc == null) {
+					sc = new SourceGrantConfig();
+					sc.setName(grant.getName());
+					sc.setOwner(grant.getOwner());
+					sc.setTarget(grant.getName());
+					sc.setGrantorName(grant.getGrantorName());
+					sc.setGranteeName(grant.getGranteeName());
+					sc.setAuthType(grant.getAuthType());
+					sc.setClassName(grant.getClassName());
+					sc.setClassOwner(grant.getClassOwner());
+					sc.setGrantable(grant.isGrantable());
+					sc.setCreate(false);
+					sc.setReplace(false);
+				} else if(sourceDBSchema.getTargetSchemaName() != null) {
+					if (!sourceDBSchema.getTargetSchemaName().equals(sc.getTargetOwner())) {
+						sc.setTargetOwner(sourceDBSchema.getTargetSchemaName());
+					}
+				}
+				tempList.add(sc);
+				Grant tgrant = null;
+				if (sc.getOwner() == null) {
+					tgrant = getTargetGrantSchema(sc.getTarget());
+				} else {
+					tgrant = getTargetGrantSchema(sc.getTargetOwner(), sc.getTarget());
+				}
+				if (tgrant == null) {
+					tgrant = (Grant) grant.clone();
+					tgrant.setName(sc.getTarget());
+					tgrant.setOwner(sc.getTargetOwner());
+					tgrant.setGrantorName(sc.getGrantorName());
+					tgrant.setGranteeName(sc.getGranteeName());
+					tgrant.setAuthType(sc.getAuthType());
+					tgrant.setClassName(sc.getClassName());
+					tgrant.setClassOwner(sc.getClassOwner());
+					tgrant.setGrantable(sc.isGrantable());
+					tgrant.setDDL(cubridddlUtil.getGrantDDL(tgrant, this.addUserSchema));
+				}
+				tempGrants.add(tgrant);
+			}
+		}
+		expGrants.clear();
+		expGrants.addAll(tempList);
+		targetGrants.clear();
+		targetGrants.addAll(tempGrants);
 	}
 	
 	/**
@@ -1649,6 +1712,7 @@ public class MigrationConfiguration {
 		expProcedures.clear();
 		expTriggers.clear();
 		expSynonyms.clear();
+		expGrants.clear();
 
 		targetSequences.clear();
 		targetTables.clear();
@@ -2102,6 +2166,41 @@ public class MigrationConfiguration {
 	public SourceSynonymConfig getExpSynonymCfg(String schema, String sourceName) {
 		SourceSynonymConfig result = null;
 		for (SourceSynonymConfig config : expSynonyms) {
+			if (config.getName().equals(sourceName)) {
+				if (schema == null) {
+					return config;
+				}
+				if (schema.equalsIgnoreCase(config.getOwner())) {
+					return config;
+				}
+				if (config.getOwner() == null) {
+					result = config;
+					break;
+				}
+			}
+		}
+		return result;
+	}
+	
+	/**
+	 * Return the export grant configurations
+	 * 
+	 * @return List<SourceGrantConfig>
+	 */
+	public List<SourceGrantConfig> getExpGrantCfg() {
+		return new ArrayList<SourceGrantConfig>(expGrants);
+	}
+	
+	/**
+	 * getExportGrants
+	 * 
+	 * @param schema String
+	 * @param sourceName String
+	 * @return SourceGrantConfig
+	 */
+	public SourceGrantConfig getExpGrantCfg(String schema, String sourceName) {
+		SourceGrantConfig result = null;
+		for (SourceGrantConfig config : expGrants) {
 			if (config.getName().equals(sourceName)) {
 				if (schema == null) {
 					return config;
@@ -2953,6 +3052,40 @@ public class MigrationConfiguration {
 		for (Synonym synonym : this.targetSynonyms) {
 			if (synonym.getName().equalsIgnoreCase(target) && synonym.getOwner().equalsIgnoreCase(owner)) {
 				return synonym;
+			}
+		}
+		return null;
+	}
+	
+	/**
+	 * get target grant by grant name
+	 * 
+	 * @param target String name
+	 * @return target grant
+	 */
+	public Grant getTargetGrantSchema(String target) {
+		for (Grant grant : this.targetGrants) {
+			if (grant.getName().equals(target)) {
+				return grant;
+			}
+		}
+		return null;
+	}
+	
+	/**
+	 * get target grant by grant name and grant owner
+	 * 
+	 * @param Stromg owner, String target
+	 * @return target grant
+	 */
+	public Grant getTargetGrantSchema(String owner, String target) {
+		if (owner == null) {
+			return getTargetGrantSchema(target);
+		}
+		
+		for (Grant grant : this.targetGrants) {
+			if (grant.getName().equalsIgnoreCase(target) && grant.getOwner().equalsIgnoreCase(owner)) {
+				return grant;
 			}
 		}
 		return null;

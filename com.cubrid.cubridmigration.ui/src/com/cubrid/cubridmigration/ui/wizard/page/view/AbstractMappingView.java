@@ -67,6 +67,7 @@ public abstract class AbstractMappingView {
 	public static final String CT_FK = "fk";
 	public static final String CT_INDEX = "index";
 	public static final String CT_SYNONYM = "synonym";
+	public static final String CT_GRANT = "grant";
 	
 
 	protected static final int PART_WIDTH = 250;

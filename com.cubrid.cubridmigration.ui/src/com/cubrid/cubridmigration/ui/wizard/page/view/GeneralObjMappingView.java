@@ -57,18 +57,21 @@ import com.cubrid.common.ui.swt.table.TableViewerBuilder;
 import com.cubrid.common.ui.swt.table.celleditor.CheckboxCellEditorFactory;
 import com.cubrid.common.ui.swt.table.celleditor.TextCellEditorFactory;
 import com.cubrid.common.ui.swt.table.listener.CheckBoxColumnSelectionListener;
+import com.cubrid.cubridmigration.core.dbobject.Grant;
 import com.cubrid.cubridmigration.core.dbobject.Sequence;
 import com.cubrid.cubridmigration.core.dbobject.Synonym;
 import com.cubrid.cubridmigration.core.dbobject.View;
 import com.cubrid.cubridmigration.core.engine.config.MigrationConfiguration;
 import com.cubrid.cubridmigration.core.engine.config.SourceConfig;
 import com.cubrid.cubridmigration.core.engine.config.SourceEntryTableConfig;
+import com.cubrid.cubridmigration.core.engine.config.SourceGrantConfig;
 import com.cubrid.cubridmigration.core.engine.config.SourceSequenceConfig;
 import com.cubrid.cubridmigration.core.engine.config.SourceSynonymConfig;
 import com.cubrid.cubridmigration.core.engine.config.SourceViewConfig;
 import com.cubrid.cubridmigration.core.engine.listener.ISQLTableChangedListener;
 import com.cubrid.cubridmigration.ui.common.CompositeUtils;
 import com.cubrid.cubridmigration.ui.common.navigator.node.DatabaseNode;
+import com.cubrid.cubridmigration.ui.common.navigator.node.GrantsNode;
 import com.cubrid.cubridmigration.ui.common.navigator.node.SQLTablesNode;
 import com.cubrid.cubridmigration.ui.common.navigator.node.SchemaNode;
 import com.cubrid.cubridmigration.ui.common.navigator.node.SequencesNode;
@@ -104,6 +107,7 @@ public class GeneralObjMappingView extends
 	private TableViewer tvViews;
 	private TableViewer tvSerials;
 	private TableViewer tvSynonyms;
+	private TableViewer tvGrants;
 	private SQLTableManageView sqlMgrView;
 
 	public GeneralObjMappingView(Composite parent) {
@@ -128,6 +132,7 @@ public class GeneralObjMappingView extends
 		createDetailOfViews(tabSchemaDetailFolder);
 		createDetailOfSerials(tabSchemaDetailFolder);
 		createDetailOfSynonym(tabSchemaDetailFolder);
+		createDetailOfGrant(tabSchemaDetailFolder);
 		createSQLManager(tabSchemaDetailFolder);
 	}
 
@@ -330,6 +335,66 @@ public class GeneralObjMappingView extends
 		initSourceConfigTableViewer(tvSynonyms);
 		tvSynonyms.setData(CONTENT_TYPE, CT_SYNONYM);
 	}
+	
+	private void createDetailOfGrant(CTabFolder parent) {
+		Composite container = CompositeUtils.createTabItem(parent,
+				Messages.objectMapPageTabFolderGrants, "icon/db/grant_group.png");
+		
+		TableViewerBuilder tvBuilder = new TableViewerBuilder();
+		tvBuilder.setColumnNames(new String[] {Messages.tabTitleSourceGrant, Messages.tabTitleTargetGrant,
+				Messages.tabTitleTargetGrant, Messages.lblCreate, Messages.lblReplace});
+		tvBuilder.setTableCursorSupported(true);
+		tvBuilder.setColumnWidths(new int[] {150, 150, 150, 80, 90});
+		tvBuilder.setContentProvider(new StructuredContentProviderAdaptor() {
+			
+			@SuppressWarnings("unchecked")
+			public Object[] getElements(Object inputElement) {
+				List<Object> data = new ArrayList<Object>();
+				for (SourceGrantConfig sc : (List<SourceGrantConfig>) inputElement) {
+					//Add the SourceConfig to the end of the object array.
+					data.add(new Object[] {sc.getName(), sc.getTarget(), sc.getAuthType(), sc.isCreate(), sc.isReplace(), sc});
+				}
+				return super.getElements(data);
+			}
+		});
+		
+		final CellEditorFactory[] cellEditors = new CellEditorFactory[] {null, 
+				new TextCellEditorFactory(), new TextCellEditorFactory(),
+				new CheckboxCellEditorFactory(), new CheckboxCellEditorFactory()};
+		ObjectArrayRowCellModifier cellModifier = new ObjectArrayRowCellModifier() {
+			protected void modify(TableItem ti, Object[] element, int columnIdx, Object value) {
+				Object[] obj = (Object[]) ti.getData();
+				if (value instanceof Boolean) {
+					boolean bv = (Boolean) value;
+					if (columnIdx == 2) {
+						obj[3] = bv;
+						ti.setImage(3, CompositeUtils.getCheckImage(bv));
+						updateColumnImage(value, ti, columnIdx + 1);
+					} else {
+						obj[2] = (Boolean) obj[2] || bv;
+						ti.setImage(2, CompositeUtils.getCheckImage((Boolean) obj[2]));
+						updateColumnImage(value, ti, columnIdx - 1);
+					}
+				}
+				super.modify(ti,  element, columnIdx, value);
+			}
+		};
+		tvBuilder.setCellEditorClasses(cellEditors);
+		tvBuilder.setCellModifier(cellModifier);
+		tvBuilder.setCellValidators(new ICellEditorValidator[] {null, new CUBRIDNameValidator(), null, null, null});
+		
+		tvGrants = tvBuilder.buildTableViewer(container, SWT.BORDER | SWT.FULL_SELECTION);
+		tvGrants.setData(CONTENT_TYPE, CT_GRANT);
+		final SelectionListener[] selectionListencers = new SelectionListener[] {
+				null,
+				null,
+				null,
+				new CheckBoxColumnSelectionListener(new int[] {3}, true, true),
+				new CheckBoxColumnSelectionListener(new int[] {2} , true, false)
+		
+		};
+		CompositeUtils.setTableColumnSelectionListener(tvGrants, selectionListencers);
+	}
 
 	/**
 	 * Hide this mapping view
@@ -348,6 +413,7 @@ public class GeneralObjMappingView extends
 		CompositeUtils.applyTableViewerEditing(tvSerials);
 		CompositeUtils.applyTableViewerEditing(tvViews);
 		CompositeUtils.applyTableViewerEditing(tvSynonyms);
+		CompositeUtils.applyTableViewerEditing(tvGrants);
 		VerifyResultMessages result = validate();
 		if (result.hasError()) {
 			return result;
@@ -405,6 +471,19 @@ public class GeneralObjMappingView extends
 			setc.setCreate((Boolean) obj[2]);
 			setc.setReplace((Boolean) obj[3]);
 		}
+		for (int i = 0; i < tvGrants.getTable().getItemCount(); i++) {
+			TableItem ti = tvGrants.getTable().getItem(i);
+			Object[] obj = (Object[]) ti.getData();
+			SourceConfig setc = (SourceConfig) obj[obj.length - 1];
+			Grant tgrant = config.getTargetGrantSchema(setc.getTarget());
+			final String name = obj[1].toString();
+			if (tgrant != null) {
+				tgrant.setName(name);
+			}
+			setc.setTarget(name);
+			setc.setCreate((Boolean) obj[2]);
+			setc.setReplace((Boolean) obj[3]);
+		}
 		return super.save();
 	}
 
@@ -448,13 +527,19 @@ public class GeneralObjMappingView extends
 				schema = (SchemaNode) ((SynonymsNode) obj).getParent();
 			}
 			tabSchemaDetailFolder.setSelection(3);
-		} else if (obj instanceof SQLTablesNode) {
+		} else if (obj instanceof GrantsNode) {
+			if (((GrantsNode) obj).getParent() instanceof SchemaNode) {
+				schema = (SchemaNode) ((GrantsNode) obj).getParent();
+			}
 			tabSchemaDetailFolder.setSelection(4);
+		} else if (obj instanceof SQLTablesNode) {
+			tabSchemaDetailFolder.setSelection(5);
 		}
 		List<SourceEntryTableConfig> ipTables = config.getExpEntryTableCfg();
 		List<SourceViewConfig> ipViews = config.getExpViewCfg();
 		List<SourceSequenceConfig> ipSerials = config.getExpSerialCfg();
 		List<SourceSynonymConfig> ipSynonyms = config.getExpSynonymCfg();
+		List<SourceGrantConfig> ipGrants = config.getExpGrantCfg();
 		if (schema != null) {
 			Iterator<SourceEntryTableConfig> itTables = ipTables.iterator();
 			while (itTables.hasNext()) {
@@ -489,18 +574,27 @@ public class GeneralObjMappingView extends
 				}
 				itSynonyms.remove();
 			}
+			Iterator<SourceGrantConfig> itGrants = ipGrants.iterator();
+			while (itGrants.hasNext()) {
+				String owner = itGrants.next().getOwner();
+				if (owner == null || schema.getName().equals(owner)) {
+					continue;
+				}
+				itGrants.remove();
+			}
 		}
 		tvTables.setInput(ipTables);
 		tvViews.setInput(ipViews);
 		tvSerials.setInput(ipSerials);
 		tvSynonyms.setInput(ipSynonyms);
+		tvGrants.setInput(ipGrants);
 		sqlMgrView.showData(obj);
 
 		CompositeUtils.initTableViewerCheckColumnImage(tvTables);
 		CompositeUtils.initTableViewerCheckColumnImage(tvViews);
 		CompositeUtils.initTableViewerCheckColumnImage(tvSerials);
 		CompositeUtils.initTableViewerCheckColumnImage(tvSynonyms);
-
+		CompositeUtils.initTableViewerCheckColumnImage(tvGrants);
 	}
 
 	/**
@@ -583,6 +677,7 @@ public class GeneralObjMappingView extends
 			}
 			names.put(name.toLowerCase(Locale.US), true);
 		}
+		
 		return sqlMgrView.save();
 	}
 
@@ -596,6 +691,7 @@ public class GeneralObjMappingView extends
 		tvViews.addDoubleClickListener(iDoubleClickListener);
 		tvSerials.addDoubleClickListener(iDoubleClickListener);
 		tvSynonyms.addDoubleClickListener(iDoubleClickListener);
+		tvGrants.addDoubleClickListener(iDoubleClickListener);
 	}
 
 	/**

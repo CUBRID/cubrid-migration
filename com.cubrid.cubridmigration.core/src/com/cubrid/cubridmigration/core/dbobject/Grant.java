@@ -40,6 +40,7 @@ public class Grant extends
 		DBObject {
 	private static final long serialVersionUID = 6977525116002826886L;
 	private String owner;
+	private String name;
 	private String grantorName;
 	private String granteeName;
 	private String className;
@@ -62,12 +63,36 @@ public class Grant extends
 		this.classOwner = classOwner;
 		this.authType = authType;
 		this.isGrantable = isGrantable;
-		this.createDDL = createDDL;
+		this.createDDL = createDDL; 
 	}
 	
-	@Override
+	/**
+	 * clone
+	 * 
+	 * @return Grant
+	 */
+	public Object clone() {
+		final Grant grant = new Grant(owner, grantorName, granteeName, 
+				className, classOwner, authType, isGrantable, createDDL);
+		grant.setName(getName());
+		return grant;
+	}
+	
 	public String getName() {
-		return null;
+		if (name != null) {
+			return name;
+		}
+		
+		String tempClassOwner = classOwner != null ? capitalizeFirstLetter(classOwner) : "";
+		return authType.toLowerCase() 
+				+ tempClassOwner
+				+ capitalizeFirstLetter(className) 
+				+ "To" 
+				+ capitalizeFirstLetter(granteeName);
+	}
+	
+	public void setName(String name) {
+		this.name = name;
 	}
 	
 	public String getOwner() {
@@ -137,5 +162,9 @@ public class Grant extends
 	@Override
 	public String getObjType() {
 		return OBJ_TYPE_GRANT;
+	}
+	
+	private String capitalizeFirstLetter(String str) {
+		return (str.substring(0, 1).toUpperCase()) + (str.substring(1).toLowerCase());
 	}
 }

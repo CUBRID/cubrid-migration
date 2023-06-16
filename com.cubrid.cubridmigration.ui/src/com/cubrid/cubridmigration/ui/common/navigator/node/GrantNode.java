@@ -30,25 +30,28 @@
 package com.cubrid.cubridmigration.ui.common.navigator.node;
 
 import com.cubrid.common.ui.navigator.DefaultCUBRIDNode;
+import com.cubrid.cubridmigration.core.dbobject.Grant;
 
 /**
- * SynonymsNode
- * 
- * @author CUBRID
+ * GrantNode
+ * @author Dongmin Kim
  */
-public class SynonymsNode extends
+public class GrantNode extends
 		DefaultCUBRIDNode {
-
-	/**
-	 * The constructor
-	 * 
-	 * @param id
-	 * @param label
-	 */
-	public SynonymsNode(String id, String label) {
-		super(id, label, "icon/db/synonym_group.png");
-		setType(CubridNodeType.SYNONYM_FOLDER);
-		setContainer(true);
+	Grant grant;
+	
+	public Grant getGrant() {
+		return grant;
+	}
+	
+	public void setGrant(Grant grant) {
+		this.grant = grant;
+	}
+	
+	public GrantNode(String id, String label) {
+		super(id, label, "icon/db/grant_item.png");
+		setType(CubridNodeType.USER_GRANT);
+		setContainer(false);
 	}
 	
 }
