@@ -112,7 +112,8 @@ public class SchemaMappingPage extends MigrationWizardPage {
 	Map<String, String> serialFullName;
 	Map<String, String> updateStatisticFullName;
 	Map<String, String> schemaFileListFullName;
-	Map<String, String> synonymFileListFullName; 
+	Map<String, String> synonymFileListFullName;
+	Map<String, String> grantFileListFullName;
 	
 	protected class SrcTable {
 		private boolean isSelected;
@@ -734,6 +735,7 @@ public class SchemaMappingPage extends MigrationWizardPage {
 		updateStatisticFullName = new HashMap<String, String>();
 		schemaFileListFullName = new HashMap<String, String>();
 		synonymFileListFullName = new HashMap<String, String>();
+		grantFileListFullName = new HashMap<String, String>();
 		
 		for (SrcTable srcTable : srcTableList) {
 			if (addUserSchema && srcTable.isSelected() && (srcTable.getTarSchema().isEmpty() || srcTable.getTarSchema() == null 
@@ -761,6 +763,7 @@ public class SchemaMappingPage extends MigrationWizardPage {
 				serialFullName.put(srcTable.getTarSchema(), getSequenceFullName(srcTable.getTarSchema()));
 				schemaFileListFullName.put(srcTable.getTarSchema(), getSchemaFileListFullName(srcTable.getTarSchema()));
 				synonymFileListFullName.put(srcTable.getTarSchema(), getSynonymFullName(srcTable.getTarSchema()));
+				grantFileListFullName.put(srcTable.getTarSchema(), getGrantFullName(srcTable.getTarSchema()));
 			} else {
 				schemaFullName.put(srcTable.getTarSchema(), getSchemaFullName(srcTable.getTarSchema()));
 			}
@@ -785,6 +788,7 @@ public class SchemaMappingPage extends MigrationWizardPage {
 		config.setTargetUpdateStatisticFileName(updateStatisticFullName);
 		config.setTargetSchemaFileListName(schemaFileListFullName);
 		config.setTargetSynonymFileName(synonymFileListFullName);
+		config.setTargetGrantFileName(grantFileListFullName);
 		
 		wizard.setSourceCatalog(srcCatalog);
 		getMigrationWizard().setSourceDBNode(srcCatalog);
@@ -946,6 +950,20 @@ public class SchemaMappingPage extends MigrationWizardPage {
 	}
 	
 	/**
+	 * get grant file full path
+	 * 
+	 * @param targetSchemaName
+	 * @return grant file full path
+	 */
+	private String getGrantFullName(String targetSchemaName) {
+		StringBuffer fileName = new StringBuffer();
+		fileName.append(File.separator).append(config.getTargetFilePrefix()).append("_").append(targetSchemaName).append("_grant").append(
+				getMigrationWizard().getMigrationConfig().getDefaultTargetSchemaFileExtName());
+		
+		return PathUtils.mergePath(PathUtils.mergePath(config.getFileRepositroyPath(), targetSchemaName), fileName.toString());
+	}
+	
+	/**
 	 * Check if overwriting to a file
 	 * 
 	 * @param schemaFullName
@@ -969,6 +987,7 @@ public class SchemaMappingPage extends MigrationWizardPage {
 					File serialFile = new File(serialFullName.get(srcTable.getTarSchema()));
 					File infoFile = new File(schemaFileListFullName.get(srcTable.getTarSchema()));
 					File synonymFile = new File(synonymFileListFullName.get(srcTable.getTarSchema()));
+					File grantFile = new File(grantFileListFullName.get(srcTable.getTarSchema()));
 					
 					if (tableFile.exists()) {
 						buffer.append(tableFile.getCanonicalPath()).append(System.lineSeparator());
@@ -991,7 +1010,9 @@ public class SchemaMappingPage extends MigrationWizardPage {
 					if (synonymFile.exists()) {
 						buffer.append(synonymFile.getCanonicalPath()).append(System.lineSeparator());
 					}
-					
+					if (grantFile.exists()) {
+						buffer.append(grantFile.getCanonicalPath()).append(System.lineSeparator());
+					}
 				} else {
 					File schemaFile = new File(schemaFullName.get(srcTable.getTarSchema()));
 					if (schemaFile.exists()) {

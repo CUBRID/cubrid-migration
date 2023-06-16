@@ -52,6 +52,7 @@ import com.cubrid.cubridmigration.core.engine.config.MigrationConfiguration;
 import com.cubrid.cubridmigration.core.engine.config.SourceConfig;
 import com.cubrid.cubridmigration.core.engine.config.SourceEntryTableConfig;
 import com.cubrid.cubridmigration.core.engine.config.SourceFKConfig;
+import com.cubrid.cubridmigration.core.engine.config.SourceGrantConfig;
 import com.cubrid.cubridmigration.core.engine.config.SourceIndexConfig;
 import com.cubrid.cubridmigration.core.engine.config.SourceSQLTableConfig;
 import com.cubrid.cubridmigration.core.engine.config.SourceSequenceConfig;
@@ -344,6 +345,37 @@ public class ConfirmationPage extends
 					text.append("-");
 					text.append(lineSeparator);
 				}
+				
+				// grant
+				text.append(tabSeparator);
+				text.append(Messages.confrimGrant).append(lineSeparator);
+				isCreateFileRepository = false;
+				oldLength = text.length();
+				for (Schema targetSchema : migration.getTargetSchemaList()) {
+					for (SourceGrantConfig expGrant : migration.getExpGrantCfg()) {
+						if (expGrant.getTargetOwner().equals(targetSchema.getTargetSchemaName())
+								&& expGrant.isCreate()) {
+							isCreateFileRepository = true;
+							break;
+						}
+					}
+					
+					if (isCreateFileRepository) {
+						text.append(tabSeparator).append(tabSeparator);
+						text.append(migration.getTargetGrantFileName(targetSchema.getTargetSchemaName()));
+						text.append(lineSeparator);
+						isCreateFileRepository = false;
+					}
+				}
+				if (styleRanges != null) {
+					styleRanges.add(new StyleRange(oldLength, text.length() - oldLength,
+							SWTResourceConstents.COLOR_BLUE, null));
+				}
+				if (text.length() == oldLength) {
+					text.append(tabSeparator).append(tabSeparator);
+					text.append("-");
+					text.append(lineSeparator);
+				}
 			} else {
 				// schema
 				text.append(Messages.confrimSchema).append(lineSeparator);
@@ -614,6 +646,19 @@ public class ConfirmationPage extends
 							" -> ").append(tabSeparator).append(sourceConfig.getTarget()).append(
 							lineSeparator);
 				}
+			}
+		}
+		//grant
+		List<SourceGrantConfig> sourceConfigGrantList = migration.getExpGrantCfg();
+		if (!sourceConfigGrantList.isEmpty()) {
+			text.append(Messages.confrimExportGrants).append(lineSeparator);
+			for (SourceConfig sourceConfig : sourceConfigGrantList) {
+				if (!sourceConfig.isCreate()) {
+					continue;
+				}
+				text.append(tabSeparator).append(sourceConfig.getName()).append(tabSeparator).append(
+						" -> ").append(tabSeparator).append(sourceConfig.getTarget()).append(
+								lineSeparator);
 			}
 		}
 		return text.toString();

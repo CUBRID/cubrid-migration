@@ -240,6 +240,7 @@ public class Messages extends
 	public static String confirmUserName;
 	public static String confrimData;
 	public static String confrimExportFKs;
+	public static String confrimExportGrants;
 	public static String confrimExportIndexs;
 	public static String confrimExportSerial;
 	public static String confrimExportSynonym;
@@ -251,6 +252,7 @@ public class Messages extends
 	public static String confrimView;
 	public static String confrimPk;
 	public static String confrimFk;
+	public static String confrimGrant;
 	public static String confrimSerial;
 	public static String confrimSynonym;
 	public static String confrimUpdateStatistic;

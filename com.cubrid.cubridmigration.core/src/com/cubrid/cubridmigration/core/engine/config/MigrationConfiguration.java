@@ -172,6 +172,7 @@ public class MigrationConfiguration {
 	private Map<String, String> targetUpdateStatisticFileName = new HashMap<String, String>();
 	private Map<String, String> targetSchemaFileListName = new HashMap<String, String>();
 	private Map<String, String> targetSynonymFileName = new HashMap<String, String>();
+	private Map<String, String> targetGrantFileName = new HashMap<String, String>();
 	private String targetFilePrefix;
 	private String targetCharSet = "UTF-8";
 	private String targetLOBRootPath = "";
@@ -680,6 +681,7 @@ public class MigrationConfiguration {
 					sc.setName(grant.getName());
 					sc.setOwner(grant.getOwner());
 					sc.setTarget(grant.getName());
+					sc.setTargetOwner(grant.getOwner());
 					sc.setGrantorName(grant.getGrantorName());
 					sc.setGranteeName(grant.getGranteeName());
 					sc.setAuthType(grant.getAuthType());
@@ -1494,6 +1496,7 @@ public class MigrationConfiguration {
 			addTargetUpdateStatisticFileName(schema.getName(), path2 + targetUpdateStatisticFileName.get(schema.getName().substring(tempPath.length())));
 			addTargetSchemaFileListName(schema.getName(), path2 + targetSchemaFileListName.get(schema.getName().substring(tempPath.length())));
 			addTargetSynonymFileName(schema.getName(), path2 + targetSynonymFileName.get(schema.getName().substring(tempPath.length())));
+			addTargetGrantFileName(schema.getName(), path2 + targetGrantFileName.get(schema.getName().substring(tempPath.length())));
 		}
 	}
 
@@ -2970,6 +2973,14 @@ public class MigrationConfiguration {
 	public String getTargetSynonymFileName(String schemaName) {
 		return this.targetSynonymFileName.get(schemaName);
 	}
+	
+	public Map<String, String> getTargetGrantFileName1() {
+		return new HashMap<String, String>(this.targetGrantFileName);
+	}
+	
+	public String getTargetGrantFileName(String schemaName) {
+		return this.targetGrantFileName.get(schemaName);
+	}
 
 	/**
 	 * getTargetSerialList
@@ -3818,6 +3829,7 @@ public class MigrationConfiguration {
 			addTargetUpdateStatisticFileName(schema.getName(), PathUtils.mergePath(PathUtils.mergePath(odir, prefix), schema.getName() + "_updatestatistic"));
 			addTargetSchemaFileListName(schema.getName(), PathUtils.mergePath(PathUtils.mergePath(odir, prefix), schema.getName() + "_info"));
 			addTargetSynonymFileName(schema.getName(), PathUtils.mergePath(PathUtils.mergePath(odir, prefix), schema.getName() + "_synonym"));
+			addTargetGrantFileName(schema.getName(), PathUtils.mergePath(PathUtils.mergePath(odir, prefix), schema.getName() + "_grant"));
 		}
 		setTargetCharSet(charset);
 	}
@@ -4118,6 +4130,14 @@ public class MigrationConfiguration {
 	
 	public void addTargetSynonymFileName(String schemaName, String filePath) {
 		this.targetSynonymFileName.put(schemaName, filePath);
+	}
+	
+	public void setTargetGrantFileName(Map<String, String> targetGrantFileName) {
+		this.targetGrantFileName.putAll(targetGrantFileName);
+	}
+	
+	public void addTargetGrantFileName(String schemaName, String filePath) {
+		this.targetGrantFileName.put(schemaName, filePath);
 	}
 
 	/**

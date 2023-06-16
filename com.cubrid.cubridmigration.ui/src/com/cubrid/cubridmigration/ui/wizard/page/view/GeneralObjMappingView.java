@@ -481,8 +481,8 @@ public class GeneralObjMappingView extends
 				tgrant.setName(name);
 			}
 			setc.setTarget(name);
-			setc.setCreate((Boolean) obj[2]);
-			setc.setReplace((Boolean) obj[3]);
+			setc.setCreate((Boolean) obj[3]);
+			setc.setReplace((Boolean) obj[4]);
 		}
 		return super.save();
 	}
