@@ -2053,6 +2053,14 @@ public final class CUBRIDSchemaFetcher extends
 		}
 	}
 	
+	/**
+	 * get All Synonyms
+	 * 
+	 * @param conn
+	 * @param schema
+	 * @return
+	 * @throws SQLException
+	 */
 	private List<Synonym> getAllSynonym(Connection conn, Schema schema) throws SQLException {
 		PreparedStatement stmt = null;
 		ResultSet rs = null; //NOPMD
@@ -2092,6 +2100,15 @@ public final class CUBRIDSchemaFetcher extends
 		}
 	}
 	
+	/**
+	 * get All Grants
+	 * 
+	 * @param conn
+	 * @param catalog
+	 * @param schema
+	 * @return
+	 * @throws SQLException
+	 */
 	private List<Grant> getAllGrant(Connection conn, Catalog catalog, Schema schema) throws SQLException {
 		PreparedStatement stmt = null;
 		ResultSet rs = null; //NOPMD
@@ -2105,7 +2122,7 @@ public final class CUBRIDSchemaFetcher extends
 			.append(" WHERE a.class_name=c.class_name")
 			.append(isUserSchema ? " AND a.owner_name=c.owner_name" : "")
 			.append(" AND c.is_system_class='NO'")
-			.append(" AND a.owner_name=?");
+			.append(" AND a.grantee_name=?");
 		
 		try {
 			stmt = conn.prepareStatement(sql.toString());			

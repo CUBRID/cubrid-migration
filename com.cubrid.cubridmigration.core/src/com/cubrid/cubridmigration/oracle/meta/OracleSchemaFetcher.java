@@ -812,6 +812,15 @@ public final class OracleSchemaFetcher extends
 		}
 	}
 	
+	/**
+	 * Build Grant
+	 * 
+	 * @param conn Connection
+	 * @param catalog Catalog
+	 * @param schema Schema
+	 * @param filter IBuildSchemaFilter
+	 * @throws SQLException e
+	 */
 	protected void buildGrant(Connection conn, Catalog catalog, Schema schema,
 			IBuildSchemaFilter filter) throws SQLException {
 		if (LOG.isDebugEnabled()) {
