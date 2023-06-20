@@ -59,6 +59,7 @@ import com.cubrid.cubridmigration.core.common.log.LogUtil;
 import com.cubrid.cubridmigration.core.dbobject.Column;
 import com.cubrid.cubridmigration.core.dbobject.DBObject;
 import com.cubrid.cubridmigration.core.dbobject.FK;
+import com.cubrid.cubridmigration.core.dbobject.Grant;
 import com.cubrid.cubridmigration.core.dbobject.Index;
 import com.cubrid.cubridmigration.core.dbobject.PK;
 import com.cubrid.cubridmigration.core.dbobject.Record;
@@ -724,6 +725,17 @@ public abstract class OfflineImporter extends
 		String ddl = CUBRIDSQLHelper.getInstance(null).getSynonymDDL(sn, config.isAddUserSchema());
 		sn.setDDL(ddl);
 		executeDDL(ddl + ";\n", DBObject.OBJ_TYPE_SYNONYM, createResultHandler(sn), sn.getOwner());
+	}
+	
+	/**
+	 * Create grant
+	 * 
+	 * @param gr the grant to be created.
+	 */
+	public void createGrant(Grant gr) {
+		String ddl = CUBRIDSQLHelper.getInstance(null).getGrantDDL(gr, config.isAddUserSchema());
+		gr.setDDL(ddl);
+		executeDDL(ddl + ";\n", DBObject.OBJ_TYPE_GRANT, createResultHandler(gr),gr.getOwner());
 	}
 	
 	public void createSchema(Schema schema) {

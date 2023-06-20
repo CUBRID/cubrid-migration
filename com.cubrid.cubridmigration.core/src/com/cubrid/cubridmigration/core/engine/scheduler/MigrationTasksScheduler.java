@@ -45,6 +45,7 @@ import com.cubrid.cubridmigration.core.engine.config.MigrationConfiguration;
 import com.cubrid.cubridmigration.core.engine.config.SourceCSVConfig;
 import com.cubrid.cubridmigration.core.engine.config.SourceColumnConfig;
 import com.cubrid.cubridmigration.core.engine.config.SourceEntryTableConfig;
+import com.cubrid.cubridmigration.core.engine.config.SourceGrantConfig;
 import com.cubrid.cubridmigration.core.engine.config.SourceSQLTableConfig;
 import com.cubrid.cubridmigration.core.engine.config.SourceSequenceConfig;
 import com.cubrid.cubridmigration.core.engine.config.SourceSynonymConfig;
@@ -130,6 +131,8 @@ public class MigrationTasksScheduler {
 		if (!config.targetIsOnline() && config.isSplitSchema()) {
 			createSchemaFileList();
 		}
+		
+		createGrants();
 	}
 
 	/**
@@ -529,6 +532,19 @@ public class MigrationTasksScheduler {
 		List<String> triggers = config.getExpTriggerCfg();
 		for (String tg : triggers) {
 			executeTask(taskFactory.createExportTriggerTask(tg));
+		}
+		await();
+	}
+	
+	/**
+	 * Schedule export grant tasks.
+	 * 
+	 */
+	protected void createGrants() {
+		MigrationConfiguration config = context.getConfig();
+		List<SourceGrantConfig> grants = config.getExpGrantCfg();
+		for (SourceGrantConfig gr : grants) {
+			executeTask(taskFactory.createExportGrantTask(gr));
 		}
 		await();
 	}

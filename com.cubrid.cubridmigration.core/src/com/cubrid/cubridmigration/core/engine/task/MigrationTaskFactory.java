@@ -33,6 +33,7 @@ import java.util.List;
 
 import com.cubrid.cubridmigration.core.dbobject.FK;
 import com.cubrid.cubridmigration.core.dbobject.Function;
+import com.cubrid.cubridmigration.core.dbobject.Grant;
 import com.cubrid.cubridmigration.core.dbobject.PK;
 import com.cubrid.cubridmigration.core.dbobject.Procedure;
 import com.cubrid.cubridmigration.core.dbobject.Record;
@@ -47,6 +48,7 @@ import com.cubrid.cubridmigration.core.engine.config.MigrationConfiguration;
 import com.cubrid.cubridmigration.core.engine.config.SourceCSVConfig;
 import com.cubrid.cubridmigration.core.engine.config.SourceConfig;
 import com.cubrid.cubridmigration.core.engine.config.SourceEntryTableConfig;
+import com.cubrid.cubridmigration.core.engine.config.SourceGrantConfig;
 import com.cubrid.cubridmigration.core.engine.config.SourceSequenceConfig;
 import com.cubrid.cubridmigration.core.engine.config.SourceSynonymConfig;
 import com.cubrid.cubridmigration.core.engine.config.SourceTableConfig;
@@ -56,6 +58,7 @@ import com.cubrid.cubridmigration.core.engine.task.exp.CSVExportTask;
 import com.cubrid.cubridmigration.core.engine.task.exp.CSVTableSchemaExportTask;
 import com.cubrid.cubridmigration.core.engine.task.exp.FKExportTask;
 import com.cubrid.cubridmigration.core.engine.task.exp.FunctionExportTask;
+import com.cubrid.cubridmigration.core.engine.task.exp.GrantExportTask;
 import com.cubrid.cubridmigration.core.engine.task.exp.IndexExportTask;
 import com.cubrid.cubridmigration.core.engine.task.exp.PKExportTask;
 import com.cubrid.cubridmigration.core.engine.task.exp.ProcedureExportTask;
@@ -74,6 +77,7 @@ import com.cubrid.cubridmigration.core.engine.task.imp.CleanDBTask;
 import com.cubrid.cubridmigration.core.engine.task.imp.ExecuteSQLTask;
 import com.cubrid.cubridmigration.core.engine.task.imp.FKImportTask;
 import com.cubrid.cubridmigration.core.engine.task.imp.FunctionImportTask;
+import com.cubrid.cubridmigration.core.engine.task.imp.GrantImportTask;
 import com.cubrid.cubridmigration.core.engine.task.imp.IndexImportTask;
 import com.cubrid.cubridmigration.core.engine.task.imp.PKImportTask;
 import com.cubrid.cubridmigration.core.engine.task.imp.ProcedureImportTask;
@@ -239,6 +243,19 @@ public class MigrationTaskFactory {
 	 */
 	public SynonymNoSupportExportTask createExportNoSupportSynonymTask(SourceSynonymConfig sn) {
 		SynonymNoSupportExportTask task = new SynonymNoSupportExportTask(context.getConfig(), sn);
+		initExportTask(task, false);
+		return task;
+	}
+
+	/**
+	 * 
+	 * createExportGrantTask
+	 * 
+	 * @param gr Grant
+	 * @return GrantExportTask
+	 */
+	public GrantExportTask createExportGrantTask(SourceGrantConfig gr) {
+		GrantExportTask task = new GrantExportTask(context.getConfig(), gr);
 		initExportTask(task, false);
 		return task;
 	}
@@ -433,6 +450,18 @@ public class MigrationTaskFactory {
 	 */
 	public ImportTask createImportSynonymTask(Synonym sn) {
 		SynonymImportTask task = new SynonymImportTask(sn);
+		initImportTask(task);
+		return task;
+	}
+	
+	/**
+	 * createImportGrantTask
+	 * 
+	 * @param gr Grant
+	 * @return GrantImportTask
+	 */
+	public ImportTask createImportGrantTask(Grant gr) {
+		GrantImportTask task = new GrantImportTask(gr);
 		initImportTask(task);
 		return task;
 	}

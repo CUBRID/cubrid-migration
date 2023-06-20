@@ -33,6 +33,7 @@ import java.util.List;
 
 import com.cubrid.cubridmigration.core.dbobject.FK;
 import com.cubrid.cubridmigration.core.dbobject.Function;
+import com.cubrid.cubridmigration.core.dbobject.Grant;
 import com.cubrid.cubridmigration.core.dbobject.Index;
 import com.cubrid.cubridmigration.core.dbobject.PK;
 import com.cubrid.cubridmigration.core.dbobject.Procedure;
@@ -108,6 +109,13 @@ public interface IMigrationImporter {
 	 * @param sn Synonym
 	 */
 	public void createSynonym(Synonym sn);
+	
+	/**
+	 * Create grant
+	 * 
+	 * @param gr Grant
+	 */
+	public void createGrant(Grant gr);
 	
 	/**
 	 * Create Schema
