@@ -839,13 +839,17 @@ public final class OracleSchemaFetcher extends
 			stmt.setString(1, schema.getName().toUpperCase());	
 			rs = stmt.executeQuery();
 			while (rs.next()) {
+				if (!isSupportPrivilege(rs.getString("PRIVILEGE"))) {
+					continue;
+				}
+				
 				Grant grant = factory.createGrant();
 				grant.setGranteeName(rs.getString("GRANTEE"));
 				grant.setOwner(schema.getName());
 				grant.setClassOwner(rs.getString("OWNER"));
 				grant.setClassName(rs.getString("TABLE_NAME"));
 				grant.setGrantorName(rs.getString("GRANTOR"));
-				grant.setAuthType(rs.getString("PRIVILEGE"));
+				grant.setAuthType(convertPrivilegeOracle2Cubrid(rs.getString("PRIVILEGE")));
 				grant.setGrantable(rs.getString("GRANTABLE").equals("YES") ? true : false);
 				grant.setDDL(CUBRIDSQLHelper.getInstance(null).getGrantDDL(grant, true));
 				schema.addGrant(grant);
@@ -1650,6 +1654,42 @@ public final class OracleSchemaFetcher extends
 			Closer.close(rs);
 			Closer.close(stmt);
 		}
+	}
+	
+	/**
+	 * Check privilege supported by Cubrid.
+	 * 
+	 * @param privilege
+	 * @return boolean
+	 */
+	private boolean isSupportPrivilege(String privilege) {
+		if (privilege.equals("SELECT") 
+				|| privilege.equals("INSERT")
+				|| privilege.equals("UPDATE")
+				|| privilege.equals("DELETE")
+				|| privilege.equals("ALTER")
+				|| privilege.equals("INDEX")
+				|| privilege.equals("EXECUTE")
+				|| privilege.equals("ALL")) {
+			return true;
+		}
+		return false;
+	}
+	
+	/**
+	 * Change to privilege used by Cubrid.
+	 * 
+	 * @param privilege
+	 * @return String cubridPrivilege
+	 */
+	private String convertPrivilegeOracle2Cubrid(String privilege) {
+		String cubridPrivilege = privilege;
+		
+		if (privilege.equals("ALL")) {
+			cubridPrivilege = "ALL PRIVILEGES";
+		}
+		
+		return cubridPrivilege;
 	}
 
 	/**
