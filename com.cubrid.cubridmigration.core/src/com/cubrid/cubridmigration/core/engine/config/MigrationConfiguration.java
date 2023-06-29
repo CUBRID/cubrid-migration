@@ -681,13 +681,12 @@ public class MigrationConfiguration {
 					sc = new SourceGrantConfig();
 					sc.setName(grant.getName());
 					sc.setOwner(grant.getOwner());
-					sc.setTarget(grant.getName());
-					sc.setTargetOwner(grant.getOwner());
-					sc.setGrantorName(grant.getGrantorName());
-					sc.setGranteeName(grant.getGranteeName());
+					sc.setTargetOwner(sourceDBSchema.getTargetSchemaName());
+					sc.setGrantorName(getTargetOwner(schemas, grant.getGrantorName()));
+					sc.setGranteeName(getTargetOwner(schemas, grant.getGranteeName()));
 					sc.setAuthType(grant.getAuthType());
 					sc.setClassName(grant.getClassName());
-					sc.setClassOwner(grant.getClassOwner());
+					sc.setClassOwner(getTargetOwner(schemas, grant.getClassOwner()));
 					sc.setGrantable(grant.isGrantable());
 					sc.setCreate(targetIsOnline() && !targetDBAGroup ? false : true);
 				} else if(sourceDBSchema.getTargetSchemaName() != null) {
@@ -700,14 +699,15 @@ public class MigrationConfiguration {
 				Grant tgrant = getTargetGrantSchema(sc.getName());
 				if (tgrant == null) {
 					tgrant = (Grant) grant.clone();
-					tgrant.setName(tgrant.getName());
-					tgrant.setOwner(sc.getOwner());
+					tgrant.setOwner(sc.getTargetOwner());
 					tgrant.setGrantorName(sc.getGrantorName());
 					tgrant.setGranteeName(sc.getGranteeName());
 					tgrant.setAuthType(sc.getAuthType());
 					tgrant.setClassName(sc.getClassName());
 					tgrant.setClassOwner(sc.getClassOwner());
 					tgrant.setGrantable(sc.isGrantable());
+					tgrant.setName(tgrant.getName());
+					sc.setTarget(tgrant.getName());
 					tgrant.setDDL(cubridddlUtil.getGrantDDL(tgrant, this.addUserSchema));
 				}
 				tempGrants.add(tgrant);
@@ -741,7 +741,7 @@ public class MigrationConfiguration {
 					sc.setObjectName(synonym.getObjectName());
 					sc.setObjectOwner(synonym.getObjectOwner());
 					sc.setTarget(getTargetName(allSynonymsCountMap, synonym.getOwner(), synonym.getName()));
-					sc.setTargetOwner(getSynonymOwner(schemas, synonym.getOwner()));
+					sc.setTargetOwner(getTargetOwner(schemas, synonym.getOwner()));
 					sc.setObjectTargetName(synonym.getObjectName());
 					sc.setObjectTargetOwner(synonym.getObjectOwner());
 					sc.setCreate(false);
@@ -762,7 +762,7 @@ public class MigrationConfiguration {
 				if (tsynonym == null) {
 					tsynonym = (Synonym) synonym.clone();
 					tsynonym.setOwner(sourceDBSchema.getTargetSchemaName());
-					tsynonym.setObjectOwner(getSynonymOwner(schemas, synonym.getObjectOwner()));
+					tsynonym.setObjectOwner(getTargetOwner(schemas, synonym.getObjectOwner()));
 					tsynonym.setDDL(cubridddlUtil.getSynonymDDL(tsynonym, this.addUserSchema));
 				}
 				tempSynonyms.add(tsynonym);
@@ -774,7 +774,7 @@ public class MigrationConfiguration {
 		targetSynonyms.addAll(tempSynonyms);
 	}
 	
-	private String getSynonymOwner(List<Schema> schemas, String owner) {
+	private String getTargetOwner(List<Schema> schemas, String owner) {
 		for (Schema schema : schemas) {
 			if (schema.getName().equalsIgnoreCase(owner)) {
 				return schema.getTargetSchemaName();
@@ -3767,6 +3767,21 @@ public class MigrationConfiguration {
 			if (ssc.getOwner().equalsIgnoreCase(ownerName)) {
 				ssc.setCreate(value);
 				ssc.setReplace(value);
+			}
+		}
+		
+		for (SourceSynonymConfig ssyc : expSynonyms) {
+			if (ssyc.getOwner().equalsIgnoreCase(ownerName)) {
+				ssyc.setCreate(value);
+				ssyc.setReplace(value);
+			}
+		}
+		
+		if (!targetIsOnline() || targetDBAGroup) {
+			for (SourceGrantConfig sgc : expGrants) {
+				if (sgc.getOwner().equalsIgnoreCase(ownerName)) {
+					sgc.setCreate(value);
+				}
 			}
 		}
 	}

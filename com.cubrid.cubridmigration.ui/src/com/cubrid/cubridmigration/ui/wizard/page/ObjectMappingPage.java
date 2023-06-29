@@ -186,12 +186,14 @@ public class ObjectMappingPage extends
 
 			refreshTreeView();
 			this.getShell().setMaximized(true);
-			isFirstVisible = false;
+			
 			// select all if there have no selected tables to migrate
-			if (!cfg.hasObjects2Export()) {
+			if (isFirstVisible || !cfg.hasObjects2Export()) {
 				cfg.setAll(true);
 				refreshCurrentView();
 			}
+			
+			isFirstVisible = false;
 			String msg = util.getNoPKSourceTablesCheckingResult();
 			if (StringUtils.isNotBlank(msg)) {
 				super.setMessage(msg);

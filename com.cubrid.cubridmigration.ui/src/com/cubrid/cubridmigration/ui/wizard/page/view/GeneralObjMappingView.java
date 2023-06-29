@@ -515,8 +515,6 @@ public class GeneralObjMappingView extends
 			TableItem ti = tvGrants.getTable().getItem(i);
 			Object[] obj = (Object[]) ti.getData();
 			SourceConfig setc = (SourceConfig) obj[obj.length - 1];
-			final String name = obj[1].toString();
-			setc.setTarget(name);
 			setc.setCreate((Boolean) obj[4]);
 		}
 		return super.save();

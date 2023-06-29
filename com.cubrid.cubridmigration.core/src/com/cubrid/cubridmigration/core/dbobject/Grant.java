@@ -74,7 +74,6 @@ public class Grant extends
 	public Object clone() {
 		final Grant grant = new Grant(owner, grantorName, granteeName, 
 				className, classOwner, authType, isGrantable, createDDL);
-		grant.setName(getName());
 		return grant;
 	}
 	
@@ -84,11 +83,11 @@ public class Grant extends
 		}
 		
 		String tempClassOwner = classOwner != null ? classOwner : "";
-		String split = "/";
+//		String split = " / ";
 		return authType 
-				+ split + tempClassOwner
-				+ split + className
-				+ split + granteeName;
+				+ " ON " + tempClassOwner
+				+ "." + className
+				+ " TO " + granteeName;
 	}
 	
 	public void setName(String name) {
