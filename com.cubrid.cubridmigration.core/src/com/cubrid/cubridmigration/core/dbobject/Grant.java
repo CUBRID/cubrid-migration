@@ -83,12 +83,12 @@ public class Grant extends
 			return name;
 		}
 		
-		String tempClassOwner = classOwner != null ? capitalizeFirstLetter(classOwner) : "";
-		return authType.toLowerCase() 
-				+ tempClassOwner
-				+ capitalizeFirstLetter(className) 
-				+ "To" 
-				+ capitalizeFirstLetter(granteeName);
+		String tempClassOwner = classOwner != null ? classOwner : "";
+		String split = "/";
+		return authType 
+				+ split + tempClassOwner
+				+ split + className
+				+ split + granteeName;
 	}
 	
 	public void setName(String name) {
@@ -162,9 +162,5 @@ public class Grant extends
 	@Override
 	public String getObjType() {
 		return OBJ_TYPE_GRANT;
-	}
-	
-	private String capitalizeFirstLetter(String str) {
-		return (str.substring(0, 1).toUpperCase()) + (str.substring(1).toLowerCase());
 	}
 }

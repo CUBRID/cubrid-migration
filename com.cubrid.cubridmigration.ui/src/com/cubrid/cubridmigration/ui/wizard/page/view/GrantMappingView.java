@@ -29,8 +29,6 @@
  */
 package com.cubrid.cubridmigration.ui.wizard.page.view;
 
-import java.util.Locale;
-
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -48,7 +46,6 @@ import com.cubrid.cubridmigration.cubrid.CUBRIDDataTypeHelper;
 import com.cubrid.cubridmigration.ui.common.CompositeUtils;
 import com.cubrid.cubridmigration.ui.common.navigator.node.GrantNode;
 import com.cubrid.cubridmigration.ui.message.Messages;
-import com.cubrid.cubridmigration.ui.wizard.utils.MigrationCfgUtils;
 import com.cubrid.cubridmigration.ui.wizard.utils.VerifyResultMessages;
 
 /**
@@ -102,21 +99,20 @@ public class GrantMappingView extends
 		btnCreate = new Button(container, SWT.CHECK);
 		btnCreate.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false));
 		btnCreate.setText(Messages.lblCreate);
+		
 		btnCreate.addSelectionListener(new SelectionAdapter() {
-
 			public void widgetSelected(SelectionEvent ev) {
 				setButtonsStatus();
 			}
-
 		});
-
+		
+		
 		btnReplace = new Button(container, SWT.CHECK);
 		btnReplace.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
-		btnReplace.setText(Messages.lblReplace);
-
+		btnReplace.setVisible(false);
+		
 		createSourcePart(container);
 		createTargetPart(container);
-		
 	}
 	
 	/**
@@ -127,6 +123,7 @@ public class GrantMappingView extends
 	protected void createSourcePart(Composite parent) {
 		grpSource = new GrantInfoComposite(parent, Messages.lblSource);
 		grpSource.setEditable(false);
+
 	}
 	
 	/**
@@ -138,9 +135,13 @@ public class GrantMappingView extends
 	}
 	
 	/**
-	 * @param obj should be a SynonymNode
+	 * @param obj should be a GrantNode
 	 */
 	public void showData(Object obj) {
+		if (config.targetIsOnline() && !config.isTargetDBAGroup()) {
+			btnCreate.setEnabled(false);
+		}
+		
 		super.showData(obj);
 		if (!(obj instanceof GrantNode)) {
 			return;
@@ -158,12 +159,12 @@ public class GrantMappingView extends
 		grpSource.setGrant(grant);
 		btnCreate.setSelection(grantConfig.isCreate());
 		
-		Grant tgrant = config.getTargetGrantSchema(grantConfig.getTargetOwner(), grantConfig.getTarget());
+		Grant tgrant = config.getTargetGrantSchema(grantConfig.getName());
 		if (tgrant == null) {
 			grpTarget.setEditable(false);
 			return;
 		}
-		grpTarget.setEditable(grantConfig.isCreate());
+		grpTarget.setEditable(false);
 		grpTarget.setGrant(tgrant);
 
 		setButtonsStatus();
@@ -179,7 +180,6 @@ public class GrantMappingView extends
 			return super.save();
 		}
 		grantConfig.setCreate(btnCreate.getSelection());
-		grantConfig.setReplace(btnReplace.getSelection());
 		if (grantConfig.isCreate()) {
 			final VerifyResultMessages result = grpTarget.save();
 			if (!result.hasError()) {
@@ -195,21 +195,18 @@ public class GrantMappingView extends
 	 * 
 	 */
 	private void setButtonsStatus() {
-		btnReplace.setSelection(btnCreate.getSelection());
-		btnReplace.setEnabled(btnCreate.getSelection());
-		grpTarget.setEditable(btnCreate.getSelection());
+		//Grant cannot be modified regardless of choice
+		//grpTarget.setEditable(btnCreate.getSelection());
 	}
 	
 	private class GrantInfoComposite {
-		private Group grp;
-		private Text txtName;
-		private Text txtOwner;
-//		private Text txtAuthType;
-//		private Text txtGrantor;
-//		private Text txtGrantee;
-//		private Text txtClassOwner;
-//		private Text txtClassName;
-//		private Text isGrantable;
+		private Group grp;		
+		private Text txtAuthType;
+		private Text txtGrantor;
+		private Text txtClassOwner;
+		private Text txtClassName;
+		private Text txtGrantee;
+		private Text isGrantable;
 		
 		private Grant grant;
 		
@@ -221,23 +218,59 @@ public class GrantMappingView extends
 			grp.setLayoutData(gd);
 			grp.setText(name);
 			
-			Label lblTableName = new Label(grp, SWT.NONE);
-			lblTableName.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false));
-			lblTableName.setText(Messages.lblSynonymName);
+			Label lblAuthType = new Label(grp, SWT.NONE);
+			lblAuthType.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false));
+			lblAuthType.setText(Messages.lblGrantAuthType);
 			
-			txtName = new Text(grp, SWT.BORDER);
-			txtName.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
-			txtName.setTextLimit(CUBRIDDataTypeHelper.DB_OBJ_NAME_MAX_LENGTH);
-			txtName.setText("");
+			txtAuthType = new Text(grp, SWT.BORDER);
+			txtAuthType.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+			txtAuthType.setTextLimit(CUBRIDDataTypeHelper.DB_OBJ_NAME_MAX_LENGTH);
+			txtAuthType.setText("");
 			
-			Label lblOwnerName = new Label(grp, SWT.NONE);
-			lblOwnerName.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false));
-			lblOwnerName.setText(Messages.lblSynonymOwnerName);
+			Label lblGrantor = new Label(grp, SWT.NONE);
+			lblGrantor.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false));
+			lblGrantor.setText(Messages.lblGrantGrantor);
 			
-			txtOwner = new Text(grp, SWT.BORDER);
-			txtOwner.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
-			txtOwner.setTextLimit(CUBRIDDataTypeHelper.DB_OBJ_NAME_MAX_LENGTH);
-			txtOwner.setText("");
+			txtGrantor = new Text(grp, SWT.BORDER);
+			txtGrantor.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+			txtGrantor.setTextLimit(CUBRIDDataTypeHelper.DB_OBJ_NAME_MAX_LENGTH);
+			txtGrantor.setText("");
+			
+			Label lblClassOwner = new Label(grp, SWT.NONE);
+			lblClassOwner.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false));
+			lblClassOwner.setText(Messages.lblGrantClassOwner);
+			
+			txtClassOwner = new Text(grp, SWT.BORDER);
+			txtClassOwner.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+			txtClassOwner.setTextLimit(CUBRIDDataTypeHelper.DB_OBJ_NAME_MAX_LENGTH);
+			txtClassOwner.setText("");
+			
+			Label lblClassName = new Label(grp, SWT.NONE);
+			lblClassName.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false));
+			lblClassName.setText(Messages.lblGrantClassName);
+			
+			txtClassName = new Text(grp, SWT.BORDER);
+			txtClassName.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+			txtClassName.setTextLimit(CUBRIDDataTypeHelper.DB_OBJ_NAME_MAX_LENGTH);
+			txtClassName.setText("");
+			
+			Label lblGrantee = new Label(grp, SWT.NONE);
+			lblGrantee.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false));
+			lblGrantee.setText(Messages.lblGrantGrantee);
+			
+			txtGrantee = new Text(grp, SWT.BORDER);
+			txtGrantee.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+			txtGrantee.setTextLimit(CUBRIDDataTypeHelper.DB_OBJ_NAME_MAX_LENGTH);
+			txtGrantee.setText("");
+			
+			Label lblGrantable = new Label(grp, SWT.NONE);
+			lblGrantable.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false));
+			lblGrantable.setText(Messages.lblGrantGrantee);
+			
+			isGrantable = new Text(grp, SWT.BORDER);
+			isGrantable.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+			isGrantable.setTextLimit(CUBRIDDataTypeHelper.DB_OBJ_NAME_MAX_LENGTH);
+			isGrantable.setText("");
 		}
 		
 		/**
@@ -247,8 +280,12 @@ public class GrantMappingView extends
 		 */
 		void setGrant(Grant grant) {
 			this.grant = grant;
-			txtName.setText(grant.getName());
-			txtOwner.setText(grant.getOwner() == null ? "" : grant.getOwner());
+			txtAuthType.setText(grant.getAuthType());
+			txtGrantor.setText(grant.getGrantorName());
+			txtClassOwner.setText(grant.getClassOwner());
+			txtClassName.setText(grant.getClassName());
+			txtGrantee.setText(grant.getGranteeName());
+			isGrantable.setText(grant.isGrantable() ? "YES" : "NO");
 		}
 		
 		/**
@@ -257,7 +294,12 @@ public class GrantMappingView extends
 		 * @param editable
 		 */
 		void setEditable(boolean editable) {
-			txtName.setEditable(editable);
+			txtAuthType.setEditable(editable);
+			txtGrantor.setEditable(editable);
+			txtClassOwner.setEditable(editable);
+			txtClassName.setEditable(editable);
+			txtGrantee.setEditable(editable);
+			isGrantable.setEditable(editable);
 		}
 		
 		/**
@@ -269,18 +311,20 @@ public class GrantMappingView extends
 			if (grant == null) {
 				return new VerifyResultMessages();
 			}
-			final String newName = txtName.getText().trim().toLowerCase(Locale.US);
-			if (!MigrationCfgUtils.verifyTargetDBObjName(newName)) {
-				return new VerifyResultMessages(Messages.msgErrInvalidSynonymName, null, null);
-			}
-			final String newOwnerName = txtOwner.getText().trim();
-			if (!MigrationCfgUtils.verifyTargetDBObjName(newOwnerName)) {
-				return new VerifyResultMessages(Messages.msgErrInvalidSynonymName, null, null);
-			}
+			final String newAuthType = txtAuthType.getText().trim();
+			final String newGrantor = txtGrantor.getText().trim();
+			final String newClassOwner = txtClassOwner.getText().trim();
+			final String newClassName = txtClassName.getText().trim();
+			final String newGrantee = txtGrantee.getText().trim();
+			final boolean newGrantable = isGrantable.getText().trim().equals("YES") ? true : false;
 			
 			//Save target grant
-			grant.setName(newName);
-			grant.setOwner(newOwnerName);
+			grant.setAuthType(newAuthType);
+			grant.setGrantorName(newGrantor);
+			grant.setClassOwner(newClassOwner);
+			grant.setClassName(newClassName);
+			grant.setGranteeName(newGrantee);
+			grant.setGrantable(newGrantable);
 			return new VerifyResultMessages();
 		}
 	}

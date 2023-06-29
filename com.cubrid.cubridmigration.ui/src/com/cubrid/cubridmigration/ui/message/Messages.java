@@ -410,6 +410,13 @@ public class Messages extends
 	public static String lblFKName;
 	public static String lblFKRefColumns;
 	public static String lblFKRefTableName;
+	public static String lblGrantAuthType;
+	public static String lblGrantName;
+	public static String lblGrantClassName;
+	public static String lblGrantClassOwner;
+	public static String lblGrantGrantable;
+	public static String lblGrantGrantee;
+	public static String lblGrantGrantor;
 	public static String lblHDFSFile;
 	public static String lblHDFSPath;
 	public static String lblHost;
@@ -710,6 +717,7 @@ public class Messages extends
 	public static String tabTitleDataSQLDes;
 	public static String tabTitleDataType;
 	public static String tabTitleFK;
+	public static String tabTitleGrantAuthType;
 	public static String tabTitleGeneral;
 	public static String tabTitleIndexes;
 	public static String tabTitleName;
@@ -722,6 +730,8 @@ public class Messages extends
 	public static String tabTitleSourceFK;
 	public static String tabTitleSourceGrant;
 	public static String tabTitleSourceIndex;
+	public static String tabTitleSourceObject;
+	public static String tabTitleSourceOwner;
 	public static String tabTitleSourceSerial;
 	public static String tabTitleSourceSynonym;
 	public static String tabTitleSourceTable;
@@ -732,6 +742,7 @@ public class Messages extends
 	public static String tabTitleTargetFK;
 	public static String tabTitleTargetGrant;
 	public static String tabTitleTargetIndex;
+	public static String tabTitleTargetOwner;
 	public static String tabTitleTargetSerial;
 	public static String tabTitleTargetSynonym;
 	public static String tabTitleTargetTable;

@@ -178,6 +178,7 @@ public class MigrationConfiguration {
 	private String targetLOBRootPath = "";
 	private boolean addUserSchema;
 	private boolean splitSchema;
+	private boolean targetDBAGroup;
 
 	private final CSVSettings csvSettings = new CSVSettings();
 
@@ -688,24 +689,19 @@ public class MigrationConfiguration {
 					sc.setClassName(grant.getClassName());
 					sc.setClassOwner(grant.getClassOwner());
 					sc.setGrantable(grant.isGrantable());
-					sc.setCreate(false);
-					sc.setReplace(false);
+					sc.setCreate(targetIsOnline() && !targetDBAGroup ? false : true);
 				} else if(sourceDBSchema.getTargetSchemaName() != null) {
 					if (!sourceDBSchema.getTargetSchemaName().equals(sc.getTargetOwner())) {
 						sc.setTargetOwner(sourceDBSchema.getTargetSchemaName());
 					}
 				}
 				tempList.add(sc);
-				Grant tgrant = null;
-				if (sc.getOwner() == null) {
-					tgrant = getTargetGrantSchema(sc.getTarget());
-				} else {
-					tgrant = getTargetGrantSchema(sc.getTargetOwner(), sc.getTarget());
-				}
+				
+				Grant tgrant = getTargetGrantSchema(sc.getName());
 				if (tgrant == null) {
 					tgrant = (Grant) grant.clone();
-					tgrant.setName(sc.getTarget());
-					tgrant.setOwner(sc.getTargetOwner());
+					tgrant.setName(tgrant.getName());
+					tgrant.setOwner(sc.getOwner());
 					tgrant.setGrantorName(sc.getGrantorName());
 					tgrant.setGranteeName(sc.getGranteeName());
 					tgrant.setAuthType(sc.getAuthType());
@@ -2872,6 +2868,10 @@ public class MigrationConfiguration {
 	public boolean isSplitSchema() {
 		return splitSchema;
 	}
+	
+	public boolean isTargetDBAGroup() {
+		return targetDBAGroup;
+	}
 
 	/**
 	 * Retrieves the referenced count of target table name
@@ -3255,6 +3255,16 @@ public class MigrationConfiguration {
 			}
 		}
 		for (SourceConfig sc : expSerials) {
+			if (sc.isCreate()) {
+				return true;
+			}
+		}
+		for (SourceConfig sc : expSynonyms) {
+			if (sc.isCreate()) {
+				return true;
+			}
+		}
+		for (SourceConfig sc : expGrants) {
 			if (sc.isCreate()) {
 				return true;
 			}
@@ -3701,6 +3711,12 @@ public class MigrationConfiguration {
 		for (SourceConfig sc : expSynonyms) {
 			sc.setCreate(value);
 			sc.setReplace(value);
+		}
+		
+		if (!targetIsOnline() || targetDBAGroup) {
+			for (SourceConfig sc : expGrants) {
+				sc.setCreate(value);
+			}
 		}
 
 		//Don't clear sqls
@@ -4162,6 +4178,10 @@ public class MigrationConfiguration {
 	
 	public void setSplitSchema(boolean isSplit) {
 		this.splitSchema = isSplit;
+	}
+	
+	public void setTargetDBAGroup(boolean isDBAGroup) {
+		this.targetDBAGroup = isDBAGroup;
 	}
 
 	/**

@@ -36,6 +36,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.TreeMap;
 
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.ICellEditorValidator;
 import org.eclipse.jface.viewers.IDoubleClickListener;
 import org.eclipse.jface.viewers.TableViewer;
@@ -47,6 +48,8 @@ import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Text;
 
@@ -57,7 +60,6 @@ import com.cubrid.common.ui.swt.table.TableViewerBuilder;
 import com.cubrid.common.ui.swt.table.celleditor.CheckboxCellEditorFactory;
 import com.cubrid.common.ui.swt.table.celleditor.TextCellEditorFactory;
 import com.cubrid.common.ui.swt.table.listener.CheckBoxColumnSelectionListener;
-import com.cubrid.cubridmigration.core.dbobject.Grant;
 import com.cubrid.cubridmigration.core.dbobject.Sequence;
 import com.cubrid.cubridmigration.core.dbobject.Synonym;
 import com.cubrid.cubridmigration.core.dbobject.View;
@@ -341,10 +343,10 @@ public class GeneralObjMappingView extends
 				Messages.objectMapPageTabFolderGrants, "icon/db/grant_group.png");
 		
 		TableViewerBuilder tvBuilder = new TableViewerBuilder();
-		tvBuilder.setColumnNames(new String[] {Messages.tabTitleSourceGrant, Messages.tabTitleTargetGrant,
-				Messages.tabTitleTargetGrant, Messages.lblCreate, Messages.lblReplace});
+		tvBuilder.setColumnNames(new String[] {Messages.tabTitleGrantAuthType, Messages.tabTitleSourceOwner,
+				Messages.tabTitleSourceObject, Messages.tabTitleTargetOwner, Messages.lblCreate});
 		tvBuilder.setTableCursorSupported(true);
-		tvBuilder.setColumnWidths(new int[] {150, 150, 150, 80, 90});
+		tvBuilder.setColumnWidths(new int[] {100, 150, 150, 150, 80});
 		tvBuilder.setContentProvider(new StructuredContentProviderAdaptor() {
 			
 			@SuppressWarnings("unchecked")
@@ -352,31 +354,50 @@ public class GeneralObjMappingView extends
 				List<Object> data = new ArrayList<Object>();
 				for (SourceGrantConfig sc : (List<SourceGrantConfig>) inputElement) {
 					//Add the SourceConfig to the end of the object array.
-					data.add(new Object[] {sc.getName(), sc.getTarget(), sc.getAuthType(), sc.isCreate(), sc.isReplace(), sc});
+					data.add(new Object[] {sc.getAuthType() , sc.getClassOwner(), sc.getClassName(), sc.getTargetOwner(), sc.isCreate(), sc});
 				}
 				return super.getElements(data);
 			}
 		});
 		
-		final CellEditorFactory[] cellEditors = new CellEditorFactory[] {null, 
-				new TextCellEditorFactory(), new TextCellEditorFactory(),
-				new CheckboxCellEditorFactory(), new CheckboxCellEditorFactory()};
+		final CellEditorFactory[] cellEditors = new CellEditorFactory[] {null, null, 
+				null, null, new CheckboxCellEditorFactory()};
 		ObjectArrayRowCellModifier cellModifier = new ObjectArrayRowCellModifier() {
 			protected void modify(TableItem ti, Object[] element, int columnIdx, Object value) {
-				Object[] obj = (Object[]) ti.getData();
+				boolean updateCheckBox = true;
 				if (value instanceof Boolean) {
-					boolean bv = (Boolean) value;
-					if (columnIdx == 2) {
-						obj[3] = bv;
-						ti.setImage(3, CompositeUtils.getCheckImage(bv));
-						updateColumnImage(value, ti, columnIdx + 1);
-					} else {
-						obj[2] = (Boolean) obj[2] || bv;
-						ti.setImage(2, CompositeUtils.getCheckImage((Boolean) obj[2]));
-						updateColumnImage(value, ti, columnIdx - 1);
+					if (columnIdx == 4) {
+						if (config.targetIsOnline() && !config.isTargetDBAGroup()) {
+							MessageDialog.openWarning(Display.getDefault().getActiveShell(), "title", "message");
+							updateCheckBox = false;
+						}
 					}
 				}
-				super.modify(ti,  element, columnIdx, value);
+				if (updateCheckBox) {
+					super.modify(ti, element, columnIdx, value);
+				}
+			}
+			
+			public void updateColumnImage(Object value, TableItem ti, final int idx) {
+				if (!(value instanceof Boolean)) {
+					return;
+				}
+				if (config.targetIsOnline() && !config.isTargetDBAGroup()) {
+					return;
+				}
+				boolean flag = false;
+				if ((Boolean) value) {
+					flag = true;
+				} else {
+					for (TableItem item : ti.getParent().getItems()) {
+						Object[] values = (Object[]) item.getData();
+						if ((Boolean) values[idx]) {
+							flag = true;
+							break;
+						}
+					}
+				}
+				ti.getParent().getColumn(idx).setImage(CompositeUtils.getCheckImage(flag));
 			}
 		};
 		tvBuilder.setCellEditorClasses(cellEditors);
@@ -389,9 +410,28 @@ public class GeneralObjMappingView extends
 				null,
 				null,
 				null,
-				new CheckBoxColumnSelectionListener(new int[] {3}, true, true),
-				new CheckBoxColumnSelectionListener(new int[] {2} , true, false)
-		
+				null,
+				new CheckBoxColumnSelectionListener(new int[] {4}, true, false) {
+					protected void updateCells(TableColumn tc, boolean checkstatus) {
+						if (config.targetIsOnline() && !config.isTargetDBAGroup()) {
+							tc.setImage(CompositeUtils.getCheckImage(false));
+							return;
+						}
+						
+						int idx = tc.getParent().indexOf(tc);
+						for (int i = 0; i < tc.getParent().getItemCount(); i++) {
+							TableItem ti = tc.getParent().getItem(i);
+							ti.setImage(idx, tc.getImage());
+							if (!(ti.getData() instanceof Object[])) {
+								continue;
+							}
+							Object[] obj = (Object[]) ti.getData();
+							if (obj[idx] instanceof Boolean) {
+								obj[idx] = checkstatus;
+							}
+						}
+					}
+				}
 		};
 		CompositeUtils.setTableColumnSelectionListener(tvGrants, selectionListencers);
 	}
@@ -475,14 +515,9 @@ public class GeneralObjMappingView extends
 			TableItem ti = tvGrants.getTable().getItem(i);
 			Object[] obj = (Object[]) ti.getData();
 			SourceConfig setc = (SourceConfig) obj[obj.length - 1];
-			Grant tgrant = config.getTargetGrantSchema(setc.getTarget());
 			final String name = obj[1].toString();
-			if (tgrant != null) {
-				tgrant.setName(name);
-			}
 			setc.setTarget(name);
-			setc.setCreate((Boolean) obj[3]);
-			setc.setReplace((Boolean) obj[4]);
+			setc.setCreate((Boolean) obj[4]);
 		}
 		return super.save();
 	}

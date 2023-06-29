@@ -29,7 +29,11 @@
  */
 package com.cubrid.cubridmigration.ui.common.navigator.event;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import com.cubrid.common.ui.navigator.DefaultCUBRIDNode;
 import com.cubrid.cubridmigration.core.dbobject.Catalog;
@@ -54,7 +58,9 @@ import com.cubrid.cubridmigration.ui.common.navigator.node.FKNode;
 import com.cubrid.cubridmigration.ui.common.navigator.node.FKsNode;
 import com.cubrid.cubridmigration.ui.common.navigator.node.FunctionNode;
 import com.cubrid.cubridmigration.ui.common.navigator.node.FunctionsNode;
+import com.cubrid.cubridmigration.ui.common.navigator.node.GrantGrantorNode;
 import com.cubrid.cubridmigration.ui.common.navigator.node.GrantNode;
+import com.cubrid.cubridmigration.ui.common.navigator.node.GrantObjectNode;
 import com.cubrid.cubridmigration.ui.common.navigator.node.GrantsNode;
 import com.cubrid.cubridmigration.ui.common.navigator.node.IndexNode;
 import com.cubrid.cubridmigration.ui.common.navigator.node.IndexesNode;
@@ -129,13 +135,58 @@ public final class CubridNodeManager {
 		if (grantList.isEmpty()) {
 			grantsNode.setContainer(false);
 		}
+		
+		Map<String, Map<String, List<Grant>>> grantGrantorMap = new HashMap<String, Map<String, List<Grant>>>();
 		for (Grant grant : grantList) {
-			// add a grant
-			String grantID = grantsID + "/" + grant.getName();
-			String grantLabel = grant.getName();
-			GrantNode grantNode = new GrantNode(grantID, grantLabel);
-			grantNode.setGrant(grant);
-			grantsNode.addChild(grantNode);
+			String grantor = grant.getGrantorName();
+			String object = grant.getClassName();
+			
+			if (!grantGrantorMap.containsKey(grantor)) {
+				List<Grant> grantNodeList = new ArrayList<Grant>();
+				grantNodeList.add(grant);
+				
+				Map<String, List<Grant>> grantObjectMap = new HashMap<String, List<Grant>>();
+				grantObjectMap.put(object, grantNodeList);
+				
+				grantGrantorMap.put(grantor, grantObjectMap);
+			} else {
+				Map<String, List<Grant>> grantObjectMap = grantGrantorMap.get(grantor);
+				if (!grantObjectMap.containsKey(object)) {
+					List<Grant> grantNodeList = new ArrayList<Grant>();
+					grantNodeList.add(grant);
+					
+					grantObjectMap.put(object, grantNodeList);
+				} else {
+					List<Grant> grantNodeList = grantObjectMap.get(object);
+					grantNodeList.add(grant);
+				}
+			}
+		}
+		
+		Set<String> grantGrantorKey = grantGrantorMap.keySet();
+		for (String grantorKey : grantGrantorKey) {
+			String grantGrantorID = grantsID + "/" + grantorKey;
+			String grantGrantorLabel = grantorKey;
+			GrantGrantorNode grantGrantorNode = new GrantGrantorNode(grantGrantorID, grantGrantorLabel);
+			grantsNode.addChild(grantGrantorNode);
+			
+			Map<String, List<Grant>> grantObjectMap = grantGrantorMap.get(grantorKey);
+			Set<String> grantObjectKey = grantObjectMap.keySet();
+			for (String objectKey : grantObjectKey) {
+				String grantObjectID = grantGrantorID + "/" + objectKey;
+				String grantObjectLabel = objectKey;
+				GrantObjectNode grantObjectNode = new GrantObjectNode(grantObjectID, grantObjectLabel);
+				grantGrantorNode.addChild(grantObjectNode);
+				
+				List<Grant> grantNodeList = grantObjectMap.get(objectKey);
+				for (Grant grant : grantNodeList) {
+					String grantID = grantObjectID + "/" + grant.getAuthType();
+					String grantLabel = grant.getAuthType();
+					GrantNode grantNode = new GrantNode(grantID, grantLabel);
+					grantNode.setGrant(grant);
+					grantObjectNode.addChild(grantNode);
+				}
+			}
 		}
 	}
 

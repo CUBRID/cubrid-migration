@@ -27,40 +27,26 @@
  * OF SUCH DAMAGE. 
  *
  */
-package com.cubrid.cubridmigration.core.engine.task.exp;
+package com.cubrid.cubridmigration.ui.common.navigator.node;
 
-import com.cubrid.cubridmigration.core.dbobject.Grant;
-import com.cubrid.cubridmigration.core.engine.config.MigrationConfiguration;
-import com.cubrid.cubridmigration.core.engine.config.SourceGrantConfig;
-import com.cubrid.cubridmigration.core.engine.task.ExportTask;
+import com.cubrid.common.ui.navigator.DefaultCUBRIDNode;
 
 /**
- * GrantExportTask Description
- * 
+ * GrantObjectNode
  * @author Dongmin Kim
  */
-public class GrantExportTask extends 
-		ExportTask {
+public class GrantObjectNode extends 
+		DefaultCUBRIDNode {
 
-	protected MigrationConfiguration config;
-	protected SourceGrantConfig gr;
-	
-	public GrantExportTask(MigrationConfiguration config, SourceGrantConfig gr) {
-		this.config = config;
-		this.gr = gr;
-	}
-	
 	/**
-	 * Execute export operation
+	 * The constructor
+	 * 
+	 * @param id String
+	 * @param label String
 	 */
-	@Override
-	protected void executeExportTask() {
-		Grant targetGrant = null;
-		targetGrant = config.getTargetGrantSchema(gr.getName());
-		if (targetGrant == null) {
-			return;
-		}
-		importTaskExecutor.execute((Runnable) taskFactory.createImportGrantTask(targetGrant));
+	public GrantObjectNode(String id, String label) {
+		super(id, label, "icon/db/table.png");
+		setType(CubridNodeType.GRANT_OBJECT);
+		setContainer(true);
 	}
-	
 }

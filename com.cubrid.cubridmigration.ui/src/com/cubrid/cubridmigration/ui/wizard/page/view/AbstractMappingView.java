@@ -160,7 +160,7 @@ public abstract class AbstractMappingView {
 		tvb.setCellEditorClasses(cellEditors);
 		tvb.setCellModifier(cellModifier);
 		tvb.setCellValidators(new ICellEditorValidator[] {null, new CUBRIDNameValidator(), null,
-				null});
+				null, null, null});
 	}
 
 	/**
