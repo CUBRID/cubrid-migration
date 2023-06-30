@@ -106,7 +106,6 @@ public class GrantMappingView extends
 			}
 		});
 		
-		
 		btnReplace = new Button(container, SWT.CHECK);
 		btnReplace.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
 		btnReplace.setVisible(false);
@@ -159,7 +158,7 @@ public class GrantMappingView extends
 		grpSource.setGrant(grant);
 		btnCreate.setSelection(grantConfig.isCreate());
 		
-		Grant tgrant = config.getTargetGrantSchema(grantConfig.getName());
+		Grant tgrant = config.getTargetGrantSchema(grantConfig.getTarget());
 		if (tgrant == null) {
 			grpTarget.setEditable(false);
 			return;

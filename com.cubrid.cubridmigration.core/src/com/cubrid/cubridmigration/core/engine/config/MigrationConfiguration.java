@@ -381,6 +381,41 @@ public class MigrationConfiguration {
 		sc.setObjectTargetName(objectTarget);
 		return sc;
 	}
+	
+	/**
+	 * Add grant to export configuration
+	 * 
+	 * @param schema
+	 * @param name
+	 * @param grantor
+	 * @param grantee
+	 * @param object
+	 * @param objectOwner
+	 * @param authType
+	 * @param grantable
+	 * @return Retrieves the new SourceGrantConfig has been added.
+	 */
+	public SourceGrantConfig addExpGrantCfg(String schema, String name, 
+			String grantor, String grantee, String object, String objectOwner, 
+			String authType, boolean grantable) {
+		if (srcCatalog != null) {
+			throw new RuntimeException("Source database was specified.");
+		}
+		SourceGrantConfig sc = getExpGrantCfg(schema, name);
+		if (sc == null) {
+			sc = new SourceGrantConfig();
+			expGrants.add(sc);
+		}
+		sc.setOwner(schema);
+		sc.setName(name);
+		sc.setGrantorName(grantor);
+		sc.setGranteeName(grantee);
+		sc.setClassName(object);
+		sc.setClassOwner(objectOwner);
+		sc.setAuthType(authType);
+		sc.setGrantable(grantable);
+		return sc;
+	}
 
 	/**
 	 * Add export SQL table configuration.
@@ -470,13 +505,25 @@ public class MigrationConfiguration {
 	/**
 	 * Add add target synonym
 	 * 
-	 * @param se Sequence
+	 * @param syn Sequence
 	 */
 	public void addTargetSynonymSchema(Synonym syn) {
 		if (srcCatalog != null) {
 			throw new RuntimeException("Source database was specified.");
 		}
 		targetSynonyms.add(syn);
+	}
+	
+	/**
+	 * Add target grant
+	 * 
+	 * @param grn Grant
+	 */
+	public void addTargetGrantSchema(Grant grn) {
+		if (srcCatalog != null) {
+			throw new RuntimeException("Source database was specified.");
+		}
+		targetGrants.add(grn);
 	}
 
 	/**
@@ -3076,7 +3123,7 @@ public class MigrationConfiguration {
 	 */
 	public Grant getTargetGrantSchema(String target) {
 		for (Grant grant : this.targetGrants) {
-			if (grant.getName().equals(target)) {
+			if (grant.getName().equalsIgnoreCase(target)) {
 				return grant;
 			}
 		}
