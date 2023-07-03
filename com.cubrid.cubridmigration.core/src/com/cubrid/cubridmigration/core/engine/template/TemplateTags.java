@@ -43,6 +43,7 @@ public final class TemplateTags {
 
 	public static final String ATTR_AUTO_INCREMENT = "auto_increment";
 	public static final String ATTR_ADD_SCHEMA = "add_schema";
+	public static final String ATTR_AUTH_TYPE = "auth_type";
 	public static final String ATTR_SPLIT_SCHEMA = "split_schema";
 	public static final String ATTR_BASE_TYPE = "base_type";
 	public static final String ATTR_CACHE = "cache";
@@ -60,6 +61,9 @@ public final class TemplateTags {
 	public static final String ATTR_EXPORT_THREAD = "export_thread";
 	public static final String ATTR_EXPRESSION = "expression";
 	public static final String ATTR_FIELDS = "fields";
+	public static final String ATTR_GRANTABLE = "grantable";
+	public static final String ATTR_GRANTEE = "grantee";
+	public static final String ATTR_GRANTOR = "grantor";
 	public static final String ATTR_HOST = "host";
 	public static final String ATTR_IMPORT_THREAD = "import_thread";
 	public static final String ATTR_INCREMENT = "increment";
@@ -75,6 +79,8 @@ public final class TemplateTags {
 	public static final String ATTR_NO_OID = "no_oid";
 	public static final String ATTR_NO_STATISTICS = "no_statistics";
 	public static final String ATTR_NULL = "null";
+	public static final String ATTR_OBJECT_OWNER = "object_ower";
+	public static final String ATTR_OBJECT_NAME = "object_name";
 	public static final String ATTR_ON_CACHE_OBJECT = "on_cache_object";
 	public static final String ATTR_ON_DELETE = "on_delete";
 	public static final String ATTR_ON_UPDATE = "on_update";
@@ -133,6 +139,8 @@ public final class TemplateTags {
 	public static final String TAG_FK = "fk";
 	public static final String TAG_FUNCTION = "function";
 	public static final String TAG_FUNCTIONS = "functions";
+	public static final String TAG_GRANT = "grant";
+	public static final String TAG_GRANTS = "grants";
 	//public static final String TAG_GENERICVOLUME = "genericVolume";
 	public static final String TAG_HASH = "hash";
 	public static final String TAG_INDEX = "index";

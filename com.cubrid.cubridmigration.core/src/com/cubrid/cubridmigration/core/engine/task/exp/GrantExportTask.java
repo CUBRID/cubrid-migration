@@ -55,8 +55,7 @@ public class GrantExportTask extends
 	 */
 	@Override
 	protected void executeExportTask() {
-		Grant targetGrant = null;
-		targetGrant = config.getTargetGrantSchema(gr.getName());
+		Grant targetGrant = config.getTargetGrantSchema(gr.getTarget());
 		if (targetGrant == null) {
 			return;
 		}

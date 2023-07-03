@@ -720,6 +720,13 @@ public class CUBRIDSQLHelper extends
 		return sb.toString();
 	}
 	
+	/**
+	 * return create DDL of Grant
+	 * 
+	 * @param grant
+	 * @param addUserSchema
+	 * @return String
+	 */
 	public String getGrantDDL(Grant grant, boolean addUserSchema) {
 		StringBuffer sb = new StringBuffer();
 		sb.append("GRANT ").append(grant.getAuthType()).append(" ON ");
@@ -727,6 +734,7 @@ public class CUBRIDSQLHelper extends
 		sb.append(getQuotedObjName(grant.getClassName()));
 		sb.append(" TO ");
 		sb.append(getQuotedObjName(grant.getGranteeName()));
+		sb.append(grant.isGrantable() ? " WITH GRANT OPTION" : "");
 		return sb.toString();
 	}
 

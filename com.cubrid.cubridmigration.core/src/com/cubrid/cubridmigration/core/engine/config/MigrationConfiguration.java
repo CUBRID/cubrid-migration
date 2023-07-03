@@ -735,7 +735,7 @@ public class MigrationConfiguration {
 					sc.setClassName(grant.getClassName());
 					sc.setClassOwner(getTargetOwner(schemas, grant.getClassOwner()));
 					sc.setGrantable(grant.isGrantable());
-					sc.setCreate(targetIsOnline() && !targetDBAGroup ? false : true);
+					sc.setCreate(false);
 				} else if(sourceDBSchema.getTargetSchemaName() != null) {
 					if (!sourceDBSchema.getTargetSchemaName().equals(sc.getTargetOwner())) {
 						sc.setTargetOwner(sourceDBSchema.getTargetSchemaName());
@@ -1709,6 +1709,13 @@ public class MigrationConfiguration {
 				if (!sc.isCreate()) {
 					targetSynonyms.remove(getTargetSynonymSchema(sc.getTarget()));
 					expSynonyms.remove(sc);
+				}
+			}
+			
+			for (SourceConfig sc : getExpGrantCfg()) {
+				if (!sc.isCreate()) {
+					targetGrants.remove(getTargetGrantSchema(sc.getTarget()));
+					expGrants.remove(sc);
 				}
 			}
 			cleanN21Tables();

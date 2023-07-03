@@ -126,13 +126,12 @@ public class MigrationTasksScheduler {
 			createProcedures();
 			createTriggers();
 		}
+		createGrants();
 		updateIndexStatistics();
 		
 		if (!config.targetIsOnline() && config.isSplitSchema()) {
 			createSchemaFileList();
 		}
-		
-		createGrants();
 	}
 
 	/**
@@ -228,6 +227,7 @@ public class MigrationTasksScheduler {
 					PathUtils.deleteFile(new File(config.getTargetSerialFileName(schemaName)));
 					PathUtils.deleteFile(new File(config.getTargetSchemaFileListName(schemaName)));
 					PathUtils.deleteFile(new File(config.getTargetSynonymFileName(schemaName)));
+					PathUtils.deleteFile(new File(config.getTargetGrantFileName(schemaName)));
 				} else {
 					PathUtils.deleteFile(new File(config.getTargetSchemaFileName(schemaName)));
 				}
@@ -235,8 +235,7 @@ public class MigrationTasksScheduler {
 				PathUtils.deleteFile(new File(config.getTargetIndexFileName(schemaName)));
 				PathUtils.deleteFile(new File(config.getTargetDataFileName(schemaName)));
 				PathUtils.deleteFile(new File(config.getFileRepositroyPath() + schemaName));
-			}
-			;
+			};
 		}
 		executeTask(taskFactory.createCleanDBTask());
 	}
