@@ -368,7 +368,7 @@ public class GeneralObjMappingView extends
 				if (value instanceof Boolean) {
 					if (columnIdx == 4) {
 						if (config.targetIsOnline() && !config.isTargetDBAGroup()) {
-							MessageDialog.openWarning(Display.getDefault().getActiveShell(), "title", "message");
+							MessageDialog.openWarning(Display.getDefault().getActiveShell(), Messages.msgWarning, Messages.msgWarningImpossibleMigrationGrant);
 							updateCheckBox = false;
 						}
 					}

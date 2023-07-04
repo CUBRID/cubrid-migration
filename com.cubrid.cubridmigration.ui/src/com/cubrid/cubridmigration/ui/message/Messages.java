@@ -652,6 +652,7 @@ public class Messages extends
 	public static String msgTypeSchema;
 	public static String msgUserSchemaDisable;
 	public static String msgWarning;
+	public static String msgWarningImpossibleMigrationGrant;
 	public static String msgWarnTableRecreated;
 	public static String msgWizardStep;
 	public static String mysqlToCubrid;
