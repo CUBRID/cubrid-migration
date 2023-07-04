@@ -104,7 +104,7 @@ public class MigrationReport implements
 			return synonym.getOwner() + "." + synonym.getName();
 		} else if (obj instanceof Grant) {
 			Grant grant = (Grant) obj;
-			return grant.getOwner() + "." + grant.getName();
+			return grant.getName();
 		}
 		
 		return obj.getName();

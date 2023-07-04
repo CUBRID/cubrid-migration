@@ -125,9 +125,8 @@ public class CreateObjectEvent extends
 		} else if (dbObject instanceof Synonym) {
 			sb.append("synonym[").append(((Synonym) dbObject).getOwner())
 				.append(".").append(dbObject.getName()).append("]");
-		} else if (dbObject instanceof Synonym) {
-			sb.append("grant[").append(((Grant) dbObject).getOwner())
-			.append(".").append(dbObject.getName()).append("]");
+		} else if (dbObject instanceof Grant) {
+			sb.append("grant ").append(dbObject.getName());
 		}
 		if (error != null) {
 			sb.append(" unsuccessfully." + " Detail:" + error.getMessage());
