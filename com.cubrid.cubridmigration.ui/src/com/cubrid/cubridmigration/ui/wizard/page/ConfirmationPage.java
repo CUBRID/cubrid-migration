@@ -760,16 +760,14 @@ public class ConfirmationPage extends
 		
 		List<SourceGrantConfig> sourceConfigGrantList = migration.getExpGrantCfg();
 		if (!sourceConfigGrantList.isEmpty()) {
-			if (!sourceConfigGrantList.isEmpty()) {
-				text.append(Messages.confrimExportGrants).append(lineSeparator);
-				for (SourceConfig sourceConfig : sourceConfigGrantList) {
-					if (!sourceConfig.isCreate()) {
-						continue;
-					}
-					text.append(tabSeparator).append(sourceConfig.getName()).append(tabSeparator).append(
-							" -> ").append(tabSeparator).append(sourceConfig.getTarget()).append(
-							lineSeparator);
+			text.append(Messages.confrimExportGrants).append(lineSeparator);
+			for (SourceConfig sourceConfig : sourceConfigGrantList) {
+				if (!sourceConfig.isCreate()) {
+					continue;
 				}
+				text.append(tabSeparator).append(sourceConfig.getName()).append(tabSeparator).append(
+						" -> ").append(tabSeparator).append(sourceConfig.getTarget()).append(
+						lineSeparator);
 			}
 		}
 		

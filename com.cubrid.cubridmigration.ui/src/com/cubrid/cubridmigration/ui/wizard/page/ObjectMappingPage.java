@@ -153,6 +153,7 @@ public class ObjectMappingPage extends
 		util.setTargetCatalog(mw.getTargetCatalog(), mw);
 		if (!isFirstVisible) {
 			refreshTreeView();
+			return;
 		}
 		try {
 			//Update migration source database schema
