@@ -264,7 +264,7 @@ public class GrantMappingView extends
 			
 			Label lblGrantable = new Label(grp, SWT.NONE);
 			lblGrantable.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false));
-			lblGrantable.setText(Messages.lblGrantGrantee);
+			lblGrantable.setText(Messages.lblGrantGrantable);
 			
 			isGrantable = new Text(grp, SWT.BORDER);
 			isGrantable.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
@@ -279,11 +279,11 @@ public class GrantMappingView extends
 		 */
 		void setGrant(Grant grant) {
 			this.grant = grant;
-			txtAuthType.setText(grant.getAuthType());
-			txtGrantor.setText(grant.getGrantorName());
-			txtClassOwner.setText(grant.getClassOwner());
-			txtClassName.setText(grant.getClassName());
-			txtGrantee.setText(grant.getGranteeName());
+			txtAuthType.setText(grant.getAuthType().toUpperCase());
+			txtGrantor.setText(grant.getGrantorName().toUpperCase());
+			txtClassOwner.setText(grant.getClassOwner().toUpperCase());
+			txtClassName.setText(grant.getClassName().toUpperCase());
+			txtGrantee.setText(grant.getGranteeName().toUpperCase());
 			isGrantable.setText(grant.isGrantable() ? "YES" : "NO");
 		}
 		

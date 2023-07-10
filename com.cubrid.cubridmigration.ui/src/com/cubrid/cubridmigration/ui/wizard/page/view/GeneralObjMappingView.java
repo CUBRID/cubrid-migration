@@ -36,7 +36,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.TreeMap;
 
-import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.ICellEditorValidator;
 import org.eclipse.jface.viewers.IDoubleClickListener;
 import org.eclipse.jface.viewers.TableViewer;
@@ -48,7 +47,6 @@ import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Text;
@@ -73,6 +71,8 @@ import com.cubrid.cubridmigration.core.engine.config.SourceViewConfig;
 import com.cubrid.cubridmigration.core.engine.listener.ISQLTableChangedListener;
 import com.cubrid.cubridmigration.ui.common.CompositeUtils;
 import com.cubrid.cubridmigration.ui.common.navigator.node.DatabaseNode;
+import com.cubrid.cubridmigration.ui.common.navigator.node.GrantAuthNode;
+import com.cubrid.cubridmigration.ui.common.navigator.node.GrantGrantorNode;
 import com.cubrid.cubridmigration.ui.common.navigator.node.GrantsNode;
 import com.cubrid.cubridmigration.ui.common.navigator.node.SQLTablesNode;
 import com.cubrid.cubridmigration.ui.common.navigator.node.SchemaNode;
@@ -352,6 +352,10 @@ public class GeneralObjMappingView extends
 			@SuppressWarnings("unchecked")
 			public Object[] getElements(Object inputElement) {
 				List<Object> data = new ArrayList<Object>();
+				if (config.targetIsOnline() && !config.isTargetDBAGroup()) {
+					return super.getElements(data);
+				}
+				
 				for (SourceGrantConfig sc : (List<SourceGrantConfig>) inputElement) {
 					//Add the SourceConfig to the end of the object array.
 					data.add(new Object[] {sc.getAuthType() , sc.getClassOwner(), sc.getClassName(), sc.getTargetOwner(), sc.isCreate(), sc});
@@ -364,40 +368,11 @@ public class GeneralObjMappingView extends
 				null, null, new CheckboxCellEditorFactory()};
 		ObjectArrayRowCellModifier cellModifier = new ObjectArrayRowCellModifier() {
 			protected void modify(TableItem ti, Object[] element, int columnIdx, Object value) {
-				boolean updateCheckBox = true;
 				if (value instanceof Boolean) {
 					if (columnIdx == 4) {
-						if (config.targetIsOnline() && !config.isTargetDBAGroup()) {
-							MessageDialog.openWarning(Display.getDefault().getActiveShell(), Messages.msgWarning, Messages.msgWarningImpossibleMigrationGrant);
-							updateCheckBox = false;
-						}
+						super.modify(ti, element, columnIdx, value);
 					}
 				}
-				if (updateCheckBox) {
-					super.modify(ti, element, columnIdx, value);
-				}
-			}
-			
-			public void updateColumnImage(Object value, TableItem ti, final int idx) {
-				if (!(value instanceof Boolean)) {
-					return;
-				}
-				if (config.targetIsOnline() && !config.isTargetDBAGroup()) {
-					return;
-				}
-				boolean flag = false;
-				if ((Boolean) value) {
-					flag = true;
-				} else {
-					for (TableItem item : ti.getParent().getItems()) {
-						Object[] values = (Object[]) item.getData();
-						if ((Boolean) values[idx]) {
-							flag = true;
-							break;
-						}
-					}
-				}
-				ti.getParent().getColumn(idx).setImage(CompositeUtils.getCheckImage(flag));
 			}
 		};
 		tvBuilder.setCellEditorClasses(cellEditors);
@@ -535,6 +510,9 @@ public class GeneralObjMappingView extends
 	public void showData(Object obj) {
 		super.showData(obj);
 		SchemaNode schema = null;
+		String grantor = null;
+		String authType = null;
+		boolean allGrants = true;
 		if (obj instanceof DatabaseNode) {
 			tabSchemaDetailFolder.setSelection(0);
 		} else if (obj instanceof SchemaNode) {
@@ -565,7 +543,23 @@ public class GeneralObjMappingView extends
 				schema = (SchemaNode) ((GrantsNode) obj).getParent();
 			}
 			tabSchemaDetailFolder.setSelection(4);
-		} else if (obj instanceof SQLTablesNode) {
+		} else if (obj instanceof GrantGrantorNode) {
+			allGrants = false;
+			grantor = ((GrantGrantorNode) obj).getLabel();
+			if (((GrantGrantorNode) obj).getParent() instanceof GrantsNode) {
+				schema = (SchemaNode) ((GrantGrantorNode) obj).getParent().getParent();
+			}
+			tabSchemaDetailFolder.setSelection(4);
+		} else if (obj instanceof GrantAuthNode) {
+			allGrants = false;
+			grantor = ((GrantAuthNode) obj).getGrantor();
+			authType = ((GrantAuthNode) obj).getAuthType();
+			if (((GrantAuthNode) obj).getParent() instanceof GrantGrantorNode) {
+				schema = (SchemaNode) ((GrantAuthNode) obj).getParent().getParent().getParent();
+			}
+			tabSchemaDetailFolder.setSelection(4);
+		}
+		else if (obj instanceof SQLTablesNode) {
 			tabSchemaDetailFolder.setSelection(5);
 		}
 		List<SourceEntryTableConfig> ipTables = config.getExpEntryTableCfg();
@@ -609,10 +603,26 @@ public class GeneralObjMappingView extends
 			}
 			Iterator<SourceGrantConfig> itGrants = ipGrants.iterator();
 			while (itGrants.hasNext()) {
-				String owner = itGrants.next().getOwner();
-				if (owner == null || schema.getName().equals(owner)) {
-					continue;
+				SourceGrantConfig grant = itGrants.next();
+				String owner = grant.getOwner();
+				
+				if (allGrants) {
+					if (owner == null || schema.getName().equals(owner)) {
+						continue;
+					}
+				} else {
+					if (authType == null) {
+						if (grantor != null && grantor.equals(grant.getSourceGrantorName())) {
+							continue;
+						}
+					}
+					
+					if ((grantor != null && grantor.equals(grant.getSourceGrantorName())) 
+							&& authType.equals(grant.getAuthType())) {
+						continue;
+					}
 				}
+				
 				itGrants.remove();
 			}
 		}

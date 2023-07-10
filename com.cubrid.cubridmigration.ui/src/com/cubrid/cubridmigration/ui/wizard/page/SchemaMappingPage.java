@@ -708,7 +708,6 @@ public class SchemaMappingPage extends MigrationWizardPage {
 				
 				checkNewSchemaDuplicate.add(newSchema.getName());
 				config.setNewTargetSchema(newSchema.getName());
-				logger.info("-------------------------------------------");
 			}
 		}
 		wizard.setSourceCatalog(srcCatalog);

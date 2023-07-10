@@ -31,10 +31,7 @@ package com.cubrid.cubridmigration.ui.wizard.page;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.eclipse.jface.dialogs.PageChangedEvent;
@@ -652,112 +649,6 @@ public class ConfirmationPage extends
 			}
 		}
 		//grant
-//		List<SourceGrantConfig> sourceConfigGrantList = migration.getExpGrantCfg();
-//		if (!sourceConfigGrantList.isEmpty()) {
-//			text.append(Messages.confrimExportGrants).append(lineSeparator);
-//			Map<String, Map<String, Map<String, List<String>>>> targetOwnerMap = new HashMap<String, Map<String, Map<String, List<String>>>>();
-//			
-//			for (SourceGrantConfig sgc : sourceConfigGrantList) {
-//				String owner = sgc.getTargetOwner();
-//				String grantor = sgc.getGrantorName();
-//				String object = sgc.getClassName();
-//				String authType = sgc.getAuthType();
-//				
-//				if (!targetOwnerMap.containsKey(owner)) {
-//					List<String> authTypeList = new ArrayList<String>();
-//					authTypeList.add(authType);
-//					
-//					Map<String, List<String>> objectMap = new HashMap<String, List<String>>();
-//					objectMap.put(object, authTypeList);
-//					
-//					Map<String, Map<String, List<String>>> grantorMap = new HashMap<String, Map<String, List<String>>>();
-//					grantorMap.put(grantor, objectMap);
-//					
-//					targetOwnerMap.put(owner, grantorMap);
-//				} else {
-//					Map<String, Map<String, List<String>>> grantorMap = targetOwnerMap.get(owner);
-//					if (!grantorMap.containsKey(grantor)) {
-//						List<String> authTypeList = new ArrayList<String>();
-//						authTypeList.add(authType);
-//						
-//						Map<String, List<String>> objectMap = new HashMap<String, List<String>>();
-//						objectMap.put(object, authTypeList);
-//						
-//						grantorMap.put(grantor, objectMap);
-//						targetOwnerMap.put(owner, grantorMap);
-//					} else {
-//						Map<String, List<String>> objectMap = grantorMap.get(grantor);
-//						if (!objectMap.containsKey(object)) {
-//							List<String> authTypeList = new ArrayList<String>();
-//							authTypeList.add(authType);
-//							
-//							objectMap.put(object, authTypeList);
-//							grantorMap.put(grantor, objectMap);
-//							targetOwnerMap.put(owner, grantorMap);
-//						} else {
-//							List<String> authTypeList = objectMap.get(object);
-//							authTypeList.add(authType);
-//						}
-//					}
-//				}
-//			}
-//			
-//			String doubleTab = tabSeparator + tabSeparator;
-//			String treeTab = doubleTab + "│";
-//			String grantorTree = doubleTab + "├─ ";
-//			String grantorLastTree = doubleTab + "└─";
-//			String objectTree = treeTab + grantorTree;
-//			String objectLastTree = treeTab + grantorLastTree;
-//			String authTree = treeTab + objectLastTree;
-//			String authLastTree = treeTab + doubleTab + grantorLastTree;
-//			
-//			Set<String> targetOwnerKeys = targetOwnerMap.keySet();
-//			for (String ownerKey : targetOwnerKeys) {	
-//				text.append(tabSeparator).append(ownerKey).append(lineSeparator);
-//				
-//				Map<String, Map<String, List<String>>> grantorMap = targetOwnerMap.get(ownerKey);
-//				Set<String> grantorKeys = grantorMap.keySet();
-//				int grantorIndex = 1;
-//				for (String grantorKey : grantorKeys) {
-//					if (grantorIndex == grantorKeys.size()) {
-//						text.append(grantorLastTree);
-//					} else {
-//						text.append(grantorTree);
-//					}
-//					text.append(grantorKey).append(lineSeparator);
-//					grantorIndex++;
-//					
-//					Map<String, List<String>> objectMap = grantorMap.get(grantorKey);
-//					Set<String> objectKeys = objectMap.keySet();
-//					int objectIndex = 1;
-//					for (String objectKey : objectKeys) {
-//						if (objectIndex == objectKeys.size()) {
-//							text.append(objectLastTree);
-//						} else {
-//							text.append(objectTree);
-//						}
-//						text.append(objectKey).append(lineSeparator);
-//						
-//						List<String> authTypeList = objectMap.get(objectKey);
-//						if (objectIndex == objectKeys.size()) {
-//							text.append(authLastTree);
-//						} else {
-//							text.append(authTree);
-//						}
-//						objectIndex++;
-//						for (int i = 0; i < authTypeList.size(); i++) {
-//							if (i == 0) {
-//								text.append(authTypeList.get(i));
-//							} else {
-//								text.append(", " + authTypeList.get(i));
-//							}
-//						}
-//						text.append(lineSeparator);
-//					}
-//				}
-//			}
-//		}
-		
 		List<SourceGrantConfig> sourceConfigGrantList = migration.getExpGrantCfg();
 		if (!sourceConfigGrantList.isEmpty()) {
 			text.append(Messages.confrimExportGrants).append(lineSeparator);

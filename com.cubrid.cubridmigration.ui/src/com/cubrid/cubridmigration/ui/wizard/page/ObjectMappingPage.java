@@ -69,12 +69,14 @@ import com.cubrid.cubridmigration.core.dbtype.DatabaseType;
 import com.cubrid.cubridmigration.core.engine.config.MigrationConfiguration;
 import com.cubrid.cubridmigration.ui.common.UICommonTool;
 import com.cubrid.cubridmigration.ui.common.dialog.DetailMessageDialog;
+import com.cubrid.cubridmigration.ui.common.navigator.event.CubridNodeManager;
 import com.cubrid.cubridmigration.ui.common.navigator.node.ColumnNode;
 import com.cubrid.cubridmigration.ui.common.navigator.node.ColumnsNode;
 import com.cubrid.cubridmigration.ui.common.navigator.node.DatabaseNode;
 import com.cubrid.cubridmigration.ui.common.navigator.node.FKNode;
 import com.cubrid.cubridmigration.ui.common.navigator.node.FKsNode;
-import com.cubrid.cubridmigration.ui.common.navigator.node.GrantNode;
+import com.cubrid.cubridmigration.ui.common.navigator.node.GrantAuthNode;
+import com.cubrid.cubridmigration.ui.common.navigator.node.GrantGrantorNode;
 import com.cubrid.cubridmigration.ui.common.navigator.node.GrantsNode;
 import com.cubrid.cubridmigration.ui.common.navigator.node.IndexNode;
 import com.cubrid.cubridmigration.ui.common.navigator.node.IndexesNode;
@@ -100,7 +102,6 @@ import com.cubrid.cubridmigration.ui.wizard.page.view.AbstractMappingView;
 import com.cubrid.cubridmigration.ui.wizard.page.view.ColumnMappingView;
 import com.cubrid.cubridmigration.ui.wizard.page.view.FKMappingView;
 import com.cubrid.cubridmigration.ui.wizard.page.view.GeneralObjMappingView;
-import com.cubrid.cubridmigration.ui.wizard.page.view.GrantMappingView;
 import com.cubrid.cubridmigration.ui.wizard.page.view.IRefreshableView;
 import com.cubrid.cubridmigration.ui.wizard.page.view.IndexMappingView;
 import com.cubrid.cubridmigration.ui.wizard.page.view.SQLTableMappingView;
@@ -433,7 +434,6 @@ public class ObjectMappingPage extends
 		SequenceMappingView sequenceMappingView = new SequenceMappingView(detailContainer);
 		ViewMappingView viewMappingView = new ViewMappingView(detailContainer);
 		SynonymMappingView synonymMappingView = new SynonymMappingView(detailContainer);
-		GrantMappingView grantMappingView = new GrantMappingView(detailContainer);
 
 		generalObjMappingView.addSQLChangedListener(tvSourceDBObjects);
 		//Building Tree node to Mapping view mapping
@@ -448,7 +448,8 @@ public class ObjectMappingPage extends
 		node2ViewMapping.put(SynonymsNode.class.getName(), generalObjMappingView);
 		node2ViewMapping.put(SynonymNode.class.getName(), synonymMappingView);
 		node2ViewMapping.put(GrantsNode.class.getName(), generalObjMappingView);
-		node2ViewMapping.put(GrantNode.class.getName(), grantMappingView);
+		node2ViewMapping.put(GrantGrantorNode.class.getName(), generalObjMappingView);
+		node2ViewMapping.put(GrantAuthNode.class.getName(), generalObjMappingView);
 		node2ViewMapping.put(PKNode.class.getName(), tableMappingView);
 		//node2ViewMapping.put(ColumnsNode.class.getName(), tableMappingView);
 		node2ViewMapping.put(FKsNode.class.getName(), tableMappingView);
@@ -648,6 +649,11 @@ public class ObjectMappingPage extends
 	private void refreshTreeView() {
 		final MigrationWizard mw = getMigrationWizard();
 		final MigrationConfiguration cfg = mw.getMigrationConfig();
+		
+		if (cfg.targetIsOnline() && !cfg.isTargetDBAGroup()) {
+			CubridNodeManager.getInstance().changeGrantsNodeLabel();
+		}
+		
 		//Fill Tree View
 		tvSourceDBObjects.setInput(mw.getSelectSourceDB(), cfg);
 		//If Source DB is changed, clear the last view UI.
@@ -655,6 +661,7 @@ public class ObjectMappingPage extends
 			currentView.hide();
 			currentView = null;
 		}
+		
 		//Database node will not be selected.
 		ICUBRIDNode node = mw.getSelectSourceDB();
 		List<ICUBRIDNode> schemaNodes = node.getChildren();

@@ -32,31 +32,34 @@ package com.cubrid.cubridmigration.ui.common.navigator.node;
 import com.cubrid.common.ui.navigator.DefaultCUBRIDNode;
 
 /**
- * GrantGrantorNode
+ * GrantAuthNode
  * @author Dongmin Kim
  */
-public class GrantGrantorNode extends 
+public class GrantAuthNode extends 
 		DefaultCUBRIDNode {
-
-	String grantor;
 	
+	String grantor;
+	String authType;
+
 	public String getGrantor() {
 		return grantor;
 	}
-	
+
 	public void setGrantor(String grantor) {
 		this.grantor = grantor;
 	}
-	
-	/**
-	 * The constructor
-	 * 
-	 * @param id String
-	 * @param label String
-	 */
-	public GrantGrantorNode(String id, String label) {
-		super(id, label, "icon/db/schema.png");
-		setType(CubridNodeType.GRANT_GRANTOR);
-		setContainer(true);
+
+	public String getAuthType() {
+		return authType;
+	}
+
+	public void setAuthType(String authType) {
+		this.authType = authType;
+	}
+
+	public GrantAuthNode(String id, String label) {
+		super(id, label, "icon/db/grant_item.png");
+		setType(CubridNodeType.GRANT_AUTH);
+		setContainer(false);
 	}
 }

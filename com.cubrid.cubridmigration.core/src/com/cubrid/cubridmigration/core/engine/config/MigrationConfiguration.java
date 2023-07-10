@@ -729,6 +729,7 @@ public class MigrationConfiguration {
 					sc.setName(grant.getName());
 					sc.setOwner(grant.getOwner());
 					sc.setTargetOwner(sourceDBSchema.getTargetSchemaName());
+					sc.setSourceGrantorName(grant.getGrantorName());
 					sc.setGrantorName(getTargetOwner(schemas, grant.getGrantorName()));
 					sc.setGranteeName(getTargetOwner(schemas, grant.getGranteeName()));
 					sc.setAuthType(grant.getAuthType());
