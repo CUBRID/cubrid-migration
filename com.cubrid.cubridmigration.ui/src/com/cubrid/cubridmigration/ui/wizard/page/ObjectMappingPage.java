@@ -175,6 +175,11 @@ public class ObjectMappingPage extends
 						showDetailMessageDialog(sourceCatalog);
 					} 
 			}
+			
+			if (cfg.targetIsOnline() && !cfg.isTargetDBAGroup()) {
+				MessageDialog.openWarning(getShell(), Messages.msgWarning, 
+						Messages.msgWarningImpossibleMigrationGrant);
+			}
 
 			showLobInfo(sourceCatalog);
 			cfg.setSrcCatalog(sourceCatalog, !mw.isLoadMigrationScript());
