@@ -83,7 +83,6 @@ public class Grant extends
 		}
 		
 		String tempClassOwner = classOwner != null ? classOwner : "";
-//		String split = " / ";
 		return authType 
 				+ " ON " + tempClassOwner
 				+ "." + className

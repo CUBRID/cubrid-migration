@@ -585,7 +585,7 @@ public class SchemaMappingPage extends MigrationWizardPage {
 			
 			srcTable.setTarDBType(tarCatalog.getDatabaseType().getName());
 			
-			if (scriptSchemaMap.size() != 0 && srcCatalog.getDatabaseType().getID() == 1) {
+			if (scriptSchemaMap.size() != 0) {
 				logger.info("script schema");
 				
 				Schema scriptSchema = scriptSchemaMap.get(srcTable.getSrcSchema());

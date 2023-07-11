@@ -397,7 +397,7 @@ public class MigrationConfiguration {
 	 */
 	public SourceGrantConfig addExpGrantCfg(String schema, String name, 
 			String grantor, String grantee, String object, String objectOwner, 
-			String authType, boolean grantable) {
+			String authType, boolean grantable, String sourceGrantorName) {
 		if (srcCatalog != null) {
 			throw new RuntimeException("Source database was specified.");
 		}
@@ -414,6 +414,7 @@ public class MigrationConfiguration {
 		sc.setClassOwner(objectOwner);
 		sc.setAuthType(authType);
 		sc.setGrantable(grantable);
+		sc.setSourceGrantorName(sourceGrantorName);
 		return sc;
 	}
 

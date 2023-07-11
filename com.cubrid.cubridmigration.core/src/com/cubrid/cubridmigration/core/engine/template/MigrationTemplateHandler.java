@@ -715,7 +715,8 @@ public final class MigrationTemplateHandler extends
 					attributes.getValue(TemplateTags.ATTR_OBJECT_NAME), 
 					attributes.getValue(TemplateTags.ATTR_OBJECT_OWNER), 
 					attributes.getValue(TemplateTags.ATTR_AUTH_TYPE), 
-					getBoolean(attributes.getValue(TemplateTags.ATTR_GRANTABLE), false));
+					getBoolean(attributes.getValue(TemplateTags.ATTR_GRANTABLE), false),
+					attributes.getValue(TemplateTags.ATTR_SOURCE_GRANTOR_NAME));
 		} else if (TemplateTags.TAG_TRIGGER.equals(qName)) {
 			config.addExpTriggerCfg(attributes.getValue(TemplateTags.ATTR_NAME));
 		} else if (TemplateTags.TAG_FUNCTION.equals(qName)) {
