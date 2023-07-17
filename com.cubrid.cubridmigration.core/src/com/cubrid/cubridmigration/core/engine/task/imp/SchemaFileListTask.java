@@ -64,6 +64,7 @@ public class SchemaFileListTask extends ImportTask {
 	 */
 	@Override
 	protected void executeImport() {
+		String lineSeparator = System.getProperty("line.separator");
 		List<Schema> schemaList = config.getTargetSchemaList();
 		for (Schema schema : schemaList) {
 			String schemaName = schema.getTargetSchemaName();
@@ -79,7 +80,7 @@ public class SchemaFileListTask extends ImportTask {
 				if (checkFileRepository(tableFileRepository)) {
 					isCreateSchemaListFile = true;
 					sb.append(getFileName(tableFileRepository));
-					sb.append(System.lineSeparator());
+					sb.append(lineSeparator);
 				}
 				
 				// synonym
@@ -87,7 +88,7 @@ public class SchemaFileListTask extends ImportTask {
 				if (checkFileRepository(synonymFileRepository)) {
 					isCreateSchemaListFile = true;
 					sb.append(getFileName(synonymFileRepository));
-					sb.append(System.lineSeparator());
+					sb.append(lineSeparator);
 				}
 				
 				// view
@@ -95,7 +96,7 @@ public class SchemaFileListTask extends ImportTask {
 				if (checkFileRepository(viewFileRepository)) {
 					isCreateSchemaListFile = true;
 					sb.append(getFileName(viewFileRepository));
-					sb.append(System.lineSeparator());
+					sb.append(lineSeparator);
 				}
 				
 				// serial
@@ -103,7 +104,7 @@ public class SchemaFileListTask extends ImportTask {
 				if (checkFileRepository(serialFileRepository)) {
 					isCreateSchemaListFile = true;
 					sb.append(getFileName(serialFileRepository));
-					sb.append(System.lineSeparator());
+					sb.append(lineSeparator);
 				}
 				
 				// pk
@@ -111,7 +112,7 @@ public class SchemaFileListTask extends ImportTask {
 				if (checkFileRepository(pkFileRepository)) {
 					isCreateSchemaListFile = true;
 					sb.append(getFileName(pkFileRepository));
-					sb.append(System.lineSeparator());
+					sb.append(lineSeparator);
 				}
 				
 				// fk
@@ -119,7 +120,7 @@ public class SchemaFileListTask extends ImportTask {
 				if (checkFileRepository(fkFileRepository)) {
 					isCreateSchemaListFile = true;
 					sb.append(getFileName(fkFileRepository));
-					sb.append(System.lineSeparator());
+					sb.append(lineSeparator);
 				}
 				
 				if (isCreateSchemaListFile) {
