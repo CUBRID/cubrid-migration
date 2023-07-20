@@ -971,6 +971,7 @@ public class SchemaMappingPage extends MigrationWizardPage {
 	 * @return boolean
 	 */
 	private boolean checkFileRepositroy() {
+		String lineSeparator = System.getProperty("line.separator");
 		StringBuffer buffer = new StringBuffer();
 		try {
 			for (SrcTable srcTable : srcTableList) {
@@ -989,25 +990,25 @@ public class SchemaMappingPage extends MigrationWizardPage {
 					File grantFile = new File(grantFileListFullName.get(srcTable.getTarSchema()));
 					
 					if (tableFile.exists()) {
-						buffer.append(tableFile.getCanonicalPath()).append(System.lineSeparator());
+						buffer.append(tableFile.getCanonicalPath()).append(lineSeparator);
 					}
 					if (viewFile.exists()) {
-						buffer.append(viewFile.getCanonicalPath()).append(System.lineSeparator());
+						buffer.append(viewFile.getCanonicalPath()).append(lineSeparator);
 					}
 					if (pkFile.exists()) {
-						buffer.append(pkFile.getCanonicalPath()).append(System.lineSeparator());
+						buffer.append(pkFile.getCanonicalPath()).append(lineSeparator);
 					}
 					if (fkFile.exists()) {
-						buffer.append(fkFile.getCanonicalPath()).append(System.lineSeparator());
+						buffer.append(fkFile.getCanonicalPath()).append(lineSeparator);
 					}
 					if (serialFile.exists()) {
-						buffer.append(serialFile.getCanonicalPath()).append(System.lineSeparator());
+						buffer.append(serialFile.getCanonicalPath()).append(lineSeparator);
 					}
 					if (infoFile.exists()) {
-						buffer.append(infoFile.getCanonicalPath()).append(System.lineSeparator());
+						buffer.append(infoFile.getCanonicalPath()).append(lineSeparator);
 					}
 					if (synonymFile.exists()) {
-						buffer.append(synonymFile.getCanonicalPath()).append(System.lineSeparator());
+						buffer.append(synonymFile.getCanonicalPath()).append(lineSeparator);
 					}
 					if (grantFile.exists()) {
 						buffer.append(grantFile.getCanonicalPath()).append(System.lineSeparator());
@@ -1015,7 +1016,7 @@ public class SchemaMappingPage extends MigrationWizardPage {
 				} else {
 					File schemaFile = new File(schemaFullName.get(srcTable.getTarSchema()));
 					if (schemaFile.exists()) {
-						buffer.append(schemaFile.getCanonicalPath()).append(System.lineSeparator());
+						buffer.append(schemaFile.getCanonicalPath()).append(lineSeparator);
 					}
 				}
 				
@@ -1024,13 +1025,13 @@ public class SchemaMappingPage extends MigrationWizardPage {
 				File updateStatisticFile = new File(updateStatisticFullName.get(srcTable.getTarSchema()));
 				
 				if (dataFile.exists()) {
-					buffer.append(dataFile.getCanonicalPath()).append(System.lineSeparator());
+					buffer.append(dataFile.getCanonicalPath()).append(lineSeparator);
 				}
 				if (indexFile.exists()) {
-					buffer.append(indexFile.getCanonicalPath()).append(System.lineSeparator());
+					buffer.append(indexFile.getCanonicalPath()).append(lineSeparator);
 				}
 				if (updateStatisticFile.exists()) {
-					buffer.append(updateStatisticFile.getCanonicalPath()).append(System.lineSeparator());
+					buffer.append(updateStatisticFile.getCanonicalPath()).append(lineSeparator);
 				}
 			}
 		} catch (IOException e) {
