@@ -128,7 +128,7 @@ public class SchemaFileListTask extends ImportTask {
 				if (checkFileRepository(grantFileRepository)) {
 					isCreateSchemaListFile = true;
 					sb.append(getFileName(grantFileRepository));
-					sb.append(System.lineSeparator());
+					sb.append(lineSeparator);
 				}
 				
 				if (isCreateSchemaListFile) {
