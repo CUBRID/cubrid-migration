@@ -1011,7 +1011,7 @@ public class SchemaMappingPage extends MigrationWizardPage {
 						buffer.append(synonymFile.getCanonicalPath()).append(lineSeparator);
 					}
 					if (grantFile.exists()) {
-						buffer.append(grantFile.getCanonicalPath()).append(System.lineSeparator());
+						buffer.append(grantFile.getCanonicalPath()).append(lineSeparator);
 					}
 				} else {
 					File schemaFile = new File(schemaFullName.get(srcTable.getTarSchema()));
