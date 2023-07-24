@@ -31,6 +31,7 @@ package com.cubrid.cubridmigration.core.engine.scheduler;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 
@@ -217,7 +218,15 @@ public class MigrationTasksScheduler {
 	private void clearTargetDB() {
 		MigrationConfiguration config = context.getConfig();
 		if (config.targetIsFile()) {
-			for (Schema schema : config.getTargetSchemaList()) {
+			List<Schema> schemaList = null;
+			if (config.getTargetSchemaList().size() > 0) {
+				schemaList = config.getTargetSchemaList();
+			} else {
+				Collection<Schema> schemas = config.getScriptSchemaMapping().values();
+				schemaList = new ArrayList<Schema>(schemas);
+			}
+			
+			for (Schema schema : schemaList) {
 				String schemaName = schema.getTargetSchemaName();
 				if (config.isSplitSchema()) {
 					PathUtils.deleteFile(new File(config.getTargetTableFileName(schemaName)));
@@ -235,7 +244,8 @@ public class MigrationTasksScheduler {
 				PathUtils.deleteFile(new File(config.getTargetIndexFileName(schemaName)));
 				PathUtils.deleteFile(new File(config.getTargetDataFileName(schemaName)));
 				PathUtils.deleteFile(new File(config.getFileRepositroyPath() + schemaName));
-			};
+			}
+			
 		}
 		executeTask(taskFactory.createCleanDBTask());
 	}

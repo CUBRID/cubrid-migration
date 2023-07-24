@@ -397,7 +397,7 @@ public class MigrationConfiguration {
 	 */
 	public SourceGrantConfig addExpGrantCfg(String schema, String name, 
 			String grantor, String grantee, String object, String objectOwner, 
-			String authType, boolean grantable, String sourceGrantorName) {
+			String authType, boolean grantable, String targetOwner, String sourceGrantorName) {
 		if (srcCatalog != null) {
 			throw new RuntimeException("Source database was specified.");
 		}
@@ -414,6 +414,7 @@ public class MigrationConfiguration {
 		sc.setClassOwner(objectOwner);
 		sc.setAuthType(authType);
 		sc.setGrantable(grantable);
+		sc.setTargetOwner(targetOwner);
 		sc.setSourceGrantorName(sourceGrantorName);
 		return sc;
 	}
@@ -821,6 +822,29 @@ public class MigrationConfiguration {
 		expSynonyms.addAll(tempList);
 		targetSynonyms.clear();
 		targetSynonyms.addAll(tempSynonyms);
+	}
+	
+	public void createDumpfile(boolean isSplit) {
+		Iterator<String> keys = scriptSchemaMapping.keySet().iterator();
+		while (keys.hasNext()) {
+			Schema schema = scriptSchemaMapping.get(keys.next());
+			String schemaName = schema.getTargetSchemaName();
+			if (isSplit) {
+				this.addTargetTableFileName(schemaName, getTableFullName(schemaName));
+				this.addTargetViewFileName(schemaName, getViewFullName(schemaName));
+				this.addTargetPkFileName(schemaName, getPkFullName(schemaName));
+				this.addTargetFkFileName(schemaName, getFkFullName(schemaName));
+				this.addTargetSerialFileName(schemaName, getSequenceFullName(schemaName));
+				this.addTargetSynonymFileName(schemaName, getSynonymFullName(schemaName));
+				this.addTargetGrantFileName(schemaName, getGrantFullName(schemaName));
+				this.addTargetSchemaFileListName(schemaName, getSchemaFileListFullName(schemaName));
+			} else {
+				this.addTargetSchemaFileName(schemaName, getSchemaFullName(schemaName));
+			}
+			this.addTargetDataFileName(schemaName, getDataFullName(schemaName));
+			this.addTargetIndexFileName(schemaName, getIndexFullName(schemaName));
+			this.addTargetUpdateStatisticFileName(schemaName, getUpdateStatisticFullName(schemaName));
+		}
 	}
 	
 	private String getTargetOwner(List<Schema> schemas, String owner) {
@@ -4472,4 +4496,170 @@ public class MigrationConfiguration {
 		this.isTarSchemaDuplicate = isTarSchemaDuplicate;
 	}
 	
+	/**
+	 * get Schema file full path
+	 * 
+	 * @param targetSchemaName
+	 * @return schema file full path
+	 */
+	public String getSchemaFullName(String targetSchemaName) {
+		StringBuffer fileName = new StringBuffer();
+		fileName.append(File.separator).append(this.getTargetFilePrefix()).append("_").append(targetSchemaName).append("_schema").append(
+				this.getDefaultTargetSchemaFileExtName());
+		
+		return PathUtils.mergePath(PathUtils.mergePath(this.getFileRepositroyPath(), targetSchemaName), fileName.toString());
+	}
+	
+	/**
+	 * get Table file full path
+	 * 
+	 * @param targetSchemaName
+	 * @return table file full path
+	 */
+	public String getTableFullName(String targetSchemaName) {
+		StringBuffer fileName = new StringBuffer();
+		fileName.append(File.separator).append(this.getTargetFilePrefix()).append("_").append(targetSchemaName).append("_table").append(
+				this.getDefaultTargetSchemaFileExtName());
+		
+		return PathUtils.mergePath(PathUtils.mergePath(this.getFileRepositroyPath(), targetSchemaName), fileName.toString());
+	}
+	
+	/**
+	 * get View file full path
+	 * 
+	 * @param targetSchemaName
+	 * @return view file full path
+	 */
+	public String getViewFullName(String targetSchemaName) {
+		StringBuffer fileName = new StringBuffer();
+		fileName.append(File.separator).append(this.getTargetFilePrefix()).append("_").append(targetSchemaName).append("_view").append(
+				this.getDefaultTargetSchemaFileExtName());
+		
+		return PathUtils.mergePath(PathUtils.mergePath(this.getFileRepositroyPath(), targetSchemaName), fileName.toString());
+	}
+	
+	/**
+	 * get Data file full path
+	 * 
+	 * @param targetSchemaName
+	 * @return data file full path
+	 */
+	public String getDataFullName(String targetSchemaName) {
+		StringBuffer fileName = new StringBuffer();
+		fileName.append(File.separator).append(this.getTargetFilePrefix()).append("_").append(targetSchemaName).append("_data").append(this.getDataFileExt());
+	
+		return PathUtils.mergePath(PathUtils.mergePath(this.getFileRepositroyPath(), targetSchemaName), fileName.toString());
+	}
+	
+	/**
+	 * get Index file full path
+	 * 
+	 * @param targetSchemaName
+	 * @return index file full path
+	 */
+	public String getIndexFullName(String targetSchemaName) {		
+		StringBuffer fileName = new StringBuffer();
+		fileName.append(File.separator).append(this.getTargetFilePrefix()).append("_").append(targetSchemaName).append("_index").append(
+				this.getDefaultTargetSchemaFileExtName());
+		
+		return PathUtils.mergePath(PathUtils.mergePath(this.getFileRepositroyPath(), targetSchemaName), fileName.toString());
+	}
+	
+	/**
+	 * get Pk file full path
+	 * 
+	 * @param targetSchemaName
+	 * @return pk file full path
+	 */
+	public String getPkFullName(String targetSchemaName) {
+		StringBuffer fileName = new StringBuffer();
+		fileName.append(File.separator).append(this.getTargetFilePrefix()).append("_").append(targetSchemaName).append("_pk").append(
+				this.getDefaultTargetSchemaFileExtName());
+		
+		return PathUtils.mergePath(PathUtils.mergePath(this.getFileRepositroyPath(), targetSchemaName), fileName.toString());
+	}
+	
+	/**
+	 * get Fk file full path
+	 * 
+	 * @param targetSchemaName
+	 * @return fk file full path
+	 */
+	public String getFkFullName(String targetSchemaName) {
+		StringBuffer fileName = new StringBuffer();
+		fileName.append(File.separator).append(this.getTargetFilePrefix()).append("_").append(targetSchemaName).append("_fk").append(
+				this.getDefaultTargetSchemaFileExtName());
+		
+		return PathUtils.mergePath(PathUtils.mergePath(this.getFileRepositroyPath(), targetSchemaName), fileName.toString());
+	}
+	
+	/**
+	 * get Sequence file full path
+	 * 
+	 * @param targetSchemaName
+	 * @return sequence file full path
+	 */
+	public String getSequenceFullName(String targetSchemaName) {
+		StringBuffer fileName = new StringBuffer();
+		fileName.append(File.separator).append(this.getTargetFilePrefix()).append("_").append(targetSchemaName).append("_serial").append(
+				this.getDefaultTargetSchemaFileExtName());
+		
+		return PathUtils.mergePath(PathUtils.mergePath(this.getFileRepositroyPath(), targetSchemaName), fileName.toString());
+	}
+	
+	/**
+	 * get UpdateStatistic file full path
+	 * 
+	 * @param targetSchemaName
+	 * @return updateStatistic file full path
+	 */
+	public String getUpdateStatisticFullName(String targetSchemaName) {
+		StringBuffer fileName = new StringBuffer();
+		fileName.append(File.separator).append(this.getTargetFilePrefix()).append("_").append(targetSchemaName).append("_updatestatistic").append(
+				this.getDefaultTargetSchemaFileExtName());
+		
+		return PathUtils.mergePath(PathUtils.mergePath(this.getFileRepositroyPath(), targetSchemaName), fileName.toString());
+	}
+	
+	/**
+	 * get Info file full path
+	 * 
+	 * @param targetSchemaName
+	 * @return info file full path
+	 */
+	public String getSchemaFileListFullName(String targetSchemaName) {
+		StringBuffer fileName = new StringBuffer();
+		fileName.append(File.separator).append(this.getTargetFilePrefix()).append("_").append(targetSchemaName).append("_info").append(
+				this.getDefaultTargetSchemaFileExtName());
+		
+		return PathUtils.mergePath(PathUtils.mergePath(this.getFileRepositroyPath(), targetSchemaName), fileName.toString());
+	}
+	
+	/**
+	 * get synonym file full path
+	 * 
+	 * @param targetSchemaName
+	 * @return synonym file full path
+	 */
+	public String getSynonymFullName(String targetSchemaName) {
+		StringBuffer fileName = new StringBuffer();
+		fileName.append(File.separator).append(this.getTargetFilePrefix()).append("_").append(targetSchemaName).append("_synonym").append(
+				this.getDefaultTargetSchemaFileExtName());
+		
+		return PathUtils.mergePath(PathUtils.mergePath(this.getFileRepositroyPath(), targetSchemaName), fileName.toString());
+	}
+	
+	/**
+	 * get grant file full path
+	 * 
+	 * @param targetSchemaName
+	 * @return grant file full path
+	 */
+	public String getGrantFullName(String targetSchemaName) {
+		StringBuffer fileName = new StringBuffer();
+		fileName.append(File.separator).append(this.getTargetFilePrefix()).append("_").append(targetSchemaName).append("_grant").append(
+				this.getDefaultTargetSchemaFileExtName());
+		
+		return PathUtils.mergePath(PathUtils.mergePath(this.getFileRepositroyPath(), targetSchemaName), fileName.toString());
+	}
 }

@@ -716,6 +716,7 @@ public final class MigrationTemplateHandler extends
 					attributes.getValue(TemplateTags.ATTR_OBJECT_OWNER), 
 					attributes.getValue(TemplateTags.ATTR_AUTH_TYPE), 
 					getBoolean(attributes.getValue(TemplateTags.ATTR_GRANTABLE), false),
+					attributes.getValue(TemplateTags.ATTR_TARGET_OWNER),
 					attributes.getValue(TemplateTags.ATTR_SOURCE_GRANTOR_NAME));
 		} else if (TemplateTags.TAG_TRIGGER.equals(qName)) {
 			config.addExpTriggerCfg(attributes.getValue(TemplateTags.ATTR_NAME));
@@ -853,8 +854,8 @@ public final class MigrationTemplateHandler extends
 			}
 			config.setTargetLOBRootPath(attr.getValue(TemplateTags.ATTR_LOB_ROOT_DIR));
 			config.setAddUserSchema(Boolean.parseBoolean(attr.getValue(TemplateTags.ATTR_ADD_SCHEMA)));
-			config.setSplitSchema(Boolean.parseBoolean(attr.getValue(TemplateTags.ATTR_SPLIT_SCHEMA)));
 			config.setSplitSchema(getBoolean(attr.getValue(TemplateTags.ATTR_SPLIT_SCHEMA), false));
+			config.createDumpfile(config.isSplitSchema());
 		} else if (TemplateTags.TAG_PARTITION_DDL.equals(qName)) {
 			sqlStatement = new StringBuffer();
 		}

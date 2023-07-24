@@ -923,6 +923,7 @@ public final class MigrationTemplateParser {
 				grNode.setAttribute(TemplateTags.ATTR_OBJECT_NAME, sc.getClassName());
 				grNode.setAttribute(TemplateTags.ATTR_AUTH_TYPE, sc.getAuthType());
 				grNode.setAttribute(TemplateTags.ATTR_GRANTABLE, getBooleanString(sc.isGrantable()));
+				grNode.setAttribute(TemplateTags.ATTR_TARGET_OWNER, sc.getTargetOwner());
 				grNode.setAttribute(TemplateTags.ATTR_SOURCE_GRANTOR_NAME, sc.getSourceGrantorName());
 			}
 		}

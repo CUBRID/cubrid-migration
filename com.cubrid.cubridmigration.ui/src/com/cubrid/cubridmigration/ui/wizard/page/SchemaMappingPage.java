@@ -65,7 +65,6 @@ import org.eclipse.ui.PlatformUI;
 import com.cubrid.common.ui.swt.table.celleditor.CheckboxCellEditorFactory;
 import com.cubrid.common.ui.swt.table.celleditor.EditableComboBoxCellEditor;
 import com.cubrid.common.ui.swt.table.listener.CheckBoxColumnSelectionListener;
-import com.cubrid.cubridmigration.core.common.PathUtils;
 import com.cubrid.cubridmigration.core.common.log.LogUtil;
 import com.cubrid.cubridmigration.core.dbobject.Catalog;
 import com.cubrid.cubridmigration.core.dbobject.Schema;
@@ -755,20 +754,20 @@ public class SchemaMappingPage extends MigrationWizardPage {
 			targetSchemaList.add(schema);
 			
 			if (splitSchema) {
-				tableFullName.put(srcTable.getTarSchema(), getTableFullName(srcTable.getTarSchema()));
-				viewFullName.put(srcTable.getTarSchema(), getViewFullName(srcTable.getTarSchema()));
-				pkFullName.put(srcTable.getTarSchema(), getPkFullName(srcTable.getTarSchema()));
-				fkFullName.put(srcTable.getTarSchema(), getFkFullName(srcTable.getTarSchema()));
-				serialFullName.put(srcTable.getTarSchema(), getSequenceFullName(srcTable.getTarSchema()));
-				schemaFileListFullName.put(srcTable.getTarSchema(), getSchemaFileListFullName(srcTable.getTarSchema()));
-				synonymFileListFullName.put(srcTable.getTarSchema(), getSynonymFullName(srcTable.getTarSchema()));
-				grantFileListFullName.put(srcTable.getTarSchema(), getGrantFullName(srcTable.getTarSchema()));
+				tableFullName.put(srcTable.getTarSchema(), config.getTableFullName(srcTable.getTarSchema()));
+				viewFullName.put(srcTable.getTarSchema(), config.getViewFullName(srcTable.getTarSchema()));
+				pkFullName.put(srcTable.getTarSchema(), config.getPkFullName(srcTable.getTarSchema()));
+				fkFullName.put(srcTable.getTarSchema(), config.getFkFullName(srcTable.getTarSchema()));
+				serialFullName.put(srcTable.getTarSchema(), config.getSequenceFullName(srcTable.getTarSchema()));
+				schemaFileListFullName.put(srcTable.getTarSchema(), config.getSchemaFileListFullName(srcTable.getTarSchema()));
+				synonymFileListFullName.put(srcTable.getTarSchema(), config.getSynonymFullName(srcTable.getTarSchema()));
+				grantFileListFullName.put(srcTable.getTarSchema(), config.getGrantFullName(srcTable.getTarSchema()));
 			} else {
-				schemaFullName.put(srcTable.getTarSchema(), getSchemaFullName(srcTable.getTarSchema()));
+				schemaFullName.put(srcTable.getTarSchema(), config.getSchemaFullName(srcTable.getTarSchema()));
 			}
-			dataFullName.put(srcTable.getTarSchema(), getDataFullName(srcTable.getTarSchema()));
-			indexFullName.put(srcTable.getTarSchema(), getIndexFullName(srcTable.getTarSchema()));
-			updateStatisticFullName.put(srcTable.getTarSchema(), getUpdateStatisticFullName(srcTable.getTarSchema()));
+			dataFullName.put(srcTable.getTarSchema(), config.getDataFullName(srcTable.getTarSchema()));
+			indexFullName.put(srcTable.getTarSchema(), config.getIndexFullName(srcTable.getTarSchema()));
+			updateStatisticFullName.put(srcTable.getTarSchema(), config.getUpdateStatisticFullName(srcTable.getTarSchema()));
 		}
 		
 		if (!checkFileRepositroy()) {
@@ -795,172 +794,7 @@ public class SchemaMappingPage extends MigrationWizardPage {
 		return true;
 	}
 	
-	/**
-	 * get Schema file full path
-	 * 
-	 * @param targetSchemaName
-	 * @return schema file full path
-	 */
-	private String getSchemaFullName(String targetSchemaName) {
-		StringBuffer fileName = new StringBuffer();
-		fileName.append(File.separator).append(config.getTargetFilePrefix()).append("_").append(targetSchemaName).append("_schema").append(
-				getMigrationWizard().getMigrationConfig().getDefaultTargetSchemaFileExtName());
-		
-		return PathUtils.mergePath(PathUtils.mergePath(config.getFileRepositroyPath(), targetSchemaName), fileName.toString());
-	}
 	
-	/**
-	 * get Table file full path
-	 * 
-	 * @param targetSchemaName
-	 * @return table file full path
-	 */
-	private String getTableFullName(String targetSchemaName) {
-		StringBuffer fileName = new StringBuffer();
-		fileName.append(File.separator).append(config.getTargetFilePrefix()).append("_").append(targetSchemaName).append("_table").append(
-				getMigrationWizard().getMigrationConfig().getDefaultTargetSchemaFileExtName());
-		
-		return PathUtils.mergePath(PathUtils.mergePath(config.getFileRepositroyPath(), targetSchemaName), fileName.toString());
-	}
-	
-	/**
-	 * get View file full path
-	 * 
-	 * @param targetSchemaName
-	 * @return view file full path
-	 */
-	private String getViewFullName(String targetSchemaName) {
-		StringBuffer fileName = new StringBuffer();
-		fileName.append(File.separator).append(config.getTargetFilePrefix()).append("_").append(targetSchemaName).append("_view").append(
-				getMigrationWizard().getMigrationConfig().getDefaultTargetSchemaFileExtName());
-		
-		return PathUtils.mergePath(PathUtils.mergePath(config.getFileRepositroyPath(), targetSchemaName), fileName.toString());
-	}
-	
-	/**
-	 * get Data file full path
-	 * 
-	 * @param targetSchemaName
-	 * @return data file full path
-	 */
-	private String getDataFullName(String targetSchemaName) {
-		StringBuffer fileName = new StringBuffer();
-		fileName.append(File.separator).append(config.getTargetFilePrefix()).append("_").append(targetSchemaName).append("_data").append(config.getDataFileExt());
-	
-		return PathUtils.mergePath(PathUtils.mergePath(config.getFileRepositroyPath(), targetSchemaName), fileName.toString());
-	}
-	
-	/**
-	 * get Index file full path
-	 * 
-	 * @param targetSchemaName
-	 * @return index file full path
-	 */
-	private String getIndexFullName(String targetSchemaName) {		
-		StringBuffer fileName = new StringBuffer();
-		fileName.append(File.separator).append(config.getTargetFilePrefix()).append("_").append(targetSchemaName).append("_index").append(
-				getMigrationWizard().getMigrationConfig().getDefaultTargetSchemaFileExtName());
-		
-		return PathUtils.mergePath(PathUtils.mergePath(config.getFileRepositroyPath(), targetSchemaName), fileName.toString());
-	}
-	
-	/**
-	 * get Pk file full path
-	 * 
-	 * @param targetSchemaName
-	 * @return pk file full path
-	 */
-	private String getPkFullName(String targetSchemaName) {
-		StringBuffer fileName = new StringBuffer();
-		fileName.append(File.separator).append(config.getTargetFilePrefix()).append("_").append(targetSchemaName).append("_pk").append(
-				getMigrationWizard().getMigrationConfig().getDefaultTargetSchemaFileExtName());
-		
-		return PathUtils.mergePath(PathUtils.mergePath(config.getFileRepositroyPath(), targetSchemaName), fileName.toString());
-	}
-	
-	/**
-	 * get Fk file full path
-	 * 
-	 * @param targetSchemaName
-	 * @return fk file full path
-	 */
-	private String getFkFullName(String targetSchemaName) {
-		StringBuffer fileName = new StringBuffer();
-		fileName.append(File.separator).append(config.getTargetFilePrefix()).append("_").append(targetSchemaName).append("_fk").append(
-				getMigrationWizard().getMigrationConfig().getDefaultTargetSchemaFileExtName());
-		
-		return PathUtils.mergePath(PathUtils.mergePath(config.getFileRepositroyPath(), targetSchemaName), fileName.toString());
-	}
-	
-	/**
-	 * get Sequence file full path
-	 * 
-	 * @param targetSchemaName
-	 * @return sequence file full path
-	 */
-	private String getSequenceFullName(String targetSchemaName) {
-		StringBuffer fileName = new StringBuffer();
-		fileName.append(File.separator).append(config.getTargetFilePrefix()).append("_").append(targetSchemaName).append("_serial").append(
-				getMigrationWizard().getMigrationConfig().getDefaultTargetSchemaFileExtName());
-		
-		return PathUtils.mergePath(PathUtils.mergePath(config.getFileRepositroyPath(), targetSchemaName), fileName.toString());
-	}
-	
-	/**
-	 * get UpdateStatistic file full path
-	 * 
-	 * @param targetSchemaName
-	 * @return updateStatistic file full path
-	 */
-	private String getUpdateStatisticFullName(String targetSchemaName) {
-		StringBuffer fileName = new StringBuffer();
-		fileName.append(File.separator).append(config.getTargetFilePrefix()).append("_").append(targetSchemaName).append("_updatestatistic").append(
-				getMigrationWizard().getMigrationConfig().getDefaultTargetSchemaFileExtName());
-		
-		return PathUtils.mergePath(PathUtils.mergePath(config.getFileRepositroyPath(), targetSchemaName), fileName.toString());
-	}
-	
-	/**
-	 * get Info file full path
-	 * 
-	 * @param targetSchemaName
-	 * @return info file full path
-	 */
-	private String getSchemaFileListFullName(String targetSchemaName) {
-		StringBuffer fileName = new StringBuffer();
-		fileName.append(File.separator).append(config.getTargetFilePrefix()).append("_").append(targetSchemaName).append("_info").append(
-				getMigrationWizard().getMigrationConfig().getDefaultTargetSchemaFileExtName());
-		
-		return PathUtils.mergePath(PathUtils.mergePath(config.getFileRepositroyPath(), targetSchemaName), fileName.toString());
-	}
-	
-	/**
-	 * get synonym file full path
-	 * 
-	 * @param targetSchemaName
-	 * @return synonym file full path
-	 */
-	private String getSynonymFullName(String targetSchemaName) {
-		StringBuffer fileName = new StringBuffer();
-		fileName.append(File.separator).append(config.getTargetFilePrefix()).append("_").append(targetSchemaName).append("_synonym").append(
-				getMigrationWizard().getMigrationConfig().getDefaultTargetSchemaFileExtName());
-		
-		return PathUtils.mergePath(PathUtils.mergePath(config.getFileRepositroyPath(), targetSchemaName), fileName.toString());
-	}
-	
-	/**
-	 * get grant file full path
-	 * 
-	 * @param targetSchemaName
-	 * @return grant file full path
-	 */
-	private String getGrantFullName(String targetSchemaName) {
-		StringBuffer fileName = new StringBuffer();
-		fileName.append(File.separator).append(config.getTargetFilePrefix()).append("_").append(targetSchemaName).append("_grant").append(
-				getMigrationWizard().getMigrationConfig().getDefaultTargetSchemaFileExtName());
-		
-		return PathUtils.mergePath(PathUtils.mergePath(config.getFileRepositroyPath(), targetSchemaName), fileName.toString());
-	}
 	
 	/**
 	 * Check if overwriting to a file
