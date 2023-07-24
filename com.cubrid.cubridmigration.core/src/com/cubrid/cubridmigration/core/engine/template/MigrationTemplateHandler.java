@@ -43,6 +43,7 @@ import com.cubrid.cubridmigration.core.connection.ConnParameters;
 import com.cubrid.cubridmigration.core.dbobject.Catalog;
 import com.cubrid.cubridmigration.core.dbobject.Column;
 import com.cubrid.cubridmigration.core.dbobject.FK;
+import com.cubrid.cubridmigration.core.dbobject.Grant;
 import com.cubrid.cubridmigration.core.dbobject.Index;
 import com.cubrid.cubridmigration.core.dbobject.PK;
 import com.cubrid.cubridmigration.core.dbobject.PartitionInfo;
@@ -453,6 +454,22 @@ public final class MigrationTemplateHandler extends
 		syn.setPublic(false);
 		config.addTargetSynonymSchema(syn);
 	}
+	
+	/**
+	 * @param attributes of node
+	 */
+	private void parseTargetGrant(Attributes attributes) {
+		Grant grn = new Grant();
+		grn.setOwner(attributes.getValue(TemplateTags.ATTR_OWNER));
+		grn.setName(attributes.getValue(TemplateTags.ATTR_NAME));
+		grn.setGrantorName(attributes.getValue(TemplateTags.ATTR_GRANTOR));
+		grn.setGranteeName(attributes.getValue(TemplateTags.ATTR_GRANTEE));
+		grn.setClassOwner(attributes.getValue(TemplateTags.ATTR_OBJECT_OWNER));
+		grn.setClassName(attributes.getValue(TemplateTags.ATTR_OBJECT_NAME));
+		grn.setAuthType(attributes.getValue(TemplateTags.ATTR_AUTH_TYPE));
+		grn.setGrantable(getBoolean(attributes.getValue(TemplateTags.ATTR_GRANTABLE), false));
+		config.addTargetGrantSchema(grn);
+	}
 
 	/**
 	 * @param attributes of node
@@ -690,6 +707,17 @@ public final class MigrationTemplateHandler extends
 			config.addExpViewCfg(attributes.getValue(TemplateTags.ATTR_OWNER),
 					attributes.getValue(TemplateTags.ATTR_NAME),
 					attributes.getValue(TemplateTags.ATTR_TARGET));
+		} else if (TemplateTags.TAG_GRANT.equals(qName)) {
+			config.addExpGrantCfg(attributes.getValue(TemplateTags.ATTR_OWNER),
+					attributes.getValue(TemplateTags.ATTR_NAME),
+					attributes.getValue(TemplateTags.ATTR_GRANTOR),
+					attributes.getValue(TemplateTags.ATTR_GRANTEE),
+					attributes.getValue(TemplateTags.ATTR_OBJECT_NAME), 
+					attributes.getValue(TemplateTags.ATTR_OBJECT_OWNER), 
+					attributes.getValue(TemplateTags.ATTR_AUTH_TYPE), 
+					getBoolean(attributes.getValue(TemplateTags.ATTR_GRANTABLE), false),
+					attributes.getValue(TemplateTags.ATTR_TARGET_OWNER),
+					attributes.getValue(TemplateTags.ATTR_SOURCE_GRANTOR_NAME));
 		} else if (TemplateTags.TAG_TRIGGER.equals(qName)) {
 			config.addExpTriggerCfg(attributes.getValue(TemplateTags.ATTR_NAME));
 		} else if (TemplateTags.TAG_FUNCTION.equals(qName)) {
@@ -775,6 +803,8 @@ public final class MigrationTemplateHandler extends
 			parseTargetSequence(attr);
 		} else if (TemplateTags.TAG_SYNONYM.equals(qName)) {
 			parseTargetSynonym(attr);
+		} else if (TemplateTags.TAG_GRANT.equals(qName)) {
+			parseTargetGrant(attr);
 		} else if (TemplateTags.TAG_VIEW.equals(qName)) {
 			parseTargetView(attr);
 		} else if (TemplateTags.TAG_VIEWCOLUMN.equals(qName)) {
@@ -824,8 +854,8 @@ public final class MigrationTemplateHandler extends
 			}
 			config.setTargetLOBRootPath(attr.getValue(TemplateTags.ATTR_LOB_ROOT_DIR));
 			config.setAddUserSchema(Boolean.parseBoolean(attr.getValue(TemplateTags.ATTR_ADD_SCHEMA)));
-			config.setSplitSchema(Boolean.parseBoolean(attr.getValue(TemplateTags.ATTR_SPLIT_SCHEMA)));
 			config.setSplitSchema(getBoolean(attr.getValue(TemplateTags.ATTR_SPLIT_SCHEMA), false));
+			config.createDumpfile(config.isSplitSchema());
 		} else if (TemplateTags.TAG_PARTITION_DDL.equals(qName)) {
 			sqlStatement = new StringBuffer();
 		}

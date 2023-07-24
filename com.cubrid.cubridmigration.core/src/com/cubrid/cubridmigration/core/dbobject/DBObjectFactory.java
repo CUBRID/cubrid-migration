@@ -189,6 +189,15 @@ public class DBObjectFactory {
 	public Synonym createSynonym() {
 		return new Synonym();
 	}
+	
+	/**
+	 * return Grant
+	 * 
+	 * @return Grant
+	 */
+	public Grant createGrant() {
+		return new Grant();
+	}
 
 	/**
 	 * return DataType

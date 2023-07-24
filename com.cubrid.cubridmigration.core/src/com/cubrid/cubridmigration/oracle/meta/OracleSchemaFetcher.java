@@ -62,6 +62,7 @@ import com.cubrid.cubridmigration.core.dbobject.Column;
 import com.cubrid.cubridmigration.core.dbobject.DBObjectFactory;
 import com.cubrid.cubridmigration.core.dbobject.FK;
 import com.cubrid.cubridmigration.core.dbobject.Function;
+import com.cubrid.cubridmigration.core.dbobject.Grant;
 import com.cubrid.cubridmigration.core.dbobject.Index;
 import com.cubrid.cubridmigration.core.dbobject.PartitionInfo;
 import com.cubrid.cubridmigration.core.dbobject.PartitionTable;
@@ -162,6 +163,18 @@ public final class OracleSchemaFetcher extends
 	
 	private static final String SQL_GET_COLUMN_COMMENT = "SELECT COMMENTS FROM ALL_COL_COMMENTS WHERE OWNER=? AND "
 			+ "TABLE_NAME=? AND COLUMN_NAME=?";
+	
+	private static final String SQL_SHOW_GRANT_TABLE = "SELECT P.GRANTEE, P.OWNER, P.TABLE_NAME, P.GRANTOR, P.PRIVILEGE, P.GRANTABLE" 
+			+ " FROM USER_TAB_PRIVS P, ALL_TABLES T"
+			+ " WHERE P.TABLE_NAME=T.TABLE_NAME"
+			+ " AND P.OWNER=T.OWNER"
+			+ " AND P.GRANTEE=?";
+	
+	private static final String SQL_SHOW_GRANT_VIEW = "SELECT P.GRANTEE, P.OWNER, P.TABLE_NAME, P.GRANTOR, P.PRIVILEGE, P.GRANTABLE"
+			+ " FROM USER_TAB_PRIVS P, ALL_VIEWS V"
+			+ " WHERE P.TABLE_NAME=V.VIEW_NAME"
+			+ " AND P.OWNER=V.OWNER"
+			+ " AND P.GRANTEE=?";
 
 	//private static final String SHOW_SEQUENCE_MAXVAL = "SELECT ?.CURRVAL  FROM DUAL";
 
@@ -796,6 +809,75 @@ public final class OracleSchemaFetcher extends
 			}
 			column.setShownDataType(shownDataType);
 			column.setComment(getViewColumnComment(conn, schema.getName(), view.getName(), column));
+		}
+	}
+	
+	/**
+	 * Build Grant
+	 * 
+	 * @param conn Connection
+	 * @param catalog Catalog
+	 * @param schema Schema
+	 * @param filter IBuildSchemaFilter
+	 * @throws SQLException e
+	 */
+	protected void buildGrant(Connection conn, Catalog catalog, Schema schema,
+			IBuildSchemaFilter filter) throws SQLException {
+		if (LOG.isDebugEnabled()) {
+			LOG.debug("[IN]buildGrant()");
+		}
+		PreparedStatement stmt = null; // NOPMD
+		ResultSet rs = null; // NOPMD
+		
+		try {
+			stmt = conn.prepareStatement(SQL_SHOW_GRANT_TABLE);
+			if (LOG.isDebugEnabled()) {
+				LOG.debug("[SQL]" + SQL_SHOW_GRANT_TABLE + ", " + "1=" + schema.getName() + ", "
+						+ "2=" + schema.getName());
+			}
+
+			stmt.setString(1, schema.getName().toUpperCase());	
+			rs = stmt.executeQuery();
+			while (rs.next()) {
+				if (!isSupportPrivilege(rs.getString("PRIVILEGE"))) {
+					continue;
+				}
+				
+				Grant grant = factory.createGrant();
+				grant.setGranteeName(rs.getString("GRANTEE"));
+				grant.setOwner(schema.getName());
+				grant.setClassOwner(rs.getString("OWNER"));
+				grant.setClassName(rs.getString("TABLE_NAME"));
+				grant.setGrantorName(rs.getString("GRANTOR"));
+				grant.setAuthType(convertPrivilegeOracle2Cubrid(rs.getString("PRIVILEGE")));
+				grant.setGrantable(rs.getString("GRANTABLE").equals("YES") ? true : false);
+				grant.setDDL(CUBRIDSQLHelper.getInstance(null).getGrantDDL(grant, true));
+				schema.addGrant(grant);
+			}
+			
+			stmt = conn.prepareStatement(SQL_SHOW_GRANT_VIEW);
+			if (LOG.isDebugEnabled()) {
+				LOG.debug("[SQL]" + SQL_SHOW_GRANT_VIEW + ", " + "1=" + schema.getName() + ", "
+						+ "2=" + schema.getName());
+			}
+
+			stmt.setString(1, schema.getName().toUpperCase());
+			rs = stmt.executeQuery();
+			while (rs.next()) {
+				Grant grant = factory.createGrant();
+				grant.setGranteeName(rs.getString("GRANTEE"));
+				grant.setOwner(schema.getName());
+				grant.setClassOwner(rs.getString("OWNER"));
+				grant.setClassName(rs.getString("TABLE_NAME"));
+				grant.setGrantorName(rs.getString("GRANTOR"));
+				grant.setAuthType(rs.getString("PRIVILEGE"));
+				grant.setGrantable(rs.getString("GRANTABLE").equals("YES") ? true : false);
+				grant.setDDL(CUBRIDSQLHelper.getInstance(null).getGrantDDL(grant, true));
+				schema.addGrant(grant);
+			}
+		} finally {
+			Closer.close(rs);
+			Closer.close(stmt);
 		}
 	}
 
@@ -1572,6 +1654,42 @@ public final class OracleSchemaFetcher extends
 			Closer.close(rs);
 			Closer.close(stmt);
 		}
+	}
+	
+	/**
+	 * Check privilege supported by Cubrid.
+	 * 
+	 * @param privilege
+	 * @return boolean
+	 */
+	private boolean isSupportPrivilege(String privilege) {
+		if (privilege.equals("SELECT") 
+				|| privilege.equals("INSERT")
+				|| privilege.equals("UPDATE")
+				|| privilege.equals("DELETE")
+				|| privilege.equals("ALTER")
+				|| privilege.equals("INDEX")
+				|| privilege.equals("EXECUTE")
+				|| privilege.equals("ALL")) {
+			return true;
+		}
+		return false;
+	}
+	
+	/**
+	 * Change to privilege used by Cubrid.
+	 * 
+	 * @param privilege
+	 * @return String cubridPrivilege
+	 */
+	private String convertPrivilegeOracle2Cubrid(String privilege) {
+		String cubridPrivilege = privilege;
+		
+		if (privilege.equals("ALL")) {
+			cubridPrivilege = "ALL PRIVILEGES";
+		}
+		
+		return cubridPrivilege;
 	}
 
 	/**

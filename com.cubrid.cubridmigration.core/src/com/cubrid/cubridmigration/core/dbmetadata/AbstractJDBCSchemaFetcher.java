@@ -245,6 +245,17 @@ public abstract class AbstractJDBCSchemaFetcher implements
 		} catch (Exception e){
 			LOG.error("buildSynonym", e);
 		}
+		
+		try {
+			buildGrant(conn, catalog, schema, filter);
+		} catch (Exception e) {
+			LOG.error("buildGrant", e);
+		}
+	}
+	
+	protected void buildGrant(Connection conn, Catalog catalog, Schema schema,
+			IBuildSchemaFilter filter) throws SQLException {
+		//do nothing
 	}
 	
 	/**

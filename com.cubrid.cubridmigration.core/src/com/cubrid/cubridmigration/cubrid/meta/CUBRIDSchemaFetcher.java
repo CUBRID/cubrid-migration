@@ -61,6 +61,7 @@ import com.cubrid.cubridmigration.core.dbobject.Column;
 import com.cubrid.cubridmigration.core.dbobject.DBObjectFactory;
 import com.cubrid.cubridmigration.core.dbobject.FK;
 import com.cubrid.cubridmigration.core.dbobject.Function;
+import com.cubrid.cubridmigration.core.dbobject.Grant;
 import com.cubrid.cubridmigration.core.dbobject.Index;
 import com.cubrid.cubridmigration.core.dbobject.PK;
 import com.cubrid.cubridmigration.core.dbobject.PartitionInfo;
@@ -1803,6 +1804,12 @@ public final class CUBRIDSchemaFetcher extends
 		schema.setSynonymList(synonymList);
 	}
 	
+	protected void buildGrant(Connection conn, Catalog catalog, Schema schema,
+			IBuildSchemaFilter filter) throws SQLException {
+		List<Grant> grantList = getAllGrant(conn, catalog, schema);
+		schema.setGrantList(grantList);
+	}
+	
 	/**
 	 * Get all CUBRID View names
 	 * 
@@ -2046,6 +2053,14 @@ public final class CUBRIDSchemaFetcher extends
 		}
 	}
 	
+	/**
+	 * get All Synonyms
+	 * 
+	 * @param conn
+	 * @param schema
+	 * @return
+	 * @throws SQLException
+	 */
 	private List<Synonym> getAllSynonym(Connection conn, Schema schema) throws SQLException {
 		PreparedStatement stmt = null;
 		ResultSet rs = null; //NOPMD
@@ -2079,6 +2094,56 @@ public final class CUBRIDSchemaFetcher extends
 			}
 
 			return synonyms;
+		} finally {
+			Closer.close(rs);
+			Closer.close(stmt);
+		}
+	}
+	
+	/**
+	 * get All Grants
+	 * 
+	 * @param conn
+	 * @param catalog
+	 * @param schema
+	 * @return
+	 * @throws SQLException
+	 */
+	private List<Grant> getAllGrant(Connection conn, Catalog catalog, Schema schema) throws SQLException {
+		PreparedStatement stmt = null;
+		ResultSet rs = null; //NOPMD
+		
+		boolean isUserSchema = getDBVersion(conn) >= USERSCHEMA_VERSION;
+		
+		StringBuffer sql = new StringBuffer();
+		sql.append("SELECT a.grantor_name, a.grantee_name, a.class_name, a.auth_type, a.is_grantable")
+			.append(isUserSchema ? ", a.owner_name" : "")
+			.append(" FROM db_auth a, db_class c")
+			.append(" WHERE a.class_name=c.class_name")
+			.append(isUserSchema ? " AND a.owner_name=c.owner_name" : "")
+			.append(" AND c.is_system_class='NO'")
+			.append(" AND a.grantee_name=?");
+		
+		try {
+			stmt = conn.prepareStatement(sql.toString());			
+			stmt.setString(1, schema.getName().toUpperCase());
+			rs = stmt.executeQuery();
+			List<Grant> grants = new ArrayList<Grant>();
+			
+			while (rs.next()) {
+				Grant grant = factory.createGrant();
+				grant.setOwner(schema.getName());
+				grant.setGrantorName(rs.getString("grantor_name"));
+				grant.setGranteeName(rs.getString("grantee_name"));
+				grant.setClassName(rs.getString("class_name"));
+				grant.setAuthType(rs.getString("auth_type"));
+				grant.setGrantable(rs.getString("is_grantable").equals("NO") ? false : true);
+				grant.setClassOwner(isUserSchema ? rs.getString("owner_name") : null);
+				grant.setDDL(CUBRIDSQLHelper.getInstance(null).getGrantDDL(grant, isUserSchema));
+				grants.add(grant);
+			}
+			
+			return grants;
 		} finally {
 			Closer.close(rs);
 			Closer.close(stmt);

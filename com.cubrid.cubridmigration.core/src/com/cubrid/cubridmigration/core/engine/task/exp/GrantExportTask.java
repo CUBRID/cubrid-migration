@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Search Solution Corporation. All rights reserved by Search Solution. 
+ * Copyright 2016 CUBRID Corporation. All rights reserved by Search Solution. 
  *
  * Redistribution and use in source and binary forms, with or without modification, 
  * are permitted provided that the following conditions are met: 
@@ -27,28 +27,39 @@
  * OF SUCH DAMAGE. 
  *
  */
-package com.cubrid.cubridmigration.ui.common.navigator.node;
+package com.cubrid.cubridmigration.core.engine.task.exp;
 
-import com.cubrid.common.ui.navigator.DefaultCUBRIDNode;
+import com.cubrid.cubridmigration.core.dbobject.Grant;
+import com.cubrid.cubridmigration.core.engine.config.MigrationConfiguration;
+import com.cubrid.cubridmigration.core.engine.config.SourceGrantConfig;
+import com.cubrid.cubridmigration.core.engine.task.ExportTask;
 
 /**
- * SynonymsNode
+ * GrantExportTask Description
  * 
- * @author CUBRID
+ * @author Dongmin Kim
  */
-public class SynonymsNode extends
-		DefaultCUBRIDNode {
+public class GrantExportTask extends 
+		ExportTask {
 
+	protected MigrationConfiguration config;
+	protected SourceGrantConfig gr;
+	
+	public GrantExportTask(MigrationConfiguration config, SourceGrantConfig gr) {
+		this.config = config;
+		this.gr = gr;
+	}
+	
 	/**
-	 * The constructor
-	 * 
-	 * @param id
-	 * @param label
+	 * Execute export operation
 	 */
-	public SynonymsNode(String id, String label) {
-		super(id, label, "icon/db/synonym_group.png");
-		setType(CubridNodeType.SYNONYM_FOLDER);
-		setContainer(true);
+	@Override
+	protected void executeExportTask() {
+		Grant targetGrant = config.getTargetGrantSchema(gr.getTarget());
+		if (targetGrant == null) {
+			return;
+		}
+		importTaskExecutor.execute((Runnable) taskFactory.createImportGrantTask(targetGrant));
 	}
 	
 }

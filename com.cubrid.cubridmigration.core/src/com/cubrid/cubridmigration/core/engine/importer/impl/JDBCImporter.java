@@ -41,6 +41,7 @@ import com.cubrid.cubridmigration.core.common.Closer;
 import com.cubrid.cubridmigration.core.common.DBUtils;
 import com.cubrid.cubridmigration.core.dbobject.Column;
 import com.cubrid.cubridmigration.core.dbobject.FK;
+import com.cubrid.cubridmigration.core.dbobject.Grant;
 import com.cubrid.cubridmigration.core.dbobject.Index;
 import com.cubrid.cubridmigration.core.dbobject.PK;
 import com.cubrid.cubridmigration.core.dbobject.Record;
@@ -241,6 +242,22 @@ public class JDBCImporter extends
 			createObjectSuccess(sn);
 		} catch (RuntimeException e) {
 			createObjectFailed(sn, e);
+		}
+	}
+	
+	/**
+	 * Create grant
+	 * 
+	 * @param gr grant
+	 */
+	public void createGrant(Grant gr) {
+		String ddl = CUBRIDSQLHelper.getInstance(null).getGrantDDL(gr, config.isAddUserSchema());
+		gr.setDDL(ddl);
+		try {
+			executeDDL(ddl);
+			createObjectSuccess(gr);
+		} catch (RuntimeException e) {
+			createObjectFailed(gr, e);
 		}
 	}
 

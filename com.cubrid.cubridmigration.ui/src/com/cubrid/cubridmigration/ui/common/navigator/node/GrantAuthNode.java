@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Search Solution Corporation. All rights reserved by Search Solution. 
+ * Copyright 2016 CUBRID Corporation. All rights reserved by Search Solution. 
  *
  * Redistribution and use in source and binary forms, with or without modification, 
  * are permitted provided that the following conditions are met: 
@@ -32,23 +32,34 @@ package com.cubrid.cubridmigration.ui.common.navigator.node;
 import com.cubrid.common.ui.navigator.DefaultCUBRIDNode;
 
 /**
- * SynonymsNode
- * 
- * @author CUBRID
+ * GrantAuthNode
+ * @author Dongmin Kim
  */
-public class SynonymsNode extends
+public class GrantAuthNode extends 
 		DefaultCUBRIDNode {
-
-	/**
-	 * The constructor
-	 * 
-	 * @param id
-	 * @param label
-	 */
-	public SynonymsNode(String id, String label) {
-		super(id, label, "icon/db/synonym_group.png");
-		setType(CubridNodeType.SYNONYM_FOLDER);
-		setContainer(true);
-	}
 	
+	String grantor;
+	String authType;
+
+	public String getGrantor() {
+		return grantor;
+	}
+
+	public void setGrantor(String grantor) {
+		this.grantor = grantor;
+	}
+
+	public String getAuthType() {
+		return authType;
+	}
+
+	public void setAuthType(String authType) {
+		this.authType = authType;
+	}
+
+	public GrantAuthNode(String id, String label) {
+		super(id, label, "icon/db/grant_item.png");
+		setType(CubridNodeType.GRANT_AUTH);
+		setContainer(false);
+	}
 }

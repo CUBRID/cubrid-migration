@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Search Solution Corporation. All rights reserved by Search Solution. 
+ * Copyright 2016 CUBRID Corporation. All rights reserved by Search Solution. 
  *
  * Redistribution and use in source and binary forms, with or without modification, 
  * are permitted provided that the following conditions are met: 
@@ -32,23 +32,21 @@ package com.cubrid.cubridmigration.ui.common.navigator.node;
 import com.cubrid.common.ui.navigator.DefaultCUBRIDNode;
 
 /**
- * SynonymsNode
- * 
- * @author CUBRID
+ * GrantsNode
+ * @author Dongmin Kim
  */
-public class SynonymsNode extends
+public class GrantsNode extends 
 		DefaultCUBRIDNode {
-
 	/**
 	 * The constructor
 	 * 
-	 * @param id
-	 * @param label
+	 * @param id String
+	 * @param label String
 	 */
-	public SynonymsNode(String id, String label) {
-		super(id, label, "icon/db/synonym_group.png");
-		setType(CubridNodeType.SYNONYM_FOLDER);
+	public GrantsNode(String id, String label) {
+		super(id, label, "icon/db/grant_group.png");
+		setType(CubridNodeType.GRANT_FOLDER);
 		setContainer(true);
 	}
-	
+
 }

@@ -478,6 +478,7 @@ public class SelectDestinationPage extends
 					btnCreateConstrainsNow.setSelection(true);
 				}
 			}
+			config.setTargetDBAGroup(catalog.isDBAGroup());
 			config.setCreateConstrainsBeforeData(btnCreateConstrainsNow.getSelection());
 			return true;
 

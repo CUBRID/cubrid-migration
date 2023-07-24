@@ -240,6 +240,7 @@ public class Messages extends
 	public static String confirmUserName;
 	public static String confrimData;
 	public static String confrimExportFKs;
+	public static String confrimExportGrants;
 	public static String confrimExportIndexs;
 	public static String confrimExportSerial;
 	public static String confrimExportSynonym;
@@ -251,6 +252,7 @@ public class Messages extends
 	public static String confrimView;
 	public static String confrimPk;
 	public static String confrimFk;
+	public static String confrimGrant;
 	public static String confrimSerial;
 	public static String confrimSynonym;
 	public static String confrimUpdateStatistic;
@@ -368,6 +370,7 @@ public class Messages extends
 	public static String labelTreeObjColumn;
 	public static String labelTreeObjFk;
 	public static String labelTreeObjFunction;
+	public static String labelTreeObjGrant;
 	public static String labelTreeObjIndex;
 	public static String labelTreeObjPartition;
 	public static String labelTreeObjProcedure;
@@ -407,6 +410,13 @@ public class Messages extends
 	public static String lblFKName;
 	public static String lblFKRefColumns;
 	public static String lblFKRefTableName;
+	public static String lblGrantAuthType;
+	public static String lblGrantName;
+	public static String lblGrantClassName;
+	public static String lblGrantClassOwner;
+	public static String lblGrantGrantable;
+	public static String lblGrantGrantee;
+	public static String lblGrantGrantor;
 	public static String lblHDFSFile;
 	public static String lblHDFSPath;
 	public static String lblHost;
@@ -642,6 +652,7 @@ public class Messages extends
 	public static String msgTypeSchema;
 	public static String msgUserSchemaDisable;
 	public static String msgWarning;
+	public static String msgWarningImpossibleMigrationGrant;
 	public static String msgWarnTableRecreated;
 	public static String msgWizardStep;
 	public static String mysqlToCubrid;
@@ -662,6 +673,7 @@ public class Messages extends
 	public static String objectMapPageTabFolderBtnVerify2;
 	public static String objectMapPageTabFolderErrTableName;
 	public static String objectMapPageTabFolderErrViewName;
+	public static String objectMapPageTabFolderGrants;
 	public static String objectMapPageTabFolderSequences;
 	public static String objectMapPageTabFolderSqls;
 	public static String objectMapPageTabFolderSynonyms;
@@ -706,6 +718,7 @@ public class Messages extends
 	public static String tabTitleDataSQLDes;
 	public static String tabTitleDataType;
 	public static String tabTitleFK;
+	public static String tabTitleGrantAuthType;
 	public static String tabTitleGeneral;
 	public static String tabTitleIndexes;
 	public static String tabTitleName;
@@ -716,7 +729,10 @@ public class Messages extends
 	public static String tabTitlePKDes;
 	public static String tabTitleSourceColumn;
 	public static String tabTitleSourceFK;
+	public static String tabTitleSourceGrant;
 	public static String tabTitleSourceIndex;
+	public static String tabTitleSourceObject;
+	public static String tabTitleSourceOwner;
 	public static String tabTitleSourceSerial;
 	public static String tabTitleSourceSynonym;
 	public static String tabTitleSourceTable;
@@ -725,7 +741,9 @@ public class Messages extends
 	public static String tabTitleSQL;
 	public static String tabTitleTargetColumn;
 	public static String tabTitleTargetFK;
+	public static String tabTitleTargetGrant;
 	public static String tabTitleTargetIndex;
+	public static String tabTitleTargetOwner;
 	public static String tabTitleTargetSerial;
 	public static String tabTitleTargetSynonym;
 	public static String tabTitleTargetTable;

@@ -31,6 +31,7 @@ package com.cubrid.cubridmigration.core.engine.scheduler;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 
@@ -45,6 +46,7 @@ import com.cubrid.cubridmigration.core.engine.config.MigrationConfiguration;
 import com.cubrid.cubridmigration.core.engine.config.SourceCSVConfig;
 import com.cubrid.cubridmigration.core.engine.config.SourceColumnConfig;
 import com.cubrid.cubridmigration.core.engine.config.SourceEntryTableConfig;
+import com.cubrid.cubridmigration.core.engine.config.SourceGrantConfig;
 import com.cubrid.cubridmigration.core.engine.config.SourceSQLTableConfig;
 import com.cubrid.cubridmigration.core.engine.config.SourceSequenceConfig;
 import com.cubrid.cubridmigration.core.engine.config.SourceSynonymConfig;
@@ -125,6 +127,7 @@ public class MigrationTasksScheduler {
 			createProcedures();
 			createTriggers();
 		}
+		createGrants();
 		updateIndexStatistics();
 		
 		if (!config.targetIsOnline() && config.isSplitSchema()) {
@@ -215,7 +218,15 @@ public class MigrationTasksScheduler {
 	private void clearTargetDB() {
 		MigrationConfiguration config = context.getConfig();
 		if (config.targetIsFile()) {
-			for (Schema schema : config.getTargetSchemaList()) {
+			List<Schema> schemaList = null;
+			if (config.getTargetSchemaList().size() > 0) {
+				schemaList = config.getTargetSchemaList();
+			} else {
+				Collection<Schema> schemas = config.getScriptSchemaMapping().values();
+				schemaList = new ArrayList<Schema>(schemas);
+			}
+			
+			for (Schema schema : schemaList) {
 				String schemaName = schema.getTargetSchemaName();
 				if (config.isSplitSchema()) {
 					PathUtils.deleteFile(new File(config.getTargetTableFileName(schemaName)));
@@ -225,6 +236,7 @@ public class MigrationTasksScheduler {
 					PathUtils.deleteFile(new File(config.getTargetSerialFileName(schemaName)));
 					PathUtils.deleteFile(new File(config.getTargetSchemaFileListName(schemaName)));
 					PathUtils.deleteFile(new File(config.getTargetSynonymFileName(schemaName)));
+					PathUtils.deleteFile(new File(config.getTargetGrantFileName(schemaName)));
 				} else {
 					PathUtils.deleteFile(new File(config.getTargetSchemaFileName(schemaName)));
 				}
@@ -233,7 +245,7 @@ public class MigrationTasksScheduler {
 				PathUtils.deleteFile(new File(config.getTargetDataFileName(schemaName)));
 				PathUtils.deleteFile(new File(config.getFileRepositroyPath() + schemaName));
 			}
-			;
+			
 		}
 		executeTask(taskFactory.createCleanDBTask());
 	}
@@ -529,6 +541,19 @@ public class MigrationTasksScheduler {
 		List<String> triggers = config.getExpTriggerCfg();
 		for (String tg : triggers) {
 			executeTask(taskFactory.createExportTriggerTask(tg));
+		}
+		await();
+	}
+	
+	/**
+	 * Schedule export grant tasks.
+	 * 
+	 */
+	protected void createGrants() {
+		MigrationConfiguration config = context.getConfig();
+		List<SourceGrantConfig> grants = config.getExpGrantCfg();
+		for (SourceGrantConfig gr : grants) {
+			executeTask(taskFactory.createExportGrantTask(gr));
 		}
 		await();
 	}

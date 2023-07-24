@@ -75,6 +75,7 @@ import com.cubrid.cubridmigration.core.engine.config.SourceCSVConfig;
 import com.cubrid.cubridmigration.core.engine.config.SourceColumnConfig;
 import com.cubrid.cubridmigration.core.engine.config.SourceEntryTableConfig;
 import com.cubrid.cubridmigration.core.engine.config.SourceFKConfig;
+import com.cubrid.cubridmigration.core.engine.config.SourceGrantConfig;
 import com.cubrid.cubridmigration.core.engine.config.SourceIndexConfig;
 import com.cubrid.cubridmigration.core.engine.config.SourceSQLTableConfig;
 import com.cubrid.cubridmigration.core.engine.config.SourceSequenceConfig;
@@ -906,6 +907,24 @@ public final class MigrationTemplateParser {
 				vwNode.setAttribute(TemplateTags.ATTR_OWNER, sc.getOwner());
 				vwNode.setAttribute(TemplateTags.ATTR_NAME, sc.getName());
 				vwNode.setAttribute(TemplateTags.ATTR_TARGET, sc.getTarget());
+			}
+		}
+		//source grants
+		List<SourceGrantConfig> exportGrants = config.getExpGrantCfg();
+		if (!exportGrants.isEmpty()) {
+			Element grants = createElement(document, source, TemplateTags.TAG_GRANTS);
+			for (SourceGrantConfig sc : exportGrants) {
+				Element grNode = createElement(document, grants, TemplateTags.TAG_GRANT);
+				grNode.setAttribute(TemplateTags.ATTR_OWNER, sc.getOwner());
+				grNode.setAttribute(TemplateTags.ATTR_NAME, sc.getName());
+				grNode.setAttribute(TemplateTags.ATTR_GRANTOR, sc.getGrantorName());
+				grNode.setAttribute(TemplateTags.ATTR_GRANTEE, sc.getGranteeName());
+				grNode.setAttribute(TemplateTags.ATTR_OBJECT_OWNER, sc.getClassOwner());
+				grNode.setAttribute(TemplateTags.ATTR_OBJECT_NAME, sc.getClassName());
+				grNode.setAttribute(TemplateTags.ATTR_AUTH_TYPE, sc.getAuthType());
+				grNode.setAttribute(TemplateTags.ATTR_GRANTABLE, getBooleanString(sc.isGrantable()));
+				grNode.setAttribute(TemplateTags.ATTR_TARGET_OWNER, sc.getTargetOwner());
+				grNode.setAttribute(TemplateTags.ATTR_SOURCE_GRANTOR_NAME, sc.getSourceGrantorName());
 			}
 		}
 		
