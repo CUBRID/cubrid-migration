@@ -86,6 +86,8 @@ public class MigrationReportUIController {
 	public static final String[] TABLE_HEADER_DATA = new String[] {Messages.colTableName,
 			Messages.colTotal, Messages.colExpCount, Messages.colExpTime, Messages.colImpCount,
 			Messages.colImpTime, Messages.colCompleted, Messages.colTotalElapsed, Messages.colOwnerName};
+	
+	public static final String[] TABLE_HEADER_OBJ_NAME_CHANGE = new String[] {Messages.colType, Messages.colName, Messages.colName};
 
 	/**
 	 * @param reporter MigrationReporter

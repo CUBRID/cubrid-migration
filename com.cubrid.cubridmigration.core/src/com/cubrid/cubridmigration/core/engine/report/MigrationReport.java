@@ -46,15 +46,20 @@ import com.cubrid.cubridmigration.core.dbobject.DBObject;
 import com.cubrid.cubridmigration.core.dbobject.FK;
 import com.cubrid.cubridmigration.core.dbobject.Index;
 import com.cubrid.cubridmigration.core.dbobject.PK;
+import com.cubrid.cubridmigration.core.dbobject.Schema;
 import com.cubrid.cubridmigration.core.dbobject.Sequence;
 import com.cubrid.cubridmigration.core.dbobject.Synonym;
 import com.cubrid.cubridmigration.core.dbobject.Table;
 import com.cubrid.cubridmigration.core.dbobject.View;
 import com.cubrid.cubridmigration.core.engine.config.MigrationConfiguration;
 import com.cubrid.cubridmigration.core.engine.config.SourceCSVConfig;
+import com.cubrid.cubridmigration.core.engine.config.SourceConfig;
 import com.cubrid.cubridmigration.core.engine.config.SourceEntryTableConfig;
 import com.cubrid.cubridmigration.core.engine.config.SourceSQLTableConfig;
+import com.cubrid.cubridmigration.core.engine.config.SourceSequenceConfig;
+import com.cubrid.cubridmigration.core.engine.config.SourceSynonymConfig;
 import com.cubrid.cubridmigration.core.engine.config.SourceTableConfig;
+import com.cubrid.cubridmigration.core.engine.config.SourceViewConfig;
 import com.cubrid.cubridmigration.core.engine.event.ExportCSVEvent;
 import com.cubrid.cubridmigration.core.engine.event.ExportRecordsEvent;
 import com.cubrid.cubridmigration.core.engine.event.ImportCSVEvent;
@@ -114,6 +119,8 @@ public class MigrationReport implements
 	private final List<RecordMigrationResult> recMigResults = new ArrayList<RecordMigrationResult>();
 
 	private final List<DataFileImportResult> dataFileResults = new ArrayList<DataFileImportResult>();
+	
+	private final List<ObjNameMigrationResult> objNameResult = new ArrayList<ObjNameMigrationResult>();
 
 	private String configSummary = "";
 
@@ -240,6 +247,16 @@ public class MigrationReport implements
 		objResult.setObjOwner(getObjectOwner(dbo));
 		dbObjectsResult.add(objResult);
 	}
+	
+	/**
+	 * create a new ObjNameMigrationResult object
+	 * 
+	 * @param sc SourceConfig
+	 */
+	private void setObjNameResult(String objType, String source, String target) {
+		ObjNameMigrationResult onmr = new ObjNameMigrationResult(objType, source, target);
+		objNameResult.add(onmr);
+	}
 
 	public String getConfigSummary() {
 		return configSummary;
@@ -263,6 +280,15 @@ public class MigrationReport implements
 	public List<DBObjMigrationResult> getDbObjectsResult() {
 		return new ArrayList<DBObjMigrationResult>(dbObjectsResult);
 	}
+	
+	/**
+	 * Retrieves the objNameResults
+	 * 
+	 * @return
+	 */
+	public List<ObjNameMigrationResult> getObjNameResult() {
+		return new ArrayList<ObjNameMigrationResult>(objNameResult);
+	}
 
 	/**
 	 * Retrieves the database object's migration result by DB Object.
@@ -285,6 +311,14 @@ public class MigrationReport implements
 		result.setObjOwner(getObjectOwner(obj));
 		dbObjectsResult.add(result);
 		return result;
+	}
+	
+	/**
+	 * 
+	 * @param sc
+	 */
+	public void setObjNameResult(SourceConfig sc) {
+		
 	}
 	
 	/**
@@ -575,6 +609,54 @@ public class MigrationReport implements
 			}
 			recMigResults.add(result);
 		}
+		
+		// Schema
+		List<Schema> ssc = config.getTargetSchemaList();
+		for (Schema schema : ssc) {
+			if (!schema.getName().equalsIgnoreCase(schema.getTargetSchemaName())) {
+				setObjNameResult(schema.getObjType(), schema.getName(), schema.getTargetSchemaName());
+			}
+		}
+		
+		// Table
+		List<SourceEntryTableConfig> expTable = config.getExpEntryTableCfg();
+		for (SourceEntryTableConfig setc : expTable) {
+			if (!setc.getName().equalsIgnoreCase(setc.getTarget())) {
+				setObjNameResult(DBObject.OBJ_TYPE_TABLE, setc.getName(), setc.getTarget());
+			}
+		}
+		
+		// PK
+		
+		// FK
+		
+		// Index
+		
+		// View
+		List<SourceViewConfig> expView = config.getExpViewCfg();
+		for (SourceViewConfig svc : expView) {
+			if (!svc.getName().equalsIgnoreCase(svc.getTarget())) {
+				setObjNameResult(DBObject.OBJ_TYPE_VIEW, svc.getName(), svc.getTarget());
+			}
+		}
+		
+		// Serial
+		List<SourceSequenceConfig> expSerials = config.getExpSerialCfg();
+		for (SourceSequenceConfig serials : expSerials) {
+			if (!serials.getName().equalsIgnoreCase(serials.getTarget())) {
+				setObjNameResult(DBObject.OBJ_TYPE_SEQUENCE, serials.getName(), serials.getTarget());
+			}
+		}
+		
+		// Synonym
+		List<SourceSynonymConfig> expSynonym = config.getExpSynonymCfg();
+		for (SourceSynonymConfig synonym : expSynonym) {
+			if (!synonym.getName().equalsIgnoreCase(synonym.getTarget())) {
+				setObjNameResult(DBObject.OBJ_TYPE_SYNONYM, synonym.getName(), synonym.getTarget());
+			}
+		}
+		
+		// Grant
 	}
 
 	public void setConfigSummary(String configSummary) {
