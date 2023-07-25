@@ -54,7 +54,6 @@ import com.cubrid.cubridmigration.core.dbobject.Table;
 import com.cubrid.cubridmigration.core.dbobject.View;
 import com.cubrid.cubridmigration.core.engine.config.MigrationConfiguration;
 import com.cubrid.cubridmigration.core.engine.config.SourceCSVConfig;
-import com.cubrid.cubridmigration.core.engine.config.SourceConfig;
 import com.cubrid.cubridmigration.core.engine.config.SourceEntryTableConfig;
 import com.cubrid.cubridmigration.core.engine.config.SourceSQLTableConfig;
 import com.cubrid.cubridmigration.core.engine.config.SourceSequenceConfig;
@@ -316,14 +315,6 @@ public class MigrationReport implements
 		result.setObjOwner(getObjectOwner(obj));
 		dbObjectsResult.add(result);
 		return result;
-	}
-	
-	/**
-	 * 
-	 * @param sc
-	 */
-	public void setObjNameResult(SourceConfig sc) {
-		
 	}
 	
 	/**
@@ -631,12 +622,6 @@ public class MigrationReport implements
 			}
 		}
 		
-		// PK
-		
-		// FK
-		
-		// Index
-		
 		// View
 		List<SourceViewConfig> expView = config.getExpViewCfg();
 		for (SourceViewConfig svc : expView) {
@@ -660,8 +645,6 @@ public class MigrationReport implements
 				setObjNameResult(DBObject.OBJ_TYPE_SYNONYM, synonym.getName(), synonym.getTarget());
 			}
 		}
-		
-		// Grant
 	}
 
 	public void setConfigSummary(String configSummary) {
@@ -702,6 +685,13 @@ public class MigrationReport implements
 		recMigResults.clear();
 		if (values != null) {
 			recMigResults.addAll(values);
+		}
+	}
+	
+	public void setObjNameResult(List<ObjNameMigrationResult> values) {
+		this.objNameResult.clear();
+		if (values != null) {
+			objNameResult.addAll(values);
 		}
 	}
 

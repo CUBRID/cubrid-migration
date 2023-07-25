@@ -40,10 +40,12 @@ import java.io.Serializable;
 public class ObjNameMigrationResult implements 
 		Serializable {
 	
-	private static final long serialVersionUID = -1526064425946844409L;
+	private static final long serialVersionUID = -7152528868537532963L;
 	private String objType;
 	private String objSourceName;
 	private String objTargetName;
+	
+	public ObjNameMigrationResult() { }
 	
 	public ObjNameMigrationResult(String objType, String objSourceName, String objTargetName) {
 		this.objType = objType;

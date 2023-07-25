@@ -312,7 +312,7 @@ public class MigrationReportEditorPart extends
 	
 	private void createChangeObjectNamePage(TabFolder tfReport) {
 		TabItem tiDetail = new TabItem(tfReport, SWT.NONE);
-		tiDetail.setText("변경된 객체");
+		tiDetail.setText(Messages.lblChangedObject);
 		Composite comDetail = new Composite(tfReport, SWT.NONE);
 		tiDetail.setControl(comDetail);
 		comDetail.setLayout(new GridLayout());
@@ -337,22 +337,6 @@ public class MigrationReportEditorPart extends
 		tvBuilder.setLabelProvider(new MigrationObjectNameChangeTableLabelProvider());
 		tvObjNames = tvBuilder.buildTableViewer(tfDetail, SWT.BORDER | SWT.FULL_SELECTION
 				| SWT.H_SCROLL | SWT.V_SCROLL);
-		tvObjNames.addDoubleClickListener(new IDoubleClickListener() {
-
-			public void doubleClick(DoubleClickEvent event) {
-				TableItem[] selection = tvObjNames.getTable().getSelection();
-				if (selection == null || selection.length == 0) {
-					return;
-				}
-				String message = selection[0].getText(3);
-				if (!EMPTY_CELL_VALUE.equals(selection[0].getText(4))) {
-					message = message + "\nError:\n" + selection[0].getText(4);
-				}
-				ShowTextDialog dialog = new ShowTextDialog(
-						MigrationReportEditorPart.this.getSite().getShell(), message);
-				dialog.open();
-			}
-		});
 		tiViews.setControl(tvObjNames.getTable());
 	}
 
