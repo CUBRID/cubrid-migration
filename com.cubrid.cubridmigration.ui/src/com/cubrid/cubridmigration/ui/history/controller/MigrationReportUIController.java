@@ -106,6 +106,24 @@ public class MigrationReportUIController {
 		}
 		return "";
 	}
+	
+	/**
+	 * @param reporter MigrationReporter
+	 * @param renameObjectFile String
+	 * @return the output file name will be returned if successfully
+	 */
+	static String extractRenameObjectReport(MigrationReporter reporter, String renameObjectFile) {
+		try {
+			String reObjectFile = MigrationReportFileUtils.extractRenameObject(reporter.getFileName());
+			if (reObjectFile != null) {
+				CUBRIDIOUtils.copyFile(new File(reObjectFile), new File(renameObjectFile));
+				return ("\r\n") + (renameObjectFile);
+			}
+		} catch (IOException e) {
+			LOG.error(e);
+		}
+		return "";
+	}
 
 	/**
 	 * @param reporter MigrationReporter
@@ -288,11 +306,13 @@ public class MigrationReportUIController {
 		String xlsFile = filePartName + ".xls";
 		String logFile = filePartName + ".log";
 		String noSupportedFile = filePartName + ".txt";
+		String renameObjectFile = filePartName + ".rename";
 
 		StringBuffer savedFiles = new StringBuffer();
 		savedFiles.append(saveReportToXls(report, xlsFile));
 		savedFiles.append(extracNonSupportedReport(reporter, noSupportedFile));
 		savedFiles.append(extractLogs(reporter, logFile));
+		savedFiles.append(extractRenameObjectReport(reporter, renameObjectFile));
 		return savedFiles.toString();
 	}
 

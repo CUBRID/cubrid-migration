@@ -386,7 +386,7 @@ public class Messages extends
 	public static String lblAuthentication;
 	public static String lblAutoIncrement;
 	public static String lblCacheNum;
-	public static String lblChangedObject;
+	public static String lblRenamedObject;
 	public static String lblChangeTargetTable;
 	public static String lblCharset;
 	public static String lblClearAll;

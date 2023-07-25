@@ -312,7 +312,7 @@ public class MigrationReportEditorPart extends
 	
 	private void createChangeObjectNamePage(TabFolder tfReport) {
 		TabItem tiDetail = new TabItem(tfReport, SWT.NONE);
-		tiDetail.setText(Messages.lblChangedObject);
+		tiDetail.setText(Messages.lblRenamedObject);
 		Composite comDetail = new Composite(tfReport, SWT.NONE);
 		tiDetail.setControl(comDetail);
 		comDetail.setLayout(new GridLayout());

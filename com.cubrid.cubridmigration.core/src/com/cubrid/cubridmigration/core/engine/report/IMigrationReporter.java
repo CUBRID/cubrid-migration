@@ -43,6 +43,7 @@ public interface IMigrationReporter {
 	static final String REPORT_FILE_EX = ".report";
 	static final String LOG_FILE_EX = ".log";
 	static final String TXT_FILE_EX = ".txt";
+	static final String RENAME_FILE_EX = ".rename";
 	static final String SCRIPT_FILE_EX = ".script";
 	static final String UTF_8 = "utf-8";
 
