@@ -624,6 +624,7 @@ public final class MigrationTemplateHandler extends
 		}
 		else if (TemplateTags.TAG_SCHEMA_INFO.equals(qName)) {
 			Schema schema = new Schema();
+			schema.setName(attributes.getValue(TemplateTags.ATTR_SCHEMA_NAME));
 			schema.setTargetSchemaName(attributes.getValue(TemplateTags.ATTR_TARGET_SCHEMA));
 			schema.setMigration(true);
 			config.addScriptSchemaMapping(attributes.getValue(TemplateTags.ATTR_SCHEMA_NAME), schema);

@@ -34,6 +34,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -607,10 +608,17 @@ public class MigrationReport implements
 		}
 		
 		// Schema
-		List<Schema> ssc = config.getTargetSchemaList();
+		List<Schema> ssc = null;
+		if (config.getTargetSchemaList().size() > 0) {
+			ssc = config.getTargetSchemaList();
+		} else {
+			Collection<Schema> schemas = config.getScriptSchemaMapping().values();
+			ssc = new ArrayList<Schema>(schemas);
+		}
+		
 		for (Schema schema : ssc) {
 			if (!schema.getName().equalsIgnoreCase(schema.getTargetSchemaName())) {
-				setObjNameResult(schema.getObjType(), schema.getName(), schema.getTargetSchemaName());
+				setObjNameResult(DBObject.OBJ_TYPE_SCHEMA, schema.getName(), schema.getTargetSchemaName());
 			}
 		}
 		

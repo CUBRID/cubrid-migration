@@ -231,72 +231,72 @@ public abstract class DefaultMigrationReporter implements
 	 * Write renamed objects to a file
 	 */
 	public void writeRenameObjectFile() {
-		List<ObjNameMigrationResult> chObjNameList = report.getObjNameResult();
-		Map<String, List<ObjNameMigrationResult>> chObjNameMap = new HashMap<String, List<ObjNameMigrationResult>>();
+		List<ObjNameMigrationResult> renameObjectList = report.getObjNameResult();
+		Map<String, List<ObjNameMigrationResult>> renameObjectMap = new HashMap<String, List<ObjNameMigrationResult>>();
 		
-		for (ObjNameMigrationResult onmr : chObjNameList) {
-			if (chObjNameMap.containsKey(onmr.getObjType())) {
-				chObjNameMap.get(onmr.getObjType()).add(onmr);
+		for (ObjNameMigrationResult onmr : renameObjectList) {
+			if (renameObjectMap.containsKey(onmr.getObjType())) {
+				renameObjectMap.get(onmr.getObjType()).add(onmr);
 			} else {
 				List<ObjNameMigrationResult> list = new ArrayList<ObjNameMigrationResult>();
 				list.add(onmr);
-				chObjNameMap.put(onmr.getObjType(), list);
+				renameObjectMap.put(onmr.getObjType(), list);
 			}
 		}
 		
 		List<ObjNameMigrationResult> list = null;
 		// schema
 		pwRenameObj.append("[ SCHEMA(s) ]");
-		list = chObjNameMap.get("schema");
-		if (list != null) {
-			appendRenameObj(list);
-		}
+		list = renameObjectMap.get(DBObject.OBJ_TYPE_SCHEMA);
+		appendRenameObj(list);
 		
 		// table
 		pwRenameObj.append("[ TABLE(s) ]");
-		list = chObjNameMap.get("table");
-		if (list != null) {
-			appendRenameObj(list);
-		}
+		list = renameObjectMap.get(DBObject.OBJ_TYPE_TABLE);
+		appendRenameObj(list);
 		
 		// view
 		pwRenameObj.append("[ VIEW(s) ]");
-		list = chObjNameMap.get("view");
-		if (list != null) {
-			appendRenameObj(list);
-		}
+		list = renameObjectMap.get(DBObject.OBJ_TYPE_VIEW);
+		appendRenameObj(list);
 		
 		// serial
 		pwRenameObj.append("[ SERIAL(s) ]");
-		list = chObjNameMap.get("sequence");
-		if (list != null) {
-			appendRenameObj(list);
-		}
+		list = renameObjectMap.get(DBObject.OBJ_TYPE_SEQUENCE);
+		appendRenameObj(list);
 		
 		//synonym
 		pwRenameObj.append("[ SYNONYM(s) ]");
-		list = chObjNameMap.get("synonym");
-		if (list != null) {
-			appendRenameObj(list);
-		}
+		list = renameObjectMap.get(DBObject.OBJ_TYPE_SYNONYM);
+		appendRenameObj(list);
 		
 		pwRenameObj.flush();
 	}
 	
+	/**
+	 * Add renamed objects to write buffer
+	 * 
+	 * @param list List<ObjNameMigrationResult>
+	 */
 	private void appendRenameObj(List<ObjNameMigrationResult> list) {
 		String lineSeparator = System.getProperty("line.separator");
-		String tabSeparator = " - ";
+		String tabSeparator = "  ";
 		String arrow = " --> ";
 		
-		pwRenameObj.append(lineSeparator);
-		for (ObjNameMigrationResult onmr : list) {
-			pwRenameObj.append(tabSeparator)
-			.append(onmr.getObjSourceName())
-			.append(arrow)
-			.append(onmr.getObjTargetName())
-			.append(lineSeparator);
-		}
-		pwRenameObj.append(lineSeparator);
+		if (list != null) {
+			pwRenameObj.append(lineSeparator);
+			for (ObjNameMigrationResult onmr : list) {
+				pwRenameObj.append(tabSeparator)
+				.append(onmr.getObjSourceName())
+				.append(arrow)
+				.append(onmr.getObjTargetName())
+				.append(lineSeparator);
+			}
+			pwRenameObj.append(lineSeparator);
+		} else {
+			pwRenameObj.append(lineSeparator);
+			pwRenameObj.append(lineSeparator);
+		}		
 	}
 
 	/**
@@ -321,7 +321,7 @@ public abstract class DefaultMigrationReporter implements
 			brief.save2BriefFile(fullBriefFile);
 
 			report.save2ReportFile(reportFile.getCanonicalPath());
-			
+
 			final String[] inputFiles = new String[] {fullBriefFile, reportFile.getCanonicalPath(),
 					PathUtils.getReportDir() + logFileName,
 					PathUtils.getReportDir() + nonSupFileName,
