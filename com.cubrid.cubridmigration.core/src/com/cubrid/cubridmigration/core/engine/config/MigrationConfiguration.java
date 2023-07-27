@@ -634,7 +634,8 @@ public class MigrationConfiguration {
 				}
 				if (getExpEntryTableCfg(tmpSchema, objName) != null
 						|| getExpViewCfg(tmpSchema, objName) != null
-						|| getExpSerialCfg(tmpSchema, objName) != null) {
+						|| getExpSerialCfg(tmpSchema, objName) != null
+						|| getExpSynonymCfg(tmpSchema, objName) != null) {
 					return false;
 				}
 				return true;
