@@ -32,6 +32,7 @@ package com.cubrid.cubridmigration.core.engine.task.imp;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -69,7 +70,14 @@ public class CreateUserSQLTask
 		
 		try {
 			List<String> sb = new ArrayList<String>();
-			List<Schema> schemaList = config.getTargetSchemaList();
+			List<Schema> schemaList = null;
+			if (config.getTargetSchemaList().size() > 0) {
+				schemaList = config.getTargetSchemaList();
+			} else {
+				Collection<Schema> schemas = config.getScriptSchemaMapping().values();
+				schemaList = new ArrayList<Schema>(schemas);
+			}
+			
 			for (Schema schema : schemaList) {
 				String schemaTargetName = schema.getTargetSchemaName();
 				if (schemaTargetName.equalsIgnoreCase("DBA")) {
