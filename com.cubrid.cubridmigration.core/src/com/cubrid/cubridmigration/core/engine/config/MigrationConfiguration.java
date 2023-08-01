@@ -179,6 +179,7 @@ public class MigrationConfiguration {
 	private boolean addUserSchema;
 	private boolean splitSchema;
 	private boolean targetDBAGroup;
+	private boolean createUserSQL;
 
 	private final CSVSettings csvSettings = new CSVSettings();
 
@@ -2950,6 +2951,10 @@ public class MigrationConfiguration {
 	public boolean isTargetDBAGroup() {
 		return targetDBAGroup;
 	}
+	
+	public boolean isCreateUserSQL() {
+		return createUserSQL;
+	}
 
 	/**
 	 * Retrieves the referenced count of target table name
@@ -4275,6 +4280,10 @@ public class MigrationConfiguration {
 	
 	public void setTargetDBAGroup(boolean isDBAGroup) {
 		this.targetDBAGroup = isDBAGroup;
+	}
+	
+	public void setCreateUserSQL(boolean createUserSQL) {
+		this.createUserSQL = createUserSQL;
 	}
 
 	/**

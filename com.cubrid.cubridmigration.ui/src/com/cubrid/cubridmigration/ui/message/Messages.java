@@ -54,6 +54,7 @@ public class Messages extends
 	public static String btnAdd;
 	public static String btnAddFromHDFS;
 	public static String btnAddUserSchema;
+	public static String btnCreateUserSQL;
 	public static String btnSplitSchema;
 	public static String btnAdvanced;
 	public static String btnAdvancedSettings;

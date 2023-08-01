@@ -48,7 +48,6 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.DirectoryDialog;
-import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.PlatformUI;
@@ -519,6 +518,7 @@ public class SelectDestinationPage extends
 		
 		private Button[] btnAddUserSchema;
 		private Button btnSplitSchema;
+		private Button btnCreateUserSQL;
 		
 		private boolean isAddUserSchema;
 
@@ -614,12 +614,6 @@ public class SelectDestinationPage extends
 			lblCharsetSP.setLayoutData(new GridData());
 			lblCharsetSP.setVisible(false);
 
-			new Label(fileRepositoryContainer, SWT.NONE);
-			btnOneTableOneFile = new Button(fileRepositoryContainer, SWT.CHECK);
-			btnOneTableOneFile.setLayoutData(new GridData(SWT.LEFT, SWT.TOP, false, false));
-			btnOneTableOneFile.setText(Messages.btnOneTableOneFile);
-			new Label(fileRepositoryContainer, SWT.NONE);
-
 			lblLobPath = new Label(fileRepositoryContainer, SWT.NONE);
 			lblLobPath.setLayoutData(new GridData(SWT.END, SWT.CENTER, false, false));
 			lblLobPath.setText("LOB files' root path: ");
@@ -677,14 +671,25 @@ public class SelectDestinationPage extends
 			new Label(fileRepositoryContainer, SWT.NONE);
 			new Label(fileRepositoryContainer, SWT.NONE);
 			
-			Group group = new Group(fileRepositoryContainer, SWT.NONE);
-			group.setLayout(new GridLayout(2, true));
-
-			btnSplitSchema = new Button(group, SWT.CHECK);
+			Composite checkboxComposite = new Composite(fileRepositoryContainer, SWT.NONE);
+			GridLayout checkboxGridLayout = new GridLayout();
+			checkboxComposite.setLayout(checkboxGridLayout);
+			checkboxGridLayout.numColumns = 3;
+			btnOneTableOneFile = new Button(checkboxComposite, SWT.CHECK);
+			btnOneTableOneFile.setLayoutData(new GridData(SWT.LEFT, SWT.TOP, false, false));
+			btnOneTableOneFile.setText(Messages.btnOneTableOneFile);
+			
+			btnSplitSchema = new Button(checkboxComposite, SWT.CHECK);
 			btnSplitSchema.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, true, false));
 			btnSplitSchema.setText(Messages.btnSplitSchema);
-			
 			btnSplitSchema.setSelection(cfg.isSplitSchema());
+			
+			btnCreateUserSQL = new Button(checkboxComposite, SWT.CHECK);
+			btnCreateUserSQL.setLayoutData(new GridData(SWT.RIGHT, SWT.BOTTOM, false, false));
+			btnCreateUserSQL.setText(Messages.btnCreateUserSQL);
+			btnCreateUserSQL.setSelection(cfg.isCreateUserSQL());
+			
+			new Label(fileRepositoryContainer, SWT.NONE);
 		}
 
 		/**
@@ -778,6 +783,7 @@ public class SelectDestinationPage extends
 			//change to migration configuration
 			config.setAddUserSchema(isAddUserSchema);
 			config.setSplitSchema(btnSplitSchema.getSelection());
+			config.setCreateUserSQL(btnCreateUserSQL.getSelection());
 			
 			return true;
 		}
