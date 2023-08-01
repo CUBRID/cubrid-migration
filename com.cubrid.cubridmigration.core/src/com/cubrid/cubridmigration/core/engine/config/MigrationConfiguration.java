@@ -230,8 +230,6 @@ public class MigrationConfiguration {
 	//True by default
 	private boolean updateStatistics = true;
 	
-	private Boolean addOfflineUserSchema = false;
-	
 	private Map<String, Schema> scriptSchemaMapping = new HashMap<String, Schema>();
 	
 	private boolean isOldScript = false;
@@ -4462,14 +4460,6 @@ public class MigrationConfiguration {
 	
 	public void addScriptSchemaMapping(String source, Schema schema) {
 		scriptSchemaMapping.put(source, schema);
-	}
-
-	public Boolean getOfflineUserSchema() {
-		return addOfflineUserSchema;
-	}
-
-	public void setOfflineUserSchema(boolean addOfflineUserSchema) {
-		this.addOfflineUserSchema = addOfflineUserSchema;
 	}
 	
 	public void setOldScript(boolean isOldSchema) {

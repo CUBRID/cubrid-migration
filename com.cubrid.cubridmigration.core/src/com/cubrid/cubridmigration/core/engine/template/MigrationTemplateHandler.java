@@ -853,7 +853,7 @@ public final class MigrationTemplateHandler extends
 								: value.charAt(0));
 			}
 			config.setTargetLOBRootPath(attr.getValue(TemplateTags.ATTR_LOB_ROOT_DIR));
-			config.setAddUserSchema(Boolean.parseBoolean(attr.getValue(TemplateTags.ATTR_ADD_SCHEMA)));
+			config.setAddUserSchema(getBoolean(attr.getValue(TemplateTags.ATTR_ADD_SCHEMA), false));
 			config.setSplitSchema(getBoolean(attr.getValue(TemplateTags.ATTR_SPLIT_SCHEMA), false));
 			config.createDumpfile(config.isSplitSchema());
 		} else if (TemplateTags.TAG_PARTITION_DDL.equals(qName)) {

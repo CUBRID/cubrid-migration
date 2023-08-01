@@ -81,6 +81,8 @@ public class Messages extends
 	public static String btnCSVSeparator;
 	public static String btnCSVSettings;
 	public static String btnCycle;
+	public static String btnDB110Under;
+	public static String btnDB112Over;
 	public static String btnDefault;
 	public static String btnDefaultColumnLength;
 	public static String btnDefaultExpression;
@@ -756,6 +758,7 @@ public class Messages extends
 	public static String targetDBPageFileRepositoryLabel;
 	public static String targetDBPageOfflineErrMsg2;
 	public static String targetDBPageOfflineTargetFileRepositoryErrMsg;
+	public static String targetDBVersion;
 	public static String targetPKColumns;
 	public static String targetSchema;
 	public static String targetSchemaDes;

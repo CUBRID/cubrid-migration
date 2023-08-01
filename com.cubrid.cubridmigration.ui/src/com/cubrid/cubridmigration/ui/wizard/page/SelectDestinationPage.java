@@ -514,10 +514,13 @@ public class SelectDestinationPage extends
 		private Label lblCharset;
 		private Label lblCharsetSP;
 		private Label lblLobPath;
+		private Label lblDBVersion;
 		private Text txtLobPath;
 		
-		private Button btnAddUserSchema;
+		private Button[] btnAddUserSchema;
 		private Button btnSplitSchema;
+		
+		private boolean isAddUserSchema;
 
 		/**
 		 * Create Controls
@@ -639,15 +642,43 @@ public class SelectDestinationPage extends
 			});
 			new Label(fileRepositoryContainer, SWT.NONE);
 			
+			lblDBVersion = new Label(fileRepositoryContainer, SWT.NONE);
+			lblDBVersion.setLayoutData(new GridData(SWT.END, SWT.CENTER, false, false));
+			lblDBVersion.setText(Messages.targetDBVersion);
+			
+			Composite addUserSchemaComposite = new Composite(fileRepositoryContainer, SWT.NONE);
+			GridLayout addUserSchemaGridLayout = new GridLayout();
+			addUserSchemaGridLayout.numColumns = 2;
+			addUserSchemaComposite.setLayout(addUserSchemaGridLayout);
+			btnAddUserSchema = new Button[2];
+			btnAddUserSchema[0] = new Button(addUserSchemaComposite, SWT.RADIO);
+			btnAddUserSchema[0].setText(Messages.btnDB110Under);
+			btnAddUserSchema[0].addSelectionListener(new SelectionAdapter() {
+				@Override
+				public void widgetSelected(SelectionEvent e) {
+					Button source = (Button) e.getSource();
+					if (source.getSelection()) {
+						isAddUserSchema = false;
+					}
+				}
+			});
+			
+			btnAddUserSchema[1] = new Button(addUserSchemaComposite, SWT.RADIO);
+			btnAddUserSchema[1].setText(Messages.btnDB112Over);
+			btnAddUserSchema[1].addSelectionListener(new SelectionAdapter() {
+				@Override
+				public void widgetSelected(SelectionEvent e) {
+					Button source = (Button) e.getSource();
+					if (source.getSelection()) {
+						isAddUserSchema = true;
+					}
+				}
+			});
+			new Label(fileRepositoryContainer, SWT.NONE);
 			new Label(fileRepositoryContainer, SWT.NONE);
 			
 			Group group = new Group(fileRepositoryContainer, SWT.NONE);
 			group.setLayout(new GridLayout(2, true));
-			btnAddUserSchema = new Button(group, SWT.CHECK);
-			btnAddUserSchema.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, true, false));
-			btnAddUserSchema.setText(Messages.btnAddUserSchema);
-			
-			btnAddUserSchema.setSelection(cfg.isAddUserSchema());
 
 			btnSplitSchema = new Button(group, SWT.CHECK);
 			btnSplitSchema.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, true, false));
@@ -745,9 +776,7 @@ public class SelectDestinationPage extends
 			config.setTargetCharSet(cboCharset.getText());
 			
 			//change to migration configuration
-			config.setAddUserSchema(btnAddUserSchema.getSelection());
-			config.setOfflineUserSchema(btnAddUserSchema.getSelection());
-			
+			config.setAddUserSchema(isAddUserSchema);
 			config.setSplitSchema(btnSplitSchema.getSelection());
 			
 			return true;
