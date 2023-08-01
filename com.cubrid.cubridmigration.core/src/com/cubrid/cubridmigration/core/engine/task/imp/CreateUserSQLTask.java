@@ -89,6 +89,6 @@ public class CreateUserSQLTask
 	 * @return create user query String
 	 */
 	private String getCreateUserSQL(String targetSchemaName) {
-		return "CREATE USER " + targetSchemaName + ";" + System.getProperty("line.separator");
+		return "CREATE USER " + targetSchemaName + ";";
 	}
 }
