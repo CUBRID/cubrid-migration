@@ -44,13 +44,13 @@ public final class TemplateTags {
 	public static final String ATTR_AUTO_INCREMENT = "auto_increment";
 	public static final String ATTR_ADD_SCHEMA = "add_schema";
 	public static final String ATTR_AUTH_TYPE = "auth_type";
-	public static final String ATTR_SPLIT_SCHEMA = "split_schema";
 	public static final String ATTR_BASE_TYPE = "base_type";
 	public static final String ATTR_CACHE = "cache";
 	public static final String ATTR_CACHE_SIZE = "cache_size";
 	public static final String ATTR_CHARSET = "charset";
 	public static final String ATTR_COMMIT_COUNT = "commit_count";
 	public static final String ATTR_CREATE = "create";
+	public static final String ATTR_CREATE_USER_SQL = "create_user_sql";
 	//public static final String ATTR_CREATE_DB = "create_db";
 	public static final String ATTR_CYCLE = "cycle";
 	public static final String ATTR_DB_TYPE = "db_type";
@@ -102,6 +102,7 @@ public final class TemplateTags {
 	public static final String ATTR_SCHEMA_NAME = "schema_name";
 	public static final String ATTR_SIZE = "size";
 	public static final String ATTR_SOURCE_GRANTOR_NAME = "source_grantor_name";
+	public static final String ATTR_SPLIT_SCHEMA = "split_schema";
 	public static final String ATTR_START = "start";
 	public static final String ATTR_SUB_TYPE = "sub_type";
 	public static final String ATTR_SYNONYM_OBJECT = "object";

@@ -855,6 +855,7 @@ public final class MigrationTemplateHandler extends
 			config.setTargetLOBRootPath(attr.getValue(TemplateTags.ATTR_LOB_ROOT_DIR));
 			config.setAddUserSchema(getBoolean(attr.getValue(TemplateTags.ATTR_ADD_SCHEMA), false));
 			config.setSplitSchema(getBoolean(attr.getValue(TemplateTags.ATTR_SPLIT_SCHEMA), false));
+			config.setCreateUserSQL(getBoolean(attr.getValue(TemplateTags.ATTR_CREATE_USER_SQL), false));
 			config.createDumpfile(config.isSplitSchema());
 		} else if (TemplateTags.TAG_PARTITION_DDL.equals(qName)) {
 			sqlStatement = new StringBuffer();

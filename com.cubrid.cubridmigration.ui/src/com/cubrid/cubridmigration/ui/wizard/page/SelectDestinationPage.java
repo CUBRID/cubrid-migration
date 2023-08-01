@@ -668,6 +668,11 @@ public class SelectDestinationPage extends
 					}
 				}
 			});
+			if (cfg.isAddUserSchema()) {
+				btnAddUserSchema[1].setSelection(true);
+			} else {
+				btnAddUserSchema[0].setSelection(false);
+			}
 			new Label(fileRepositoryContainer, SWT.NONE);
 			new Label(fileRepositoryContainer, SWT.NONE);
 			
