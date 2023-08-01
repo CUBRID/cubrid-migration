@@ -148,7 +148,7 @@ public final class OracleSchemaFetcher extends
 	private static final String SQL_SHOW_SEQUENCES = "SELECT S.* FROM ALL_SEQUENCES S "
 			+ "WHERE S.SEQUENCE_OWNER=? AND NOT S.SEQUENCE_NAME LIKE 'BIN$%' ";
 	
-	private static final String SQL_SHOW_SYNONYM = "SELECT SYNONYM_NAME, TABLE_OWNER, TABLE_NAME, DB_LINK FROM USER_SYNONYMS";
+	private static final String SQL_SHOW_SYNONYM = "SELECT SYNONYM_NAME, TABLE_OWNER, TABLE_NAME, DB_LINK FROM ALL_SYNONYMS WHERE OWNER=?";
 
 	private static final String SQL_SHOW_VIEW_QUERYTEXT = "SELECT TEXT from ALL_VIEWS WHERE OWNER=? AND VIEW_NAME=?";
 	
@@ -414,6 +414,7 @@ public final class OracleSchemaFetcher extends
 		
 		try {
 			stmt = conn.prepareStatement(SQL_SHOW_SYNONYM);
+			stmt.setString(1, schema.getName());
 			if (LOG.isDebugEnabled()) {
 				LOG.debug("[SQL]" + SQL_SHOW_SYNONYM + ", " + "1=" + schema.getName() + ", "
 						+ "2=" + schema.getName());
