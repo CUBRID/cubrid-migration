@@ -71,7 +71,11 @@ public class CreateUserSQLTask
 			List<String> sb = new ArrayList<String>();
 			List<Schema> schemaList = config.getTargetSchemaList();
 			for (Schema schema : schemaList) {
-				sb.add(getCreateUserSQL(schema.getTargetSchemaName()));
+				String schemaTargetName = schema.getTargetSchemaName();
+				if (schemaTargetName.equalsIgnoreCase("DBA")) {
+					continue;
+				}
+				sb.add(getCreateUserSQL(schemaTargetName));
 			}
 			
 			PathUtils.deleteFile(createUserSQLFile);
