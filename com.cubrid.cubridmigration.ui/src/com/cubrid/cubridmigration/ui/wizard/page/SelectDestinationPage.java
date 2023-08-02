@@ -520,7 +520,7 @@ public class SelectDestinationPage extends
 		private Button btnSplitSchema;
 		private Button btnCreateUserSQL;
 		
-		private boolean isAddUserSchema;
+		private boolean firstVisible = true;
 
 		/**
 		 * Create Controls
@@ -641,58 +641,49 @@ public class SelectDestinationPage extends
 			lblDBVersion.setText(Messages.targetDBVersion);
 			
 			Composite addUserSchemaComposite = new Composite(fileRepositoryContainer, SWT.NONE);
-			GridLayout addUserSchemaGridLayout = new GridLayout();
-			addUserSchemaGridLayout.numColumns = 2;
+			GridLayout addUserSchemaGridLayout = new GridLayout(2, false);
 			addUserSchemaComposite.setLayout(addUserSchemaGridLayout);
 			btnAddUserSchema = new Button[2];
 			btnAddUserSchema[0] = new Button(addUserSchemaComposite, SWT.RADIO);
-			btnAddUserSchema[0].setText(Messages.btnDB110Under);
-			btnAddUserSchema[0].addSelectionListener(new SelectionAdapter() {
-				@Override
-				public void widgetSelected(SelectionEvent e) {
-					Button source = (Button) e.getSource();
-					if (source.getSelection()) {
-						isAddUserSchema = false;
-					}
-				}
-			});
+			btnAddUserSchema[0].setText(Messages.btnDB112Over);
 			
 			btnAddUserSchema[1] = new Button(addUserSchemaComposite, SWT.RADIO);
-			btnAddUserSchema[1].setText(Messages.btnDB112Over);
-			btnAddUserSchema[1].addSelectionListener(new SelectionAdapter() {
-				@Override
-				public void widgetSelected(SelectionEvent e) {
-					Button source = (Button) e.getSource();
-					if (source.getSelection()) {
-						isAddUserSchema = true;
-					}
-				}
-			});
-			if (cfg.isAddUserSchema()) {
-				btnAddUserSchema[1].setSelection(true);
+			btnAddUserSchema[1].setText(Messages.btnDB110Under);
+		
+			if (!getMigrationWizard().isLoadMigrationScript() && firstVisible) {
+				btnAddUserSchema[0].setSelection(true);
 			} else {
-				btnAddUserSchema[0].setSelection(false);
+				if (cfg.isAddUserSchema()) {
+					btnAddUserSchema[0].setSelection(true);
+				} else {
+					btnAddUserSchema[1].setSelection(true);
+				}
 			}
+			
 			new Label(fileRepositoryContainer, SWT.NONE);
 			new Label(fileRepositoryContainer, SWT.NONE);
 			
 			Composite checkboxComposite = new Composite(fileRepositoryContainer, SWT.NONE);
-			GridLayout checkboxGridLayout = new GridLayout();
+			GridLayout checkboxGridLayout = new GridLayout(1, false);
 			checkboxComposite.setLayout(checkboxGridLayout);
-			checkboxGridLayout.numColumns = 3;
-			btnOneTableOneFile = new Button(checkboxComposite, SWT.CHECK);
-			btnOneTableOneFile.setLayoutData(new GridData(SWT.LEFT, SWT.TOP, false, false));
-			btnOneTableOneFile.setText(Messages.btnOneTableOneFile);
 			
 			btnSplitSchema = new Button(checkboxComposite, SWT.CHECK);
-			btnSplitSchema.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, true, false));
+			btnSplitSchema.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false));
 			btnSplitSchema.setText(Messages.btnSplitSchema);
 			btnSplitSchema.setSelection(cfg.isSplitSchema());
 			
+			btnOneTableOneFile = new Button(checkboxComposite, SWT.CHECK);
+			btnOneTableOneFile.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
+			btnOneTableOneFile.setText(Messages.btnOneTableOneFile);
+			
 			btnCreateUserSQL = new Button(checkboxComposite, SWT.CHECK);
-			btnCreateUserSQL.setLayoutData(new GridData(SWT.RIGHT, SWT.BOTTOM, false, false));
+			btnCreateUserSQL.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
 			btnCreateUserSQL.setText(Messages.btnCreateUserSQL);
 			btnCreateUserSQL.setSelection(cfg.isCreateUserSQL());
+			
+			if (!getMigrationWizard().isLoadMigrationScript() && firstVisible) {
+				btnSplitSchema.setSelection(true);
+			}
 			
 			new Label(fileRepositoryContainer, SWT.NONE);
 		}
@@ -786,9 +777,11 @@ public class SelectDestinationPage extends
 			config.setTargetCharSet(cboCharset.getText());
 			
 			//change to migration configuration
-			config.setAddUserSchema(isAddUserSchema);
+			config.setAddUserSchema(btnAddUserSchema[0].getSelection() ? true : false);
 			config.setSplitSchema(btnSplitSchema.getSelection());
 			config.setCreateUserSQL(btnCreateUserSQL.getSelection());
+			
+			firstVisible = false;
 			
 			return true;
 		}
