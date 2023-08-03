@@ -77,6 +77,7 @@ public class CleanDBTask extends
 	 */
 	protected void executeImport() {
 		Map<String, List<String>> dropQeuryBySchemaMap = new HashMap<String, List<String>>();
+		Map<String, List<String>> fkDropQueryBySchemaMap = new HashMap<String, List<String>>();
 		
 		for (SourceEntryTableConfig setc : config.getExpEntryTableCfg()) {
 			if (!setc.isCreateNewTable()) {
@@ -94,7 +95,7 @@ public class CleanDBTask extends
 					
 					LOG.info("drop foreign key : " + query.toString());
 					
-					divideQueryBySchema(dropQeuryBySchemaMap, setc.getTargetOwner(), query.toString());
+					divideQueryBySchema(fkDropQueryBySchemaMap, setc.getTargetOwner(), query.toString());
 					execDDL(query.toString());
 				}
 			}
@@ -208,7 +209,7 @@ public class CleanDBTask extends
 			}
 		}
 		
-		if (config.targetIsFile() && !dropQeuryBySchemaMap.isEmpty()) {
+		if (config.targetIsFile()) {
 			List<Schema> schemaList = null;
 			if (config.getTargetSchemaList().size() > 0) {
 				schemaList = config.getTargetSchemaList();
@@ -219,16 +220,32 @@ public class CleanDBTask extends
 			
 			for (Schema schema : schemaList) {
 				String ownerName = schema.getTargetSchemaName();
-				File clearFile = new File(config.getFileRepositroyPath() + File.separator
-						+ ownerName + File.separator + ownerName + "_clear.sql");
-				try {
-					PathUtils.deleteFile(clearFile);
+				writeFile(dropQeuryBySchemaMap, ownerName, "_clear.sql");
+				writeFile(fkDropQueryBySchemaMap, ownerName, "_drop_fk.sql");
+			}
+		}
+	}
+	
+	/**
+	 * Drop queries are written to a file
+	 * 
+	 * @param map Map<String, List<String>>
+	 * @param ownerName String
+	 * @param fileName String
+	 */
+	private void writeFile(Map<String, List<String>> map, String ownerName, String fileName) {
+		if (!map.isEmpty()) {
+			File clearFile = new File(config.getFileRepositroyPath() + File.separator
+					+ ownerName + File.separator + ownerName + fileName);
+			try {
+				PathUtils.deleteFile(clearFile);
+				if (map.containsKey(ownerName)) {
 					PathUtils.createFile(clearFile);
-					CUBRIDIOUtils.writeLines(clearFile, dropQeuryBySchemaMap.get(ownerName).toArray(new String[]{}),
+					CUBRIDIOUtils.writeLines(clearFile, map.get(ownerName).toArray(new String[]{}),
 							config.getTargetCharSet());
-				} catch (IOException e) {
-					LOG.error("", e);
 				}
+			} catch (IOException e) {
+				LOG.error("", e);
 			}
 		}
 	}
