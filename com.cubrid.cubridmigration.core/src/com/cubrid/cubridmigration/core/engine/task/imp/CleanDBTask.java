@@ -32,13 +32,17 @@ package com.cubrid.cubridmigration.core.engine.task.imp;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.log4j.Logger;
 
 import com.cubrid.cubridmigration.core.common.CUBRIDIOUtils;
 import com.cubrid.cubridmigration.core.common.PathUtils;
 import com.cubrid.cubridmigration.core.common.log.LogUtil;
+import com.cubrid.cubridmigration.core.dbobject.Schema;
 import com.cubrid.cubridmigration.core.engine.config.MigrationConfiguration;
 import com.cubrid.cubridmigration.core.engine.config.SourceCSVConfig;
 import com.cubrid.cubridmigration.core.engine.config.SourceEntryTableConfig;
@@ -46,6 +50,7 @@ import com.cubrid.cubridmigration.core.engine.config.SourceFKConfig;
 import com.cubrid.cubridmigration.core.engine.config.SourceIndexConfig;
 import com.cubrid.cubridmigration.core.engine.config.SourceSQLTableConfig;
 import com.cubrid.cubridmigration.core.engine.config.SourceSequenceConfig;
+import com.cubrid.cubridmigration.core.engine.config.SourceSynonymConfig;
 import com.cubrid.cubridmigration.core.engine.config.SourceViewConfig;
 import com.cubrid.cubridmigration.core.engine.task.ImportTask;
 
@@ -71,7 +76,8 @@ public class CleanDBTask extends
 	 * Execute import
 	 */
 	protected void executeImport() {
-		List<String> sb = new ArrayList<String>();
+		Map<String, List<String>> dropQeuryBySchemaMap = new HashMap<String, List<String>>();
+		
 		for (SourceEntryTableConfig setc : config.getExpEntryTableCfg()) {
 			if (!setc.isCreateNewTable()) {
 				continue;
@@ -81,20 +87,14 @@ public class CleanDBTask extends
 					
 					StringBuffer query = new StringBuffer();
 					query.append("ALTER TABLE ");
-					
-					if (config.isAddUserSchema()) {
-						query.append("\"");
-						query.append(setc.getTargetOwner());
-						query.append("\"");
-						query.append(".");
-					}
-					query.append("\"" + setc.getTarget() + "\" DROP CONSTRAINT \"" + sfkc.getTarget() + "\"");
+					query.append(addSchemaName(config.isAddUserSchema(), setc.getTargetOwner()));
+					query.append(getBracketsObjName(setc.getTarget()) 
+							+ " DROP CONSTRAINT " + getBracketsObjName(sfkc.getTarget()));
 					query.append(";");
-
-					sb.add(query.toString());
 					
 					LOG.info("drop foreign key : " + query.toString());
 					
+					divideQueryBySchema(dropQeuryBySchemaMap, setc.getTargetOwner(), query.toString());
 					execDDL(query.toString());
 				}
 			}
@@ -104,19 +104,14 @@ public class CleanDBTask extends
 					StringBuffer query = new StringBuffer();
 					
 					query.append("ALTER TABLE ");
-					
-					if (config.isAddUserSchema()) {
-						query.append("\"");
-						query.append(setc.getTargetOwner());
-						query.append("\"");
-						query.append(".");
-					}
-					query.append("\"" + setc.getTarget() + "\" DROP CONSTRAINT \"" + idx.getTarget() + "\"");
+					query.append(addSchemaName(config.isAddUserSchema(), setc.getTargetOwner()));
+					query.append(getBracketsObjName(setc.getTarget()) 
+							+ " DROP CONSTRAINT " + getBracketsObjName(idx.getTarget()));
 					query.append(";");
 					
 					LOG.info("drop index : " + query.toString());
 					
-					sb.add(query.toString());
+					divideQueryBySchema(dropQeuryBySchemaMap, setc.getTargetOwner(), query.toString());
 					execDDL(query.toString());
 				}
 			}
@@ -126,20 +121,13 @@ public class CleanDBTask extends
 				StringBuffer query = new StringBuffer();
 				
 				query.append("DROP TABLE ");
-				
-				if (config.isAddUserSchema()) {
-					query.append("\"");
-					query.append(setc.getTargetOwner());
-					query.append("\"");
-					query.append(".");
-				}
-				
-				query.append("\"" + setc.getTarget() + "\"");
+				query.append(addSchemaName(config.isAddUserSchema(), setc.getTargetOwner()));
+				query.append(getBracketsObjName(setc.getTarget()));
 				query.append(";");
 				
 				LOG.info("drop table query : " + query.toString());
 				
-				sb.add(query.toString());
+				divideQueryBySchema(dropQeuryBySchemaMap, setc.getTargetOwner(), query.toString());
 				execDDL(query.toString());
 			}
 		}
@@ -148,20 +136,13 @@ public class CleanDBTask extends
 				StringBuffer query = new StringBuffer();
 				
 				query.append("DROP TABLE ");
-				
-				if (config.isAddUserSchema()) {
-					query.append("\"");
-					query.append(sstc.getTargetOwner());
-					query.append("\"");
-					query.append(".");
-				}
-				
-				query.append("\"" + sstc.getTarget() + "\"");
+				query.append(addSchemaName(config.isAddUserSchema(), sstc.getTargetOwner()));
+				query.append(getBracketsObjName(sstc.getTarget()));
 				query.append(";");
 				
 				LOG.info("drop table query : " + query.toString());
 				
-				sb.add(query.toString());
+				divideQueryBySchema(dropQeuryBySchemaMap, sstc.getTargetOwner(), query.toString());
 				execDDL(query.toString());
 			}
 		}
@@ -170,20 +151,13 @@ public class CleanDBTask extends
 				StringBuffer query = new StringBuffer();
 				
 				query.append("DROP TABLE ");
-				
-				if (config.isAddUserSchema()) {
-					query.append("\"");
-					query.append(scc.getTargetOwner());
-					query.append("\"");
-					query.append(".");
-				}
-				
-				query.append("\"" + scc.getTarget() + "\"");
+				query.append(addSchemaName(config.isAddUserSchema(), scc.getTargetOwner()));	
+				query.append(getBracketsObjName(scc.getTarget()));
 				query.append(";");
 				
 				LOG.info("drop table query : " + query.toString());
 				
-				sb.add(query.toString());
+				divideQueryBySchema(dropQeuryBySchemaMap, scc.getTargetOwner(), query.toString());
 				execDDL(query.toString());
 			}
 		}
@@ -192,20 +166,13 @@ public class CleanDBTask extends
 				StringBuffer query = new StringBuffer();
 				
 				query.append("DROP VIEW ");
-				
-				if (config.isAddUserSchema()) {
-					query.append("\"");
-					query.append(sc.getTargetOwner());
-					query.append("\"");
-					query.append(".");
-				}
-				
-				query.append("\"" + sc.getTarget() + "\"");
+				query.append(addSchemaName(config.isAddUserSchema(), sc.getTargetOwner()));
+				query.append(getBracketsObjName(sc.getTarget()));
 				query.append(";");
 				
 				LOG.info("drop view query : " + query.toString());
 				
-				sb.add(query.toString());
+				divideQueryBySchema(dropQeuryBySchemaMap, sc.getTargetOwner(), query.toString());
 				execDDL(query.toString());
 			}
 		}
@@ -214,37 +181,93 @@ public class CleanDBTask extends
 				StringBuffer query = new StringBuffer();
 				
 				query.append("DROP SERIAL ");
-				
-				if (config.isAddUserSchema()) {
-					query.append("\"");
-					query.append(sc.getTargetOwner());
-					query.append("\"");
-					query.append(".");
-				}
-				
-				query.append("\"" + sc.getTarget() + "\"");
+				query.append(addSchemaName(config.isAddUserSchema(), sc.getTargetOwner()));
+				query.append(getBracketsObjName(sc.getTarget()));
 				query.append(";");
 				
 				LOG.info("drop serial query : " + query.toString());
 				
-				sb.add(query.toString());
+				divideQueryBySchema(dropQeuryBySchemaMap, sc.getTargetOwner(), query.toString());
 				execDDL(query.toString());
 				
 			}
 		}
-		if (config.targetIsFile() && !sb.isEmpty()) {
-			File clearFile = new File(config.getFileRepositroyPath()
-					+ File.separator + "clear_"
-					+ config.getSrcCatalog().getName() + ".sql");
-			try {
-				PathUtils.deleteFile(clearFile);
-				PathUtils.createFile(clearFile);
-				CUBRIDIOUtils.writeLines(clearFile, sb.toArray(new String[]{}),
-						config.getTargetCharSet());
-			} catch (IOException e) {
-				LOG.error("", e);
+		for (SourceSynonymConfig sc : config.getExpSynonymCfg()) {
+			if (sc.isCreate() && sc.isReplace()) {
+				StringBuffer query = new StringBuffer();
+
+				query.append("DROP SYNONYM ");
+				query.append(addSchemaName(config.isAddUserSchema(), sc.getTargetOwner()));
+				query.append(getBracketsObjName(sc.getTarget()));
+				query.append(";");
+
+				LOG.info("drop syonym query : " + query.toString());
+
+				divideQueryBySchema(dropQeuryBySchemaMap, sc.getTargetOwner(), query.toString());
+				execDDL(query.toString());
 			}
 		}
+		
+		if (config.targetIsFile() && !dropQeuryBySchemaMap.isEmpty()) {
+			List<Schema> schemaList = null;
+			if (config.getTargetSchemaList().size() > 0) {
+				schemaList = config.getTargetSchemaList();
+			} else {
+				Collection<Schema> schemas = config.getScriptSchemaMapping().values();
+				schemaList = new ArrayList<Schema>(schemas);
+			}
+			
+			for (Schema schema : schemaList) {
+				String ownerName = schema.getTargetSchemaName();
+				File clearFile = new File(config.getFileRepositroyPath() + File.separator
+						+ ownerName + File.separator + ownerName + "_clear.sql");
+				try {
+					PathUtils.deleteFile(clearFile);
+					PathUtils.createFile(clearFile);
+					CUBRIDIOUtils.writeLines(clearFile, dropQeuryBySchemaMap.get(ownerName).toArray(new String[]{}),
+							config.getTargetCharSet());
+				} catch (IOException e) {
+					LOG.error("", e);
+				}
+			}
+		}
+	}
+	
+	/**
+	 * Divide drop queries by schema
+	 * 
+	 * @param targetOwner String
+	 * @param query String
+	 */
+	private void divideQueryBySchema(Map<String, List<String>> map, String targetOwner, String query) {
+		if (map.containsKey(targetOwner)) {
+			map.get(targetOwner).add(query);
+		} else {
+			List<String> list = new ArrayList<String>();
+			list.add(query);
+			map.put(targetOwner, list);
+		}
+	}
+
+	/**
+	 * Return object names with square bracket
+	 * 
+	 * @param objName String
+	 * @return object name with quotes
+	 */
+	private String getBracketsObjName(String objName) {
+		return "[" + objName + "]";
+	}
+
+	/**
+	 * If it is a multi schema, give the user schema name
+	 * 
+	 * @param isAddUserSchema boolean
+	 * @param schemaName String
+	 * @return User schema name String
+	 */
+	private String addSchemaName(boolean isAddUserSchema, String schemaName) {
+		return isAddUserSchema ? "[" + schemaName + "]." : "";
 	}
 
 	/**
