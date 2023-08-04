@@ -833,7 +833,7 @@ public class MigrationConfiguration {
 			if (isSplit) {
 				this.addTargetTableFileName(schemaName, getTableFullName(schemaName));
 				this.addTargetViewFileName(schemaName, getViewFullName(schemaName));
-				this.addTargetViewQuerySpecFileName(schemaName, getTableFullName(schemaName));
+				this.addTargetViewQuerySpecFileName(schemaName, getViewQuerySpecFullName(schemaName));
 				this.addTargetPkFileName(schemaName, getPkFullName(schemaName));
 				this.addTargetFkFileName(schemaName, getFkFullName(schemaName));
 				this.addTargetSerialFileName(schemaName, getSequenceFullName(schemaName));
