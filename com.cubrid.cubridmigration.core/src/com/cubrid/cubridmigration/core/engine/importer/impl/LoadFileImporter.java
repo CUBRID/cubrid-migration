@@ -102,6 +102,7 @@ public class LoadFileImporter extends
 	private final Map<String, String> schemaFiles = new HashMap<String, String>();
 	private final Map<String, String> tableSchemaFiles = new HashMap<String, String>();
 	private final Map<String, String> viewFiles = new HashMap<String, String>();
+	private final Map<String, String> viewQuerySpecFiles = new HashMap<String, String>();
 	private final Map<String, String> pkFiles = new HashMap<String, String>();
 	private final Map<String, String> fkFiles = new HashMap<String, String>();
 	private final Map<String, String> indexFiles = new HashMap<String, String>();
@@ -236,6 +237,25 @@ public class LoadFileImporter extends
 		return viewFiles.get(owner);
 	}
 	
+	/**
+	 * Send View Query Specification file to server loadDB command.
+	 * 
+	 * @param owner
+	 * @return view Query Specification file pull path
+	 */
+	protected String handleViewQuerySpecFile(String owner) {
+		if (!viewQuerySpecFiles.containsKey(owner)) {
+			viewQuerySpecFiles.put(owner, config.getTargetViewQuerySpecFileName(owner));
+		}
+		return viewQuerySpecFiles.get(owner);
+	}
+	
+	/**
+	 * Send PK file to server loadDB command.
+	 * 
+	 * @param owner
+	 * @return PK file pull path
+	 */
 	protected String handlePkFile(String owner) {
 		if (!pkFiles.containsKey(owner)) {
 			pkFiles.put(owner, config.getTargetPkFileName(owner));
@@ -243,6 +263,12 @@ public class LoadFileImporter extends
 		return pkFiles.get(owner);
 	}
 	
+	/**
+	 * Send FK file to server loadDB command.
+	 * 
+	 * @param owner
+	 * @return FK file pull path
+	 */
 	protected String handleFkFile(String owner) {
 		if (!fkFiles.containsKey(owner)) {
 			fkFiles.put(owner, config.getTargetFkFileName(owner));
@@ -337,6 +363,8 @@ public class LoadFileImporter extends
 				return handleTableSchemaFile(owner);
 			} else if (objectType.equals(DBObject.OBJ_TYPE_VIEW)) {
 				return handleViewFile(owner);
+			} else if (objectType.equals(DBObject.OBJ_TYPE_VIEW_QUERY_SPEC)) {
+				return handleViewQuerySpecFile(owner);
 			} else if (objectType.equals(DBObject.OBJ_TYPE_PK)) {
 				return handlePkFile(owner);
 			} else if (objectType.equals(DBObject.OBJ_TYPE_FK)) {
@@ -353,9 +381,12 @@ public class LoadFileImporter extends
 		} else {
 			if (objectType.equals(DBObject.OBJ_TYPE_TABLE)
 					|| objectType.equals(DBObject.OBJ_TYPE_VIEW)
+					|| objectType.equals(DBObject.OBJ_TYPE_VIEW_QUERY_SPEC)
 					|| objectType.equals(DBObject.OBJ_TYPE_PK)
 					|| objectType.equals(DBObject.OBJ_TYPE_FK)
-					|| objectType.equals(DBObject.OBJ_TYPE_SEQUENCE)) {
+					|| objectType.equals(DBObject.OBJ_TYPE_SEQUENCE)
+					|| objectType.equals(DBObject.OBJ_TYPE_SYNONYM)
+					|| objectType.equals(DBObject.OBJ_TYPE_GRANT)) {
 				return handleSchemaFile(owner);
 			} else if (objectType.equals(DBObject.OBJ_TYPE_INDEX)) {
 				return handleIndexFile(owner);

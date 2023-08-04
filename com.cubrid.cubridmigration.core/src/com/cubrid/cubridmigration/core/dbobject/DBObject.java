@@ -47,6 +47,7 @@ public abstract class DBObject implements
 	public final static String OBJ_TYPE_PARTITION = "table partition";
 	public final static String OBJ_TYPE_COLUMN = "column";
 	public final static String OBJ_TYPE_VIEW = "view";
+	public final static String OBJ_TYPE_VIEW_QUERY_SPEC = "view_query_spec";
 	public final static String OBJ_TYPE_PK = "primary key";
 	public final static String OBJ_TYPE_FK = "foreign key";
 	public final static String OBJ_TYPE_INDEX = "index";

@@ -104,6 +104,7 @@ public class SchemaMappingPage extends MigrationWizardPage {
 	Map<String, String> schemaFullName;
 	Map<String, String> tableFullName;
 	Map<String, String> viewFullName;
+	Map<String, String> viewQuerySpecFullName;
 	Map<String, String> pkFullName;
 	Map<String, String> fkFullName;
 	Map<String, String> dataFullName;
@@ -725,6 +726,7 @@ public class SchemaMappingPage extends MigrationWizardPage {
 		schemaFullName = new HashMap<String, String>();
 		tableFullName = new HashMap<String, String>();
 		viewFullName = new HashMap<String, String>();
+		viewQuerySpecFullName = new HashMap<String, String>();
 		pkFullName = new HashMap<String, String>();
 		fkFullName = new HashMap<String, String>();
 		dataFullName = new HashMap<String, String>();
@@ -756,6 +758,7 @@ public class SchemaMappingPage extends MigrationWizardPage {
 			if (splitSchema) {
 				tableFullName.put(srcTable.getTarSchema(), config.getTableFullName(srcTable.getTarSchema()));
 				viewFullName.put(srcTable.getTarSchema(), config.getViewFullName(srcTable.getTarSchema()));
+				viewQuerySpecFullName.put(srcTable.getTarSchema(), config.getViewQuerySpecFullName(srcTable.getTarSchema()));
 				pkFullName.put(srcTable.getTarSchema(), config.getPkFullName(srcTable.getTarSchema()));
 				fkFullName.put(srcTable.getTarSchema(), config.getFkFullName(srcTable.getTarSchema()));
 				serialFullName.put(srcTable.getTarSchema(), config.getSequenceFullName(srcTable.getTarSchema()));
@@ -778,6 +781,7 @@ public class SchemaMappingPage extends MigrationWizardPage {
 		config.setTargetSchemaFileName(schemaFullName);
 		config.setTargetTableFileName(tableFullName);
 		config.setTargetViewFileName(viewFullName);
+		config.setTargetViewQuerySpecFileName(viewQuerySpecFullName);
 		config.setTargetDataFileName(dataFullName);
 		config.setTargetIndexFileName(indexFullName);
 		config.setTargetPkFileName(pkFullName);
@@ -816,6 +820,7 @@ public class SchemaMappingPage extends MigrationWizardPage {
 				if (config.isSplitSchema()) {
 					File tableFile = new File(tableFullName.get(srcTable.getTarSchema()));
 					File viewFile = new File(viewFullName.get(srcTable.getTarSchema()));
+					File viewQuerySpecFile = new File(viewQuerySpecFullName.get(srcTable.getTarSchema()));
 					File pkFile = new File(pkFullName.get(srcTable.getTarSchema()));
 					File fkFile = new File(fkFullName.get(srcTable.getTarSchema()));
 					File serialFile = new File(serialFullName.get(srcTable.getTarSchema()));
@@ -828,6 +833,9 @@ public class SchemaMappingPage extends MigrationWizardPage {
 					}
 					if (viewFile.exists()) {
 						buffer.append(viewFile.getCanonicalPath()).append(lineSeparator);
+					}
+					if (viewQuerySpecFile.exists()) {
+						buffer.append(viewQuerySpecFile.getCanonicalPath()).append(lineSeparator);
 					}
 					if (pkFile.exists()) {
 						buffer.append(pkFile.getCanonicalPath()).append(lineSeparator);

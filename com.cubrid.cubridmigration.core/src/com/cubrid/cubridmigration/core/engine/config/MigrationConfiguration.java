@@ -164,6 +164,7 @@ public class MigrationConfiguration {
 	private Map<String, String> targetSchemaFileName = new HashMap<String, String>();
 	private Map<String, String> targetTableFileName = new HashMap<String, String>();
 	private Map<String, String> targetViewFileName = new HashMap<String, String>();
+	private Map<String, String> targetViewQuerySpecFileName = new HashMap<String, String>();
 	private Map<String, String> targetPkFileName = new HashMap<String, String>();
 	private Map<String, String> targetFkFileName = new HashMap<String, String>();
 	private Map<String, String> targetIndexFileName = new HashMap<String, String>();
@@ -832,6 +833,7 @@ public class MigrationConfiguration {
 			if (isSplit) {
 				this.addTargetTableFileName(schemaName, getTableFullName(schemaName));
 				this.addTargetViewFileName(schemaName, getViewFullName(schemaName));
+				this.addTargetViewQuerySpecFileName(schemaName, getTableFullName(schemaName));
 				this.addTargetPkFileName(schemaName, getPkFullName(schemaName));
 				this.addTargetFkFileName(schemaName, getFkFullName(schemaName));
 				this.addTargetSerialFileName(schemaName, getSequenceFullName(schemaName));
@@ -1557,6 +1559,7 @@ public class MigrationConfiguration {
 			addTargetSchemaFileName(schema.getName(), path2 + targetSchemaFileName.get(schema.getName().substring(tempPath.length())));
 			addTargetTableFileName(schema.getName(), path2 + targetTableFileName.get(schema.getName().substring(tempPath.length())));
 			addTargetViewFileName(schema.getName(), path2 + targetViewFileName.get(schema.getName().substring(tempPath.length())));
+			addTargetViewQuerySpecFileName(schema.getName(), path2 + targetViewQuerySpecFileName.get(schema.getName().substring(tempPath.length())));
 			addTargetPkFileName(schema.getName(), path2 + targetPkFileName.get(schema.getName().substring(tempPath.length())));
 			addTargetFkFileName(schema.getName(), path2 + targetFkFileName.get(schema.getName().substring(tempPath.length())));
 			addTargetDataFileName(schema.getName(), path2 + targetDataFileName.get(schema.getName().substring(tempPath.length())));
@@ -2998,6 +3001,14 @@ public class MigrationConfiguration {
 		return this.targetViewFileName.get(schemaName);
 	}
 	
+	public Map<String, String> getTargetViewQuerySpecFileName() {
+		return new HashMap<String, String>(this.targetViewQuerySpecFileName);
+	}
+	
+	public String getTargetViewQuerySpecFileName(String schemaName) {
+		return this.targetViewQuerySpecFileName.get(schemaName);
+	}
+	
 	public Map<String, String> getTargetPkFileName() {
 		return new HashMap<String, String>(this.targetPkFileName);
 	}
@@ -3932,6 +3943,7 @@ public class MigrationConfiguration {
 			addTargetSchemaFileName(schema.getName(), PathUtils.mergePath(PathUtils.mergePath(odir, prefix), schema.getName() + "_schema"));
 			addTargetTableFileName(schema.getName(), PathUtils.mergePath(PathUtils.mergePath(odir, prefix), schema.getName() + "_table"));
 			addTargetViewFileName(schema.getName(), PathUtils.mergePath(PathUtils.mergePath(odir, prefix), schema.getName() + "_view"));
+			addTargetViewQuerySpecFileName(schema.getName(), PathUtils.mergePath(PathUtils.mergePath(odir, prefix), schema.getName() + "_view_query_spec"));
 			addTargetPkFileName(schema.getName(), PathUtils.mergePath(PathUtils.mergePath(odir, prefix), schema.getName() + "_pk"));
 			addTargetFkFileName(schema.getName(), PathUtils.mergePath(PathUtils.mergePath(odir, prefix), schema.getName() + "_fk"));
 			addTargetIndexFileName(schema.getName(), PathUtils.mergePath(PathUtils.mergePath(odir, prefix), schema.getName() + "_index"));
@@ -4185,6 +4197,14 @@ public class MigrationConfiguration {
 	
 	public void addTargetViewFileName(String schemaName, String filePath) {
 		this.targetViewFileName.put(schemaName, filePath);
+	}
+	
+	public void setTargetViewQuerySpecFileName(Map<String, String> targetViewQuerySpecFileName) {
+		this.targetViewQuerySpecFileName.putAll(targetViewQuerySpecFileName);
+	}
+	
+	public void addTargetViewQuerySpecFileName(String schemaName, String filePath) {
+		this.targetViewQuerySpecFileName.put(schemaName, filePath);
 	}
 	
 	public void setTargetPkFileName(Map<String, String> targetPkFileName) {
@@ -4533,6 +4553,20 @@ public class MigrationConfiguration {
 	public String getViewFullName(String targetSchemaName) {
 		StringBuffer fileName = new StringBuffer();
 		fileName.append(File.separator).append(this.getTargetFilePrefix()).append("_").append(targetSchemaName).append("_view").append(
+				this.getDefaultTargetSchemaFileExtName());
+		
+		return PathUtils.mergePath(PathUtils.mergePath(this.getFileRepositroyPath(), targetSchemaName), fileName.toString());
+	}
+	
+	/**
+	 * get View Query Specification file full path
+	 * 
+	 * @param targetSchemaName
+	 * @return view query specification file full path
+	 */
+	public String getViewQuerySpecFullName(String targetSchemaName) {
+		StringBuffer fileName = new StringBuffer();
+		fileName.append(File.separator).append(this.getTargetFilePrefix()).append("_").append(targetSchemaName).append("_view_query_spec").append(
 				this.getDefaultTargetSchemaFileExtName());
 		
 		return PathUtils.mergePath(PathUtils.mergePath(this.getFileRepositroyPath(), targetSchemaName), fileName.toString());

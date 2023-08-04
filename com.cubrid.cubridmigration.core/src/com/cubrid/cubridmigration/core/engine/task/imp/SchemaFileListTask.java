@@ -83,6 +83,14 @@ public class SchemaFileListTask extends ImportTask {
 					sb.append(lineSeparator);
 				}
 				
+				// view
+				String viewFileRepository = config.getTargetViewFileName(schemaName);
+				if (checkFileRepository(viewFileRepository)) {
+					isCreateSchemaListFile = true;
+					sb.append(getFileName(viewFileRepository));
+					sb.append(lineSeparator);
+				}
+				
 				// synonym
 				String synonymFileRepository = config.getTargetSynonymFileName(schemaName);
 				if (checkFileRepository(synonymFileRepository)) {
@@ -91,11 +99,11 @@ public class SchemaFileListTask extends ImportTask {
 					sb.append(lineSeparator);
 				}
 				
-				// view
-				String viewFileRepository = config.getTargetViewFileName(schemaName);
-				if (checkFileRepository(viewFileRepository)) {
+				// view query specification
+				String viewQuerySpecFileRepository = config.getTargetViewQuerySpecFileName(schemaName);
+				if (checkFileRepository(viewQuerySpecFileRepository)) {
 					isCreateSchemaListFile = true;
-					sb.append(getFileName(viewFileRepository));
+					sb.append(getFileName(viewQuerySpecFileRepository));
 					sb.append(lineSeparator);
 				}
 				

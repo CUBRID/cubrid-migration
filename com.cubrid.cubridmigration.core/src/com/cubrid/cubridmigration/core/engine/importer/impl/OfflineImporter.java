@@ -666,7 +666,7 @@ public abstract class OfflineImporter extends
 	public void alterView(View view) {
 		String viewAlterDDL = CUBRIDSQLHelper.getInstance(null).getViewAlterDDL(view, config.isAddUserSchema());
 		view.setAlterDDL(viewAlterDDL);
-		executeDDL(viewAlterDDL + "\n", DBObject.OBJ_TYPE_VIEW, createResultHandler(view), view.getOwner());
+		executeDDL(viewAlterDDL + "\n", DBObject.OBJ_TYPE_VIEW_QUERY_SPEC, createResultHandler(view), view.getOwner());
 	}
 
 	/**
