@@ -179,6 +179,7 @@ public class MigrationConfiguration {
 	private boolean addUserSchema;
 	private boolean splitSchema;
 	private boolean targetDBAGroup;
+	private boolean createUserSQL;
 
 	private final CSVSettings csvSettings = new CSVSettings();
 
@@ -229,8 +230,6 @@ public class MigrationConfiguration {
 	private String name;
 	//True by default
 	private boolean updateStatistics = true;
-	
-	private Boolean addOfflineUserSchema = false;
 	
 	private Map<String, Schema> scriptSchemaMapping = new HashMap<String, Schema>();
 	
@@ -634,7 +633,8 @@ public class MigrationConfiguration {
 				}
 				if (getExpEntryTableCfg(tmpSchema, objName) != null
 						|| getExpViewCfg(tmpSchema, objName) != null
-						|| getExpSerialCfg(tmpSchema, objName) != null) {
+						|| getExpSerialCfg(tmpSchema, objName) != null
+						|| getExpSynonymCfg(tmpSchema, objName) != null) {
 					return false;
 				}
 				return true;
@@ -2952,6 +2952,10 @@ public class MigrationConfiguration {
 	public boolean isTargetDBAGroup() {
 		return targetDBAGroup;
 	}
+	
+	public boolean isCreateUserSQL() {
+		return createUserSQL;
+	}
 
 	/**
 	 * Retrieves the referenced count of target table name
@@ -4278,6 +4282,10 @@ public class MigrationConfiguration {
 	public void setTargetDBAGroup(boolean isDBAGroup) {
 		this.targetDBAGroup = isDBAGroup;
 	}
+	
+	public void setCreateUserSQL(boolean createUserSQL) {
+		this.createUserSQL = createUserSQL;
+	}
 
 	/**
 	 * set if write the error records to a sql file.
@@ -4462,14 +4470,6 @@ public class MigrationConfiguration {
 	
 	public void addScriptSchemaMapping(String source, Schema schema) {
 		scriptSchemaMapping.put(source, schema);
-	}
-
-	public Boolean getOfflineUserSchema() {
-		return addOfflineUserSchema;
-	}
-
-	public void setOfflineUserSchema(boolean addOfflineUserSchema) {
-		this.addOfflineUserSchema = addOfflineUserSchema;
 	}
 	
 	public void setOldScript(boolean isOldSchema) {

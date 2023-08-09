@@ -71,6 +71,7 @@ import com.cubrid.cubridmigration.ui.MigrationUIPlugin;
 import com.cubrid.cubridmigration.ui.common.TextAppender;
 import com.cubrid.cubridmigration.ui.history.controller.MigrationReportUIController;
 import com.cubrid.cubridmigration.ui.history.dialog.ShowTextDialog;
+import com.cubrid.cubridmigration.ui.history.tableviewer.MigrationObjectNameChangeTableLabelProvider;
 import com.cubrid.cubridmigration.ui.history.tableviewer.MigrationOverviewTableLabelProvider;
 import com.cubrid.cubridmigration.ui.history.tableviewer.ObjectMigrationResultTableLabelProvider;
 import com.cubrid.cubridmigration.ui.history.tableviewer.RecordMigrationResultTableLabelProvider;
@@ -90,6 +91,7 @@ public class MigrationReportEditorPart extends
 	private TableViewer tvOverview;
 	private TableViewer tvObjDetails;
 	private TableViewer tvTableRecords;
+	private TableViewer tvObjNames;
 
 	private Text txtNonsupport;
 	private Text txtLog;
@@ -307,6 +309,36 @@ public class MigrationReportEditorPart extends
 		});
 
 	}
+	
+	private void createChangeObjectNamePage(TabFolder tfReport) {
+		TabItem tiDetail = new TabItem(tfReport, SWT.NONE);
+		tiDetail.setText(Messages.lblRenamedObject);
+		Composite comDetail = new Composite(tfReport, SWT.NONE);
+		tiDetail.setControl(comDetail);
+		comDetail.setLayout(new GridLayout());
+		comDetail.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+
+		tfDetail = new TabFolder(comDetail, SWT.NONE);
+		tfDetail.setLayout(new GridLayout());
+		tfDetail.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+
+		TabItem tiDBObjects = new TabItem(tfDetail, SWT.NONE);
+		tiDBObjects.setText(Messages.lblDBObjects);
+		
+		createChangeObjectNameTableViewer(tiDBObjects);
+	}
+	
+	private void createChangeObjectNameTableViewer(TabItem tiViews) {
+		TableViewerBuilder tvBuilder = new TableViewerBuilder();
+		tvBuilder.setColumnNames(MigrationReportUIController.TABLE_HEADER_OBJ_NAME_CHANGE);
+		tvBuilder.setColumnWidths(new int[] {110, 150, 150});
+		tvBuilder.setColumnStyles(new int[] {SWT.LEFT, SWT.LEFT, SWT.LEFT});
+		tvBuilder.setContentProvider(new ArrayContentProvider());
+		tvBuilder.setLabelProvider(new MigrationObjectNameChangeTableLabelProvider());
+		tvObjNames = tvBuilder.buildTableViewer(tfDetail, SWT.BORDER | SWT.FULL_SELECTION
+				| SWT.H_SCROLL | SWT.V_SCROLL);
+		tiViews.setControl(tvObjNames.getTable());
+	}
 
 	/**
 	 * Creates the SWT controls for this workbench part.
@@ -326,9 +358,11 @@ public class MigrationReportEditorPart extends
 
 		createOverviewPage(tfReport);
 		createDetailPage(tfReport);
+		createChangeObjectNamePage(tfReport);
 		createNonsupportPage(tfReport);
 		createLogPage(tfReport);
 		createConfigSummaryPage();
+		
 		setContent2Tables();
 		tfReport.setSelection(0);
 		tfReport.layout();
@@ -475,6 +509,7 @@ public class MigrationReportEditorPart extends
 		MigrationReport report = reporter.getReport();
 		tvOverview.setInput(report.getOverviewResults());
 		tvObjDetails.setInput(report.getDbObjectsResult());
+		tvObjNames.setInput(report.getObjNameResult());
 		tvTableRecords.setInput(report.getRecMigResults());
 		txtConfigSummary.setText(report.getConfigSummary());
 		controller.loadNonSupportedObjectText(reporter, noSupportedAppender);

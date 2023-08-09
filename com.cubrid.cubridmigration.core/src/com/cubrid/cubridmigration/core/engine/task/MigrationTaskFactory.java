@@ -74,6 +74,7 @@ import com.cubrid.cubridmigration.core.engine.task.exp.ViewSchemaExportTask;
 import com.cubrid.cubridmigration.core.engine.task.exp.XMLRecordExportTask;
 import com.cubrid.cubridmigration.core.engine.task.imp.CSVImportTask;
 import com.cubrid.cubridmigration.core.engine.task.imp.CleanDBTask;
+import com.cubrid.cubridmigration.core.engine.task.imp.CreateUserSQLTask;
 import com.cubrid.cubridmigration.core.engine.task.imp.ExecuteSQLTask;
 import com.cubrid.cubridmigration.core.engine.task.imp.FKImportTask;
 import com.cubrid.cubridmigration.core.engine.task.imp.FunctionImportTask;
@@ -531,6 +532,17 @@ public class MigrationTaskFactory {
 	 */
 	public SchemaFileListTask createSchemaFileListTask() {
 		final SchemaFileListTask task = new SchemaFileListTask(context.getConfig());
+		initImportTask(task);
+		return task;
+	}
+	
+	/**
+	 * Create CreateUserSQLTask
+	 * 
+	 * @return CreateUserSQLTask
+	 */
+	public CreateUserSQLTask createCreateUserSQLTask() {
+		final CreateUserSQLTask task = new CreateUserSQLTask(context.getConfig());
 		initImportTask(task);
 		return task;
 	}

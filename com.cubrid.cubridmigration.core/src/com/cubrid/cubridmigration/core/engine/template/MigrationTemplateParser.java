@@ -580,8 +580,9 @@ public final class MigrationTemplateParser {
 			dir.setAttribute(TemplateTags.ATTR_DIR, config.getFileRepositroyPath());
 			dir.setAttribute(TemplateTags.ATTR_TIMEZONE, config.getTargetFileTimeZone());
 			dir.setAttribute(TemplateTags.ATTR_CHARSET, config.getTargetCharSet());
-			dir.setAttribute(TemplateTags.ATTR_ADD_SCHEMA, config.getOfflineUserSchema().toString());
+			dir.setAttribute(TemplateTags.ATTR_ADD_SCHEMA, getBooleanString(config.isAddUserSchema()));
 			dir.setAttribute(TemplateTags.ATTR_SPLIT_SCHEMA, getBooleanString(config.isSplitSchema()));
+			dir.setAttribute(TemplateTags.ATTR_CREATE_USER_SQL, getBooleanString(config.isCreateUserSQL()));
 
 			dir.setAttribute(TemplateTags.ATTR_ONETABLEONEFILE,
 					getBooleanString(config.isOneTableOneFile()));
@@ -804,6 +805,7 @@ public final class MigrationTemplateParser {
 			tbe.setAttribute(TemplateTags.ATTR_BEFORE_SQL, setc.getSqlBefore());
 			tbe.setAttribute(TemplateTags.ATTR_AFTER_SQL, setc.getSqlAfter());
 			tbe.setAttribute(TemplateTags.ATTR_OWNER, setc.getOwner());
+			tbe.setAttribute(TemplateTags.ATTR_TARGET_SCHEMA, setc.getTargetOwner());
 			if (setc.isEnableExpOpt()) {
 				tbe.setAttribute(TemplateTags.ATTR_EXP_OPT_COL,
 						getBooleanString(setc.isEnableExpOpt()));
