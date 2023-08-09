@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Search Solution Corporation. All rights reserved by Search Solution. 
+ * Copyright 2016 CUBRID Corporation. All rights reserved by Search Solution. 
  *
  * Redistribution and use in source and binary forms, with or without modification, 
  * are permitted provided that the following conditions are met: 
@@ -29,35 +29,55 @@
  */
 package com.cubrid.cubridmigration.core.engine.report;
 
-import com.cubrid.cubridmigration.core.engine.event.MigrationEvent;
+import java.io.Serializable;
 
 /**
- * MigrationReporter should be realized.
+ * ObjNameMigration
  * 
- * @author Kevin Cao
- * @version 1.0 - 2011-8-5 created by Kevin Cao
+ * @author CUBRID
+ *
  */
-public interface IMigrationReporter {
-
-	static final String HIS_FILE_EX = ".mh";
-	static final String REPORT_FILE_EX = ".report";
-	static final String LOG_FILE_EX = ".log";
-	static final String TXT_FILE_EX = ".txt";
-	static final String RENAME_FILE_EX = ".rename";
-	static final String SCRIPT_FILE_EX = ".script";
-	static final String UTF_8 = "utf-8";
-
-	/**
-	 * When migration is finished including broken or completed.
-	 * 
-	 */
-	void finished();
-
-	/**
-	 * Add event to reporter
-	 * 
-	 * @param event MigrationEvent
-	 */
-	void addEvent(MigrationEvent event);
-
+public class ObjNameMigrationResult implements 
+		Serializable {
+	
+	private static final long serialVersionUID = -7152528868537532963L;
+	private String objType;
+	private String objSourceName;
+	private String objTargetName;
+	
+	public ObjNameMigrationResult() { }
+	
+	public ObjNameMigrationResult(String objType, String objSourceName, String objTargetName) {
+		this.objType = objType;
+		this.objSourceName = objSourceName;
+		this.objTargetName = objTargetName;
+	}
+	
+	public String getObjType() {
+		return objType;
+	}
+	
+	public void setObjType(String objType) {
+		this.objType = objType;
+	}
+	
+	public String getObjSourceName() {
+		return objSourceName;
+	}
+	
+	public void setObjSourceName(String objSourceName) {
+		this.objSourceName = objSourceName;
+	}
+	
+	public String getObjTargetName() {
+		return objTargetName;
+	}
+	
+	public void setObjTargetName(String objTargetName) {
+		this.objTargetName = objTargetName;
+	}
+	
+	public static long getSerialversionuid() {
+		return serialVersionUID;
+	}
 }

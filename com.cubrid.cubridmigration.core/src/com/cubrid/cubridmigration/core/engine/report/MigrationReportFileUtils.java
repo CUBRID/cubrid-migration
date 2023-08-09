@@ -114,5 +114,16 @@ public abstract class MigrationReportFileUtils {
 		return CUBRIDIOUtils.extractFromZip(PathUtils.getReportDir() + mhFile,
 				IMigrationReporter.SCRIPT_FILE_EX, getReportTempDir(mhFile));
 	}
-
+	
+	/**
+	 * extract *.rename file from *.mh file
+	 * 
+	 * @param mhFile *.mh
+	 * @return *.rename
+	 * @throws IOException ex
+	 */
+	public static String extractRenameObject(String mhFile) throws IOException {
+		return CUBRIDIOUtils.extractFromZip(PathUtils.getReportDir() + mhFile,
+				IMigrationReporter.RENAME_FILE_EX, getReportTempDir(mhFile));
+	}
 }

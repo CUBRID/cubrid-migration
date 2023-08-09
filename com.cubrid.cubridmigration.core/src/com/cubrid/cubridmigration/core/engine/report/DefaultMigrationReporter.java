@@ -34,6 +34,10 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import org.apache.log4j.Logger;
 
@@ -83,6 +87,9 @@ public abstract class DefaultMigrationReporter implements
 
 	protected PrintWriter pwNonsupport;
 	protected String nonSupFileName;
+	
+	protected PrintWriter pwRenameObj;
+	protected String renameObjFile;
 
 	protected String briefFile;
 
@@ -127,6 +134,13 @@ public abstract class DefaultMigrationReporter implements
 			pwNonsupport = new PrintWriter(new OutputStreamWriter(new FileOutputStream(
 					nonSupportFile), UTF_8));
 			nonSupFileName = nonSupportFile.getName();
+			// Changed object name file
+			File reObjFile = new File(reportDir + "migration_renameobj_" + timeTag 
+					+ RENAME_FILE_EX);
+			PathUtils.createFile(reObjFile);
+			pwRenameObj = new PrintWriter(new OutputStreamWriter(new FileOutputStream(
+					reObjFile), UTF_8));
+			renameObjFile = reObjFile.getName();
 			//Configuration file
 			configFile = "migration_script_" + timeTag + SCRIPT_FILE_EX;
 			MigrationTemplateParser.save(config, reportDir + configFile, false);
@@ -212,12 +226,87 @@ public abstract class DefaultMigrationReporter implements
 			report.getBrief().setStatus(MigrationBriefReport.MS_CANCELED);
 		}
 	}
+	
+	/**
+	 * Write renamed objects to a file
+	 */
+	public void writeRenameObjectFile() {
+		List<ObjNameMigrationResult> renameObjectList = report.getObjNameResult();
+		Map<String, List<ObjNameMigrationResult>> renameObjectMap = new HashMap<String, List<ObjNameMigrationResult>>();
+		
+		for (ObjNameMigrationResult onmr : renameObjectList) {
+			if (renameObjectMap.containsKey(onmr.getObjType())) {
+				renameObjectMap.get(onmr.getObjType()).add(onmr);
+			} else {
+				List<ObjNameMigrationResult> list = new ArrayList<ObjNameMigrationResult>();
+				list.add(onmr);
+				renameObjectMap.put(onmr.getObjType(), list);
+			}
+		}
+		
+		List<ObjNameMigrationResult> list = null;
+		// schema
+		pwRenameObj.append("[ SCHEMA(s) ]");
+		list = renameObjectMap.get(DBObject.OBJ_TYPE_SCHEMA);
+		appendRenameObj(list);
+		
+		// table
+		pwRenameObj.append("[ TABLE(s) ]");
+		list = renameObjectMap.get(DBObject.OBJ_TYPE_TABLE);
+		appendRenameObj(list);
+		
+		// view
+		pwRenameObj.append("[ VIEW(s) ]");
+		list = renameObjectMap.get(DBObject.OBJ_TYPE_VIEW);
+		appendRenameObj(list);
+		
+		// serial
+		pwRenameObj.append("[ SERIAL(s) ]");
+		list = renameObjectMap.get(DBObject.OBJ_TYPE_SEQUENCE);
+		appendRenameObj(list);
+		
+		//synonym
+		pwRenameObj.append("[ SYNONYM(s) ]");
+		list = renameObjectMap.get(DBObject.OBJ_TYPE_SYNONYM);
+		appendRenameObj(list);
+		
+		pwRenameObj.flush();
+	}
+	
+	/**
+	 * Add renamed objects to write buffer
+	 * 
+	 * @param list List<ObjNameMigrationResult>
+	 */
+	private void appendRenameObj(List<ObjNameMigrationResult> list) {
+		String lineSeparator = System.getProperty("line.separator");
+		String tabSeparator = "  ";
+		String arrow = " --> ";
+		
+		if (list != null) {
+			pwRenameObj.append(lineSeparator);
+			for (ObjNameMigrationResult onmr : list) {
+				pwRenameObj.append(tabSeparator)
+				.append(onmr.getObjSourceName())
+				.append(arrow)
+				.append(onmr.getObjTargetName())
+				.append(lineSeparator);
+			}
+			pwRenameObj.append(lineSeparator);
+		} else {
+			pwRenameObj.append(lineSeparator);
+			pwRenameObj.append(lineSeparator);
+		}		
+	}
 
 	/**
 	 * When migration finished.
 	 */
 	public void finished() {
 		try {
+			writeRenameObjectFile();
+			
+			Closer.close(pwRenameObj);
 			Closer.close(pwLog);
 			Closer.close(pwNonsupport);
 
@@ -236,7 +325,8 @@ public abstract class DefaultMigrationReporter implements
 			final String[] inputFiles = new String[] {fullBriefFile, reportFile.getCanonicalPath(),
 					PathUtils.getReportDir() + logFileName,
 					PathUtils.getReportDir() + nonSupFileName,
-					PathUtils.getReportDir() + configFile};
+					PathUtils.getReportDir() + configFile,
+					PathUtils.getReportDir() + renameObjFile};
 			CUBRIDIOUtils.zip(PathUtils.getReportDir() + fileName, inputFiles, true);
 		} catch (Exception e) {
 			LOG.error("", e);

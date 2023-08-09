@@ -805,6 +805,7 @@ public final class MigrationTemplateParser {
 			tbe.setAttribute(TemplateTags.ATTR_BEFORE_SQL, setc.getSqlBefore());
 			tbe.setAttribute(TemplateTags.ATTR_AFTER_SQL, setc.getSqlAfter());
 			tbe.setAttribute(TemplateTags.ATTR_OWNER, setc.getOwner());
+			tbe.setAttribute(TemplateTags.ATTR_TARGET_SCHEMA, setc.getTargetOwner());
 			if (setc.isEnableExpOpt()) {
 				tbe.setAttribute(TemplateTags.ATTR_EXP_OPT_COL,
 						getBooleanString(setc.isEnableExpOpt()));

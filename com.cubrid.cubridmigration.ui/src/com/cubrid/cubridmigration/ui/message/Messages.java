@@ -209,6 +209,7 @@ public class Messages extends
 	public static String colReportFile;
 	public static String colScale;
 	public static String colSourceDataType;
+	public static String colSourceObject;
 	public static String colSQLFile;
 	public static String colStartTime;
 	public static String colStatus;
@@ -216,6 +217,7 @@ public class Messages extends
 	public static String colTableName;
 	public static String colTargetColumn;
 	public static String colTargetDataType;
+	public static String colTargetObject;
 	public static String colTargetTable;
 	public static String colTotal;
 	public static String colTotalElapsed;
@@ -387,6 +389,7 @@ public class Messages extends
 	public static String lblAuthentication;
 	public static String lblAutoIncrement;
 	public static String lblCacheNum;
+	public static String lblRenamedObject;
 	public static String lblChangeTargetTable;
 	public static String lblCharset;
 	public static String lblClearAll;
