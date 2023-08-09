@@ -86,6 +86,8 @@ public class MigrationReportUIController {
 	public static final String[] TABLE_HEADER_DATA = new String[] {Messages.colTableName,
 			Messages.colTotal, Messages.colExpCount, Messages.colExpTime, Messages.colImpCount,
 			Messages.colImpTime, Messages.colCompleted, Messages.colTotalElapsed, Messages.colOwnerName};
+	
+	public static final String[] TABLE_HEADER_OBJ_NAME_CHANGE = new String[] {Messages.colType, Messages.colSourceObject, Messages.colTargetObject};
 
 	/**
 	 * @param reporter MigrationReporter
@@ -98,6 +100,24 @@ public class MigrationReportUIController {
 			if (srcNonSptFile != null) {
 				CUBRIDIOUtils.copyFile(new File(srcNonSptFile), new File(noSupportedFile));
 				return ("\r\n") + (noSupportedFile);
+			}
+		} catch (IOException e) {
+			LOG.error(e);
+		}
+		return "";
+	}
+	
+	/**
+	 * @param reporter MigrationReporter
+	 * @param renameObjectFile String
+	 * @return the output file name will be returned if successfully
+	 */
+	static String extractRenameObjectReport(MigrationReporter reporter, String renameObjectFile) {
+		try {
+			String reObjectFile = MigrationReportFileUtils.extractRenameObject(reporter.getFileName());
+			if (reObjectFile != null) {
+				CUBRIDIOUtils.copyFile(new File(reObjectFile), new File(renameObjectFile));
+				return ("\r\n") + (renameObjectFile);
 			}
 		} catch (IOException e) {
 			LOG.error(e);
@@ -286,11 +306,13 @@ public class MigrationReportUIController {
 		String xlsFile = filePartName + ".xls";
 		String logFile = filePartName + ".log";
 		String noSupportedFile = filePartName + ".txt";
+		String renameObjectFile = filePartName + ".rename";
 
 		StringBuffer savedFiles = new StringBuffer();
 		savedFiles.append(saveReportToXls(report, xlsFile));
 		savedFiles.append(extracNonSupportedReport(reporter, noSupportedFile));
 		savedFiles.append(extractLogs(reporter, logFile));
+		savedFiles.append(extractRenameObjectReport(reporter, renameObjectFile));
 		return savedFiles.toString();
 	}
 

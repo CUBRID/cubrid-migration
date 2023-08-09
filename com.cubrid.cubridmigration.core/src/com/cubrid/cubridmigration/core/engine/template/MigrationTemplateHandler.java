@@ -624,6 +624,7 @@ public final class MigrationTemplateHandler extends
 		}
 		else if (TemplateTags.TAG_SCHEMA_INFO.equals(qName)) {
 			Schema schema = new Schema();
+			schema.setName(attributes.getValue(TemplateTags.ATTR_SCHEMA_NAME));
 			schema.setTargetSchemaName(attributes.getValue(TemplateTags.ATTR_TARGET_SCHEMA));
 			schema.setMigration(true);
 			config.addScriptSchemaMapping(attributes.getValue(TemplateTags.ATTR_SCHEMA_NAME), schema);
@@ -853,8 +854,9 @@ public final class MigrationTemplateHandler extends
 								: value.charAt(0));
 			}
 			config.setTargetLOBRootPath(attr.getValue(TemplateTags.ATTR_LOB_ROOT_DIR));
-			config.setAddUserSchema(Boolean.parseBoolean(attr.getValue(TemplateTags.ATTR_ADD_SCHEMA)));
+			config.setAddUserSchema(getBoolean(attr.getValue(TemplateTags.ATTR_ADD_SCHEMA), false));
 			config.setSplitSchema(getBoolean(attr.getValue(TemplateTags.ATTR_SPLIT_SCHEMA), false));
+			config.setCreateUserSQL(getBoolean(attr.getValue(TemplateTags.ATTR_CREATE_USER_SQL), false));
 			config.createDumpfile(config.isSplitSchema());
 		} else if (TemplateTags.TAG_PARTITION_DDL.equals(qName)) {
 			sqlStatement = new StringBuffer();

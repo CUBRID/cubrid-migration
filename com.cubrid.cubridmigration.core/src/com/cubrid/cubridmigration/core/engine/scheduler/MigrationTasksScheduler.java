@@ -130,8 +130,14 @@ public class MigrationTasksScheduler {
 		createGrants();
 		updateIndexStatistics();
 		
-		if (!config.targetIsOnline() && config.isSplitSchema()) {
-			createSchemaFileList();
+		if (!config.targetIsOnline()) {
+			if (config.isSplitSchema()) {
+				createSchemaFileList();
+			}
+			
+			if (config.isCreateUserSQL()) {
+				createCreateUserSQL();
+			}
 		}
 	}
 
@@ -570,6 +576,10 @@ public class MigrationTasksScheduler {
 	 */
 	private void createSchemaFileList() {
 		executeTask(taskFactory.createSchemaFileListTask());
+	}
+	
+	private void createCreateUserSQL() {
+		executeTask(taskFactory.createCreateUserSQLTask());
 	}
 
 	public void setTaskFactory(MigrationTaskFactory taskFactory) {

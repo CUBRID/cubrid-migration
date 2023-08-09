@@ -37,7 +37,10 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintStream;
 import java.net.MalformedURLException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.TimeZone;
 
@@ -58,6 +61,7 @@ import com.cubrid.cubridmigration.core.connection.JDBCDriverManager;
 import com.cubrid.cubridmigration.core.dbmetadata.DBSchemaInfoFetcherFactory;
 import com.cubrid.cubridmigration.core.dbmetadata.IDBSchemaInfoFetcher;
 import com.cubrid.cubridmigration.core.dbobject.Catalog;
+import com.cubrid.cubridmigration.core.dbobject.DBObject;
 import com.cubrid.cubridmigration.core.dbtype.DatabaseType;
 import com.cubrid.cubridmigration.core.engine.MigrationProcessManager;
 import com.cubrid.cubridmigration.core.engine.ThreadUtils;
@@ -67,6 +71,7 @@ import com.cubrid.cubridmigration.core.engine.report.DataFileImportResult;
 import com.cubrid.cubridmigration.core.engine.report.MigrationBriefReport;
 import com.cubrid.cubridmigration.core.engine.report.MigrationOverviewResult;
 import com.cubrid.cubridmigration.core.engine.report.MigrationReport;
+import com.cubrid.cubridmigration.core.engine.report.ObjNameMigrationResult;
 import com.cubrid.cubridmigration.core.engine.report.RecordMigrationResult;
 import com.cubrid.cubridmigration.core.engine.template.MigrationTemplateParser;
 import com.cubrid.cubridmigration.cubrid.CUBRIDTimeUtil;
@@ -432,6 +437,9 @@ public class StartCommandHandler implements
 		}
 		//print report
 		printReport(migrationReporter);
+		
+		//print rename object report
+		printRenameObjReport(migrationReporter);
 	}
 
 	/**
@@ -562,6 +570,96 @@ public class StartCommandHandler implements
 			}
 		} catch (IOException ex) {
 			LOG.error("", ex);
+		}
+	}
+	
+	/**
+	 * Print rename object report after migration.
+	 * 
+	 * @param migrationReporter DefaultMigrationReporter
+	 */
+	private void printRenameObjReport(ConsoleMigrationReporter migrationReporter) {
+		MigrationReport mr = migrationReporter.getReport();
+		
+		String reObjFile = PathUtils.getReportDir() + "rename_object_"
+				+ CUBRIDTimeUtil.formatDateTime(mr.getTotalStartTime(), "yyyy_MM_dd_HH_mm_ss_SSS",
+						TimeZone.getDefault()) + ".txt";
+		File renameObjectFile = new File(reObjFile);
+		PathUtils.deleteFile(renameObjectFile);
+		try {
+			PathUtils.createFile(renameObjectFile);
+			BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(
+					new FileOutputStream(renameObjectFile), "utf8"));
+			
+			List<ObjNameMigrationResult> onmrList = mr.getObjNameResult();
+			Map<String, List<ObjNameMigrationResult>> map = new HashMap<String, List<ObjNameMigrationResult>>();
+			for (ObjNameMigrationResult onmr : onmrList) {
+				if (map.containsKey(onmr.getObjType())) {
+					map.get(onmr.getObjType()).add(onmr);
+				} else {
+					List<ObjNameMigrationResult> tempList = new ArrayList<ObjNameMigrationResult>();
+					tempList.add(onmr);
+					map.put(onmr.getObjType(), tempList);
+				}
+			}
+			
+			try {
+				List<ObjNameMigrationResult> list = null;
+				
+				bw.append("[ SCHEMA(s) ]");
+				list = map.get(DBObject.OBJ_TYPE_SCHEMA);
+				getRenameObjRow(list, bw);
+				
+				bw.append("[ TABLE(s) ]");
+				list = map.get(DBObject.OBJ_TYPE_TABLE);
+				getRenameObjRow(list, bw);
+				
+				bw.append("[ VIEW(s) ]");
+				list = map.get(DBObject.OBJ_TYPE_VIEW);
+				getRenameObjRow(list, bw);
+				
+				bw.append("[ SERIAL(s) ]");
+				list = map.get(DBObject.OBJ_TYPE_SEQUENCE);
+				getRenameObjRow(list, bw);
+				
+				bw.append("[ SYNONYM(s) ]");
+				list = map.get(DBObject.OBJ_TYPE_SYNONYM);
+				getRenameObjRow(list, bw);
+				
+				bw.flush();
+			} finally {
+				bw.close();
+			}
+		} catch (IOException ex) {
+			LOG.error("", ex);
+		}
+	}
+	
+	/**
+	 * Print renamed objects
+	 * 
+	 * @param list List<ObjNameMigrationResult>
+	 * @param bw BufferedWriter
+	 * @throws IOException
+	 */
+	private void getRenameObjRow(List<ObjNameMigrationResult> list, BufferedWriter bw) throws IOException {
+		String lineSeparator = System.getProperty("line.separator");
+		String tabSeparator = "  ";
+		String arrow = " --> ";
+		
+		if (list != null) {
+			bw.append(lineSeparator);
+			for (ObjNameMigrationResult onmr : list) {
+				bw.append(tabSeparator)
+				.append(onmr.getObjSourceName())
+				.append(arrow)
+				.append(onmr.getObjTargetName())
+				.append(lineSeparator);
+			}
+			bw.append(lineSeparator);
+		} else {
+			bw.append(lineSeparator);
+			bw.append(lineSeparator);
 		}
 	}
 
