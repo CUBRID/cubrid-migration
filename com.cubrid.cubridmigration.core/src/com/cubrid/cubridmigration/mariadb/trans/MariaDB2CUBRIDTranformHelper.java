@@ -98,16 +98,13 @@ public class MariaDB2CUBRIDTranformHelper extends
 		}
 		if (cubDTHelper.isBinary(cubridColumn.getDataType())) {
 			if ("bit".equals(srcColumn.getDataType())) {
-//				final long factor = expectedPrecision % 8;
-//				expectedPrecision = factor == 0 ? expectedPrecision
-//						: (expectedPrecision - factor + 8);
-//				cubridColumn.setPrecision((int) expectedPrecision);
-//				return;
-				expectedPrecision = Math.min((expectedPrecision + 3) * 8, DataTypeConstant.CUBRID_MAXSIZE);
+				final long factor = expectedPrecision % 8;
+				expectedPrecision = factor == 0 ? expectedPrecision
+						: (expectedPrecision - factor + 8);
 				cubridColumn.setPrecision((int) expectedPrecision);
 				return;
 			}
-			expectedPrecision = Math.min((expectedPrecision + 3) * 8, DataTypeConstant.CUBRID_MAXSIZE);
+			expectedPrecision = Math.min(expectedPrecision * 8, DataTypeConstant.CUBRID_MAXSIZE);
 			cubridColumn.setPrecision((int) expectedPrecision);
 		}
 	}
