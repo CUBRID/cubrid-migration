@@ -556,10 +556,8 @@ public class SchemaMappingPage extends MigrationWizardPage {
 	private void setOnlineSchemaMappingPage() {
 		setOnlineData();
 		getSchemaValues();
+		setOnlineEditor();
 		
-		if (tarCatalog.isDbHasUserSchema()) {
-			setOnlineEditor();
-		}
 	}
 	
 	private void setOnlineData() {
