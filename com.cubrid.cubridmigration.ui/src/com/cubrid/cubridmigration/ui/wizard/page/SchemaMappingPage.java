@@ -43,6 +43,7 @@ import org.eclipse.jface.dialogs.PageChangedEvent;
 import org.eclipse.jface.dialogs.PageChangingEvent;
 import org.eclipse.jface.viewers.CellEditor;
 import org.eclipse.jface.viewers.ColumnWeightData;
+import org.eclipse.jface.viewers.ComboBoxCellEditor;
 import org.eclipse.jface.viewers.ICellModifier;
 import org.eclipse.jface.viewers.ILabelProviderListener;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
@@ -95,7 +96,7 @@ public class SchemaMappingPage extends MigrationWizardPage {
 	List<Schema> srcSchemaList = null;
 	List<Schema> tarSchemaList = null;
 	
-	EditableComboBoxCellEditor comboEditor = null;
+	ComboBoxCellEditor comboEditor = null;
 	
 	TextCellEditor textEditor = null;
 	
@@ -358,14 +359,14 @@ public class SchemaMappingPage extends MigrationWizardPage {
 	}
 	
 	private void setOnlineEditor() {
-		comboEditor = new EditableComboBoxCellEditor(srcTableViewer.getTable(), tarSchemaNameArray);
+		comboEditor = new EditableComboBoxCellEditor(srcTableViewer.getTable(), tarSchemaNameArray, SWT.READ_ONLY);
 		
 		CellEditor[] editors = new CellEditor[] {
 				new CheckboxCellEditorFactory().getCellEditor(srcTableViewer.getTable()),
 				null,
 				null,
 				null,
-				tarCatalog.isDBAGroup() ? comboEditor : null,
+				comboEditor,
 				null
 		};
 		
@@ -421,15 +422,7 @@ public class SchemaMappingPage extends MigrationWizardPage {
 				return 0;
 			}
 			public String returnValue(int index, TableItem item) {
-				if (index != -1) {
-					return tarSchemaNameArray[index];
-				} else {
-					String testValue = item.getText();
-					
-					MessageDialog.openError(getShell(), Messages.msgError, "This schema does not exist");
-					
-					return testValue;
-				}
+				return tarSchemaNameArray[index];
 			}
 			
 			private void addSelectCheckboxValue() {
