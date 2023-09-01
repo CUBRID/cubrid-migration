@@ -112,6 +112,10 @@ public class ExportTaskTest {
 			public DBObject exportSynonym(String syn) {
 				return null;
 			}
+			
+			public DBObject exportGrant(String gr) {
+				return null;
+			}
 
 			public void exportAllRecords(RecordExportedListener oneNewRecord) {
 

@@ -88,4 +88,12 @@ public interface IMigrationExporter {
 	 * @return schema's DDL
 	 */
 	public DBObject exportSynonym(String syn);
+	
+	/**
+	 * Default return schema's DDL
+	 * 
+	 * @param gr Grant name with schema name :schema.grant
+	 * @return schema's DDL
+	 */
+	public DBObject exportGrant(String gr);
 }

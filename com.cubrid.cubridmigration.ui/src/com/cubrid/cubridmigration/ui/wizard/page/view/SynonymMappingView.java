@@ -277,6 +277,10 @@ public class SynonymMappingView extends
 		 * @param editable
 		 */
 		void setEditable(boolean editable) {
+			if (config.targetIsOnline() 
+					&& Integer.parseInt(config.getTargetDBVersion()) < 112) {
+				editable = false;
+			}
 			txtName.setEditable(editable);
 			txtOwnerName.setEditable(editable);
 			txtObjectOwnerName.setEditable(editable);

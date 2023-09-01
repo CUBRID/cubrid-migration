@@ -76,6 +76,8 @@ public class ConfirmationPage extends
 		BaseConfirmationPage {
 	private static final Logger LOG = LogUtil.getLogger(ConfirmationPage.class);
 
+	private final static int USERSCHEMA_VERSION = 112;
+
 	/**
 	 * Get the migration configuration summary
 	 * 
@@ -634,7 +636,7 @@ public class ConfirmationPage extends
 			}
 		}
 		//synonym
-		if (!migration.targetIsOnline() || Integer.parseInt(migration.getTargetDBVersion()) >= 112) {
+		if (!migration.targetIsOnline() || Integer.parseInt(migration.getTargetDBVersion()) >= USERSCHEMA_VERSION) {
 			List<SourceSynonymConfig> sourceConfigSynonymList = migration.getExpSynonymCfg();
 			if (!sourceConfigSynonymList.isEmpty()) {
 				text.append(Messages.confrimExportSynonym).append(lineSeparator);
@@ -649,19 +651,20 @@ public class ConfirmationPage extends
 			}
 		}
 		//grant
-		List<SourceGrantConfig> sourceConfigGrantList = migration.getExpGrantCfg();
-		if (!sourceConfigGrantList.isEmpty()) {
-			text.append(Messages.confrimExportGrants).append(lineSeparator);
-			for (SourceConfig sourceConfig : sourceConfigGrantList) {
-				if (!sourceConfig.isCreate()) {
-					continue;
+		if (!migration.targetIsOnline() || Integer.parseInt(migration.getTargetDBVersion()) >= USERSCHEMA_VERSION) {
+			List<SourceGrantConfig> sourceConfigGrantList = migration.getExpGrantCfg();
+			if (!sourceConfigGrantList.isEmpty()) {
+				text.append(Messages.confrimExportGrants).append(lineSeparator);
+				for (SourceConfig sourceConfig : sourceConfigGrantList) {
+					if (!sourceConfig.isCreate()) {
+						continue;
+					}
+					text.append(tabSeparator).append(sourceConfig.getName()).append(tabSeparator).append(
+							" -> ").append(tabSeparator).append(sourceConfig.getTarget()).append(
+							lineSeparator);
 				}
-				text.append(tabSeparator).append(sourceConfig.getName()).append(tabSeparator).append(
-						" -> ").append(tabSeparator).append(sourceConfig.getTarget()).append(
-						lineSeparator);
 			}
 		}
-		
 		return text.toString();
 	}
 

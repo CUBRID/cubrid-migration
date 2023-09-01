@@ -123,6 +123,7 @@ public class ObjectMappingPage extends
 		MigrationWizardPage implements
 		IRefreshableView {
 	private static final Logger LOG = LogUtil.getLogger(ObjectMappingPage.class);
+	private static final int USERSCHEMA_VERSION = 112;
 	private SourceDBExploreView tvSourceDBObjects;
 	private final Map<String, AbstractMappingView> node2ViewMapping = new HashMap<String, AbstractMappingView>();
 
@@ -176,7 +177,11 @@ public class ObjectMappingPage extends
 					} 
 			}
 			
-			if (cfg.targetIsOnline() && !cfg.isTargetDBAGroup()) {
+			if (cfg.targetIsOnline() 
+					&& Integer.parseInt(cfg.getTargetDBVersion()) < USERSCHEMA_VERSION) {
+				MessageDialog.openWarning(getShell(), Messages.msgWarning,
+						Messages.msgWarningImpossibleMigrationSynonymGrant);
+			} else if (cfg.targetIsOnline() && !cfg.isTargetDBAGroup()) {
 				MessageDialog.openWarning(getShell(), Messages.msgWarning, 
 						Messages.msgWarningImpossibleMigrationGrant);
 			}

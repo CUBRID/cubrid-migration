@@ -422,6 +422,22 @@ public class Schema extends DBObject implements
 	}
 	
 	/**
+	 * Retrieves the grant by name
+	 * 
+	 * @param name grant name
+	 * @return Grant definition
+	 */
+	public Grant getGrant(String owner, String name) {
+		for (Grant gr : grantList) {
+			if (gr.getOwner().equalsIgnoreCase(owner) 
+					&& gr.getName().equalsIgnoreCase(name)) {
+				return gr;
+			}
+		}
+		return null;
+	}
+	
+	/**
 	 * Retrieves the synonym by name
 	 * 
 	 * @param name synonym name

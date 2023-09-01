@@ -32,7 +32,6 @@ package com.cubrid.cubridmigration.core.engine.importer;
 import com.cubrid.cubridmigration.core.dbobject.DBObject;
 import com.cubrid.cubridmigration.core.dbobject.Function;
 import com.cubrid.cubridmigration.core.dbobject.Procedure;
-import com.cubrid.cubridmigration.core.dbobject.Schema;
 import com.cubrid.cubridmigration.core.dbobject.Trigger;
 import com.cubrid.cubridmigration.core.engine.IMigrationEventHandler;
 import com.cubrid.cubridmigration.core.engine.MigrationContext;
