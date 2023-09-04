@@ -611,7 +611,7 @@ public class SchemaMappingPage extends MigrationWizardPage {
 		config = wizard.getMigrationConfig();
 
 		if (firstVisible) {
-			setTitle(Messages.schemaMappingPageTitle);
+			setTitle(wizard.getStepNoMsg(this) + Messages.schemaMappingPageTitle);
 			if ((config.targetIsOnline() && !wizard.getTargetCatalog().isDBAGroup())
 					|| (!config.targetIsOnline()) && !config.isAddUserSchema()) {
 				setDescription(Messages.schemaMappingPageDescriptionUncorrectable);
