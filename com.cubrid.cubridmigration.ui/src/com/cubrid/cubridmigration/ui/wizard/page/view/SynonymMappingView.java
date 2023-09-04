@@ -61,6 +61,8 @@ import com.cubrid.cubridmigration.ui.wizard.utils.VerifyResultMessages;
 public class SynonymMappingView extends
 		AbstractMappingView {
 
+	private static final int USERSCHEMA_VERSION = 112;
+	
 	private Composite container;
 	private SynonymInfoComposite grpSource;
 	private SynonymInfoComposite grpTarget;
@@ -277,6 +279,10 @@ public class SynonymMappingView extends
 		 * @param editable
 		 */
 		void setEditable(boolean editable) {
+			if (config.targetIsOnline() 
+					&& Integer.parseInt(config.getTargetDBVersion()) < USERSCHEMA_VERSION) {
+				editable = false;
+			}
 			txtName.setEditable(editable);
 			txtOwnerName.setEditable(editable);
 			txtObjectOwnerName.setEditable(editable);

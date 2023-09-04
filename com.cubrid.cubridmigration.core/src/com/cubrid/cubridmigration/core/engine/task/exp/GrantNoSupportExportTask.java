@@ -30,23 +30,23 @@
 package com.cubrid.cubridmigration.core.engine.task.exp;
 
 import com.cubrid.cubridmigration.core.engine.config.MigrationConfiguration;
-import com.cubrid.cubridmigration.core.engine.config.SourceSynonymConfig;
+import com.cubrid.cubridmigration.core.engine.config.SourceGrantConfig;
 import com.cubrid.cubridmigration.core.engine.event.MigrationNoSupportEvent;
 import com.cubrid.cubridmigration.core.engine.task.ExportTask;
 
 /**
- * SynonymNoSupportExportTask Description
+ * GrantNoSupportExportTask Description
  * 
  * @author Dongmin Kim
  */
-public class SynonymNoSupportExportTask extends
-		ExportTask {
+public class GrantNoSupportExportTask extends 
+		ExportTask{
 	protected MigrationConfiguration config;
-	protected SourceSynonymConfig sn;
+	protected SourceGrantConfig gr;
 	
-	public SynonymNoSupportExportTask(MigrationConfiguration config, SourceSynonymConfig sn) {
+	public GrantNoSupportExportTask(MigrationConfiguration config, SourceGrantConfig gr) {
 		this.config = config;
-		this.sn = sn;
+		this.gr = gr;
 	}
 	
 	/**
@@ -55,6 +55,6 @@ public class SynonymNoSupportExportTask extends
 	@Override
 	protected void executeExportTask() {
 		eventHandler.handleEvent(new MigrationNoSupportEvent(
-				exporter.exportSynonym(sn.getOwner() + "." + sn.getName())));
+				exporter.exportGrant(gr.getOwner() + "." + gr.getName())));
 	}
 }

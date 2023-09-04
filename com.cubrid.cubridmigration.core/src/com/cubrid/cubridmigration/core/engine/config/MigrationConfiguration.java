@@ -383,6 +383,21 @@ public class MigrationConfiguration {
 	}
 	
 	/**
+	 * Get exporting grant
+	 * 
+	 * @param schema name
+	 * @param name of the object
+	 * @return grant
+	 */
+	public Grant getExpGrant(String schema, String name) {
+		Schema sc = srcCatalog.getSchemaByName(schema);
+		if (sc != null) {
+			return sc.getGrant(sc.getName(), name);
+		}
+		return null;
+	}
+	
+	/**
 	 * Add grant to export configuration
 	 * 
 	 * @param schema

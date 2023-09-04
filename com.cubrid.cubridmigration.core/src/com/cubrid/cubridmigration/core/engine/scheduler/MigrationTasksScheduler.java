@@ -127,7 +127,12 @@ public class MigrationTasksScheduler {
 			createProcedures();
 			createTriggers();
 		}
-		createGrants();
+		if (config.targetIsOnline()
+				&& Integer.parseInt(config.getTargetDBVersion()) < USERSCHEMA_VERSION) {
+			createNoSupportGrants();
+		} else {
+			createGrants();
+		}
 		updateIndexStatistics();
 		
 		if (!config.targetIsOnline()) {
@@ -560,6 +565,15 @@ public class MigrationTasksScheduler {
 		List<SourceGrantConfig> grants = config.getExpGrantCfg();
 		for (SourceGrantConfig gr : grants) {
 			executeTask(taskFactory.createExportGrantTask(gr));
+		}
+		await();
+	}
+	
+	protected void createNoSupportGrants() {
+		MigrationConfiguration config = context.getConfig();
+		List<SourceGrantConfig> grants = config.getExpGrantCfg();
+		for (SourceGrantConfig gr : grants) {
+			executeTask(taskFactory.createExportNoSupportGrantTask(gr));
 		}
 		await();
 	}

@@ -59,6 +59,7 @@ import com.cubrid.cubridmigration.core.engine.task.exp.CSVTableSchemaExportTask;
 import com.cubrid.cubridmigration.core.engine.task.exp.FKExportTask;
 import com.cubrid.cubridmigration.core.engine.task.exp.FunctionExportTask;
 import com.cubrid.cubridmigration.core.engine.task.exp.GrantExportTask;
+import com.cubrid.cubridmigration.core.engine.task.exp.GrantNoSupportExportTask;
 import com.cubrid.cubridmigration.core.engine.task.exp.IndexExportTask;
 import com.cubrid.cubridmigration.core.engine.task.exp.PKExportTask;
 import com.cubrid.cubridmigration.core.engine.task.exp.ProcedureExportTask;
@@ -257,6 +258,18 @@ public class MigrationTaskFactory {
 	 */
 	public GrantExportTask createExportGrantTask(SourceGrantConfig gr) {
 		GrantExportTask task = new GrantExportTask(context.getConfig(), gr);
+		initExportTask(task, false);
+		return task;
+	}
+	
+	/**
+	 * createNoSupportExportGrantTask
+	 * 
+	 * @param gr Grant
+	 * @return GrantNoSupportExportTask
+	 */
+	public GrantNoSupportExportTask createExportNoSupportGrantTask(SourceGrantConfig gr) {
+		GrantNoSupportExportTask task = new GrantNoSupportExportTask(context.getConfig(), gr);
 		initExportTask(task, false);
 		return task;
 	}
