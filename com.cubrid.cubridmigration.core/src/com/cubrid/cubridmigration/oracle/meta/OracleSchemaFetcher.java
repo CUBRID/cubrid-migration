@@ -98,6 +98,7 @@ public final class OracleSchemaFetcher extends
 
 	private static final String OBJECT_TYPE_FUNCTION = "FUNCTION";
 	private static final String OBJECT_TYPE_PROCEDURE = "PROCEDURE";
+	@SuppressWarnings("unused")
 	private static final String OBJECT_TYPE_SEQUENCE = "SEQUENCE";
 	private static final String OBJECT_TYPE_TABLE = "TABLE";
 	private static final String OBJECT_TYPE_TRIGGER = "TRIGGER";
@@ -212,10 +213,6 @@ public final class OracleSchemaFetcher extends
 				LOG.debug("[VAR]tableList.count=" + tableList.size());
 			}
 			for (Table table : tableList) {
-				String ddl = getObjectDDL(conn, schema.getName(), table.getName(),
-						OBJECT_TYPE_TABLE);
-				table.setDDL(ddl);
-				
 				String comment = getTableComment(conn, schema.getName(), table.getName());
 				
 				if (comment != null) {
@@ -233,8 +230,6 @@ public final class OracleSchemaFetcher extends
 				LOG.debug("[VAR]viewList.count=" + viewList.size());
 			}
 			for (View view : viewList) {
-				String ddl = getObjectDDL(conn, schema.getName(), view.getName(), OBJECT_TYPE_VIEW);
-				view.setDDL(ddl);
 				view.setQuerySpec(getQueryText(conn, schema.getName(), view.getName(), view));
 				
 				String comment = getViewComment(conn, schema.getName(), view.getName());
@@ -394,7 +389,6 @@ public final class OracleSchemaFetcher extends
 				seq.setNoMaxValue(false);
 				seq.setNoMinValue(false);
 				seq.setNoCache(cacheSize <= 1);
-				seq.setDDL(getObjectDDL(conn, schema.getName(), sequenceName, OBJECT_TYPE_SEQUENCE));
 				seq.setOwner(schema.getName());
 				schema.addSequence(seq);
 			}
@@ -1428,12 +1422,6 @@ public final class OracleSchemaFetcher extends
 			Closer.close(rs);
 			Closer.close(stmt);
 		}
-	}
-	
-	private String setViewColumnComment(String queryString, View view) {
-		
-		
-		return null;
 	}
 
 	//	/**

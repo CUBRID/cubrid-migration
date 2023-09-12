@@ -65,8 +65,6 @@ public class ViewMappingView extends
 	private Composite container;
 	private Text txtTargetName;
 	private Text txtTargetSQL;
-	private Text txtSourceName;
-	private Text txtSourceSQL;
 	private Button btnCreate;
 	private Button btnReplace;
 	private SourceConfig viewConfig;
@@ -123,37 +121,7 @@ public class ViewMappingView extends
 		btnReplace.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
 		btnReplace.setText(Messages.lblReplace);
 
-		createSourcePart(container);
 		createTargetPart(container);
-	}
-
-	/**
-	 * Create source part.
-	 * 
-	 * @param parent of source part
-	 */
-	private void createSourcePart(Composite parent) {
-		Group grpSource = new Group(parent, SWT.NONE);
-		grpSource.setLayout(new GridLayout(2, false));
-		GridData gd = new GridData(SWT.FILL, SWT.FILL, true, true, 2, 1);
-		grpSource.setLayoutData(gd);
-		grpSource.setText(Messages.lblSource);
-
-		Label lblSourceName = new Label(grpSource, SWT.NONE);
-		lblSourceName.setText(Messages.lblViewName);
-
-		txtSourceName = new Text(grpSource, SWT.BORDER);
-		txtSourceName.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
-		txtSourceName.setEditable(false);
-		txtSourceName.setText("");
-
-		Label lblSQL = new Label(grpSource, SWT.NONE);
-		lblSQL.setText(Messages.lblViewStatement);
-
-		txtSourceSQL = new Text(grpSource, SWT.BORDER | SWT.MULTI | SWT.V_SCROLL | SWT.WRAP);
-		txtSourceSQL.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
-		txtSourceSQL.setEditable(false);
-		txtSourceSQL.setText("");
 	}
 
 	/**
@@ -206,8 +174,6 @@ public class ViewMappingView extends
 		if (viewConfig == null || vw == null) {
 			return;
 		}
-		txtSourceName.setText(vw.getName());
-		txtSourceSQL.setText(vw.getDDL());
 
 		View targetVW = config.getTargetViewSchema(viewConfig.getTarget());
 		if (targetVW == null) {
