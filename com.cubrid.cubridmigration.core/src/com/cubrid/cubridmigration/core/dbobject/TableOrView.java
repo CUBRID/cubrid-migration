@@ -153,7 +153,9 @@ public abstract class TableOrView extends
 	 * @return Column
 	 */
 	public Column getColumnByName(String tableOwnerName, String tableName, String name) {
-		if (tableOwnerName == null || tableName == null) {
+		if (tableOwnerName == null
+				|| tableName == null
+				|| tableOwnerName.equals("")) {
 			return getColumnByName(name);
 		}
 		

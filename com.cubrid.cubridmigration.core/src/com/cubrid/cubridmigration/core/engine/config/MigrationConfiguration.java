@@ -2049,7 +2049,7 @@ public class MigrationConfiguration {
 				if (schema == null) {
 					return setc;
 				}
-				if (schema.equals(setc.getOwner())) {
+				if (schema.equalsIgnoreCase((setc.getOwner()))) {
 					return setc;
 				}
 				if (setc.getOwner() == null) {
@@ -3243,7 +3243,7 @@ public class MigrationConfiguration {
 	 * @return target table
 	 */
 	public Table getTargetTableSchema(String owner, String name) {
-		if (owner == null) {
+		if (owner == null || owner.equals("")) {
 			return getTargetTableSchema(name);
 		}
 		
