@@ -407,7 +407,7 @@ public class SelectSourcePage extends
 				//If it is a new migration, initialize the configuration
 				wzd.resetBySourceDBChanged();
 			}
-			wzd.setSourceCatalog(catalog);
+			wzd.setOriginalSourceCatalog(catalog);
 			MigrationConfiguration cfg = wzd.getMigrationConfig();
 			cfg.setSourceType(MigrationConfiguration.XML);
 			cfg.setSourceFileName(txtXMLFile.getText());

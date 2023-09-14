@@ -58,6 +58,7 @@ import com.cubrid.cubridmigration.core.common.PathUtils;
 import com.cubrid.cubridmigration.core.common.TimeZoneUtils;
 import com.cubrid.cubridmigration.core.connection.ConnParameters;
 import com.cubrid.cubridmigration.core.dbobject.Catalog;
+import com.cubrid.cubridmigration.core.dbobject.Schema;
 import com.cubrid.cubridmigration.core.engine.config.MigrationConfiguration;
 import com.cubrid.cubridmigration.ui.common.Status;
 import com.cubrid.cubridmigration.ui.common.UICommonTool;
@@ -720,8 +721,13 @@ public class SelectDestinationPage extends
 					+ Messages.msgDestOutputFilesSetting);
 			setDescription(Messages.msgDestOutputFilesSettingDes);
 			
+			MigrationWizard wizard = getMigrationWizard();
+			final Schema schema = wizard.getOriginalSourceCatalog().getSchemas().get(0);
+			String schemaName = "";
+			if (schema != null) {
+				schemaName = schema.getName();
+			}
 			MigrationConfiguration config = getMigrationWizard().getMigrationConfig();
-			String schemaName = config.getSourceConParams().getConUser();
 			btnCSVSetting.setVisible(config.targetIsCSV());
 
 			// final boolean isChar = config.targetIsCSV() ||
