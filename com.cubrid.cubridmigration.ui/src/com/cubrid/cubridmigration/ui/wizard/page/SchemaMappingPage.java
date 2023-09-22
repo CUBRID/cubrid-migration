@@ -660,6 +660,9 @@ public class SchemaMappingPage extends MigrationWizardPage {
 		for (SrcTable srcTable : srcTableList) {
 			if (!(tarCatalog.isDbHasUserSchema())) {
 				srcTable.setTarSchema(null);
+				if (!srcTable.isSelected) {
+					srcCatalog.removeOneSchema(srcCatalog.getSchemaByName(srcTable.getSrcSchema()));
+				}
 				continue;
 			}
 			
