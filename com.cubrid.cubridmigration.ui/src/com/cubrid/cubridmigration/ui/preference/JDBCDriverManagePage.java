@@ -235,7 +235,7 @@ public class JDBCDriverManagePage extends
 		if (firstFile == null) {
 			return;
 		}
-		if (JDBCDriverManager.getInstance().isDriverDuplicated(firstFile)) {
+		if (JDBCDriverManager.getInstance().isDriverDuplicated(null, firstFile)) {
 			UICommonTool.openErrorBox(Display.getDefault().getActiveShell(),
 					Messages.msgDuplicatedJdbcDriverFile);
 			return;
