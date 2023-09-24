@@ -522,7 +522,7 @@ public final class CUBRIDSchemaFetcher extends
 					column.setDefaultValue(defaultValue);
 				}
 				if (cubDTHelper.isEnum(dataTypeInView)) {
-					String realDataType = fetchEnumType(conn, tableName, attrName);
+					String realDataType = fetchEnumType(conn, null, tableName, attrName);
 					DataTypeInstance dti = cubDTHelper.parseDTInstance(realDataType);
 					column.setDataTypeInstance(dti);
 				}
@@ -677,7 +677,7 @@ public final class CUBRIDSchemaFetcher extends
 					column.setDefaultValue(defaultValue);
 				}
 				if (cubDTHelper.isEnum(dataTypeInView)) {
-					String realDataType = fetchEnumType(conn, tableName, attrName);
+					String realDataType = fetchEnumType(conn, schema.getName(), tableName, attrName);
 					DataTypeInstance dti = cubDTHelper.parseDTInstance(realDataType);
 					column.setDataTypeInstance(dti);
 				}
@@ -1048,7 +1048,7 @@ public final class CUBRIDSchemaFetcher extends
 	 * @param tables Map<String, Table>
 	 * @throws SQLException ex
 	 */
-	private void buildCUBRIDTableColumnsWithUserSchema(Connection conn,
+	private void buildCUBRIDTableColumnsWithUserSchema(Connection conn, Schema schema,
 			Map<String, Table> tables) throws SQLException {
 		// get set(object) type information from db_attr_setdomain_elm view
 		//Fetch collection type's sub-data type informations
@@ -1056,9 +1056,11 @@ public final class CUBRIDSchemaFetcher extends
 		Statement stmt = null;
 		try {
 			String sql = "SELECT a.class_name, a.attr_name, a.attr_type,"
-					+ " a.data_type, a.prec, a.scale" + " FROM db_attr_setdomain_elm a, db_class c"
+					+ " a.data_type, a.prec, a.scale" 
+					+ " FROM db_attr_setdomain_elm a, db_class c"
 					+ " WHERE c.class_name = a.class_name AND c.class_type='CLASS' "
-					+ " AND c.is_system_class='NO' " + " ORDER BY a.class_name ";
+					+ " AND c.is_system_class='NO' " 
+					+ " ORDER BY a.class_name ";
 
 			stmt = conn.createStatement();
 			rs = stmt.executeQuery(sql);
@@ -1073,6 +1075,7 @@ public final class CUBRIDSchemaFetcher extends
 				Integer scale = rs.getInt("scale");
 				dataType = getStdDataType(dataType);
 
+				tableName = schema.getName() + "." + tableName;
 				Table table = tables.get(tableName);
 				if (table == null) {
 					continue;
@@ -1643,7 +1646,7 @@ public final class CUBRIDSchemaFetcher extends
 				+ conn.getMetaData().getDatabaseMinorVersion());
 		if (ver >= 112) {
 			Map<String, Table> tables = buildCUBRIDTablesWithUserSchema(conn, catalog, schema, filter);
-			buildCUBRIDTableColumnsWithUserSchema(conn, tables);
+			buildCUBRIDTableColumnsWithUserSchema(conn, schema, tables);
 			buildCUBRIDTableSerialsWithUserSchema(conn, tables);
 			buildCUBRIDTablePKsWithUserSchema(conn, tables);
 			buildCUBRIDTableFKsWithUserSchema(conn, tables, schema, catalog);
@@ -1879,8 +1882,12 @@ public final class CUBRIDSchemaFetcher extends
 	 * @param columnName String
 	 * @return String enum data type with elements
 	 */
-	private String fetchEnumType(Connection conn, String tableName, String columnName) {
+	private String fetchEnumType(Connection conn, String schemaName, 
+			String tableName, String columnName) {
 		StringBuilder sb = new StringBuilder();
+		if (schemaName != null) {
+			tableName = schemaName + "." + tableName;
+		}
 		sb.append("SHOW COLUMNS FROM [").append(tableName).append("] WHERE FIELD='").append(
 				columnName).append("'");
 		Statement stmt = null;
