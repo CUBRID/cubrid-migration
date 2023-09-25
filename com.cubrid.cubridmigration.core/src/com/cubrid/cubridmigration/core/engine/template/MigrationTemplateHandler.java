@@ -621,8 +621,7 @@ public final class MigrationTemplateHandler extends
 			config.setSourceConParams(scp);
 		} else if (TemplateTags.TAG_SCHEMA.equals(qName)){
 			schemaCache = new StringBuffer();
-		}
-		else if (TemplateTags.TAG_SCHEMA_INFO.equals(qName)) {
+		} else if (TemplateTags.TAG_SCHEMA_INFO.equals(qName)) {
 			Schema schema = new Schema();
 			schema.setName(attributes.getValue(TemplateTags.ATTR_SCHEMA_NAME));
 			schema.setTargetSchemaName(attributes.getValue(TemplateTags.ATTR_TARGET_SCHEMA));
@@ -792,7 +791,15 @@ public final class MigrationTemplateHandler extends
 	 * @throws SAXException when errors
 	 */
 	private void startTargetElement(String qName, Attributes attr) throws SAXException {
-		if (TemplateTags.TAG_TABLE.equals(qName)) {
+		if (TemplateTags.TAG_SCHEMA.equals(qName)){
+			schemaCache = new StringBuffer();
+		} else if (TemplateTags.TAG_SCHEMA_INFO.equals(qName)) {
+			Schema schema = new Schema();
+			schema.setName(attr.getValue(TemplateTags.ATTR_SCHEMA_NAME));
+			schema.setTargetSchemaName(attr.getValue(TemplateTags.ATTR_TARGET_SCHEMA));
+			schema.setMigration(true);
+			config.addTargetSchemaList(schema);
+		} else if (TemplateTags.TAG_TABLE.equals(qName)) {
 			parseTargetTable(attr);
 		} else if (TemplateTags.TAG_COLUMN.equals(qName)) {
 			parseTargetColumn(attr);
