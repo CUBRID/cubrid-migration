@@ -127,8 +127,8 @@ public class MigrationConfiguration {
 	public static final int RPT_LEVEL_INFO = 2;
 	public static final int RPT_LEVEL_DEBUG = 3;
 
-	private static final String[] DATA_FORMAT_EXT = new String[] { ".txt", ".csv", ".sql", ".xls",
-			"", "" };
+	// Previously, data files had the ".txt" extension attached, but deleted the ".txt" extension when changing it to _object to match the unloaddb format
+	private static final String[] DATA_FORMAT_EXT = new String[] { "", ".csv", ".sql", ".xls", "", "" };
 	private static final String[] DATA_FORMAT_LABEL = new String[] { "LoadDB", "CSV", "SQL", "XLS" };
 
 	/**
@@ -3969,9 +3969,9 @@ public class MigrationConfiguration {
 			addTargetViewQuerySpecFileName(schema.getName(), PathUtils.mergePath(PathUtils.mergePath(odir, prefix), schema.getName() + "_vclass_query_spec"));
 			addTargetPkFileName(schema.getName(), PathUtils.mergePath(PathUtils.mergePath(odir, prefix), schema.getName() + "_pk"));
 			addTargetFkFileName(schema.getName(), PathUtils.mergePath(PathUtils.mergePath(odir, prefix), schema.getName() + "_fk"));
-			addTargetIndexFileName(schema.getName(), PathUtils.mergePath(PathUtils.mergePath(odir, prefix), schema.getName() + "_index"));
+			addTargetIndexFileName(schema.getName(), PathUtils.mergePath(PathUtils.mergePath(odir, prefix), schema.getName() + "_indexes"));
 			addTargetSerialFileName(schema.getName(), PathUtils.mergePath(PathUtils.mergePath(odir, prefix), schema.getName() + "_serial"));
-			addTargetDataFileName(schema.getName(), PathUtils.mergePath(PathUtils.mergePath(odir, prefix), schema.getName() + "_data" + getDataFileExt()));
+			addTargetDataFileName(schema.getName(), PathUtils.mergePath(PathUtils.mergePath(odir, prefix), schema.getName() + "_objects"));
 			addTargetUpdateStatisticFileName(schema.getName(), PathUtils.mergePath(PathUtils.mergePath(odir, prefix), schema.getName() + "_updatestatistic"));
 			addTargetSchemaFileListName(schema.getName(), PathUtils.mergePath(PathUtils.mergePath(odir, prefix), schema.getName() + "_info"));
 			addTargetSynonymFileName(schema.getName(), PathUtils.mergePath(PathUtils.mergePath(odir, prefix), schema.getName() + "_synonym"));
@@ -4599,7 +4599,7 @@ public class MigrationConfiguration {
 	 */
 	public String getDataFullName(String targetSchemaName) {
 		StringBuffer fileName = new StringBuffer();
-		fileName.append(File.separator).append(this.getTargetFilePrefix()).append("_").append(targetSchemaName).append("_data").append(this.getDataFileExt());
+		fileName.append(File.separator).append(this.getTargetFilePrefix()).append("_").append(targetSchemaName).append("_objects");
 	
 		return PathUtils.mergePath(PathUtils.mergePath(this.getFileRepositroyPath(), targetSchemaName), fileName.toString());
 	}
@@ -4612,7 +4612,7 @@ public class MigrationConfiguration {
 	 */
 	public String getIndexFullName(String targetSchemaName) {		
 		StringBuffer fileName = new StringBuffer();
-		fileName.append(File.separator).append(this.getTargetFilePrefix()).append("_").append(targetSchemaName).append("_index").append(
+		fileName.append(File.separator).append(this.getTargetFilePrefix()).append("_").append(targetSchemaName).append("_indexes").append(
 				this.getDefaultTargetSchemaFileExtName());
 		
 		return PathUtils.mergePath(PathUtils.mergePath(this.getFileRepositroyPath(), targetSchemaName), fileName.toString());
