@@ -58,8 +58,10 @@ import com.cubrid.cubridmigration.core.common.TimeZoneUtils;
 import com.cubrid.cubridmigration.core.common.log.LogUtil;
 import com.cubrid.cubridmigration.core.connection.ConnParameters;
 import com.cubrid.cubridmigration.core.dbobject.Catalog;
+import com.cubrid.cubridmigration.core.dbobject.Grant;
 import com.cubrid.cubridmigration.core.dbobject.Schema;
 import com.cubrid.cubridmigration.core.dbobject.Sequence;
+import com.cubrid.cubridmigration.core.dbobject.Synonym;
 import com.cubrid.cubridmigration.core.dbobject.Table;
 import com.cubrid.cubridmigration.core.dbobject.View;
 import com.cubrid.cubridmigration.core.engine.config.MigrationConfiguration;
@@ -597,8 +599,12 @@ public class SelectSourcePage extends
 				List<Table> tableList = schema.getTables();
 				List<View> viewList = schema.getViews();
 				List<Sequence> sequenceList = schema.getSequenceList();
+				List<Synonym> synonymList = schema.getSynonymList();
+				List<Grant> grantList = schema.getGrantList();
 				
-				if (tableList.isEmpty() && viewList.isEmpty() && sequenceList.isEmpty()) {
+				if (tableList.isEmpty() && viewList.isEmpty() 
+						&& sequenceList.isEmpty() && synonymList.isEmpty()
+						&& grantList.isEmpty()) {
 					removeSchema.add(schema);
 				}
 			}
