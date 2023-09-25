@@ -434,13 +434,7 @@ public abstract class DBTransformHelper {
 				}
 				
 				String referencedTableName = sfk.getReferencedTableName();
-				Map<String, Integer> allTablesCountMap = config.getSrcCatalog().getAllTablesCountMap();
-				Integer tableCount = allTablesCountMap.get(referencedTableName);
-				
-				int tarSchemaSize = config.getTarSchemaSize();
-				
-				if (tableCount != null && tableCount > 1 && tarSchemaSize <= 1) {
-					//if target is single schema, dot must replace to under bar
+				if (config.isTarSchemaDuplicate() || (!config.isAddUserSchema())) {
 					String owner = sfk.getTable().getOwner();
 					tfk.setReferencedTableName(StringUtils.lowerCase(owner) + "_" + referencedTableName);
 				} else {
