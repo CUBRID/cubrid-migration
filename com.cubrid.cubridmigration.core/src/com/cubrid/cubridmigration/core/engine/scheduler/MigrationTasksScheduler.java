@@ -102,7 +102,6 @@ public class MigrationTasksScheduler {
 		} else {
 			createSynonyms();
 		}
-		alterViews();
 		createSerials();
 
 		executeUserSQLs();
@@ -133,6 +132,8 @@ public class MigrationTasksScheduler {
 		} else {
 			createGrants();
 		}
+		
+		alterViews();
 		updateIndexStatistics();
 		
 		if (!config.targetIsOnline()) {
