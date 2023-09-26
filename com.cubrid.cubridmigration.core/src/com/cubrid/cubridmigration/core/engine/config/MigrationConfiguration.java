@@ -697,7 +697,7 @@ public class MigrationConfiguration {
 					sc.setOwner(sourceDBSchema.getName());
 					sc.setTargetOwner(sourceDBSchema.getTargetSchemaName());
 					sc.setName(seq.getName());
-					sc.setTarget(getTargetName(allSequencesCountMap, seq.getOwner(), seq.getName()));
+					sc.setTarget(getTargetName(isChangeObjectName(allSequencesCountMap, seq.getName()), seq.getOwner(), seq.getName()));
 					sc.setCreate(false);
 					sc.setReplace(false);
 					sc.setComment(seq.getComment());
@@ -806,7 +806,7 @@ public class MigrationConfiguration {
 					sc.setOwner(synonym.getOwner());
 					sc.setObjectName(synonym.getObjectName());
 					sc.setObjectOwner(synonym.getObjectOwner());
-					sc.setTarget(getTargetName(allSynonymsCountMap, synonym.getOwner(), synonym.getName()));
+					sc.setTarget(getTargetName(isChangeObjectName(allSynonymsCountMap, synonym.getName()), synonym.getOwner(), synonym.getName()));
 					sc.setTargetOwner(getTargetOwner(schemas, synonym.getOwner()));
 					sc.setObjectTargetName(synonym.getObjectName());
 					sc.setObjectTargetOwner(synonym.getObjectOwner());
@@ -1020,7 +1020,8 @@ public class MigrationConfiguration {
 					setc.setName(srcTable.getName());
 					setc.setComment(srcTable.getComment());
 					setc.setTargetOwner(sourceDBSchema.getTargetSchemaName());
-					setc.setTarget(getTargetName(allTablesCountMap, srcTable.getOwner(), srcTable.getName()));
+					setc.setChangeTableName(isChangeObjectName(allTablesCountMap, srcTable.getName()));
+					setc.setTarget(getTargetName(setc.isChangeTableName(), srcTable.getOwner(), srcTable.getName()));
 					
 					setc.setCreateNewTable(false);
 					setc.setCreatePartition(false);
@@ -1356,7 +1357,7 @@ public class MigrationConfiguration {
 					sc.setReferenceTableNames(referenceTableNameList);
 					sc.setName(vw.getName());
 					sc.setOwner(vw.getOwner());
-					sc.setTarget(getTargetName(allViewsCountMap, vw.getOwner(), vw.getName()));
+					sc.setTarget(getTargetName(isChangeObjectName(allViewsCountMap, vw.getName()), vw.getOwner(), vw.getName()));
 					sc.setTargetOwner(sourceDBSchema.getTargetSchemaName());
 					sc.setCreate(false);
 					sc.setReplace(false);
@@ -1384,14 +1385,17 @@ public class MigrationConfiguration {
 		targetViews.addAll(tempTarList);
 	}
 
-	private String getTargetName(Map<String, Integer> map, String owner, String name) {
+	private String getTargetName(boolean isChangeName, String owner, String name) {
+		return isChangeName ? owner + "_" + StringUtils.lowerCase(name) : StringUtils.lowerCase(name);
+	}
+	
+	private boolean isChangeObjectName(Map<String, Integer> map, String name) {
 		if (isTarSchemaDuplicate || (!addUserSchema)) {
 			if (isDuplicatedObject(map, name)) {
-				return owner + "_" + StringUtils.lowerCase(name);
+				return true;
 			}
 		}
-		
-		return StringUtils.lowerCase(name);
+		return false;
 	}
 
 	/**

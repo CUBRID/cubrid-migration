@@ -434,7 +434,7 @@ public abstract class DBTransformHelper {
 				}
 				
 				String referencedTableName = sfk.getReferencedTableName();
-				if (config.isTarSchemaDuplicate() || (!config.isAddUserSchema())) {
+				if ((config.isTarSchemaDuplicate() || (!config.isAddUserSchema())) && stc.isChangeTableName()) {
 					String owner = sfk.getTable().getOwner();
 					tfk.setReferencedTableName(StringUtils.lowerCase(owner) + "_" + referencedTableName);
 				} else {
