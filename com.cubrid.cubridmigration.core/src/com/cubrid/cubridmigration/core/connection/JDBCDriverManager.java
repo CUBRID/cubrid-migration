@@ -111,13 +111,23 @@ public final class JDBCDriverManager implements
 	 * 
 	 * @return true if driver is already existed in the list
 	 */
-	public boolean isDriverDuplicated(String driverFile) {
+	public boolean isDriverDuplicated(DatabaseType databaseType, String driverFile) {
 		DatabaseType[] allTypes = DatabaseType.getAllTypes();
-		for (DatabaseType dt : allTypes) {
-			if (dt.getJDBCData(driverFile) != null) {
-				return true;
+		if (databaseType == null) {
+			for (DatabaseType dt : allTypes) {
+				if (dt.getJDBCData(driverFile) != null) {
+					return true;
+				}
+			}
+		} else {
+			for (DatabaseType dt : allTypes) {
+				if (databaseType.getID() == dt.getID() 
+						&& dt.getJDBCData(driverFile) != null) {
+					return true;
+				}
 			}
 		}
+
 		return false;
 	}
 

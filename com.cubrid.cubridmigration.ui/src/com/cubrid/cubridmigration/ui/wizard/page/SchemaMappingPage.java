@@ -517,7 +517,16 @@ public class SchemaMappingPage extends MigrationWizardPage {
 			srcTable.setSrcSchema(schema.getName());
 			srcTable.setNote(schema.isGrantorSchema());
 			
-			srcTable.setTarDBType(Messages.msgCubridDump);
+			if (config.targetIsSQL()) {
+				srcTable.setTarDBType(Messages.msgCubridSQL);
+			} else if (config.targetIsCSV()) {
+				srcTable.setTarDBType(Messages.msgCubridCSV);
+			} else if (config.targetIsXLS()) {
+				srcTable.setTarDBType(Messages.msgCubridXLS);
+			} else {
+				srcTable.setTarDBType(Messages.msgCubridDump);
+			}
+			
 			if (!schema.isGrantorSchema()) {
 				srcTableList.add(0, srcTable);
 			} else {
@@ -660,6 +669,9 @@ public class SchemaMappingPage extends MigrationWizardPage {
 		for (SrcTable srcTable : srcTableList) {
 			if (!(tarCatalog.isDbHasUserSchema())) {
 				srcTable.setTarSchema(null);
+				if (!srcTable.isSelected) {
+					srcCatalog.removeOneSchema(srcCatalog.getSchemaByName(srcTable.getSrcSchema()));
+				}
 				continue;
 			}
 			

@@ -526,7 +526,10 @@ public class Messages extends
 	public static String msgConnectingHDFS;
 	public static String msgConnectSuccess;
 	public static String msgCSVFilesList;
+	public static String msgCubridCSV;
 	public static String msgCubridDump;
+	public static String msgCubridSQL;
+	public static String msgCubridXLS;
 	public static String msgCubridHelpSiteUrl;
 	public static String msgCubridHomePageUrl;
 	public static String msgCubridProjectSiteUrl;
