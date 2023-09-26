@@ -55,6 +55,7 @@ public class SourceTableConfig {
 	private boolean createNewTable = true;
 	private boolean migrateData = true;
 	private boolean replace = true;
+	private boolean isChangeTableName;
 	private String sqlBefore;
 	private String sqlAfter;
 	private final List<SourceColumnConfig> columns = new ArrayList<SourceColumnConfig>();
@@ -308,5 +309,13 @@ public class SourceTableConfig {
 	 */
 	public void setTarget(String target) {
 		this.target = target;
+	}
+	
+	public boolean isChangeTableName() {
+		return isChangeTableName;
+	}
+
+	public void setChangeTableName(boolean isChangeTableName) {
+		this.isChangeTableName = isChangeTableName;
 	}
 }

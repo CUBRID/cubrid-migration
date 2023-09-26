@@ -115,7 +115,7 @@ public class JDBCConnectEditView {
 		if (StringUtils.isBlank(firstFile)) {
 			return;
 		}
-		if (JDBCDriverManager.getInstance().isDriverDuplicated(firstFile)) {
+		if (JDBCDriverManager.getInstance().isDriverDuplicated(dt, firstFile)) {
 			UICommonTool.openErrorBox(Display.getDefault().getActiveShell(),
 					Messages.msgDuplicatedJdbcDriverFile);
 			return;
