@@ -282,11 +282,12 @@ public class SchemaMappingPage extends MigrationWizardPage {
 			public boolean isLabelProperty(Object element, String property) {return false;}
 			
 			@Override
-			public void dispose() {}
-			
-			@Override
 			public void addListener(ILabelProviderListener listener) {}
-			
+
+			@Override
+			public void dispose() {
+				
+			}
 		});
 		
 		srcTableViewer.setColumnProperties(propertyList);
@@ -560,7 +561,6 @@ public class SchemaMappingPage extends MigrationWizardPage {
 		setOnlineData();
 		getSchemaValues();
 		setOnlineEditor();
-		
 	}
 	
 	private void setOnlineData() {
@@ -616,7 +616,6 @@ public class SchemaMappingPage extends MigrationWizardPage {
 	
 	@Override
 	protected void afterShowCurrentPage(PageChangedEvent event) {
-		// TODO need reset when select different target connection
 		wizard = getMigrationWizard();
 		config = wizard.getMigrationConfig();
 
@@ -636,9 +635,26 @@ public class SchemaMappingPage extends MigrationWizardPage {
 			}
 			
 			srcTableViewer.setInput(srcTableList);
-			
-			firstVisible = false;
+		} else {
+			if (!config.targetIsOnline()) {
+				setOfflineEditor(config.isAddUserSchema());
+			} else {
+				tarCatalog = wizard.getTargetCatalog();
+				for (SrcTable srcTable : srcTableList) {
+					int version = tarCatalog.getVersion().getDbMajorVersion() * 10 + tarCatalog.getVersion().getDbMinorVersion();
+					
+					if (tarCatalog.isDBAGroup() && version >= 112) {
+						srcTable.setTarSchema(srcTable.getSrcSchema());
+					} else {
+						srcTable.setTarSchema(tarCatalog.getSchemas().get(0).getName());
+					}
+				}
+				srcTableViewer.refresh();
+				getSchemaValues();
+				setOnlineEditor();
+			}
 		}
+		firstVisible = false;
 	}
 	
 	@Override
