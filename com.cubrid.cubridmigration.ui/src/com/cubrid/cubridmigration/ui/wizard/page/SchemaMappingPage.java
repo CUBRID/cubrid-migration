@@ -285,9 +285,7 @@ public class SchemaMappingPage extends MigrationWizardPage {
 			public void addListener(ILabelProviderListener listener) {}
 
 			@Override
-			public void dispose() {
-				
-			}
+			public void dispose() {}
 		});
 		
 		srcTableViewer.setColumnProperties(propertyList);
@@ -633,8 +631,8 @@ public class SchemaMappingPage extends MigrationWizardPage {
 			} else {
 				setOnlineSchemaMappingPage();
 			}
-			
 			srcTableViewer.setInput(srcTableList);
+			firstVisible = false;
 		} else {
 			if (!config.targetIsOnline()) {
 				setOfflineEditor(config.isAddUserSchema());
@@ -654,7 +652,6 @@ public class SchemaMappingPage extends MigrationWizardPage {
 				setOnlineEditor();
 			}
 		}
-		firstVisible = false;
 	}
 	
 	@Override
