@@ -282,10 +282,10 @@ public class SchemaMappingPage extends MigrationWizardPage {
 			public boolean isLabelProperty(Object element, String property) {return false;}
 			
 			@Override
-			public void addListener(ILabelProviderListener listener) {}
-
-			@Override
 			public void dispose() {}
+			
+			@Override
+			public void addListener(ILabelProviderListener listener) {}
 		});
 		
 		srcTableViewer.setColumnProperties(propertyList);
@@ -616,42 +616,27 @@ public class SchemaMappingPage extends MigrationWizardPage {
 	protected void afterShowCurrentPage(PageChangedEvent event) {
 		wizard = getMigrationWizard();
 		config = wizard.getMigrationConfig();
-
-		if (firstVisible) {
-			setTitle(wizard.getStepNoMsg(this) + Messages.schemaMappingPageTitle);
-			if ((config.targetIsOnline() && !wizard.getTargetCatalog().isDBAGroup())
-					|| (!config.targetIsOnline()) && !config.isAddUserSchema()) {
-				setDescription(Messages.schemaMappingPageDescriptionUncorrectable);
-			} else {
-				setDescription(Messages.schemaMappingPageDescription);				
-			}
-			
-			if (!config.targetIsOnline()) {
-				setOfflineSchemaMappingPage();
-			} else {
-				setOnlineSchemaMappingPage();
-			}
-			srcTableViewer.setInput(srcTableList);
-			firstVisible = false;
-		} else {
-			if (!config.targetIsOnline()) {
-				setOfflineEditor(config.isAddUserSchema());
-			} else {
-				tarCatalog = wizard.getTargetCatalog();
-				for (SrcTable srcTable : srcTableList) {
-					int version = tarCatalog.getVersion().getDbMajorVersion() * 10 + tarCatalog.getVersion().getDbMinorVersion();
-					
-					if (tarCatalog.isDBAGroup() && version >= 112) {
-						srcTable.setTarSchema(srcTable.getSrcSchema());
-					} else {
-						srcTable.setTarSchema(tarCatalog.getSchemas().get(0).getName());
-					}
-				}
-				srcTableViewer.refresh();
-				getSchemaValues();
-				setOnlineEditor();
-			}
+		
+		if (srcTableList != null) {
+			srcTableList.clear();
 		}
+		
+		setTitle(wizard.getStepNoMsg(this) + Messages.schemaMappingPageTitle);
+		if ((config.targetIsOnline() && !wizard.getTargetCatalog().isDBAGroup())
+				|| (!config.targetIsOnline()) && !config.isAddUserSchema()) {
+			setDescription(Messages.schemaMappingPageDescriptionUncorrectable);
+		} else {
+			setDescription(Messages.schemaMappingPageDescription);
+		}
+		
+		if (!config.targetIsOnline()) {
+			setOfflineSchemaMappingPage();
+		} else {
+			setOnlineSchemaMappingPage();
+		}
+		
+		srcTableViewer.setInput(srcTableList);
+		firstVisible = firstVisible ? false : true;
 	}
 	
 	@Override
