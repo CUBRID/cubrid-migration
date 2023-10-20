@@ -252,7 +252,6 @@ public class ObjectMappingPage extends
 		util.createDetailMessage(sb, sourceCatalog, DBObject.OBJ_TYPE_VIEW, messageType);
 		util.createDetailMessage(sb, sourceCatalog, DBObject.OBJ_TYPE_SEQUENCE, messageType);
 		util.createDetailMessage(sb, sourceCatalog, DBObject.OBJ_TYPE_SYNONYM, messageType);
-		util.createDetailMessage(sb, sourceCatalog, DBObject.OBJ_TYPE_GRANT, messageType);
 		return sb.toString();
 	}
 
