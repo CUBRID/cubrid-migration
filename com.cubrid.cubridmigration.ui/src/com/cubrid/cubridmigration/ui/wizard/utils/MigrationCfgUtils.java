@@ -57,6 +57,7 @@ import com.cubrid.cubridmigration.core.dbobject.Schema;
 import com.cubrid.cubridmigration.core.dbobject.Sequence;
 import com.cubrid.cubridmigration.core.dbobject.Table;
 import com.cubrid.cubridmigration.core.dbobject.TableOrView;
+import com.cubrid.cubridmigration.core.dbobject.Version;
 import com.cubrid.cubridmigration.core.dbobject.View;
 import com.cubrid.cubridmigration.core.dbtype.DatabaseType;
 import com.cubrid.cubridmigration.core.engine.config.MigrationConfiguration;
@@ -87,6 +88,7 @@ import com.cubrid.cubridmigration.ui.wizard.IMigrationWizardStatus;
 public class MigrationCfgUtils {
 
 	private static final String LINE_SEP = System.getProperty("line.separator");
+	private final int SUPPORT_MULTI_SCHEMA = 112;
 
 	/**
 	 * Change the column order according to input list.
@@ -956,27 +958,36 @@ public class MigrationCfgUtils {
 				&& !cfg.hasObjects2Export();
 	}
 
-	public boolean createAllObjectsMap(Catalog catalog) {
-		List<Schema> schemas = catalog.getSchemas();
+	public boolean createAllObjectsMap(Catalog sourceCatalog, Catalog targetCatalog, MigrationConfiguration cfg) {
+		List<Schema> schemas = sourceCatalog.getSchemas();
 		if (schemas.size() <= 1) {
 			return false;
 		}
 
-		Map<String, Integer> allTablesCountMap = catalog.getAllTablesCountMap();
-		Map<String, Integer> allViewsCountMap = catalog.getAllViewsCountMap();
-		Map<String, Integer> allSequencesCountMap = catalog.getAllSequencesCountMap();
+		Map<String, Integer> allTablesCountMap = sourceCatalog.getAllTablesCountMap();
+		Map<String, Integer> allViewsCountMap = sourceCatalog.getAllViewsCountMap();
+		Map<String, Integer> allSequencesCountMap = sourceCatalog.getAllSequencesCountMap();
 
 		allTablesCountMap.clear();
 		allViewsCountMap.clear();
 		allSequencesCountMap.clear();
 
-		for (Schema schema : schemas) {
-			createMap(allTablesCountMap, schema.getTables());
-			createMap(allViewsCountMap, schema.getViews());
-			createMap(allSequencesCountMap, schema.getSequenceList());
+		int targetVersion = Integer.MAX_VALUE;
+		if (targetCatalog != null) {
+			Version version = targetCatalog.getVersion();
+			targetVersion = (version.getDbMajorVersion() * 10) + version.getDbMinorVersion();
 		}
-
-		return true;
+		
+		if ((!cfg.targetIsOnline() && !cfg.isAddUserSchema())
+				|| (cfg.targetIsOnline() && targetVersion < SUPPORT_MULTI_SCHEMA)) {
+			for (Schema schema : schemas) {
+				createMap(allTablesCountMap, schema.getTables());
+				createMap(allViewsCountMap, schema.getViews());
+				createMap(allSequencesCountMap, schema.getSequenceList());
+			}
+			return true;
+		}
+		return false;
 	}
 
 	private void createMap(Map<String, Integer> map, List<?> list) {
