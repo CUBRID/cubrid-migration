@@ -81,6 +81,7 @@ public class Catalog implements
 	private Map<String, Integer> allTablesCountMap = new HashMap<String, Integer>();
 	private Map<String, Integer> allViewsCountMap = new HashMap<String, Integer>();
 	private Map<String, Integer> allSequencesCountMap = new HashMap<String, Integer>();
+	private Map<String, Integer> allSynonymsCountMap = new HashMap<String, Integer>();
 	private Map<String, Integer> allGrantsCountMap = new HashMap<String, Integer>();
 	
 	private boolean isDBAGroup;
@@ -278,6 +279,10 @@ public class Catalog implements
 	
 	public Map<String, Integer> getAllSequencesCountMap() {
 		return allSequencesCountMap;
+	}
+	
+	public Map<String, Integer> getAllSynonymsCountMap() {
+		return allSynonymsCountMap;
 	}
 	
 	public Map<String, Integer> getAllGrantCountMap() {

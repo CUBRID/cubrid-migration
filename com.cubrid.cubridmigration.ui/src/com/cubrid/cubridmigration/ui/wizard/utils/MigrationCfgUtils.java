@@ -55,6 +55,7 @@ import com.cubrid.cubridmigration.core.dbobject.FK;
 import com.cubrid.cubridmigration.core.dbobject.Index;
 import com.cubrid.cubridmigration.core.dbobject.Schema;
 import com.cubrid.cubridmigration.core.dbobject.Sequence;
+import com.cubrid.cubridmigration.core.dbobject.Synonym;
 import com.cubrid.cubridmigration.core.dbobject.Table;
 import com.cubrid.cubridmigration.core.dbobject.TableOrView;
 import com.cubrid.cubridmigration.core.dbobject.Version;
@@ -967,10 +968,12 @@ public class MigrationCfgUtils {
 		Map<String, Integer> allTablesCountMap = sourceCatalog.getAllTablesCountMap();
 		Map<String, Integer> allViewsCountMap = sourceCatalog.getAllViewsCountMap();
 		Map<String, Integer> allSequencesCountMap = sourceCatalog.getAllSequencesCountMap();
+		Map<String, Integer> allSynonymsCountMap = sourceCatalog.getAllSynonymsCountMap();
 
 		allTablesCountMap.clear();
 		allViewsCountMap.clear();
 		allSequencesCountMap.clear();
+		allSynonymsCountMap.clear();
 
 		int targetVersion = Integer.MAX_VALUE;
 		if (targetCatalog != null) {
@@ -984,6 +987,7 @@ public class MigrationCfgUtils {
 				createMap(allTablesCountMap, schema.getTables());
 				createMap(allViewsCountMap, schema.getViews());
 				createMap(allSequencesCountMap, schema.getSequenceList());
+				createMap(allSynonymsCountMap, schema.getSynonymList());
 			}
 			return true;
 		}
@@ -1025,6 +1029,8 @@ public class MigrationCfgUtils {
 				createObjectInformation(sb, catalog.getAllViewsCountMap(), schema.getViews(), messageType);
 			} else if (objType.equals(DBObject.OBJ_TYPE_SEQUENCE)) {
 				createObjectInformation(sb, catalog.getAllSequencesCountMap(), schema.getSequenceList(), messageType);
+			} else if (objType.equals(DBObject.OBJ_TYPE_SYNONYM)) {
+				createObjectInformation(sb, catalog.getAllSynonymsCountMap(), schema.getSynonymList(), messageType);
 			}
 		}
 		sb.append("\n");
@@ -1039,6 +1045,8 @@ public class MigrationCfgUtils {
 					owner = ((TableOrView) object).getOwner();
 				} else if (object instanceof Sequence) {
 					owner = ((Sequence) object).getOwner();
+				} else if (object instanceof Synonym) {
+					owner = ((Synonym) object).getOwner();
 				}
 				appendDuplicatedObjectInformation(sb, owner, objectName, messageType);
 			}
