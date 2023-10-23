@@ -58,7 +58,6 @@ import com.cubrid.cubridmigration.core.common.PathUtils;
 import com.cubrid.cubridmigration.core.common.TimeZoneUtils;
 import com.cubrid.cubridmigration.core.connection.ConnParameters;
 import com.cubrid.cubridmigration.core.dbobject.Catalog;
-import com.cubrid.cubridmigration.core.dbobject.Schema;
 import com.cubrid.cubridmigration.core.engine.config.MigrationConfiguration;
 import com.cubrid.cubridmigration.ui.common.Status;
 import com.cubrid.cubridmigration.ui.common.UICommonTool;
@@ -724,13 +723,8 @@ public class SelectDestinationPage extends
 			setTitle(getMigrationWizard().getStepNoMsg(SelectDestinationPage.this)
 					+ Messages.msgDestOutputFilesSetting);
 			setDescription(Messages.msgDestOutputFilesSettingDes);
+			String dbName = getMigrationWizard().getOriginalSourceCatalog().getConnectionParameters().getDbName();
 			
-			MigrationWizard wizard = getMigrationWizard();
-			final Schema schema = wizard.getOriginalSourceCatalog().getSchemas().get(0);
-			String schemaName = "";
-			if (schema != null) {
-				schemaName = schema.getName();
-			}
 			MigrationConfiguration config = getMigrationWizard().getMigrationConfig();
 			btnCSVSetting.setVisible(config.targetIsCSV());
 
@@ -751,7 +745,7 @@ public class SelectDestinationPage extends
 			if (config.getFileRepositroyPath() != null) {
 				txtFileRepository.setText(config.getFileRepositroyPath());
 			}
-			txtFilePrefix.setText(config.getTargetFilePrefix() == null ? schemaName
+			txtFilePrefix.setText(config.getTargetFilePrefix() == null ? dbName
 					: config.getTargetFilePrefix());
 			if (config.getTargetFileTimeZone() != null) {
 				targetFileTimezoneCombo.setText(config.getTargetFileTimeZone());
