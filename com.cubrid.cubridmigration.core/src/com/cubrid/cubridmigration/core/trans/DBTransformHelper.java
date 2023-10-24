@@ -384,6 +384,7 @@ public abstract class DBTransformHelper {
 		tarTable.setName(stc.getTarget());
 		tarTable.setReuseOID(sourceTable.isReuseOID());
 		tarTable.setOwner(stc.getTargetOwner());
+		tarTable.setSourceOwner(stc.getOwner());
 		
 		List<Column> srcColumns = sourceTable.getColumns();
 		List<Column> newColumns = new ArrayList<Column>();

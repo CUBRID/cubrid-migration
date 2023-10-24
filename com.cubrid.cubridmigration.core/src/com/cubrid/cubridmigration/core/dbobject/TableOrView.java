@@ -55,6 +55,7 @@ public abstract class TableOrView extends
 	 */
 	protected String owner;
 	protected String targetOwner;
+	protected String sourceOwner;
 
 	protected final List<Column> columns = new ArrayList<Column>();
 
@@ -64,6 +65,14 @@ public abstract class TableOrView extends
 
 	public void setTargetOwner(String targetOwner) {
 		this.targetOwner = targetOwner;
+	}
+	
+	public String getSourceOwner() {
+		return sourceOwner;
+	}
+	
+	public void setSourceOwner(String sourceOwner) {
+		this.sourceOwner = sourceOwner;
 	}
 	
 	public Schema getSchema() {

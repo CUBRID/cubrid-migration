@@ -226,7 +226,7 @@ public class CleanDBTask extends
 			}
 			
 			for (Schema schema : schemaList) {
-				String ownerName = schema.getTargetSchemaName();
+				String ownerName = schema.getName();
 				writeFile(dropQueryBySchemaMap, ownerName, "_clear.sql");
 				writeFile(fkDropQueryBySchemaMap, ownerName, "_drop_fk.sql");
 				writeFile(tbTruncateQueryBySchemaMap, ownerName, "_truncate.sql");

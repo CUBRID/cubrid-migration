@@ -717,6 +717,7 @@ public class MigrationConfiguration {
 					tseq = (Sequence) seq.clone();
 					tseq.setName(sc.getTarget());
 					tseq.setOwner(sc.getTargetOwner());
+					tseq.setSourceOwner(sc.getOwner());
 					tseq.setDDL(cubridddlUtil.getSequenceDDL(tseq, this.addUserSchema));
 					tseq.setComment(seq.getComment());
 				}
@@ -773,6 +774,7 @@ public class MigrationConfiguration {
 					tgrant.setClassOwner(sc.getClassOwner());
 					tgrant.setGrantable(sc.isGrantable());
 					tgrant.setName(tgrant.getName());
+					tgrant.setSourceOwner(sc.getOwner());
 					sc.setTarget(tgrant.getName());
 					tgrant.setDDL(cubridddlUtil.getGrantDDL(tgrant, this.addUserSchema));
 				}
@@ -830,6 +832,7 @@ public class MigrationConfiguration {
 					tsynonym.setOwner(sourceDBSchema.getTargetSchemaName());
 					tsynonym.setObjectOwner(getTargetOwner(schemas, synonym.getObjectOwner()));
 					tsynonym.setDDL(cubridddlUtil.getSynonymDDL(tsynonym, this.addUserSchema));
+					tsynonym.setSourceOwner(sourceDBSchema.getName());
 				}
 				tempSynonyms.add(tsynonym);
 			}
@@ -844,7 +847,7 @@ public class MigrationConfiguration {
 		Iterator<String> keys = scriptSchemaMapping.keySet().iterator();
 		while (keys.hasNext()) {
 			Schema schema = scriptSchemaMapping.get(keys.next());
-			String schemaName = schema.getTargetSchemaName();
+			String schemaName = schema.getName();
 			if (isSplit) {
 				this.addTargetTableFileName(schemaName, getTableFullName(schemaName));
 				this.addTargetViewFileName(schemaName, getViewFullName(schemaName));
@@ -1375,6 +1378,7 @@ public class MigrationConfiguration {
 					tVw.setName(sc.getTarget());
 					tVw.setOwner(sc.getTargetOwner());
 					tVw.setComment(vw.getComment());
+					tVw.setSourceOwner(sc.getOwner());
 				}
 				tempTarList.add(tVw);
 			}

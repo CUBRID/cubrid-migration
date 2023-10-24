@@ -47,6 +47,7 @@ public class Synonym extends
 	private String objectOwner;
 	private String comment;
 	private String createDDL;
+	private String sourceOwner;
 	
 	public Synonym() {
 		//do nothing
@@ -138,6 +139,14 @@ public class Synonym extends
 	
 	public void setDDL(String createDDL) {
 		this.createDDL = createDDL;
+	}
+	
+	public String getSourceOwner() {
+		return sourceOwner;
+	}
+	
+	public void setSourceOwner(String sourceOwner) {
+		this.sourceOwner = sourceOwner;
 	}
 
 	@Override

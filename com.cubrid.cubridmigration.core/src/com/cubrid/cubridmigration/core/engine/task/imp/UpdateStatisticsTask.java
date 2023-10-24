@@ -89,13 +89,13 @@ public class UpdateStatisticsTask extends
 			} else {
 				List<SourceEntryTableConfig> expEntryTableCfg = config.getExpEntryTableCfg();
 				for (SourceEntryTableConfig setc : expEntryTableCfg) {
-					if (setc.getTargetOwner().equals(schemaName) && setc.isMigrateData() && !objectsToBeUpdated.contains(setc.getTarget())) {
+					if (setc.getOwner().equals(schemaName) && setc.isMigrateData() && !objectsToBeUpdated.contains(setc.getTarget())) {
 						objectsToBeUpdated.add("[" + setc.getTargetOwner() + "].[" + setc.getTarget() + "]");
 					}
 				}
 				List<SourceSQLTableConfig> expSQLCfg = config.getExpSQLCfg();
 				for (SourceSQLTableConfig sstc : expSQLCfg) {
-					if (sstc.getTargetOwner().equals(schemaName) && sstc.isMigrateData() && !objectsToBeUpdated.contains(sstc.getTarget())) {
+					if (sstc.getOwner().equals(schemaName) && sstc.isMigrateData() && !objectsToBeUpdated.contains(sstc.getTarget())) {
 						objectsToBeUpdated.add("[" + sstc.getTargetOwner() + "].[" + sstc.getTarget() + "]");
 					}
 				}
@@ -139,8 +139,8 @@ public class UpdateStatisticsTask extends
 			if (config.isUpdateStatistics()) {
 				List<Schema> schemaList = config.getTargetSchemaList();
 				for (Schema schema : schemaList) {
-					LOG.debug("Execute update statistics for " + schema.getTargetSchemaName());
-					execSQLList(getUpdateStatisticsSQLs(schema.getTargetSchemaName()));
+					LOG.debug("Execute update statistics for " + schema.getName());
+					execSQLList(getUpdateStatisticsSQLs(schema.getName()));
 				}
 			}
 			return;
@@ -148,7 +148,7 @@ public class UpdateStatisticsTask extends
 		
 		List<Schema> schemaList = config.getTargetSchemaList();
 		for (Schema schema : schemaList) {
-			String schemaName = schema.getTargetSchemaName();
+			String schemaName = schema.getName();
 			if (!checkDataFileRepository(schemaName)) {
 				continue;
 			}

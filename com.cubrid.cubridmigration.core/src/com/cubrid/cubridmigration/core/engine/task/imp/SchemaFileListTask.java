@@ -67,7 +67,7 @@ public class SchemaFileListTask extends ImportTask {
 		String lineSeparator = System.getProperty("line.separator");
 		List<Schema> schemaList = config.getTargetSchemaList();
 		for (Schema schema : schemaList) {
-			String schemaName = schema.getTargetSchemaName();
+			String schemaName = schema.getName();
 			LOG.debug("Write to schema list file for " + schemaName);
 			
 			StringBuilder sb = new StringBuilder();

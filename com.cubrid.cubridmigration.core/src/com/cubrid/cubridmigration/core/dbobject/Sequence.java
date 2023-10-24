@@ -58,6 +58,7 @@ public class Sequence extends
 	private String owner;
 	private String comment;
 	private String targetOwner;
+	private String sourceOwner;
 
 
 	public Sequence() {
@@ -176,6 +177,14 @@ public class Sequence extends
 
 	public String getOwner() {
 		return owner;
+	}
+	
+	public String getSourceOwner() {
+		return sourceOwner;
+	}
+	
+	public void setSourceOwner(String sourceOwner) {
+		this.sourceOwner = sourceOwner;
 	}
 	
 	public String getTargetOwner() {

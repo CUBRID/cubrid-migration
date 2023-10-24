@@ -239,10 +239,11 @@ public class MigrationTasksScheduler {
 			}
 			
 			for (Schema schema : schemaList) {
-				String schemaName = schema.getTargetSchemaName();
+				String schemaName = schema.getName();
 				if (config.isSplitSchema()) {
 					PathUtils.deleteFile(new File(config.getTargetTableFileName(schemaName)));
 					PathUtils.deleteFile(new File(config.getTargetViewFileName(schemaName)));
+					PathUtils.deleteFile(new File(config.getTargetViewQuerySpecFileName(schemaName)));
 					PathUtils.deleteFile(new File(config.getTargetPkFileName(schemaName)));
 					PathUtils.deleteFile(new File(config.getTargetFkFileName(schemaName)));
 					PathUtils.deleteFile(new File(config.getTargetSerialFileName(schemaName)));

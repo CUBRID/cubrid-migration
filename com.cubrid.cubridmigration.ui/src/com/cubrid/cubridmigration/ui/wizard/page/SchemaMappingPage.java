@@ -757,22 +757,23 @@ public class SchemaMappingPage extends MigrationWizardPage {
 			schema.setTargetSchemaName(srcTable.getTarSchema());
 			targetSchemaList.add(schema);
 			
+			String schemaName = srcTable.getSrcSchema();
 			if (splitSchema) {
-				tableFullName.put(srcTable.getTarSchema(), config.getTableFullName(srcTable.getTarSchema()));
-				viewFullName.put(srcTable.getTarSchema(), config.getViewFullName(srcTable.getTarSchema()));
-				viewQuerySpecFullName.put(srcTable.getTarSchema(), config.getViewQuerySpecFullName(srcTable.getTarSchema()));
-				pkFullName.put(srcTable.getTarSchema(), config.getPkFullName(srcTable.getTarSchema()));
-				fkFullName.put(srcTable.getTarSchema(), config.getFkFullName(srcTable.getTarSchema()));
-				serialFullName.put(srcTable.getTarSchema(), config.getSequenceFullName(srcTable.getTarSchema()));
-				schemaFileListFullName.put(srcTable.getTarSchema(), config.getSchemaFileListFullName(srcTable.getTarSchema()));
-				synonymFileListFullName.put(srcTable.getTarSchema(), config.getSynonymFullName(srcTable.getTarSchema()));
-				grantFileListFullName.put(srcTable.getTarSchema(), config.getGrantFullName(srcTable.getTarSchema()));
+				tableFullName.put(schemaName, config.getTableFullName(schemaName));
+				viewFullName.put(schemaName, config.getViewFullName(schemaName));
+				viewQuerySpecFullName.put(schemaName, config.getViewQuerySpecFullName(schemaName));
+				pkFullName.put(schemaName, config.getPkFullName(schemaName));
+				fkFullName.put(schemaName, config.getFkFullName(schemaName));
+				serialFullName.put(schemaName, config.getSequenceFullName(schemaName));
+				schemaFileListFullName.put(schemaName, config.getSchemaFileListFullName(schemaName));
+				synonymFileListFullName.put(schemaName, config.getSynonymFullName(schemaName));
+				grantFileListFullName.put(schemaName, config.getGrantFullName(schemaName));
 			} else {
-				schemaFullName.put(srcTable.getTarSchema(), config.getSchemaFullName(srcTable.getTarSchema()));
+				schemaFullName.put(schemaName, config.getSchemaFullName(schemaName));
 			}
-			dataFullName.put(srcTable.getTarSchema(), config.getDataFullName(srcTable.getTarSchema()));
-			indexFullName.put(srcTable.getTarSchema(), config.getIndexFullName(srcTable.getTarSchema()));
-			updateStatisticFullName.put(srcTable.getTarSchema(), config.getUpdateStatisticFullName(srcTable.getTarSchema()));
+			dataFullName.put(schemaName, config.getDataFullName(schemaName));
+			indexFullName.put(schemaName, config.getIndexFullName(schemaName));
+			updateStatisticFullName.put(schemaName, config.getUpdateStatisticFullName(schemaName));
 		}
 		
 		if (!checkFileRepositroy()) {
@@ -820,15 +821,15 @@ public class SchemaMappingPage extends MigrationWizardPage {
 				}
 				
 				if (config.isSplitSchema()) {
-					File tableFile = new File(tableFullName.get(srcTable.getTarSchema()));
-					File viewFile = new File(viewFullName.get(srcTable.getTarSchema()));
-					File viewQuerySpecFile = new File(viewQuerySpecFullName.get(srcTable.getTarSchema()));
-					File pkFile = new File(pkFullName.get(srcTable.getTarSchema()));
-					File fkFile = new File(fkFullName.get(srcTable.getTarSchema()));
-					File serialFile = new File(serialFullName.get(srcTable.getTarSchema()));
-					File infoFile = new File(schemaFileListFullName.get(srcTable.getTarSchema()));
-					File synonymFile = new File(synonymFileListFullName.get(srcTable.getTarSchema()));
-					File grantFile = new File(grantFileListFullName.get(srcTable.getTarSchema()));
+					File tableFile = new File(tableFullName.get(srcTable.getSrcSchema()));
+					File viewFile = new File(viewFullName.get(srcTable.getSrcSchema()));
+					File viewQuerySpecFile = new File(viewQuerySpecFullName.get(srcTable.getSrcSchema()));
+					File pkFile = new File(pkFullName.get(srcTable.getSrcSchema()));
+					File fkFile = new File(fkFullName.get(srcTable.getSrcSchema()));
+					File serialFile = new File(serialFullName.get(srcTable.getSrcSchema()));
+					File infoFile = new File(schemaFileListFullName.get(srcTable.getSrcSchema()));
+					File synonymFile = new File(synonymFileListFullName.get(srcTable.getSrcSchema()));
+					File grantFile = new File(grantFileListFullName.get(srcTable.getSrcSchema()));
 					
 					if (tableFile.exists()) {
 						buffer.append(tableFile.getCanonicalPath()).append(lineSeparator);
@@ -858,15 +859,15 @@ public class SchemaMappingPage extends MigrationWizardPage {
 						buffer.append(grantFile.getCanonicalPath()).append(lineSeparator);
 					}
 				} else {
-					File schemaFile = new File(schemaFullName.get(srcTable.getTarSchema()));
+					File schemaFile = new File(schemaFullName.get(srcTable.getSrcSchema()));
 					if (schemaFile.exists()) {
 						buffer.append(schemaFile.getCanonicalPath()).append(lineSeparator);
 					}
 				}
 				
-				File indexFile = new File(indexFullName.get(srcTable.getTarSchema()));
-				File dataFile = new File(dataFullName.get(srcTable.getTarSchema()));
-				File updateStatisticFile = new File(updateStatisticFullName.get(srcTable.getTarSchema()));
+				File indexFile = new File(indexFullName.get(srcTable.getSrcSchema()));
+				File dataFile = new File(dataFullName.get(srcTable.getSrcSchema()));
+				File updateStatisticFile = new File(updateStatisticFullName.get(srcTable.getSrcSchema()));
 				
 				if (dataFile.exists()) {
 					buffer.append(dataFile.getCanonicalPath()).append(lineSeparator);
