@@ -780,6 +780,9 @@ public class SchemaMappingPage extends MigrationWizardPage {
 			return false;
 		}
 		
+		if (config.getTargetSchemaList().size() > 0) {
+			config.removeTargetSchemaList();
+		}
 		config.setTargetSchemaList(targetSchemaList);
 		config.setTargetSchemaFileName(schemaFullName);
 		config.setTargetTableFileName(tableFullName);

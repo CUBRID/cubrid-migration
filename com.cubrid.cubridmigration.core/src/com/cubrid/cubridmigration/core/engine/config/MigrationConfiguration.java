@@ -2853,6 +2853,10 @@ public class MigrationConfiguration {
 		this.targetSchemaList.addAll(targetSchemaList);
 	}
 	
+	public void removeTargetSchemaList() {
+		this.targetSchemaList.clear();
+	}
+	
 	/**
 	 * Retrieves the target charset;UTF-8 will be returned by default.
 	 * 

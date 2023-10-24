@@ -327,6 +327,7 @@ public final class MigrationTemplateParser {
 			//CMT112 script control. add owner in view
 			view.setAttribute(TemplateTags.ATTR_OWNER, tt.getOwner());
 			view.setAttribute(TemplateTags.ATTR_TARGET_OWNER, tt.getOwner());
+			view.setAttribute(TemplateTags.ATTR_SOURCE_OWNER, tt.getSourceOwner());
 			Element viewQuerySQL = createElement(document, view, TemplateTags.TAG_VIEWQUERYSQL);
 			viewQuerySQL.setTextContent(tt.getQuerySpec());
 			Element createViewSQL = createElement(document, view, TemplateTags.TAG_CREATEVIEWSQL);
@@ -368,6 +369,7 @@ public final class MigrationTemplateParser {
 			Element sequence = createElement(document, sequences, TemplateTags.TAG_SEQUENCE);
 			//CMT112 script control. add owner in sequence
 			sequence.setAttribute(TemplateTags.ATTR_OWNER, sc.getOwner());
+			sequence.setAttribute(TemplateTags.ATTR_SOURCE_OWNER, sc.getSourceOwner());
 			sequence.setAttribute(TemplateTags.ATTR_NAME, sc.getName());
 			sequence.setAttribute(TemplateTags.ATTR_START, String.valueOf(sc.getCurrentValue()));
 			sequence.setAttribute(TemplateTags.ATTR_NO_MAX, getBooleanString(sc.isNoMaxValue()));
@@ -417,6 +419,7 @@ public final class MigrationTemplateParser {
 			synonym.setAttribute(TemplateTags.ATTR_NAME, sc.getName());
 			synonym.setAttribute(TemplateTags.ATTR_SYNONYM_OBJECT_OWNER, sc.getObjectOwner());
 			synonym.setAttribute(TemplateTags.ATTR_SYNONYM_OBJECT, sc.getObjectName());
+			synonym.setAttribute(TemplateTags.ATTR_SOURCE_OWNER, sc.getSourceOwner());
 		}
 	}
 
@@ -439,6 +442,7 @@ public final class MigrationTemplateParser {
 			table.setAttribute(TemplateTags.ATTR_OWNER, targetTable.getOwner());
 			table.setAttribute(TemplateTags.ATTR_REUSE_OID,
 					getBooleanString(targetTable.isReuseOID()));
+			table.setAttribute(TemplateTags.ATTR_SOURCE_OWNER, targetTable.getSourceOwner());
 
 			Element columns = createElement(document, table, TemplateTags.TAG_COLUMNS);
 			List<Column> cols = targetTable.getColumns();

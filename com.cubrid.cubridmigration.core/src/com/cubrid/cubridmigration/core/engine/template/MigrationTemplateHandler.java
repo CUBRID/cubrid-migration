@@ -439,6 +439,7 @@ public final class MigrationTemplateHandler extends
 		if (!seq.isNoMinValue()) {
 			seq.setMinValue(new BigInteger(attributes.getValue(TemplateTags.ATTR_MIN)));
 		}
+		seq.setSourceOwner(attributes.getValue(TemplateTags.ATTR_SOURCE_OWNER));
 		config.addTargetSerialSchema(seq);
 	}
 	
@@ -451,6 +452,7 @@ public final class MigrationTemplateHandler extends
 		syn.setOwner(attributes.getValue(TemplateTags.ATTR_OWNER));
 		syn.setObjectName(attributes.getValue(TemplateTags.ATTR_SYNONYM_OBJECT));
 		syn.setObjectOwner(attributes.getValue(TemplateTags.ATTR_SYNONYM_OBJECT_OWNER));
+		syn.setSourceOwner(attributes.getValue(TemplateTags.ATTR_SOURCE_OWNER));
 		syn.setPublic(false);
 		config.addTargetSynonymSchema(syn);
 	}
@@ -468,6 +470,7 @@ public final class MigrationTemplateHandler extends
 		grn.setClassName(attributes.getValue(TemplateTags.ATTR_OBJECT_NAME));
 		grn.setAuthType(attributes.getValue(TemplateTags.ATTR_AUTH_TYPE));
 		grn.setGrantable(getBoolean(attributes.getValue(TemplateTags.ATTR_GRANTABLE), false));
+		grn.setSourceOwner(attributes.getValue(TemplateTags.ATTR_OWNER));
 		config.addTargetGrantSchema(grn);
 	}
 
@@ -479,6 +482,7 @@ public final class MigrationTemplateHandler extends
 		targetTable.setName(attributes.getValue(TemplateTags.ATTR_NAME));
 		targetTable.setReuseOID(getBoolean(attributes.getValue(TemplateTags.ATTR_REUSE_OID), false));
 		targetTable.setOwner(attributes.getValue(TemplateTags.ATTR_OWNER));
+		targetTable.setSourceOwner(attributes.getValue(TemplateTags.ATTR_SOURCE_OWNER));
 		if (targetTable.getOwner() != null) {
 			if (targetTable.getOwner().isEmpty()) {
 				targetTable.setOwner(null);
@@ -498,6 +502,7 @@ public final class MigrationTemplateHandler extends
 		targetView.setOwner(attributes.getValue(TemplateTags.ATTR_OWNER));
 		targetView.setTargetOwner(attributes.getValue(TemplateTags.ATTR_TARGET_OWNER));
  		targetView.setName(attributes.getValue(TemplateTags.ATTR_NAME));
+ 		targetView.setSourceOwner(attributes.getValue(TemplateTags.ATTR_SOURCE_OWNER));
  		config.addTargetViewSchema(targetView);
 	}
 

@@ -103,6 +103,7 @@ public final class TemplateTags {
 	public static final String ATTR_SCHEMA_NAME = "schema_name";
 	public static final String ATTR_SIZE = "size";
 	public static final String ATTR_SOURCE_GRANTOR_NAME = "source_grantor_name";
+	public static final String ATTR_SOURCE_OWNER = "source_owner";
 	public static final String ATTR_SPLIT_SCHEMA = "split_schema";
 	public static final String ATTR_START = "start";
 	public static final String ATTR_SUB_TYPE = "sub_type";
