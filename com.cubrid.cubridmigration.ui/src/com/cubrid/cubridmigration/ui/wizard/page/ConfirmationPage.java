@@ -165,10 +165,13 @@ public class ConfirmationPage extends
 
 			int oldLength;
 			boolean isCreateFileRepository = false;
+			boolean isAddUserSchema = migration.isAddUserSchema();
+			String conUser = migration.getSourceConParams().getConUser();
 			if (migration.isSplitSchema()) {
 				// table
 				text.append(Messages.confrimTable).append(lineSeparator);
 				oldLength = text.length();
+
 				for (Schema targetSchema : migration.getTargetSchemaList()) {
 					for (SourceEntryTableConfig expTable : migration.getExpEntryTableCfg()) {
 						if (expTable.getOwner().equals(targetSchema.getName()) && expTable.isCreateNewTable()) {
@@ -176,14 +179,18 @@ public class ConfirmationPage extends
 							break;
 						}
 					}
-					
 					if (isCreateFileRepository) {
 						text.append(tabSeparator).append(tabSeparator);
-						text.append(migration.getTargetTableFileName(targetSchema.getName()));
+						text.append(migration.getTargetTableFileName(isAddUserSchema ? targetSchema.getName() : conUser));
 						text.append(lineSeparator);
 						isCreateFileRepository = false;
+						
+						if (!isAddUserSchema) {
+							break;
+						}
 					}
 				}
+				
 				if (styleRanges != null) {
 					styleRanges.add(new StyleRange(oldLength, text.length() - oldLength,
 							SWTResourceConstents.COLOR_BLUE, null));
@@ -209,9 +216,13 @@ public class ConfirmationPage extends
 					
 					if (isCreateFileRepository) {
 						text.append(tabSeparator).append(tabSeparator);
-						text.append(migration.getTargetViewFileName(targetSchema.getName()));
+						text.append(migration.getTargetViewFileName(isAddUserSchema ? targetSchema.getName() : conUser));
 						text.append(lineSeparator);
 						isCreateFileRepository = false;
+						
+						if (!isAddUserSchema) {
+							break;
+						}
 					}
 				}
 				if (styleRanges != null) {
@@ -240,9 +251,13 @@ public class ConfirmationPage extends
 					
 					if (isCreateFileRepository) {
 						text.append(tabSeparator).append(tabSeparator);
-						text.append(migration.getTargetPkFileName(targetSchema.getName()));
+						text.append(migration.getTargetPkFileName(isAddUserSchema ? targetSchema.getName() : conUser));
 						text.append(lineSeparator);
 						isCreateFileRepository = false;
+						
+						if (!isAddUserSchema) {
+							break;
+						}
 					}
 				}
 				if (styleRanges != null) {
@@ -271,9 +286,13 @@ public class ConfirmationPage extends
 					
 					if (isCreateFileRepository) {
 						text.append(tabSeparator).append(tabSeparator);
-						text.append(migration.getTargetFkFileName(targetSchema.getName()));
+						text.append(migration.getTargetFkFileName(isAddUserSchema ? targetSchema.getName() : conUser));
 						text.append(lineSeparator);
 						isCreateFileRepository = false;
+						
+						if (!isAddUserSchema) {
+							break;
+						}
 					}
 				}
 				if (styleRanges != null) {
@@ -302,9 +321,13 @@ public class ConfirmationPage extends
 					
 					if (isCreateFileRepository) {
 						text.append(tabSeparator).append(tabSeparator);
-						text.append(migration.getTargetSerialFileName(targetSchema.getName()));
+						text.append(migration.getTargetSerialFileName(isAddUserSchema ? targetSchema.getName() : conUser));
 						text.append(lineSeparator);
 						isCreateFileRepository = false;
+						
+						if (!isAddUserSchema) {
+							break;
+						}
 					}
 				}
 				if (styleRanges != null) {
@@ -333,9 +356,13 @@ public class ConfirmationPage extends
 					
 					if (isCreateFileRepository) {
 						text.append(tabSeparator).append(tabSeparator);
-						text.append(migration.getTargetSynonymFileName(targetSchema.getName()));
+						text.append(migration.getTargetSynonymFileName(isAddUserSchema ? targetSchema.getName() : conUser));
 						text.append(lineSeparator);
 						isCreateFileRepository = false;
+						
+						if (!isAddUserSchema) {
+							break;
+						}
 					}
 				}
 				if (styleRanges != null) {
@@ -364,9 +391,13 @@ public class ConfirmationPage extends
 					
 					if (isCreateFileRepository) {
 						text.append(tabSeparator).append(tabSeparator);
-						text.append(migration.getTargetGrantFileName(targetSchema.getName()));
+						text.append(migration.getTargetGrantFileName(isAddUserSchema ? targetSchema.getName() : conUser));
 						text.append(lineSeparator);
 						isCreateFileRepository = false;
+						
+						if (!isAddUserSchema) {
+							break;
+						}
 					}
 				}
 				if (styleRanges != null) {
@@ -410,9 +441,13 @@ public class ConfirmationPage extends
 					
 					if (isCreateFileRepository) {
 						text.append(tabSeparator).append(tabSeparator);
-						text.append(migration.getTargetSchemaFileName(targetSchema.getName()));
+						text.append(migration.getTargetSchemaFileName(isAddUserSchema ? targetSchema.getName() : conUser));
 						text.append(lineSeparator);
 						isCreateFileRepository = false;
+						
+						if (!isAddUserSchema) {
+							break;
+						}
 					}
 				}
 				if (styleRanges != null) {
@@ -441,9 +476,13 @@ public class ConfirmationPage extends
 				
 				if (isCreateFileRepository) {
 					text.append(tabSeparator).append(tabSeparator);
-					text.append(migration.getTargetIndexFileName(targetSchema.getName()));
+					text.append(migration.getTargetIndexFileName(isAddUserSchema ? targetSchema.getName() : conUser));
 					text.append(lineSeparator);
 					isCreateFileRepository = false;
+					
+					if (!isAddUserSchema) {
+						break;
+					}
 				}
 			}
 			if (styleRanges != null) {
@@ -476,7 +515,7 @@ public class ConfirmationPage extends
 						text.append(tabSeparator).append(tabSeparator);
 						if (migration.getDestType() == MigrationConfiguration.DEST_DB_UNLOAD
 								|| migration.getDestType() == MigrationConfiguration.DEST_SQL) {
-							text.append(migration.getTargetDataFileName(targetSchema.getName()));
+							text.append(migration.getTargetDataFileName(isAddUserSchema ? targetSchema.getName() : conUser));
 						} else {
 							text.append(migration.getFileRepositroyPath());
 							text.append(targetSchema.getName()).append(File.separator);
@@ -488,6 +527,10 @@ public class ConfirmationPage extends
 						}
 						text.append(lineSeparator);
 						isCreateFileRepository = false;
+						
+						if (!isAddUserSchema) {
+							break;
+						}
 					}
 				}	
 			}
@@ -515,9 +558,13 @@ public class ConfirmationPage extends
 				
 				if (isCreateFileRepository) {
 					text.append(tabSeparator).append(tabSeparator);
-					text.append(migration.getTargetUpdateStatisticFileName(targetSchema.getName()));
+					text.append(migration.getTargetUpdateStatisticFileName(isAddUserSchema ? targetSchema.getName() : conUser));
 					text.append(lineSeparator);
 					isCreateFileRepository = false;
+					
+					if (!isAddUserSchema) {
+						break;
+					}
 				}
 			}
 			if (styleRanges != null) {

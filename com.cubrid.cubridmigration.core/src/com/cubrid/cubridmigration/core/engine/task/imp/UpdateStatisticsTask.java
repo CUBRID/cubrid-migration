@@ -89,13 +89,13 @@ public class UpdateStatisticsTask extends
 			} else {
 				List<SourceEntryTableConfig> expEntryTableCfg = config.getExpEntryTableCfg();
 				for (SourceEntryTableConfig setc : expEntryTableCfg) {
-					if (setc.getOwner().equals(schemaName) && setc.isMigrateData() && !objectsToBeUpdated.contains(setc.getTarget())) {
+					if (setc.getTargetOwner().equals(schemaName) && setc.isMigrateData() && !objectsToBeUpdated.contains(setc.getTarget())) {
 						objectsToBeUpdated.add("[" + setc.getTargetOwner() + "].[" + setc.getTarget() + "]");
 					}
 				}
 				List<SourceSQLTableConfig> expSQLCfg = config.getExpSQLCfg();
 				for (SourceSQLTableConfig sstc : expSQLCfg) {
-					if (sstc.getOwner().equals(schemaName) && sstc.isMigrateData() && !objectsToBeUpdated.contains(sstc.getTarget())) {
+					if (sstc.getTargetOwner().equals(schemaName) && sstc.isMigrateData() && !objectsToBeUpdated.contains(sstc.getTarget())) {
 						objectsToBeUpdated.add("[" + sstc.getTargetOwner() + "].[" + sstc.getTarget() + "]");
 					}
 				}
@@ -135,46 +135,53 @@ public class UpdateStatisticsTask extends
 	 * Execute import
 	 */
 	protected void executeImport() {
-		if (config.targetIsOnline()) {
-			if (config.isUpdateStatistics()) {
-				List<Schema> schemaList = config.getTargetSchemaList();
-				for (Schema schema : schemaList) {
-					LOG.debug("Execute update statistics for " + schema.getName());
-					execSQLList(getUpdateStatisticsSQLs(schema.getName()));
-				}
+		if (config.targetIsOnline() && config.isUpdateStatistics()) {
+			List<Schema> schemaList = config.getTargetSchemaList();
+			for (Schema schema : schemaList) {
+				LOG.debug("Execute update statistics for " + schema.getTargetSchemaName());
+				execSQLList(getUpdateStatisticsSQLs(schema.getTargetSchemaName()));
 			}
 			return;
 		}
 		
-		List<Schema> schemaList = config.getTargetSchemaList();
-		for (Schema schema : schemaList) {
-			String schemaName = schema.getName();
-			if (!checkDataFileRepository(schemaName)) {
-				continue;
+		if (config.isAddUserSchema()) {
+			List<Schema> schemaList = config.getTargetSchemaList();
+			for (Schema schema : schemaList) {
+				writeFile(schema.getName(), schema.getTargetSchemaName());
 			}
-			
-			String tfile = config.getTargetUpdateStatisticFileName(schemaName);
-			File file = new File(tfile);
-			//if no indexes, return.
-//			if (!file.exists() || file.length() == 0) {
-//				return;
-//			}
-			
-			OutputStream os = null; //NO PMD
-			try {
-				os = new BufferedOutputStream(new FileOutputStream(file, true));
-				List<String> sqlList = getUpdateStatisticsSQLs(schemaName);
-				byte[] enterBytes = "\n".getBytes();
-				for (String sql : sqlList) {
-					os.write(sql.getBytes());
-					os.write(enterBytes);
-				}
-				os.flush();
-			} catch (Exception e) {
-				throw new RuntimeException(e);
-			} finally {
-				Closer.close(os);
+		} else {
+			// For versions that do not support multi schema, the targetSchema parameter is not needed.
+			writeFile(config.getSourceConParams().getConUser(), "");
+		}
+		
+	}
+	
+	/**
+	 * Write Update statistic SQL to the file
+	 * 
+	 * @param schemaName String
+	 */
+	private void writeFile(String schemaName, String targetSchemaName) {
+		if (!checkDataFileRepository(schemaName)) {
+			return;
+		}
+		
+		String tfile = config.getTargetUpdateStatisticFileName(schemaName);
+		File file = new File(tfile);
+		OutputStream os = null; //NO PMD
+		try {
+			os = new BufferedOutputStream(new FileOutputStream(file, true));
+			List<String> sqlList = getUpdateStatisticsSQLs(targetSchemaName);
+			byte[] enterBytes = "\n".getBytes();
+			for (String sql : sqlList) {
+				os.write(sql.getBytes());
+				os.write(enterBytes);
 			}
+			os.flush();
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		} finally {
+			Closer.close(os);
 		}
 	}
 

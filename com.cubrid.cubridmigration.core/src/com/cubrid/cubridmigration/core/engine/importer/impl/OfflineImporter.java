@@ -644,7 +644,8 @@ public abstract class OfflineImporter extends
 		String ddl = CUBRIDSQLHelper.getInstance(null).getTableDDL(table, config.isAddUserSchema());
 		table.setDDL(ddl);
 		sql.append(ddl).append("\n");
-		executeDDL(sql.toString(), DBObject.OBJ_TYPE_TABLE, createResultHandler(table), table.getSourceOwner());
+		executeDDL(sql.toString(), DBObject.OBJ_TYPE_TABLE, createResultHandler(table), 
+				config.isAddUserSchema() ? table.getSourceOwner() : config.getSourceConParams().getConUser());
 	}
 
 	/**
@@ -655,7 +656,8 @@ public abstract class OfflineImporter extends
 	public void createView(View view) {
 		String viewDDL = CUBRIDSQLHelper.getInstance(null).getViewDDL(view, config.isAddUserSchema());
 		view.setDDL(viewDDL);
-		executeDDL(viewDDL + "\n", DBObject.OBJ_TYPE_VIEW, createResultHandler(view), view.getSourceOwner());
+		executeDDL(viewDDL + "\n", DBObject.OBJ_TYPE_VIEW, createResultHandler(view), 
+				config.isAddUserSchema() ? view.getSourceOwner() : config.getSourceConParams().getConUser());
 	}
 	
 	/**
@@ -666,7 +668,8 @@ public abstract class OfflineImporter extends
 	public void alterView(View view) {
 		String viewAlterDDL = CUBRIDSQLHelper.getInstance(null).getViewAlterDDL(view, config.isAddUserSchema());
 		view.setAlterDDL(viewAlterDDL);
-		executeDDL(viewAlterDDL + "\n", DBObject.OBJ_TYPE_VIEW_QUERY_SPEC, createResultHandler(view), view.getSourceOwner());
+		executeDDL(viewAlterDDL + "\n", DBObject.OBJ_TYPE_VIEW_QUERY_SPEC, createResultHandler(view), 
+				config.isAddUserSchema() ? view.getSourceOwner() : config.getSourceConParams().getConUser());
 	}
 
 	/**
@@ -678,7 +681,8 @@ public abstract class OfflineImporter extends
 		String ddl = CUBRIDSQLHelper.getInstance(null).getPKDDL(pk.getTable().getOwner(), pk.getTable().getName(),
 				pk.getName(), pk.getPkColumns(), config.isAddUserSchema());
 		pk.setDDL(ddl);
-		executeDDL(ddl + ";\n", DBObject.OBJ_TYPE_PK, createResultHandler(pk), pk.getTable().getSourceOwner());
+		executeDDL(ddl + ";\n", DBObject.OBJ_TYPE_PK, createResultHandler(pk), 
+				config.isAddUserSchema() ? pk.getTable().getSourceOwner() : config.getSourceConParams().getConUser());
 	}
 
 	/**
@@ -690,7 +694,8 @@ public abstract class OfflineImporter extends
 		String ddl = CUBRIDSQLHelper.getInstance(null).getFKDDL(fk.getTable().getOwner(), fk.getTable().getName(), 
 				fk, config.isAddUserSchema());
 		fk.setDDL(ddl);
-		executeDDL(ddl + ";\n", DBObject.OBJ_TYPE_FK, createResultHandler(fk), fk.getTable().getSourceOwner());
+		executeDDL(ddl + ";\n", DBObject.OBJ_TYPE_FK, createResultHandler(fk), 
+				config.isAddUserSchema() ? fk.getTable().getSourceOwner() : config.getSourceConParams().getConUser());
 	}
 
 	/**
@@ -702,7 +707,8 @@ public abstract class OfflineImporter extends
 		String ddl = CUBRIDSQLHelper.getInstance(null).getIndexDDL(index.getTable().getOwner(), index.getTable().getName(),
 				index, "", config.isAddUserSchema());
 		index.setDDL(ddl);
-		executeDDL(ddl + ";\n", DBObject.OBJ_TYPE_INDEX, createResultHandler(index), index.getTable().getSourceOwner());
+		executeDDL(ddl + ";\n", DBObject.OBJ_TYPE_INDEX, createResultHandler(index), 
+				config.isAddUserSchema() ? index.getTable().getSourceOwner() : config.getSourceConParams().getConUser());
 	}
 
 	/**
@@ -713,7 +719,8 @@ public abstract class OfflineImporter extends
 	public void createSequence(Sequence sq) {
 		String ddl = CUBRIDSQLHelper.getInstance(null).getSequenceDDL(sq, config.isAddUserSchema());
 		sq.setDDL(ddl);
-		executeDDL(ddl + ";\n", DBObject.OBJ_TYPE_SEQUENCE, createResultHandler(sq), sq.getSourceOwner());
+		executeDDL(ddl + ";\n", DBObject.OBJ_TYPE_SEQUENCE, createResultHandler(sq), 
+				config.isAddUserSchema() ? sq.getSourceOwner() : config.getSourceConParams().getConUser());
 	}
 	
 	/**
@@ -724,7 +731,8 @@ public abstract class OfflineImporter extends
 	public void createSynonym(Synonym sn) {
 		String ddl = CUBRIDSQLHelper.getInstance(null).getSynonymDDL(sn, config.isAddUserSchema());
 		sn.setDDL(ddl);
-		executeDDL(ddl + ";\n", DBObject.OBJ_TYPE_SYNONYM, createResultHandler(sn), sn.getSourceOwner());
+		executeDDL(ddl + ";\n", DBObject.OBJ_TYPE_SYNONYM, createResultHandler(sn), 
+				config.isAddUserSchema() ? sn.getSourceOwner() : config.getSourceConParams().getConUser());
 	}
 	
 	/**
@@ -735,7 +743,8 @@ public abstract class OfflineImporter extends
 	public void createGrant(Grant gr) {
 		String ddl = CUBRIDSQLHelper.getInstance(null).getGrantDDL(gr, config.isAddUserSchema());
 		gr.setDDL(ddl);
-		executeDDL(ddl + ";\n", DBObject.OBJ_TYPE_GRANT, createResultHandler(gr),gr.getSourceOwner());
+		executeDDL(ddl + ";\n", DBObject.OBJ_TYPE_GRANT, createResultHandler(gr), 
+				config.isAddUserSchema() ? gr.getSourceOwner() : config.getSourceConParams().getConUser());
 	}
 	
 	public void createSchema(Schema schema) {

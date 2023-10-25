@@ -238,29 +238,41 @@ public class MigrationTasksScheduler {
 				schemaList = new ArrayList<Schema>(schemas);
 			}
 			
-			for (Schema schema : schemaList) {
-				String schemaName = schema.getName();
-				if (config.isSplitSchema()) {
-					PathUtils.deleteFile(new File(config.getTargetTableFileName(schemaName)));
-					PathUtils.deleteFile(new File(config.getTargetViewFileName(schemaName)));
-					PathUtils.deleteFile(new File(config.getTargetViewQuerySpecFileName(schemaName)));
-					PathUtils.deleteFile(new File(config.getTargetPkFileName(schemaName)));
-					PathUtils.deleteFile(new File(config.getTargetFkFileName(schemaName)));
-					PathUtils.deleteFile(new File(config.getTargetSerialFileName(schemaName)));
-					PathUtils.deleteFile(new File(config.getTargetSchemaFileListName(schemaName)));
-					PathUtils.deleteFile(new File(config.getTargetSynonymFileName(schemaName)));
-					PathUtils.deleteFile(new File(config.getTargetGrantFileName(schemaName)));
-				} else {
-					PathUtils.deleteFile(new File(config.getTargetSchemaFileName(schemaName)));
+			if (config.isAddUserSchema()) {
+				for (Schema schema : schemaList) {
+					deleteFile(config, schema.getName());
 				}
-				PathUtils.deleteFile(new File(config.getTargetUpdateStatisticFileName(schemaName)));
-				PathUtils.deleteFile(new File(config.getTargetIndexFileName(schemaName)));
-				PathUtils.deleteFile(new File(config.getTargetDataFileName(schemaName)));
-				PathUtils.deleteFile(new File(config.getFileRepositroyPath() + schemaName));
+			} else {
+				deleteFile(config, config.getSourceConParams().getConUser());
 			}
-			
 		}
 		executeTask(taskFactory.createCleanDBTask());
+	}
+	
+	/**
+	 * Delete the created file
+	 * 
+	 * @param config MigrationConfiguration
+	 * @param schemaName String
+	 */
+	private void deleteFile(MigrationConfiguration config, String schemaName) {
+		if (config.isSplitSchema()) {
+			PathUtils.deleteFile(new File(config.getTargetTableFileName(schemaName)));
+			PathUtils.deleteFile(new File(config.getTargetViewFileName(schemaName)));
+			PathUtils.deleteFile(new File(config.getTargetViewQuerySpecFileName(schemaName)));
+			PathUtils.deleteFile(new File(config.getTargetPkFileName(schemaName)));
+			PathUtils.deleteFile(new File(config.getTargetFkFileName(schemaName)));
+			PathUtils.deleteFile(new File(config.getTargetSerialFileName(schemaName)));
+			PathUtils.deleteFile(new File(config.getTargetSchemaFileListName(schemaName)));
+			PathUtils.deleteFile(new File(config.getTargetSynonymFileName(schemaName)));
+			PathUtils.deleteFile(new File(config.getTargetGrantFileName(schemaName)));
+		} else {
+			PathUtils.deleteFile(new File(config.getTargetSchemaFileName(schemaName)));
+		}
+		PathUtils.deleteFile(new File(config.getTargetUpdateStatisticFileName(schemaName)));
+		PathUtils.deleteFile(new File(config.getTargetIndexFileName(schemaName)));
+		PathUtils.deleteFile(new File(config.getTargetDataFileName(schemaName)));
+		PathUtils.deleteFile(new File(config.getFileRepositroyPath() + schemaName));
 	}
 
 	/**

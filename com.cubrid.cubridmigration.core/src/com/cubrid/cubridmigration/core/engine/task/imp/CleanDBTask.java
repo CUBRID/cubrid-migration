@@ -65,6 +65,10 @@ public class CleanDBTask extends
 		ImportTask {
 
 	private final static Logger LOG = LogUtil.getLogger(CleanDBTask.class);
+	
+	private static final String CLEAR_SQL = "_clear.sql";
+	private static final String DROP_FK_SQL = "_drop_fk.sql";
+	private static final String TRUNCATE_SQL = "_truncate.sql";
 
 	private final MigrationConfiguration config;
 	
@@ -80,10 +84,12 @@ public class CleanDBTask extends
 		Map<String, List<String>> fkDropQueryBySchemaMap = new HashMap<String, List<String>>();
 		Map<String, List<String>> tbTruncateQueryBySchemaMap = new HashMap<String, List<String>>();
 		
+		String conUser = config.getSourceConParams().getConUser();
 		for (SourceEntryTableConfig setc : config.getExpEntryTableCfg()) {
 			if (!setc.isCreateNewTable()) {
 				continue;
 			}
+			
 			for (SourceFKConfig sfkc : setc.getFKConfigList()) {
 				if (sfkc.isCreate() && sfkc.isReplace()) {
 					
@@ -96,7 +102,8 @@ public class CleanDBTask extends
 					
 					LOG.info("drop foreign key : " + query.toString());
 					
-					divideQueryBySchema(fkDropQueryBySchemaMap, setc.getTargetOwner(), query.toString());
+					divideQueryBySchema(fkDropQueryBySchemaMap, 
+							config.isAddUserSchema() ? setc.getTargetOwner() : conUser, query.toString());
 					execDDL(query.toString());
 				}
 			}
@@ -113,7 +120,8 @@ public class CleanDBTask extends
 					
 					LOG.info("drop index : " + query.toString());
 					
-					divideQueryBySchema(dropQueryBySchemaMap, setc.getTargetOwner(), query.toString());
+					divideQueryBySchema(dropQueryBySchemaMap, 
+							config.isAddUserSchema() ? setc.getTargetOwner() : conUser, query.toString());
 					execDDL(query.toString());
 				}
 			}
@@ -129,8 +137,10 @@ public class CleanDBTask extends
 				
 				LOG.info("drop table query : " + query.toString());
 				
-				divideQueryBySchema(dropQueryBySchemaMap, setc.getTargetOwner(), query.toString());
-				divideQueryBySchema(tbTruncateQueryBySchemaMap, setc.getTargetOwner(), 
+				divideQueryBySchema(dropQueryBySchemaMap, 
+						config.isAddUserSchema() ? setc.getTargetOwner() : conUser, query.toString());
+				divideQueryBySchema(tbTruncateQueryBySchemaMap, 
+						config.isAddUserSchema() ? setc.getTargetOwner() : conUser, 
 						query.toString().replaceAll("DROP", "TRUNCATE"));
 				execDDL(query.toString());
 			}
@@ -146,7 +156,8 @@ public class CleanDBTask extends
 				
 				LOG.info("drop table query : " + query.toString());
 				
-				divideQueryBySchema(dropQueryBySchemaMap, sstc.getTargetOwner(), query.toString());
+				divideQueryBySchema(dropQueryBySchemaMap, 
+						config.isAddUserSchema() ? sstc.getTargetOwner() : conUser, query.toString());
 				divideQueryBySchema(tbTruncateQueryBySchemaMap, sstc.getTargetOwner(), 
 						query.toString().replaceAll("DROP", "TRUNCATE"));
 				execDDL(query.toString());
@@ -163,8 +174,10 @@ public class CleanDBTask extends
 				
 				LOG.info("drop table query : " + query.toString());
 				
-				divideQueryBySchema(dropQueryBySchemaMap, scc.getTargetOwner(), query.toString());
-				divideQueryBySchema(tbTruncateQueryBySchemaMap, scc.getTargetOwner(), 
+				divideQueryBySchema(dropQueryBySchemaMap, 
+						config.isAddUserSchema() ? scc.getTargetOwner() : conUser, query.toString());
+				divideQueryBySchema(tbTruncateQueryBySchemaMap, 
+						config.isAddUserSchema() ? scc.getTargetOwner() : conUser, 
 						query.toString().replaceAll("DROP", "TRUNCATE"));
 				execDDL(query.toString());
 			}
@@ -180,7 +193,8 @@ public class CleanDBTask extends
 				
 				LOG.info("drop view query : " + query.toString());
 				
-				divideQueryBySchema(dropQueryBySchemaMap, sc.getTargetOwner(), query.toString());
+				divideQueryBySchema(dropQueryBySchemaMap, 
+						config.isAddUserSchema() ? sc.getTargetOwner() : conUser, query.toString());
 				execDDL(query.toString());
 			}
 		}
@@ -195,7 +209,8 @@ public class CleanDBTask extends
 				
 				LOG.info("drop serial query : " + query.toString());
 				
-				divideQueryBySchema(dropQueryBySchemaMap, sc.getTargetOwner(), query.toString());
+				divideQueryBySchema(dropQueryBySchemaMap, 
+						config.isAddUserSchema() ? sc.getTargetOwner() : conUser, query.toString());
 				execDDL(query.toString());
 				
 			}
@@ -211,7 +226,8 @@ public class CleanDBTask extends
 
 				LOG.info("drop syonym query : " + query.toString());
 
-				divideQueryBySchema(dropQueryBySchemaMap, sc.getTargetOwner(), query.toString());
+				divideQueryBySchema(dropQueryBySchemaMap, 
+						config.isAddUserSchema() ? sc.getTargetOwner() : conUser, query.toString());
 				execDDL(query.toString());
 			}
 		}
@@ -225,11 +241,17 @@ public class CleanDBTask extends
 				schemaList = new ArrayList<Schema>(schemas);
 			}
 			
-			for (Schema schema : schemaList) {
-				String ownerName = schema.getName();
-				writeFile(dropQueryBySchemaMap, ownerName, "_clear.sql");
-				writeFile(fkDropQueryBySchemaMap, ownerName, "_drop_fk.sql");
-				writeFile(tbTruncateQueryBySchemaMap, ownerName, "_truncate.sql");
+			if (config.isAddUserSchema()) {
+				for (Schema schema : schemaList) {
+					String ownerName = schema.getName();
+					writeFile(dropQueryBySchemaMap, ownerName, CLEAR_SQL);
+					writeFile(fkDropQueryBySchemaMap, ownerName, DROP_FK_SQL);
+					writeFile(tbTruncateQueryBySchemaMap, ownerName, TRUNCATE_SQL);
+				}
+			} else {
+				writeFile(dropQueryBySchemaMap, conUser, CLEAR_SQL);
+				writeFile(fkDropQueryBySchemaMap, conUser, DROP_FK_SQL);
+				writeFile(tbTruncateQueryBySchemaMap, conUser, TRUNCATE_SQL);
 			}
 		}
 	}
