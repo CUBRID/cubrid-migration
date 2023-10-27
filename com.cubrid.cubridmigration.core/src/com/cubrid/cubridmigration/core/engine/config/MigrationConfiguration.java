@@ -1585,21 +1585,32 @@ public class MigrationConfiguration {
 			path2 = path + File.separator;
 		}
 		
-		for (Schema schema : srcCatalog.getSchemas()) {
-			addTargetSchemaFileName(schema.getName(), path2 + targetSchemaFileName.get(schema.getName().substring(tempPath.length())));
-			addTargetTableFileName(schema.getName(), path2 + targetTableFileName.get(schema.getName().substring(tempPath.length())));
-			addTargetViewFileName(schema.getName(), path2 + targetViewFileName.get(schema.getName().substring(tempPath.length())));
-			addTargetViewQuerySpecFileName(schema.getName(), path2 + targetViewQuerySpecFileName.get(schema.getName().substring(tempPath.length())));
-			addTargetPkFileName(schema.getName(), path2 + targetPkFileName.get(schema.getName().substring(tempPath.length())));
-			addTargetFkFileName(schema.getName(), path2 + targetFkFileName.get(schema.getName().substring(tempPath.length())));
-			addTargetDataFileName(schema.getName(), path2 + targetDataFileName.get(schema.getName().substring(tempPath.length())));
-			addTargetIndexFileName(schema.getName(), path2 + targetIndexFileName.get(schema.getName().substring(tempPath.length())));
-			addTargetSerialFileName(schema.getName(), path2 + targetSerialFileName.get(schema.getName().substring(tempPath.length())));
-			addTargetUpdateStatisticFileName(schema.getName(), path2 + targetUpdateStatisticFileName.get(schema.getName().substring(tempPath.length())));
-			addTargetSchemaFileListName(schema.getName(), path2 + targetSchemaFileListName.get(schema.getName().substring(tempPath.length())));
-			addTargetSynonymFileName(schema.getName(), path2 + targetSynonymFileName.get(schema.getName().substring(tempPath.length())));
-			addTargetGrantFileName(schema.getName(), path2 + targetGrantFileName.get(schema.getName().substring(tempPath.length())));
+		if (isAddUserSchema()) {
+			for (Schema schema : srcCatalog.getSchemas()) {
+				mergeTargetFilePath(schema.getName(), tempPath, path2);
+			}
+		} else {
+			mergeTargetFilePath(getSourceConParams().getConUser(), tempPath, path2);
 		}
+	}
+	
+	private void mergeTargetFilePath(String schemaName, String tempPath, String path2) {
+		if (this.splitSchema) {
+			addTargetTableFileName(schemaName, path2 + targetTableFileName.get(schemaName.substring(tempPath.length())));
+			addTargetViewFileName(schemaName, path2 + targetViewFileName.get(schemaName.substring(tempPath.length())));
+			addTargetViewQuerySpecFileName(schemaName, path2 + targetViewQuerySpecFileName.get(schemaName.substring(tempPath.length())));
+			addTargetPkFileName(schemaName, path2 + targetPkFileName.get(schemaName.substring(tempPath.length())));
+			addTargetFkFileName(schemaName, path2 + targetFkFileName.get(schemaName.substring(tempPath.length())));
+			addTargetSerialFileName(schemaName, path2 + targetSerialFileName.get(schemaName.substring(tempPath.length())));
+			addTargetSynonymFileName(schemaName, path2 + targetSynonymFileName.get(schemaName.substring(tempPath.length())));
+			addTargetGrantFileName(schemaName, path2 + targetGrantFileName.get(schemaName.substring(tempPath.length())));
+			addTargetSchemaFileListName(schemaName, path2 + targetSchemaFileListName.get(schemaName.substring(tempPath.length())));
+		} else {
+			addTargetSchemaFileName(schemaName, path2 + targetSchemaFileName.get(schemaName.substring(tempPath.length())));
+		}
+		addTargetDataFileName(schemaName, path2 + targetDataFileName.get(schemaName.substring(tempPath.length())));
+		addTargetIndexFileName(schemaName, path2 + targetIndexFileName.get(schemaName.substring(tempPath.length())));
+		addTargetUpdateStatisticFileName(schemaName, path2 + targetUpdateStatisticFileName.get(schemaName.substring(tempPath.length())));
 	}
 
 	/**
