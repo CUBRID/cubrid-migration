@@ -843,28 +843,35 @@ public class MigrationConfiguration {
 		targetSynonyms.addAll(tempSynonyms);
 	}
 	
-	public void createDumpfile(boolean isSplit) {
-		Iterator<String> keys = scriptSchemaMapping.keySet().iterator();
-		while (keys.hasNext()) {
-			Schema schema = scriptSchemaMapping.get(keys.next());
-			String schemaName = schema.getName();
-			if (isSplit) {
-				this.addTargetTableFileName(schemaName, getTableFullName(schemaName));
-				this.addTargetViewFileName(schemaName, getViewFullName(schemaName));
-				this.addTargetViewQuerySpecFileName(schemaName, getViewQuerySpecFullName(schemaName));
-				this.addTargetPkFileName(schemaName, getPkFullName(schemaName));
-				this.addTargetFkFileName(schemaName, getFkFullName(schemaName));
-				this.addTargetSerialFileName(schemaName, getSequenceFullName(schemaName));
-				this.addTargetSynonymFileName(schemaName, getSynonymFullName(schemaName));
-				this.addTargetGrantFileName(schemaName, getGrantFullName(schemaName));
-				this.addTargetSchemaFileListName(schemaName, getSchemaFileListFullName(schemaName));
-			} else {
-				this.addTargetSchemaFileName(schemaName, getSchemaFullName(schemaName));
+	public void createDumpfile(boolean isSplit, boolean isAddUserSchema) {
+		if (isAddUserSchema) {
+			Iterator<String> keys = scriptSchemaMapping.keySet().iterator();
+			while (keys.hasNext()) {
+				Schema schema = scriptSchemaMapping.get(keys.next());
+				addTargetObjectFileName(schema.getName(), isSplit);
 			}
-			this.addTargetDataFileName(schemaName, getDataFullName(schemaName));
-			this.addTargetIndexFileName(schemaName, getIndexFullName(schemaName));
-			this.addTargetUpdateStatisticFileName(schemaName, getUpdateStatisticFullName(schemaName));
+		} else {
+			addTargetObjectFileName(this.getSourceConParams().getConUser(), isSplit);
 		}
+	}
+	
+	private void addTargetObjectFileName(String schemaName, boolean isSplit) {
+		if (isSplit) {
+			this.addTargetTableFileName(schemaName, getTableFullName(schemaName));
+			this.addTargetViewFileName(schemaName, getViewFullName(schemaName));
+			this.addTargetViewQuerySpecFileName(schemaName, getViewQuerySpecFullName(schemaName));
+			this.addTargetPkFileName(schemaName, getPkFullName(schemaName));
+			this.addTargetFkFileName(schemaName, getFkFullName(schemaName));
+			this.addTargetSerialFileName(schemaName, getSequenceFullName(schemaName));
+			this.addTargetSynonymFileName(schemaName, getSynonymFullName(schemaName));
+			this.addTargetGrantFileName(schemaName, getGrantFullName(schemaName));
+			this.addTargetSchemaFileListName(schemaName, getSchemaFileListFullName(schemaName));
+		} else {
+			this.addTargetSchemaFileName(schemaName, getSchemaFullName(schemaName));
+		}
+		this.addTargetDataFileName(schemaName, getDataFullName(schemaName));
+		this.addTargetIndexFileName(schemaName, getIndexFullName(schemaName));
+		this.addTargetUpdateStatisticFileName(schemaName, getUpdateStatisticFullName(schemaName));
 	}
 	
 	private String getTargetOwner(List<Schema> schemas, String owner) {
