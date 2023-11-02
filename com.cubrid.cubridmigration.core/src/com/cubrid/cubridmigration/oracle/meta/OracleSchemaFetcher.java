@@ -846,6 +846,7 @@ public final class OracleSchemaFetcher extends
 				grant.setGrantorName(rs.getString("GRANTOR"));
 				grant.setAuthType(convertPrivilegeOracle2Cubrid(rs.getString("PRIVILEGE")));
 				grant.setGrantable(rs.getString("GRANTABLE").equals("YES") ? true : false);
+				grant.setSourceObjectOwner(grant.getClassOwner());
 				grant.setDDL(CUBRIDSQLHelper.getInstance(null).getGrantDDL(grant, true));
 				schema.addGrant(grant);
 			}
@@ -867,6 +868,7 @@ public final class OracleSchemaFetcher extends
 				grant.setGrantorName(rs.getString("GRANTOR"));
 				grant.setAuthType(rs.getString("PRIVILEGE"));
 				grant.setGrantable(rs.getString("GRANTABLE").equals("YES") ? true : false);
+				grant.setSourceObjectOwner(grant.getClassOwner());
 				grant.setDDL(CUBRIDSQLHelper.getInstance(null).getGrantDDL(grant, true));
 				schema.addGrant(grant);
 			}

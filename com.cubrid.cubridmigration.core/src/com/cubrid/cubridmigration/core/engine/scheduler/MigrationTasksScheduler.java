@@ -32,8 +32,10 @@ package com.cubrid.cubridmigration.core.engine.scheduler;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -265,7 +267,17 @@ public class MigrationTasksScheduler {
 			PathUtils.deleteFile(new File(config.getTargetSerialFileName(schemaName)));
 			PathUtils.deleteFile(new File(config.getTargetSchemaFileListName(schemaName)));
 			PathUtils.deleteFile(new File(config.getTargetSynonymFileName(schemaName)));
-			PathUtils.deleteFile(new File(config.getTargetGrantFileName(schemaName)));
+			
+			Map<String, String> grantFilePaths = config.getTargetGrantFileName(schemaName);
+			Iterator<String> keys = null;
+			if (grantFilePaths != null) {
+				keys = grantFilePaths.keySet().iterator();
+			}
+			if (keys != null) {
+				while (keys.hasNext()) {
+					PathUtils.deleteFile(new File(grantFilePaths.get(keys.next())));
+				}
+			}
 		} else {
 			PathUtils.deleteFile(new File(config.getTargetSchemaFileName(schemaName)));
 		}

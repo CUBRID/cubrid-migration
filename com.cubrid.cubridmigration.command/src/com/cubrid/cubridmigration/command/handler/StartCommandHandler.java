@@ -182,6 +182,9 @@ public class StartCommandHandler implements
 					return null;
 				}
 			}
+			if (targetPath != null) {
+				config.changeTargetFilePath(targetPath);
+			}
 			config.cleanNoUsedConfigForStart();
 			if (config.hasOtherParam()) {
 				String s1 = config.getOtherParam(MySQL2CUBRIDMigParas.UNPARSED_TIME);
@@ -343,9 +346,6 @@ public class StartCommandHandler implements
 				return false;
 			}
 		} else {
-			if (targetPath != null) {
-				config.changeTargetFilePath(targetPath);
-			}
 			boolean confirm;
 			String tempPath = config.getFileRepositroyPath();
 			if (SystemUtils.IS_OS_WINDOWS) {

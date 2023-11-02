@@ -2146,6 +2146,7 @@ public final class CUBRIDSchemaFetcher extends
 				grant.setAuthType(rs.getString("auth_type"));
 				grant.setGrantable(rs.getString("is_grantable").equals("NO") ? false : true);
 				grant.setClassOwner(isUserSchema ? rs.getString("owner_name") : null);
+				grant.setSourceObjectOwner(grant.getClassOwner());
 				grant.setDDL(CUBRIDSQLHelper.getInstance(null).getGrantDDL(grant, isUserSchema));
 				grants.add(grant);
 			}

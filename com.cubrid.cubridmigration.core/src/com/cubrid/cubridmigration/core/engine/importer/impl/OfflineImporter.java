@@ -420,7 +420,7 @@ public abstract class OfflineImporter extends
 	 * @param isIndex true if the DDL is about index
 	 */
 	protected abstract void sendSchemaFile(String fileName, RunnableResultHandler listener,
-			String objectType, String owner);
+			String objectType, String owner, String sourceObjectOwner);
 
 	/**
 	 * Write content to file.
@@ -459,6 +459,18 @@ public abstract class OfflineImporter extends
 	public void executeDDL(String sql) {
 		executeDDL(sql, null, null, null);
 	}
+	
+	/**
+	 * Execute DDL
+	 * 
+	 * @param sql to be executed.
+	 * @param objectType true if the sql is DDL of index
+	 * @param listener to be called back 
+	 * @param owner Grant owner
+	 */
+	public void executeDDL(String sql, String objectType, RunnableResultHandler listener, String owner) {
+		executeDDL(sql, objectType, listener, owner, null);
+	}
 
 	/**
 	 * Execute DDL SQLs.
@@ -466,8 +478,11 @@ public abstract class OfflineImporter extends
 	 * @param sql to be executed.
 	 * @param isIndex true if the sql is DDL of index
 	 * @param listener to be called back
+	 * @param owner Grant owner
+	 * @param sourceObjectOwner Grant owner in the source database
 	 */
-	protected void executeDDL(String sql, String objectType, RunnableResultHandler listener, String owner) {
+	protected void executeDDL(String sql, String objectType, 
+			RunnableResultHandler listener, String owner, String sourceObjectOwner) {
 		if (LOG.isDebugEnabled()) {
 			LOG.debug("[IN]executeDDL().sql=" + sql);
 		}
@@ -476,7 +491,7 @@ public abstract class OfflineImporter extends
 			LOG.debug("[VAR]fileName=" + fileName);
 		}
 		writeFile(fileName, sql);
-		sendSchemaFile(fileName, listener, objectType, owner);
+		sendSchemaFile(fileName, listener, objectType, owner, sourceObjectOwner);
 	}
 
 	/**
@@ -744,7 +759,7 @@ public abstract class OfflineImporter extends
 		String ddl = CUBRIDSQLHelper.getInstance(null).getGrantDDL(gr, config.isAddUserSchema());
 		gr.setDDL(ddl);
 		executeDDL(ddl + ";\n", DBObject.OBJ_TYPE_GRANT, createResultHandler(gr), 
-				config.isAddUserSchema() ? gr.getSourceOwner() : config.getSourceConParams().getConUser());
+				config.isAddUserSchema() ? gr.getSourceOwner() : config.getSourceConParams().getConUser(), gr.getSourceObjectOwner());
 	}
 	
 	public void createSchema(Schema schema) {

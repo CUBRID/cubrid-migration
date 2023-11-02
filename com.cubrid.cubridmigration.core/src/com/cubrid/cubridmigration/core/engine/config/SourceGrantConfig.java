@@ -40,6 +40,7 @@ public class SourceGrantConfig extends
 	private String className;
 	private String classOwner;
 	private boolean isGrantable;
+	private String sourceObjectOwner;
 	
 	public String getOwner() {
 		return owner;
@@ -111,5 +112,13 @@ public class SourceGrantConfig extends
 	
 	public void setGrantable(boolean isGrantable) {
 		this.isGrantable = isGrantable;
+	}
+	
+	public String getSourceObjectOwner() {
+		return sourceObjectOwner;
+	}
+
+	public void setSourceObjectOwner(String owner) {
+		this.sourceObjectOwner = owner;
 	}
 }

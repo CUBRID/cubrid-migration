@@ -34,6 +34,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -69,6 +70,7 @@ import com.cubrid.common.ui.swt.table.celleditor.EditableComboBoxCellEditor;
 import com.cubrid.common.ui.swt.table.listener.CheckBoxColumnSelectionListener;
 import com.cubrid.cubridmigration.core.common.log.LogUtil;
 import com.cubrid.cubridmigration.core.dbobject.Catalog;
+import com.cubrid.cubridmigration.core.dbobject.Grant;
 import com.cubrid.cubridmigration.core.dbobject.Schema;
 import com.cubrid.cubridmigration.core.engine.config.MigrationConfiguration;
 import com.cubrid.cubridmigration.ui.common.CompositeUtils;
@@ -115,7 +117,7 @@ public class SchemaMappingPage extends MigrationWizardPage {
 	Map<String, String> updateStatisticFullName;
 	Map<String, String> schemaFileListFullName;
 	Map<String, String> synonymFileListFullName;
-	Map<String, String> grantFileListFullName;
+	Map<String, Map<String, String>> grantFileListFullName;
 	
 	protected class SrcTable {
 		private boolean isSelected;
@@ -737,7 +739,7 @@ public class SchemaMappingPage extends MigrationWizardPage {
 		updateStatisticFullName = new HashMap<String, String>();
 		schemaFileListFullName = new HashMap<String, String>();
 		synonymFileListFullName = new HashMap<String, String>();
-		grantFileListFullName = new HashMap<String, String>();
+		grantFileListFullName = new HashMap<String, Map<String, String>>();
 		
 		for (SrcTable srcTable : srcTableList) {
 			String targetSchemaName = srcTable.getTarSchema();
@@ -767,7 +769,17 @@ public class SchemaMappingPage extends MigrationWizardPage {
 				serialFullName.put(schemaName, config.getSequenceFullName(schemaName));
 				schemaFileListFullName.put(schemaName, config.getSchemaFileListFullName(schemaName));
 				synonymFileListFullName.put(schemaName, config.getSynonymFullName(schemaName));
-				grantFileListFullName.put(schemaName, config.getGrantFullName(schemaName));
+				
+				List<Grant> grantList = schema.getGrantList();
+				for (Grant grant : grantList) {
+					if (!grantFileListFullName.containsKey(schemaName)) {
+						grantFileListFullName.put(schemaName, new HashMap<String, String>());
+					}
+					Map<String, String> grantMap = grantFileListFullName.get(schemaName);
+					if (!grantMap.containsKey(grant.getSourceObjectOwner())) {
+						grantMap.put(grant.getSourceObjectOwner(), config.getGrantFullName(schemaName, grant.getSourceObjectOwner()));
+					}
+				}
 			} else {
 				schemaFullName.put(schemaName, config.getSchemaFullName(schemaName));
 			}
@@ -850,7 +862,11 @@ public class SchemaMappingPage extends MigrationWizardPage {
 				File serialFile = new File(serialFullName.get(schemaName));
 				File infoFile = new File(schemaFileListFullName.get(schemaName));
 				File synonymFile = new File(synonymFileListFullName.get(schemaName));
-				File grantFile = new File(grantFileListFullName.get(schemaName));
+				Map<String, String> grantFilePaths = grantFileListFullName.get(schemaName);
+				Iterator<String> keys = null;
+				if (grantFilePaths != null) {
+					keys = grantFilePaths.keySet().iterator();
+				}
 				
 				if (tableFile.exists()) {
 					buffer.append(tableFile.getCanonicalPath()).append(lineSeparator);
@@ -876,8 +892,13 @@ public class SchemaMappingPage extends MigrationWizardPage {
 				if (synonymFile.exists()) {
 					buffer.append(synonymFile.getCanonicalPath()).append(lineSeparator);
 				}
-				if (grantFile.exists()) {
-					buffer.append(grantFile.getCanonicalPath()).append(lineSeparator);
+				if (keys != null) {
+					while (keys.hasNext()) {
+						File grantFile = new File(grantFilePaths.get(keys.next()));
+						if (grantFile.exists()) {
+							buffer.append(grantFile.getCanonicalPath()).append(lineSeparator);
+						}
+					}
 				}
 			} else {
 				File schemaFile = new File(schemaFullName.get(schemaName));

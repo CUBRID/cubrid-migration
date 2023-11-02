@@ -102,6 +102,7 @@ public final class TemplateTags {
 	public static final String ATTR_REVERSE = "reverse";
 	public static final String ATTR_SCHEMA_NAME = "schema_name";
 	public static final String ATTR_SIZE = "size";
+	public static final String ATTR_SOURCE_OBJECT_OWNER = "source_object_owner";
 	public static final String ATTR_SOURCE_GRANTOR_NAME = "source_grantor_name";
 	public static final String ATTR_SOURCE_OWNER = "source_owner";
 	public static final String ATTR_SPLIT_SCHEMA = "split_schema";

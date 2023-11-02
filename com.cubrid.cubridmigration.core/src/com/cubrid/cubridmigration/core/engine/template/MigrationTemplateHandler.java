@@ -471,6 +471,7 @@ public final class MigrationTemplateHandler extends
 		grn.setAuthType(attributes.getValue(TemplateTags.ATTR_AUTH_TYPE));
 		grn.setGrantable(getBoolean(attributes.getValue(TemplateTags.ATTR_GRANTABLE), false));
 		grn.setSourceOwner(attributes.getValue(TemplateTags.ATTR_OWNER));
+		grn.setSourceObjectOwner(attributes.getValue(TemplateTags.ATTR_SOURCE_OBJECT_OWNER));
 		config.addTargetGrantSchema(grn);
 	}
 
@@ -723,7 +724,8 @@ public final class MigrationTemplateHandler extends
 					attributes.getValue(TemplateTags.ATTR_AUTH_TYPE), 
 					getBoolean(attributes.getValue(TemplateTags.ATTR_GRANTABLE), false),
 					attributes.getValue(TemplateTags.ATTR_TARGET_OWNER),
-					attributes.getValue(TemplateTags.ATTR_SOURCE_GRANTOR_NAME));
+					attributes.getValue(TemplateTags.ATTR_SOURCE_GRANTOR_NAME),
+					attributes.getValue(TemplateTags.ATTR_SOURCE_OBJECT_OWNER));
 		} else if (TemplateTags.TAG_TRIGGER.equals(qName)) {
 			config.addExpTriggerCfg(attributes.getValue(TemplateTags.ATTR_NAME));
 		} else if (TemplateTags.TAG_FUNCTION.equals(qName)) {

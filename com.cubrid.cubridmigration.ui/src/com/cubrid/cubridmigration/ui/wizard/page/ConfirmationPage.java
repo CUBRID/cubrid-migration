@@ -31,7 +31,9 @@ package com.cubrid.cubridmigration.ui.wizard.page;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.eclipse.jface.dialogs.PageChangedEvent;
@@ -380,26 +382,33 @@ public class ConfirmationPage extends
 				text.append(Messages.confrimGrant).append(lineSeparator);
 				isCreateFileRepository = false;
 				oldLength = text.length();
+				Set<String> grantFileKeySet = new HashSet<String>();
 				for (Schema targetSchema : migration.getTargetSchemaList()) {
+					String grantSourceObjectOwner = null;
 					for (SourceGrantConfig expGrant : migration.getExpGrantCfg()) {
+						String grantFileKey = expGrant.getOwner() + expGrant.getSourceObjectOwner();
 						if (expGrant.getOwner().equals(targetSchema.getName())
-								&& expGrant.isCreate()) {
+								&& expGrant.isCreate()
+								&& !grantFileKeySet.contains(grantFileKey)) {
 							isCreateFileRepository = true;
-							break;
+							grantFileKeySet.add(grantFileKey);
+							grantSourceObjectOwner = expGrant.getSourceObjectOwner();
 						}
-					}
-					
-					if (isCreateFileRepository) {
-						text.append(tabSeparator).append(tabSeparator);
-						text.append(migration.getTargetGrantFileName(isAddUserSchema ? targetSchema.getName() : conUser));
-						text.append(lineSeparator);
-						isCreateFileRepository = false;
 						
-						if (!isAddUserSchema) {
-							break;
+						if (isCreateFileRepository) {
+							text.append(tabSeparator).append(tabSeparator);
+							text.append(migration.getTargetGrantFileName(
+									isAddUserSchema ? targetSchema.getName() : conUser).get(grantSourceObjectOwner));
+							text.append(lineSeparator);
+							isCreateFileRepository = false;
+							
+							if (!isAddUserSchema) {
+								break;
+							}
 						}
 					}
 				}
+				
 				if (styleRanges != null) {
 					styleRanges.add(new StyleRange(oldLength, text.length() - oldLength,
 							SWTResourceConstents.COLOR_BLUE, null));

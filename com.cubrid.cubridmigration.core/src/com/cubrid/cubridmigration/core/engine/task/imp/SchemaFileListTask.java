@@ -33,7 +33,9 @@ import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.log4j.Logger;
 
@@ -139,11 +141,15 @@ public class SchemaFileListTask extends ImportTask {
 			}
 			
 			// grant
-			String grantFileRepository = config.getTargetGrantFileName(schemaName);
-			if (checkFileRepository(grantFileRepository)) {
-				isCreateSchemaListFile = true;
-				sb.append(getFileName(grantFileRepository));
-				sb.append(lineSeparator);
+			Map<String, String> grantFilePaths = config.getTargetGrantFileName(schemaName);
+			Iterator<String> keys = grantFilePaths.keySet().iterator();
+			while (keys.hasNext()) {
+				String grantFileRepository = grantFilePaths.get(keys.next());
+				if (checkFileRepository(grantFileRepository)) {
+					isCreateSchemaListFile = true;
+					sb.append(getFileName(grantFileRepository));
+					sb.append(lineSeparator);
+				}
 			}
 
 			// view query specification
