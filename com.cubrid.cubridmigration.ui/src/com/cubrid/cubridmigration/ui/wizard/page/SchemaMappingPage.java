@@ -63,7 +63,6 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
-import org.eclipse.ui.PlatformUI;
 
 import com.cubrid.common.ui.swt.table.celleditor.CheckboxCellEditorFactory;
 import com.cubrid.common.ui.swt.table.celleditor.EditableComboBoxCellEditor;
@@ -74,6 +73,7 @@ import com.cubrid.cubridmigration.core.dbobject.Grant;
 import com.cubrid.cubridmigration.core.dbobject.Schema;
 import com.cubrid.cubridmigration.core.engine.config.MigrationConfiguration;
 import com.cubrid.cubridmigration.ui.common.CompositeUtils;
+import com.cubrid.cubridmigration.ui.common.dialog.DetailMessageDialog;
 import com.cubrid.cubridmigration.ui.message.Messages;
 import com.cubrid.cubridmigration.ui.wizard.MigrationWizard;
 
@@ -841,11 +841,10 @@ public class SchemaMappingPage extends MigrationWizardPage {
 		}
 
 		if (buffer.length() > 0) {
-			return MessageDialog.openConfirm(
-					PlatformUI.getWorkbench().getDisplay().getActiveShell(),
+			return DetailMessageDialog.openConfirm(getShell(), 
 					Messages.msgConfirmation,
-					Messages.fileWarningMessage + "\r\n" + buffer.toString() + "\r\n"
-							+ Messages.confirmMessage);
+					Messages.msgDuplicateFileDetail, 
+					buffer.toString());
 		}
 		return true;
 	}

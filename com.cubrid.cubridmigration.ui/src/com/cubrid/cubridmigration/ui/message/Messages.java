@@ -341,7 +341,6 @@ public class Messages extends
 	public static String errOtherMigrationRunning;
 	public static String errSequenceName;
 	public static String failedLogDialogSaveErrMsg;
-	public static String fileWarningMessage;
 	public static String groupNameExisted;
 	public static String groupNameInvalid;
 	public static String grpExportingOpt;
@@ -544,6 +543,7 @@ public class Messages extends
 	public static String msgDirectory;
 	public static String msgDoRemapColumns;
 	public static String msgDriverDownloaded;
+	public static String msgDuplicateFileDetail;
 	public static String msgDuplicatedJdbcDriverFile;
 	public static String msgDuplicateObjects;
 	public static String msgEditJDBC;
