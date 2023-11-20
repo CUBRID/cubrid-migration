@@ -72,6 +72,7 @@ import com.cubrid.cubridmigration.core.common.log.LogUtil;
 import com.cubrid.cubridmigration.core.dbobject.Catalog;
 import com.cubrid.cubridmigration.core.dbobject.Grant;
 import com.cubrid.cubridmigration.core.dbobject.Schema;
+import com.cubrid.cubridmigration.core.dbobject.Table;
 import com.cubrid.cubridmigration.core.engine.config.MigrationConfiguration;
 import com.cubrid.cubridmigration.ui.common.CompositeUtils;
 import com.cubrid.cubridmigration.ui.message.Messages;
@@ -907,13 +908,24 @@ public class SchemaMappingPage extends MigrationWizardPage {
 				}
 			}
 			
+			if (config.isOneTableOneFile()) {
+				Schema schema = srcCatalog.getSchemaByName(schemaName);
+				for (Table table : schema.getTables()) {
+					File tableDataFile = new File(config.getTableDataFullName(schemaName, table.getName()));
+					if (tableDataFile.exists()) {
+						buffer.append(tableDataFile.getCanonicalPath()).append(lineSeparator);
+					}
+				}
+			} else {
+				File dataFile = new File(dataFullName.get(schemaName));
+				if (dataFile.exists()) {
+					buffer.append(dataFile.getCanonicalPath()).append(lineSeparator);
+				}
+			}
+			
 			File indexFile = new File(indexFullName.get(schemaName));
-			File dataFile = new File(dataFullName.get(schemaName));
 			File updateStatisticFile = new File(updateStatisticFullName.get(schemaName));
 			
-			if (dataFile.exists()) {
-				buffer.append(dataFile.getCanonicalPath()).append(lineSeparator);
-			}
 			if (indexFile.exists()) {
 				buffer.append(indexFile.getCanonicalPath()).append(lineSeparator);
 			}

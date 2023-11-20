@@ -4813,4 +4813,19 @@ public class MigrationConfiguration {
 		
 		return PathUtils.mergePath(PathUtils.mergePath(this.getFileRepositroyPath(), targetSchemaName), fileName.toString());
 	}
+	
+	/**
+	 * get one table one file full path
+	 * 
+	 * @param targetSchemaName
+	 * @param tableName
+	 * @return table data file full path
+	 */
+	public String getTableDataFullName(String targetSchemaName, String tableName) {
+		StringBuffer fileName = new StringBuffer();
+		fileName.append(File.separator).append(this.getTargetFilePrefix()).append("_").append(targetSchemaName).append("_").append(
+				tableName).append(getDataFileExt());
+		
+		return PathUtils.mergePath(PathUtils.mergePath(this.getFileRepositroyPath(), targetSchemaName), fileName.toString());
+	}
 }
