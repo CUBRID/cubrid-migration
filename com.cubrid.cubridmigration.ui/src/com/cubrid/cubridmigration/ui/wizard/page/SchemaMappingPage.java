@@ -788,7 +788,7 @@ public class SchemaMappingPage extends MigrationWizardPage {
 			updateStatisticFullName.put(schemaName, config.getUpdateStatisticFullName(schemaName));
 		}
 		
-		if (!checkFileRepositroy()) {
+		if (!checkFileRepository()) {
 			return false;
 		}
 		
@@ -826,7 +826,7 @@ public class SchemaMappingPage extends MigrationWizardPage {
 	 * @param indexFullName
 	 * @return boolean
 	 */
-	private boolean checkFileRepositroy() {
+	private boolean checkFileRepository() {
 		StringBuffer buffer = new StringBuffer();
 
 		if (config.isAddUserSchema()) {

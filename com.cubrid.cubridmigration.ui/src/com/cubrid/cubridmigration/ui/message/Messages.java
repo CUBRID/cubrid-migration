@@ -341,6 +341,7 @@ public class Messages extends
 	public static String errOtherMigrationRunning;
 	public static String errSequenceName;
 	public static String failedLogDialogSaveErrMsg;
+	public static String fileRepositoryEmptyWarning;
 	public static String groupNameExisted;
 	public static String groupNameInvalid;
 	public static String grpExportingOpt;
