@@ -71,6 +71,7 @@ import com.cubrid.cubridmigration.core.common.log.LogUtil;
 import com.cubrid.cubridmigration.core.dbobject.Catalog;
 import com.cubrid.cubridmigration.core.dbobject.Grant;
 import com.cubrid.cubridmigration.core.dbobject.Schema;
+import com.cubrid.cubridmigration.core.dbobject.Table;
 import com.cubrid.cubridmigration.core.engine.config.MigrationConfiguration;
 import com.cubrid.cubridmigration.ui.common.CompositeUtils;
 import com.cubrid.cubridmigration.ui.common.dialog.DetailMessageDialog;
@@ -118,6 +119,7 @@ public class SchemaMappingPage extends MigrationWizardPage {
 	Map<String, String> schemaFileListFullName;
 	Map<String, String> synonymFileListFullName;
 	Map<String, Map<String, String>> grantFileListFullName;
+	Map<String, List<String>> tableDataFileListFullName;
 	
 	protected class SrcTable {
 		private boolean isSelected;
@@ -740,6 +742,7 @@ public class SchemaMappingPage extends MigrationWizardPage {
 		schemaFileListFullName = new HashMap<String, String>();
 		synonymFileListFullName = new HashMap<String, String>();
 		grantFileListFullName = new HashMap<String, Map<String, String>>();
+		tableDataFileListFullName = new HashMap<String, List<String>>();
 		
 		for (SrcTable srcTable : srcTableList) {
 			String targetSchemaName = srcTable.getTarSchema();
@@ -783,7 +786,18 @@ public class SchemaMappingPage extends MigrationWizardPage {
 			} else {
 				schemaFullName.put(schemaName, config.getSchemaFullName(schemaName));
 			}
-			dataFullName.put(schemaName, config.getDataFullName(schemaName));
+			if (config.isOneTableOneFile()) {
+				List<String> tableList = tableDataFileListFullName.get(schemaName);
+				for (Table table : srcCatalog.getSchemaByName(schemaName).getTables()) {
+					if (tableList == null) {
+						tableList = new ArrayList<String>();
+					}
+					tableList.add(config.getTableDataFullName(schemaName, table.getName()));
+				}
+				tableDataFileListFullName.put(schemaName, tableList);
+			} else {
+				dataFullName.put(schemaName, config.getDataFullName(schemaName));
+			}
 			indexFullName.put(schemaName, config.getIndexFullName(schemaName));
 			updateStatisticFullName.put(schemaName, config.getUpdateStatisticFullName(schemaName));
 		}
@@ -809,6 +823,7 @@ public class SchemaMappingPage extends MigrationWizardPage {
 		config.setTargetSchemaFileListName(schemaFileListFullName);
 		config.setTargetSynonymFileName(synonymFileListFullName);
 		config.setTargetGrantFileName(grantFileListFullName);
+		config.setTargetTableDataFileName(tableDataFileListFullName);
 		
 		wizard.setSourceCatalog(srcCatalog);
 		getMigrationWizard().setSourceDBNode(srcCatalog);
@@ -906,13 +921,23 @@ public class SchemaMappingPage extends MigrationWizardPage {
 				}
 			}
 			
+			if (config.isOneTableOneFile()) {
+				for (String tableDataFilePath : tableDataFileListFullName.get(schemaName)) {
+					File tableDataFile = new File(tableDataFilePath);
+					if (tableDataFile.exists()) {
+						buffer.append(tableDataFile.getCanonicalPath()).append(lineSeparator);
+					}
+				}
+			} else {
+				File dataFile = new File(dataFullName.get(schemaName));
+				if (dataFile.exists()) {
+					buffer.append(dataFile.getCanonicalPath()).append(lineSeparator);
+				}
+			}
+			
 			File indexFile = new File(indexFullName.get(schemaName));
-			File dataFile = new File(dataFullName.get(schemaName));
 			File updateStatisticFile = new File(updateStatisticFullName.get(schemaName));
 			
-			if (dataFile.exists()) {
-				buffer.append(dataFile.getCanonicalPath()).append(lineSeparator);
-			}
 			if (indexFile.exists()) {
 				buffer.append(indexFile.getCanonicalPath()).append(lineSeparator);
 			}
