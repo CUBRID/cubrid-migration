@@ -766,12 +766,6 @@ public class SelectDestinationPage extends
 		 */
 		public boolean save() {
 			MigrationConfiguration config = getMigrationWizard().getMigrationConfig();
-			if (isEmptyFileRepository(getFileRepository())) {
-				return MessageDialog.openConfirm(
-						PlatformUI.getWorkbench().getDisplay().getActiveShell(),
-						Messages.msgConfirmation, 
-						Messages.fileRepositoryEmptyWarning);
-			}
 			if (config.targetIsDBDump()) {
 				config.setOneTableOneFile(btnOneTableOneFile.getSelection());
 				config.setTargetLOBRootPath(txtLobPath.getText());
@@ -790,8 +784,16 @@ public class SelectDestinationPage extends
 			config.setSplitSchema(btnSplitSchema.getSelection());
 			config.setCreateUserSQL(btnCreateUserSQL.getSelection());
 			
-			firstVisible = false;
+			if (isEmptyFileRepository(getFileRepository())) {
+				if(!MessageDialog.openConfirm(
+						PlatformUI.getWorkbench().getDisplay().getActiveShell(),
+						Messages.msgConfirmation, 
+						Messages.fileRepositoryEmptyWarning)) {
+					return false;
+				}
+			}
 			
+			firstVisible = false;
 			return true;
 		}
 

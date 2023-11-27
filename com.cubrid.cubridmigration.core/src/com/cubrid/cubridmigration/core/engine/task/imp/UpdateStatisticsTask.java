@@ -208,7 +208,6 @@ public class UpdateStatisticsTask extends
 	 */
 	private boolean checkDataFileRepository(String schemaName) {
 		String fileRepository = config.getTargetDataFileName(schemaName);
-		File file = new File(fileRepository);
-		return file.exists();
+		return fileRepository != null ? new File(fileRepository).exists() : false;
 	}
 }

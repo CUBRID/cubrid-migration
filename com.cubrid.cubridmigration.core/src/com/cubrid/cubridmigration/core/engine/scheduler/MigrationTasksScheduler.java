@@ -283,6 +283,13 @@ public class MigrationTasksScheduler {
 		}
 		PathUtils.deleteFile(new File(config.getTargetUpdateStatisticFileName(schemaName)));
 		PathUtils.deleteFile(new File(config.getTargetIndexFileName(schemaName)));
+		if (config.isOneTableOneFile()) {
+			for (String filePath : config.getTargetTableDataFileName(schemaName)) {
+				PathUtils.deleteFile(new File(filePath));
+			}
+		} else {
+			PathUtils.deleteFile(new File(config.getTargetDataFileName(schemaName)));
+		}
 		PathUtils.deleteFile(new File(config.getTargetDataFileName(schemaName)));
 		PathUtils.deleteFile(new File(config.getFileRepositroyPath() + schemaName));
 	}

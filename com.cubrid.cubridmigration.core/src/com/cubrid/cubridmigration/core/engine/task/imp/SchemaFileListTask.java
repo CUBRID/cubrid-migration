@@ -142,13 +142,15 @@ public class SchemaFileListTask extends ImportTask {
 			
 			// grant
 			Map<String, String> grantFilePaths = config.getTargetGrantFileName(schemaName);
-			Iterator<String> keys = grantFilePaths.keySet().iterator();
-			while (keys.hasNext()) {
-				String grantFileRepository = grantFilePaths.get(keys.next());
-				if (checkFileRepository(grantFileRepository)) {
-					isCreateSchemaListFile = true;
-					sb.append(getFileName(grantFileRepository));
-					sb.append(lineSeparator);
+			if (grantFilePaths != null) {
+				Iterator<String> keys = grantFilePaths.keySet().iterator();
+				while (keys.hasNext()) {
+					String grantFileRepository = grantFilePaths.get(keys.next());
+					if (checkFileRepository(grantFileRepository)) {
+						isCreateSchemaListFile = true;
+						sb.append(getFileName(grantFileRepository));
+						sb.append(lineSeparator);
+					}
 				}
 			}
 

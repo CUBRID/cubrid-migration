@@ -872,7 +872,7 @@ public final class MigrationTemplateHandler extends
 			config.setAddUserSchema(getBoolean(attr.getValue(TemplateTags.ATTR_ADD_SCHEMA), false));
 			config.setSplitSchema(getBoolean(attr.getValue(TemplateTags.ATTR_SPLIT_SCHEMA), false));
 			config.setCreateUserSQL(getBoolean(attr.getValue(TemplateTags.ATTR_CREATE_USER_SQL), false));
-			config.createDumpfile(config.isSplitSchema(), config.isAddUserSchema());
+			config.createDumpfile(config.isSplitSchema(), config.isAddUserSchema(), config.isOneTableOneFile());
 		} else if (TemplateTags.TAG_PARTITION_DDL.equals(qName)) {
 			sqlStatement = new StringBuffer();
 		}
