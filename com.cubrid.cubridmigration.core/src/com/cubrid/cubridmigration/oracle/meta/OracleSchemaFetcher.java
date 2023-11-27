@@ -325,17 +325,12 @@ public final class OracleSchemaFetcher extends
 		if (LOG.isDebugEnabled()) {
 			LOG.debug("[IN]buildProcedures()");
 		}
-		List<Schema> schemaList = catalog.getSchemas();
-		for (Schema sc : schemaList) {
-			// get procedures
-			List<Procedure> procList = this.getAllProcedures(conn, schema.getName(),
-					schema.getName());
-			sc.setProcedures(procList);
 
-			// get functions
-			List<Function> funcList = getAllFunctions(conn, schema.getName(), schema.getName());
-			sc.setFunctions(funcList);
-		}
+		// get procedures
+		schema.setProcedures(getAllProcedures(conn, schema.getName(), schema.getName()));
+
+		// get functions
+		schema.setFunctions(getAllFunctions(conn, schema.getName(), schema.getName()));
 	}
 
 	/**
@@ -771,12 +766,9 @@ public final class OracleSchemaFetcher extends
 			return;
 		}
 
-		List<Schema> schemaList = catalog.getSchemas();
-		for (Schema sc : schemaList) {
-			// get triggers
-			List<Trigger> trigList = this.getAllTriggers(conn, schema.getName(), schema.getName());
-			sc.setTriggers(trigList);
-		}
+		// get triggers
+		schema.setTriggers(getAllTriggers(conn, schema.getName(), schema.getName()));
+		
 	}
 
 	/**
