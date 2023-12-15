@@ -1011,6 +1011,7 @@ public final class CUBRIDSchemaFetcher extends
 			rs = stmt.executeQuery(sql);
 
 			while (rs.next()) {
+				String ownerName = rs.getString("owner.name");
 				String tableName = rs.getString("class_name");
 				if (tableName == null) {
 					continue;
@@ -1019,7 +1020,7 @@ public final class CUBRIDSchemaFetcher extends
 				String currentVal = rs.getString("current_val");
 				String attrName = rs.getString("att_name");
 
-				Table table = tables.get(tableName);
+				Table table = tables.get(ownerName + "." + tableName);
 				if (table == null) {
 					continue;
 				}
