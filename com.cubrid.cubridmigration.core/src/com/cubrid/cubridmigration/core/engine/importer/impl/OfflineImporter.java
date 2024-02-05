@@ -1,58 +1,35 @@
 /*
- * Copyright (C) 2009 Search Solution Corporation. All rights reserved by Search Solution. 
+ * Copyright (C) 2009 Search Solution Corporation. All rights reserved by Search Solution.
  *
- * Redistribution and use in source and binary forms, with or without modification, 
- * are permitted provided that the following conditions are met: 
+ * Redistribution and use in source and binary forms, with or without modification,
+ * are permitted provided that the following conditions are met:
  *
- * - Redistributions of source code must retain the above copyright notice, 
- *   this list of conditions and the following disclaimer. 
+ * - Redistributions of source code must retain the above copyright notice,
+ *   this list of conditions and the following disclaimer.
  *
- * - Redistributions in binary form must reproduce the above copyright notice, 
- *   this list of conditions and the following disclaimer in the documentation 
- *   and/or other materials provided with the distribution. 
+ * - Redistributions in binary form must reproduce the above copyright notice,
+ *   this list of conditions and the following disclaimer in the documentation
+ *   and/or other materials provided with the distribution.
  *
- * - Neither the name of the <ORGANIZATION> nor the names of its contributors 
- *   may be used to endorse or promote products derived from this software without 
- *   specific prior written permission. 
+ * - Neither the name of the <ORGANIZATION> nor the names of its contributors
+ *   may be used to endorse or promote products derived from this software without
+ *   specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED 
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. 
- * IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, 
- * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, 
- * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, 
- * OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, 
- * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
- * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY 
- * OF SUCH DAMAGE. 
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
+ * IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+ * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+ * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA,
+ * OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
+ * OF SUCH DAMAGE.
  *
  */
 package com.cubrid.cubridmigration.core.engine.importer.impl;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
-import java.io.UnsupportedEncodingException;
-import java.io.Writer;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
-import jxl.Workbook;
-import jxl.WorkbookSettings;
-import jxl.write.WritableSheet;
-import jxl.write.WritableWorkbook;
-
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
-
 import au.com.bytecode.opencsv.CSVWriter;
-
 import com.cubrid.cubridmigration.core.common.CUBRIDIOUtils;
 import com.cubrid.cubridmigration.core.common.PathUtils;
 import com.cubrid.cubridmigration.core.common.log.LogUtil;
@@ -84,685 +61,793 @@ import com.cubrid.cubridmigration.core.engine.task.RunnableResultHandler;
 import com.cubrid.cubridmigration.core.trans.DBTransformHelper;
 import com.cubrid.cubridmigration.cubrid.CUBRIDSQLHelper;
 import com.cubrid.cubridmigration.cubrid.Data2StrTranslator;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
+import java.io.Writer;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import jxl.Workbook;
+import jxl.WorkbookSettings;
+import jxl.write.WritableSheet;
+import jxl.write.WritableWorkbook;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
 
 /**
  * LoadDBImporter : Use LoadDB and CSQL commands to import database objects.
- * 
+ *
  * @author Kevin Cao
  * @version 1.0 - 2011-8-3 created by Kevin Cao
  */
-public abstract class OfflineImporter extends
-		Importer {
-	private final static Logger LOG = LogUtil.getLogger(OfflineImporter.class);
-	protected static final int FILE_SCHEMA_OBJ = 0;
-	protected static final int FILE_DATA_RCD = 1;
-	protected static final int FILE_SCHEMA_IDX = 2;
-	protected static final int FILE_DATA_LOB = 3;
+public abstract class OfflineImporter extends Importer {
+    private static final Logger LOG = LogUtil.getLogger(OfflineImporter.class);
+    protected static final int FILE_SCHEMA_OBJ = 0;
+    protected static final int FILE_DATA_RCD = 1;
+    protected static final int FILE_SCHEMA_IDX = 2;
+    protected static final int FILE_DATA_LOB = 3;
 
-	protected MigrationConfiguration config;
-	
-	//LoadDB command can not support multi-thread. LoadDBFile task runs in this pool.
-	protected final IRunnableExecutor cmTaskService;
+    protected MigrationConfiguration config;
 
-	//Default path of migration load DB file 
-	protected Data2StrTranslator unloadFileUtil;
+    // LoadDB command can not support multi-thread. LoadDBFile task runs in this pool.
+    protected final IRunnableExecutor cmTaskService;
 
-	/**
-	 * ImportFileWriter writes data to file with specified format
-	 * 
-	 * @author Kevin Cao
-	 * @version 1.0 - 2012-10-10 created by Kevin Cao
-	 */
-	protected interface ImportFileWriter {
-		/**
-		 * Write data to a CSV file
-		 * 
-		 * @param stc SourceTableConfig
-		 * @param records List<Record> records
-		 * @param file File
-		 * @param tt Table
-		 * @return total count
-		 * @throws Exception ex
-		 */
-		int writeData(final SourceTableConfig stc, final List<Record> records, File file,
-				final Table tt) throws Exception;
-	}
+    // Default path of migration load DB file
+    protected Data2StrTranslator unloadFileUtil;
 
-	/**
-	 * 
-	 * UnloadFileWriter responses to write data to UnloadDB file
-	 * 
-	 * @author Kevin Cao
-	 * @version 1.0 - 2012-10-10 created by Kevin Cao
-	 */
-	protected class UnloadFileWriter implements
-			ImportFileWriter {
-		/**
-		 * Write unloadDB data to file
-		 * 
-		 * @param stc SourceTableConfig
-		 * @param records List<Record>
-		 * @param file File
-		 * @param tt Table
-		 * @return total count
-		 * @throws FileNotFoundException ex
-		 * @throws UnsupportedEncodingException ex
-		 * @throws IOException ex
-		 */
-		public int writeData(final SourceTableConfig stc, final List<Record> records, File file,
-				final Table tt) throws FileNotFoundException,
-				UnsupportedEncodingException,
-				IOException {
-			if (LOG.isDebugEnabled()) {
-				LOG.debug("[IN]writeData()");
-			}
-			Writer pw = new BufferedWriter(new PrintWriter(file, config.getTargetCharSet()),
-					CUBRIDIOUtils.DEFAULT_MEMORY_CACHE_SIZE);
-			try {
-				String header = getDataFileHeader(stc);
-				if (LOG.isDebugEnabled()) {
-					LOG.debug("[VAR]header=" + header);
-				}
-				pw.write(header);
-				// The template LOB files path in local.
-				List<String> lobFiles = new ArrayList<String>();
-				int total = 0;
-				for (Record re : records) {
-					if (re == null) {
-						continue;
-					}
-					String res = unloadFileUtil.getRecordString(re.getColumnValueList(),
-							getRecordString(stc, tt, re, lobFiles));
-					if (res == null) {
-						continue;
-					}
-					pw.write(res);
-					pw.write("\n");
-					total++;
-				}
-				if (LOG.isDebugEnabled()) {
-					LOG.debug("[VAR]total=" + total);
-				}
-				pw.flush();
-				if (LOG.isDebugEnabled()) {
-					LOG.debug("[VAR]lobFiles.size=" + (lobFiles == null ? null : lobFiles.size()));
-				}
-				for (String lobFile : lobFiles) {
-					sendLOBFile(lobFile, stc.getTarget());
-				}
-				return total;
-			} finally {
-				pw.close();
-			}
-		}
-	}
+    /**
+     * ImportFileWriter writes data to file with specified format
+     *
+     * @author Kevin Cao
+     * @version 1.0 - 2012-10-10 created by Kevin Cao
+     */
+    protected interface ImportFileWriter {
+        /**
+         * Write data to a CSV file
+         *
+         * @param stc SourceTableConfig
+         * @param records List<Record> records
+         * @param file File
+         * @param tt Table
+         * @return total count
+         * @throws Exception ex
+         */
+        int writeData(
+                final SourceTableConfig stc, final List<Record> records, File file, final Table tt)
+                throws Exception;
+    }
 
-	/**
-	 * CSVFileWriter responses to write data to CSV
-	 * 
-	 * @author Kevin Cao
-	 * @version 1.0 - 2012-10-10 created by Kevin Cao
-	 */
-	protected class CSVFileWriter implements
-			ImportFileWriter {
-		/**
-		 * Write data to a CSV file
-		 * 
-		 * @param stc SourceTableConfig
-		 * @param records List<Record> records
-		 * @param file File
-		 * @param tt Table
-		 * @return total count
-		 * @throws Exception ex
-		 */
-		public int writeData(final SourceTableConfig stc, final List<Record> records, File file,
-				final Table tt) throws Exception {
-			CSVWriter writer = new CSVWriter(new OutputStreamWriter(new FileOutputStream(file),
-					config.getTargetCharSet()), config.getCsvSettings().getSeparateChar(),
-					config.getCsvSettings().getQuoteChar(), config.getCsvSettings().getEscapeChar());
-			try {
-				List<String> lobFiles = new ArrayList<String>();
-				int total = 0;
-				for (Record re : records) {
-					if (re == null) {
-						continue;
-					}
-					List<String> res = getRecordString(stc, tt, re, lobFiles);
-					if (res == null) {
-						continue;
-					}
-					writer.writeNext(res.toArray(new String[res.size()]));
-					total++;
-				}
-				writer.flush();
-				return total;
-			} finally {
-				writer.close();
-			}
-		}
-	}
+    /**
+     * UnloadFileWriter responses to write data to UnloadDB file
+     *
+     * @author Kevin Cao
+     * @version 1.0 - 2012-10-10 created by Kevin Cao
+     */
+    protected class UnloadFileWriter implements ImportFileWriter {
+        /**
+         * Write unloadDB data to file
+         *
+         * @param stc SourceTableConfig
+         * @param records List<Record>
+         * @param file File
+         * @param tt Table
+         * @return total count
+         * @throws FileNotFoundException ex
+         * @throws UnsupportedEncodingException ex
+         * @throws IOException ex
+         */
+        public int writeData(
+                final SourceTableConfig stc, final List<Record> records, File file, final Table tt)
+                throws FileNotFoundException, UnsupportedEncodingException, IOException {
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("[IN]writeData()");
+            }
+            Writer pw =
+                    new BufferedWriter(
+                            new PrintWriter(file, config.getTargetCharSet()),
+                            CUBRIDIOUtils.DEFAULT_MEMORY_CACHE_SIZE);
+            try {
+                String header = getDataFileHeader(stc);
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("[VAR]header=" + header);
+                }
+                pw.write(header);
+                // The template LOB files path in local.
+                List<String> lobFiles = new ArrayList<String>();
+                int total = 0;
+                for (Record re : records) {
+                    if (re == null) {
+                        continue;
+                    }
+                    String res =
+                            unloadFileUtil.getRecordString(
+                                    re.getColumnValueList(),
+                                    getRecordString(stc, tt, re, lobFiles));
+                    if (res == null) {
+                        continue;
+                    }
+                    pw.write(res);
+                    pw.write("\n");
+                    total++;
+                }
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("[VAR]total=" + total);
+                }
+                pw.flush();
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("[VAR]lobFiles.size=" + (lobFiles == null ? null : lobFiles.size()));
+                }
+                for (String lobFile : lobFiles) {
+                    sendLOBFile(lobFile, stc.getTarget());
+                }
+                return total;
+            } finally {
+                pw.close();
+            }
+        }
+    }
 
-	/**
-	 * XLSFileWriter responses to write data to XLS
-	 * 
-	 * @author PCraft
-	 * @version 1.0 - 2013-01-18 created by PCraft
-	 */
-	protected class XLSFileWriter implements
-			ImportFileWriter {
-		/**
-		 * Write data to a XLS file
-		 * 
-		 * @param stc SourceTableConfig
-		 * @param records List<Record> records
-		 * @param file File
-		 * @param tt Table
-		 * @return total count
-		 * @throws Exception ex
-		 */
-		public int writeData(final SourceTableConfig stc, final List<Record> records, File file,
-				final Table tt) throws Exception {
-			WorkbookSettings workbookSettings = new WorkbookSettings();
-			workbookSettings.setEncoding(config.getTargetCharSet());
-			WritableWorkbook workbook = Workbook.createWorkbook(file, workbookSettings);
-			WritableSheet sheet = workbook.createSheet(tt.getName(), 0);
+    /**
+     * CSVFileWriter responses to write data to CSV
+     *
+     * @author Kevin Cao
+     * @version 1.0 - 2012-10-10 created by Kevin Cao
+     */
+    protected class CSVFileWriter implements ImportFileWriter {
+        /**
+         * Write data to a CSV file
+         *
+         * @param stc SourceTableConfig
+         * @param records List<Record> records
+         * @param file File
+         * @param tt Table
+         * @return total count
+         * @throws Exception ex
+         */
+        public int writeData(
+                final SourceTableConfig stc, final List<Record> records, File file, final Table tt)
+                throws Exception {
+            CSVWriter writer =
+                    new CSVWriter(
+                            new OutputStreamWriter(
+                                    new FileOutputStream(file), config.getTargetCharSet()),
+                            config.getCsvSettings().getSeparateChar(),
+                            config.getCsvSettings().getQuoteChar(),
+                            config.getCsvSettings().getEscapeChar());
+            try {
+                List<String> lobFiles = new ArrayList<String>();
+                int total = 0;
+                for (Record re : records) {
+                    if (re == null) {
+                        continue;
+                    }
+                    List<String> res = getRecordString(stc, tt, re, lobFiles);
+                    if (res == null) {
+                        continue;
+                    }
+                    writer.writeNext(res.toArray(new String[res.size()]));
+                    total++;
+                }
+                writer.flush();
+                return total;
+            } finally {
+                writer.close();
+            }
+        }
+    }
 
-			try {
-				List<String> lobFiles = new ArrayList<String>();
-				int total = 0;
-				for (Record re : records) {
-					if (re == null) {
-						continue;
-					}
-					List<String> res = getRecordString(stc, tt, re, lobFiles);
-					if (res == null) {
-						continue;
-					}
+    /**
+     * XLSFileWriter responses to write data to XLS
+     *
+     * @author PCraft
+     * @version 1.0 - 2013-01-18 created by PCraft
+     */
+    protected class XLSFileWriter implements ImportFileWriter {
+        /**
+         * Write data to a XLS file
+         *
+         * @param stc SourceTableConfig
+         * @param records List<Record> records
+         * @param file File
+         * @param tt Table
+         * @return total count
+         * @throws Exception ex
+         */
+        public int writeData(
+                final SourceTableConfig stc, final List<Record> records, File file, final Table tt)
+                throws Exception {
+            WorkbookSettings workbookSettings = new WorkbookSettings();
+            workbookSettings.setEncoding(config.getTargetCharSet());
+            WritableWorkbook workbook = Workbook.createWorkbook(file, workbookSettings);
+            WritableSheet sheet = workbook.createSheet(tt.getName(), 0);
 
-					int index = 0;
-					for (String val : res) {
-						sheet.addCell(new jxl.write.Label(index++, total, val));
-					}
+            try {
+                List<String> lobFiles = new ArrayList<String>();
+                int total = 0;
+                for (Record re : records) {
+                    if (re == null) {
+                        continue;
+                    }
+                    List<String> res = getRecordString(stc, tt, re, lobFiles);
+                    if (res == null) {
+                        continue;
+                    }
 
-					total++;
-				}
+                    int index = 0;
+                    for (String val : res) {
+                        sheet.addCell(new jxl.write.Label(index++, total, val));
+                    }
 
-				workbook.write();
-				return total;
-			} finally {
-				workbook.close();
-			}
-		}
-	}
+                    total++;
+                }
 
-	/**
-	 * SQLFileWriter responses to write SQL to file
-	 * 
-	 * @author Kevin Cao
-	 * @version 1.0 - 2012-10-10 created by Kevin Cao
-	 */
-	protected class SQLFileWriter implements
-			ImportFileWriter {
-		/**
-		 * Write data to a CSV file
-		 * 
-		 * @param stc SourceTableConfig
-		 * @param records List<Record> records
-		 * @param file File
-		 * @param tt Table
-		 * @return total count
-		 * @throws Exception ex
-		 */
-		public int writeData(final SourceTableConfig stc, final List<Record> records, File file,
-				final Table tt) throws Exception {
-			Writer pw = new BufferedWriter(new PrintWriter(file, config.getTargetCharSet()),
-					CUBRIDIOUtils.DEFAULT_MEMORY_CACHE_SIZE);
-			try {
-				List<String> lobFiles = new ArrayList<String>();
-				int total = 0;
-				for (Record re : records) {
-					if (re == null) {
-						continue;
-					}
-					StringBuffer sb = new StringBuffer("INSERT INTO \"").append(stc.getTarget()).append(
-							"\"(");
-					boolean isFirst = true;
-					for (ColumnValue cv : re.getColumnValueList()) {
-						//Find target column configuration 
-						SourceColumnConfig tColCfg = stc.getColumnConfig(cv.getColumn().getName());
-						if (tColCfg == null) {
-							continue;
-						}
-						if (isFirst) {
-							isFirst = false;
-						} else {
-							sb.append(',');
-						}
-						sb.append('"').append(tColCfg.getTarget()).append('"');
-					}
-					sb.append(")VALUES(");
-					List<String> values = getRecordString(stc, tt, re, lobFiles);
-					if (CollectionUtils.isEmpty(values)) {
-						continue;
-					}
-					isFirst = true;
-					for (String vv : values) {
-						if (isFirst) {
-							isFirst = false;
-						} else {
-							sb.append(',');
-						}
-						sb.append(vv);
-					}
-					sb.append(");");
-					pw.write(sb.toString());
-					pw.write("\n");
-					total++;
-				}
-				pw.flush();
-				return total;
-			} finally {
-				pw.close();
-			}
-		}
-	}
+                workbook.write();
+                return total;
+            } finally {
+                workbook.close();
+            }
+        }
+    }
 
-	private final ImportFileWriter importFileWriter;
+    /**
+     * SQLFileWriter responses to write SQL to file
+     *
+     * @author Kevin Cao
+     * @version 1.0 - 2012-10-10 created by Kevin Cao
+     */
+    protected class SQLFileWriter implements ImportFileWriter {
+        /**
+         * Write data to a CSV file
+         *
+         * @param stc SourceTableConfig
+         * @param records List<Record> records
+         * @param file File
+         * @param tt Table
+         * @return total count
+         * @throws Exception ex
+         */
+        public int writeData(
+                final SourceTableConfig stc, final List<Record> records, File file, final Table tt)
+                throws Exception {
+            Writer pw =
+                    new BufferedWriter(
+                            new PrintWriter(file, config.getTargetCharSet()),
+                            CUBRIDIOUtils.DEFAULT_MEMORY_CACHE_SIZE);
+            try {
+                List<String> lobFiles = new ArrayList<String>();
+                int total = 0;
+                for (Record re : records) {
+                    if (re == null) {
+                        continue;
+                    }
+                    StringBuffer sb =
+                            new StringBuffer("INSERT INTO \"")
+                                    .append(stc.getTarget())
+                                    .append("\"(");
+                    boolean isFirst = true;
+                    for (ColumnValue cv : re.getColumnValueList()) {
+                        // Find target column configuration
+                        SourceColumnConfig tColCfg = stc.getColumnConfig(cv.getColumn().getName());
+                        if (tColCfg == null) {
+                            continue;
+                        }
+                        if (isFirst) {
+                            isFirst = false;
+                        } else {
+                            sb.append(',');
+                        }
+                        sb.append('"').append(tColCfg.getTarget()).append('"');
+                    }
+                    sb.append(")VALUES(");
+                    List<String> values = getRecordString(stc, tt, re, lobFiles);
+                    if (CollectionUtils.isEmpty(values)) {
+                        continue;
+                    }
+                    isFirst = true;
+                    for (String vv : values) {
+                        if (isFirst) {
+                            isFirst = false;
+                        } else {
+                            sb.append(',');
+                        }
+                        sb.append(vv);
+                    }
+                    sb.append(");");
+                    pw.write(sb.toString());
+                    pw.write("\n");
+                    total++;
+                }
+                pw.flush();
+                return total;
+            } finally {
+                pw.close();
+            }
+        }
+    }
 
-	public OfflineImporter(MigrationContext mrManager) {
-		super(mrManager);
-		this.config = mrManager.getConfig();
-		cmTaskService = mrManager.getMergeTaskExe();
-		if (config.targetIsCSV()) {
-			importFileWriter = new CSVFileWriter();
-		} else if (config.targetIsXLS()) {
-			importFileWriter = new XLSFileWriter();
-		} else if (config.targetIsSQL()) {
-			importFileWriter = new SQLFileWriter();
-		} else {
-			importFileWriter = new UnloadFileWriter();
-		}
-	}
+    private final ImportFileWriter importFileWriter;
 
-	/**
-	 * Get the LOB's file path
-	 * 
-	 * @param tableName String
-	 * @return base path+table name
-	 */
-	protected abstract String getLOBDir(String tableName);
+    public OfflineImporter(MigrationContext mrManager) {
+        super(mrManager);
+        this.config = mrManager.getConfig();
+        cmTaskService = mrManager.getMergeTaskExe();
+        if (config.targetIsCSV()) {
+            importFileWriter = new CSVFileWriter();
+        } else if (config.targetIsXLS()) {
+            importFileWriter = new XLSFileWriter();
+        } else if (config.targetIsSQL()) {
+            importFileWriter = new SQLFileWriter();
+        } else {
+            importFileWriter = new UnloadFileWriter();
+        }
+    }
 
-	/**
-	 * Send schema file and data file to server for loadDB command.
-	 * 
-	 * @param fileName the file to be sent.
-	 * @param stc source table configuration.
-	 * @param impCount the count of records in file.
-	 * @param expCount Exported record count this time
-	 */
-	protected abstract void handleDataFile(String fileName, final SourceTableConfig stc,
-			final int impCount, int expCount);
+    /**
+     * Get the LOB's file path
+     *
+     * @param tableName String
+     * @return base path+table name
+     */
+    protected abstract String getLOBDir(String tableName);
 
-	/**
-	 * Send schema file and data file to server for loadDB command.
-	 * 
-	 * @param fileName the file to be sent.
-	 * @param tableName tableName
-	 * 
-	 */
-	protected abstract void sendLOBFile(String fileName, String tableName);
+    /**
+     * Send schema file and data file to server for loadDB command.
+     *
+     * @param fileName the file to be sent.
+     * @param stc source table configuration.
+     * @param impCount the count of records in file.
+     * @param expCount Exported record count this time
+     */
+    protected abstract void handleDataFile(
+            String fileName, final SourceTableConfig stc, final int impCount, int expCount);
 
-	/**
-	 * Send schema file and data file to server for loadDB command.
-	 * 
-	 * @param fileName the file to be sent.
-	 * @param listener a call interface.
-	 * @param isIndex true if the DDL is about index
-	 */
-	protected abstract void sendSchemaFile(String fileName, RunnableResultHandler listener,
-			String objectType, String owner, String sourceObjectOwner);
+    /**
+     * Send schema file and data file to server for loadDB command.
+     *
+     * @param fileName the file to be sent.
+     * @param tableName tableName
+     */
+    protected abstract void sendLOBFile(String fileName, String tableName);
 
-	/**
-	 * Write content to file.
-	 * 
-	 * @param fileName to be write
-	 * @param content to be write
-	 */
-	protected void writeFile(String fileName, String content) {
-		if (LOG.isDebugEnabled()) {
-			LOG.debug("[IN]writeFile()");
-		}
-		File file = new File(fileName);
-		if (LOG.isDebugEnabled()) {
-			LOG.debug("[VAR]fileName=" + fileName);
-		}
-		try {
-			PathUtils.createFile(file);
-			PrintWriter pw = new PrintWriter(file, "utf8");
-			pw.write(content);
-			pw.flush();
-			pw.close();
-		} catch (FileNotFoundException e) {
-			LOG.error("", e);
-			throw new BreakMigrationException(e);
-		} catch (IOException e) {
-			LOG.error("", e);
-			throw new BreakMigrationException(e);
-		}
-	}
+    /**
+     * Send schema file and data file to server for loadDB command.
+     *
+     * @param fileName the file to be sent.
+     * @param listener a call interface.
+     * @param isIndex true if the DDL is about index
+     */
+    protected abstract void sendSchemaFile(
+            String fileName,
+            RunnableResultHandler listener,
+            String objectType,
+            String owner,
+            String sourceObjectOwner);
 
-	/**
-	 * Execute DDL
-	 * 
-	 * @param sql String to executed
-	 */
-	public void executeDDL(String sql) {
-		executeDDL(sql, null, null, null);
-	}
-	
-	/**
-	 * Execute DDL
-	 * 
-	 * @param sql to be executed.
-	 * @param objectType true if the sql is DDL of index
-	 * @param listener to be called back 
-	 * @param owner Grant owner
-	 */
-	public void executeDDL(String sql, String objectType, RunnableResultHandler listener, String owner) {
-		executeDDL(sql, objectType, listener, owner, null);
-	}
+    /**
+     * Write content to file.
+     *
+     * @param fileName to be write
+     * @param content to be write
+     */
+    protected void writeFile(String fileName, String content) {
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("[IN]writeFile()");
+        }
+        File file = new File(fileName);
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("[VAR]fileName=" + fileName);
+        }
+        try {
+            PathUtils.createFile(file);
+            PrintWriter pw = new PrintWriter(file, "utf8");
+            pw.write(content);
+            pw.flush();
+            pw.close();
+        } catch (FileNotFoundException e) {
+            LOG.error("", e);
+            throw new BreakMigrationException(e);
+        } catch (IOException e) {
+            LOG.error("", e);
+            throw new BreakMigrationException(e);
+        }
+    }
 
-	/**
-	 * Execute DDL SQLs.
-	 * 
-	 * @param sql to be executed.
-	 * @param isIndex true if the sql is DDL of index
-	 * @param listener to be called back
-	 * @param owner Grant owner
-	 * @param sourceObjectOwner Grant owner in the source database
-	 */
-	protected void executeDDL(String sql, String objectType, 
-			RunnableResultHandler listener, String owner, String sourceObjectOwner) {
-		if (LOG.isDebugEnabled()) {
-			LOG.debug("[IN]executeDDL().sql=" + sql);
-		}
-		String fileName = getRandomTempFileName();
-		if (LOG.isDebugEnabled()) {
-			LOG.debug("[VAR]fileName=" + fileName);
-		}
-		writeFile(fileName, sql);
-		sendSchemaFile(fileName, listener, objectType, owner, sourceObjectOwner);
-	}
+    /**
+     * Execute DDL
+     *
+     * @param sql String to executed
+     */
+    public void executeDDL(String sql) {
+        executeDDL(sql, null, null, null);
+    }
 
-	/**
-	 * Retrieves the data file's header
-	 * 
-	 * @param table Table
-	 * @return String header
-	 */
-	protected String getDataFileHeader(SourceTableConfig table) {
-		StringBuffer sb = new StringBuffer("%class ");
-		
-		if (config.isAddUserSchema()) {
-			sb.append("[" + table.getTargetOwner() + "]");
-			sb.append(".");
-		}
-		
-		sb.append("[").append(table.getTarget()).append("] (");
-		String spliter = "";
-		for (SourceColumnConfig col : table.getColumnConfigList()) {
-			sb.append(spliter).append("[").append(col.getTarget()).append("]");
-			spliter = " ";
-		}
-		sb.append(")\n");
-		return sb.toString();
-	}
+    /**
+     * Execute DDL
+     *
+     * @param sql to be executed.
+     * @param objectType true if the sql is DDL of index
+     * @param listener to be called back
+     * @param owner Grant owner
+     */
+    public void executeDDL(
+            String sql, String objectType, RunnableResultHandler listener, String owner) {
+        executeDDL(sql, objectType, listener, owner, null);
+    }
 
-	/**
-	 * Create a schema result handler
-	 * 
-	 * @param obj Object to be create
-	 * @return RunnableResultHandler
-	 */
-	protected RunnableResultHandler createResultHandler(final DBObject obj) {
-		return new RunnableResultHandler() {
+    /**
+     * Execute DDL SQLs.
+     *
+     * @param sql to be executed.
+     * @param isIndex true if the sql is DDL of index
+     * @param listener to be called back
+     * @param owner Grant owner
+     * @param sourceObjectOwner Grant owner in the source database
+     */
+    protected void executeDDL(
+            String sql,
+            String objectType,
+            RunnableResultHandler listener,
+            String owner,
+            String sourceObjectOwner) {
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("[IN]executeDDL().sql=" + sql);
+        }
+        String fileName = getRandomTempFileName();
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("[VAR]fileName=" + fileName);
+        }
+        writeFile(fileName, sql);
+        sendSchemaFile(fileName, listener, objectType, owner, sourceObjectOwner);
+    }
 
-			public void success() {
-				createObjectSuccess(obj);
-			}
+    /**
+     * Retrieves the data file's header
+     *
+     * @param table Table
+     * @return String header
+     */
+    protected String getDataFileHeader(SourceTableConfig table) {
+        StringBuffer sb = new StringBuffer("%class ");
 
-			public void failed(String error) {
-				createObjectFailed(obj, new NormalMigrationException(error));
-			}
-		};
-	}
+        if (config.isAddUserSchema()) {
+            sb.append("[" + table.getTargetOwner() + "]");
+            sb.append(".");
+        }
 
-	//	/**
-	//	 * Retrieve the CM server object.
-	//	 * 
-	//	 * @return current CM server
-	//	 */
-	//	protected CMSInfo getCMServer() {
-	//		return CMSManager.getInstance().findServer(
-	//				config.getCmServer().getHost(), config.getCmServer().getPort(),
-	//				config.getCmServer().getUser());
-	//	}
+        sb.append("[").append(table.getTarget()).append("] (");
+        String spliter = "";
+        for (SourceColumnConfig col : table.getColumnConfigList()) {
+            sb.append(spliter).append("[").append(col.getTarget()).append("]");
+            spliter = " ";
+        }
+        sb.append(")\n");
+        return sb.toString();
+    }
 
-	/**
-	 * Retrieves the string for load DB command of record.
-	 * 
-	 * @param stc SourceTableConfig
-	 * @param tt target Table
-	 * @param re source Record
-	 * @param lobFiles to be uploaded
-	 * @return string of record
-	 */
-	protected List<String> getRecordString(SourceTableConfig stc, Table tt, Record re,
-			List<String> lobFiles) {
-		try {
-			List<String> dataList = new ArrayList<String>();
-			//get target table
-			Map<String, Object> recordMap = re.getColumnValueMap();
-			for (Record.ColumnValue cv : re.getColumnValueList()) {
-				SourceColumnConfig scc = stc.getColumnConfig(cv.getColumn().getName());
-				if (scc == null) {
-					throw new NormalMigrationException("Column not found.");
-				}
-				Column targetColumn = tt.getColumnByName(scc.getTarget());
-				if (targetColumn == null) {
-					throw new NormalMigrationException("Column not found.");
-				}
-				DBTransformHelper dbHelper = config.getDBTransformHelper();
-				Object targetValue;
-				try {
-					targetValue = dbHelper.convertValueToTargetDBValue(config, recordMap, scc,
-							cv.getColumn(), targetColumn, cv.getValue());
-				} catch (UserDefinedHandlerException ex) {
-					targetValue = cv.getValue();
-					eventHandler.handleEvent(new SingleRecordErrorEvent(re, ex));
-				}
+    /**
+     * Create a schema result handler
+     *
+     * @param obj Object to be create
+     * @return RunnableResultHandler
+     */
+    protected RunnableResultHandler createResultHandler(final DBObject obj) {
+        return new RunnableResultHandler() {
 
-				String fileStr = unloadFileUtil.stringValueOf(targetValue, targetColumn, lobFiles);
-				if (CollectionUtils.isNotEmpty(lobFiles)) {
-					String lobDir = config.getTargetLOBRootPath();
-					if (StringUtils.isBlank(lobDir)) {
-						lobDir = getLOBDir(stc.getTarget());
-					} else {
-						lobDir = lobDir + "lob/" + stc.getTarget() + "/";
-					}
-					fileStr = fileStr.replace(Data2StrTranslator.LOBFILEPATH, lobDir);
-				}
-				dataList.add(fileStr);
-			}
-			return dataList;
-		} catch (Exception ex) {
-			eventHandler.handleEvent(new SingleRecordErrorEvent(re, ex));
-		}
-		return null;
-	}
+            public void success() {
+                createObjectSuccess(obj);
+            }
 
-	/**
-	 * Retrieves a random template file name.
-	 * 
-	 * @return template file name
-	 */
-	protected String getRandomTempFileName() {
-		return mrManager.getDirAndFilesMgr().getNewTempFile();
-	}
+            public void failed(String error) {
+                createObjectFailed(obj, new NormalMigrationException(error));
+            }
+        };
+    }
 
-	/**
-	 * Import records of tables. The records' content are including source
-	 * columns + source values.
-	 * 
-	 * @param stc to be imported
-	 * @param records to be imported
-	 * @return success count
-	 */
-	public int importRecords(final SourceTableConfig stc, final List<Record> records) {
-		String tmpDataFileName = getRandomTempFileName() + config.getDataFileExt();
-		if (LOG.isDebugEnabled()) {
-			LOG.debug("[VAR]tmpDataFileName=" + tmpDataFileName);
-		}
-		File file = new File(tmpDataFileName);
-		int successCnt;
-		try {
-			final Table tt = config.getTargetTableSchema(stc.getTarget());
-			if (null == tt) {
-				throw new NormalMigrationException("Target Table " + stc.getTarget()
-						+ " not found.");
-			}
-			PathUtils.createFile(file);
-			//Cache to get better performance
-			successCnt = importFileWriter.writeData(stc, records, file, tt);
-			if (successCnt != records.size()) {
-				eventHandler.handleEvent(new ImportRecordsEvent(stc, records.size() - successCnt,
-						new NormalMigrationException(ERROR_RECORD_MSG), null));
-			}
-			if (LOG.isDebugEnabled()) {
-				LOG.debug("[VAR]successCnt=" + successCnt);
-			}
-			handleDataFile(tmpDataFileName, stc, successCnt, records.size());
-		} catch (Exception ex) {
-			throw new BreakMigrationException(ex);
-		}
-		return successCnt;
-	}
-	
-	/**
-	 * Create table
-	 * 
-	 * @param table to be created
-	 */
-	public void createTable(final Table table) {
-		StringBuffer sql = new StringBuffer();
-		//Create new table
-		String ddl = CUBRIDSQLHelper.getInstance(null).getTableDDL(table, config.isAddUserSchema());
-		table.setDDL(ddl);
-		sql.append(ddl).append("\n");
-		executeDDL(sql.toString(), DBObject.OBJ_TYPE_TABLE, createResultHandler(table), 
-				config.isAddUserSchema() ? table.getSourceOwner() : config.getSourceConParams().getConUser());
-	}
+    //	/**
+    //	 * Retrieve the CM server object.
+    //	 *
+    //	 * @return current CM server
+    //	 */
+    //	protected CMSInfo getCMServer() {
+    //		return CMSManager.getInstance().findServer(
+    //				config.getCmServer().getHost(), config.getCmServer().getPort(),
+    //				config.getCmServer().getUser());
+    //	}
 
-	/**
-	 * Create view
-	 * 
-	 * @param view to be created
-	 */
-	public void createView(View view) {
-		String viewDDL = CUBRIDSQLHelper.getInstance(null).getViewDDL(view, config.isAddUserSchema());
-		view.setDDL(viewDDL);
-		executeDDL(viewDDL + "\n", DBObject.OBJ_TYPE_VIEW, createResultHandler(view), 
-				config.isAddUserSchema() ? view.getSourceOwner() : config.getSourceConParams().getConUser());
-	}
-	
-	/**
-	 * Create view alter
-	 * 
-	 * @param view to be created
-	 */
-	public void alterView(View view) {
-		String viewAlterDDL = CUBRIDSQLHelper.getInstance(null).getViewAlterDDL(view, config.isAddUserSchema());
-		view.setAlterDDL(viewAlterDDL);
-		executeDDL(viewAlterDDL + "\n", DBObject.OBJ_TYPE_VIEW_QUERY_SPEC, createResultHandler(view), 
-				config.isAddUserSchema() ? view.getSourceOwner() : config.getSourceConParams().getConUser());
-	}
+    /**
+     * Retrieves the string for load DB command of record.
+     *
+     * @param stc SourceTableConfig
+     * @param tt target Table
+     * @param re source Record
+     * @param lobFiles to be uploaded
+     * @return string of record
+     */
+    protected List<String> getRecordString(
+            SourceTableConfig stc, Table tt, Record re, List<String> lobFiles) {
+        try {
+            List<String> dataList = new ArrayList<String>();
+            // get target table
+            Map<String, Object> recordMap = re.getColumnValueMap();
+            for (Record.ColumnValue cv : re.getColumnValueList()) {
+                SourceColumnConfig scc = stc.getColumnConfig(cv.getColumn().getName());
+                if (scc == null) {
+                    throw new NormalMigrationException("Column not found.");
+                }
+                Column targetColumn = tt.getColumnByName(scc.getTarget());
+                if (targetColumn == null) {
+                    throw new NormalMigrationException("Column not found.");
+                }
+                DBTransformHelper dbHelper = config.getDBTransformHelper();
+                Object targetValue;
+                try {
+                    targetValue =
+                            dbHelper.convertValueToTargetDBValue(
+                                    config,
+                                    recordMap,
+                                    scc,
+                                    cv.getColumn(),
+                                    targetColumn,
+                                    cv.getValue());
+                } catch (UserDefinedHandlerException ex) {
+                    targetValue = cv.getValue();
+                    eventHandler.handleEvent(new SingleRecordErrorEvent(re, ex));
+                }
 
-	/**
-	 * Create primary key
-	 * 
-	 * @param pk to be created
-	 */
-	public void createPK(PK pk) {
-		String ddl = CUBRIDSQLHelper.getInstance(null).getPKDDL(pk.getTable().getOwner(), pk.getTable().getName(),
-				pk.getName(), pk.getPkColumns(), config.isAddUserSchema());
-		pk.setDDL(ddl);
-		executeDDL(ddl + ";\n", DBObject.OBJ_TYPE_PK, createResultHandler(pk), 
-				config.isAddUserSchema() ? pk.getTable().getSourceOwner() : config.getSourceConParams().getConUser());
-	}
+                String fileStr = unloadFileUtil.stringValueOf(targetValue, targetColumn, lobFiles);
+                if (CollectionUtils.isNotEmpty(lobFiles)) {
+                    String lobDir = config.getTargetLOBRootPath();
+                    if (StringUtils.isBlank(lobDir)) {
+                        lobDir = getLOBDir(stc.getTarget());
+                    } else {
+                        lobDir = lobDir + "lob/" + stc.getTarget() + "/";
+                    }
+                    fileStr = fileStr.replace(Data2StrTranslator.LOBFILEPATH, lobDir);
+                }
+                dataList.add(fileStr);
+            }
+            return dataList;
+        } catch (Exception ex) {
+            eventHandler.handleEvent(new SingleRecordErrorEvent(re, ex));
+        }
+        return null;
+    }
 
-	/**
-	 * Create foreign key
-	 * 
-	 * @param fk to be created
-	 */
-	public void createFK(FK fk) {
-		String ddl = CUBRIDSQLHelper.getInstance(null).getFKDDL(fk.getTable().getOwner(), fk.getTable().getName(), 
-				fk, config.isAddUserSchema());
-		fk.setDDL(ddl);
-		executeDDL(ddl + ";\n", DBObject.OBJ_TYPE_FK, createResultHandler(fk), 
-				config.isAddUserSchema() ? fk.getTable().getSourceOwner() : config.getSourceConParams().getConUser());
-	}
+    /**
+     * Retrieves a random template file name.
+     *
+     * @return template file name
+     */
+    protected String getRandomTempFileName() {
+        return mrManager.getDirAndFilesMgr().getNewTempFile();
+    }
 
-	/**
-	 * Create index
-	 * 
-	 * @param index to be created
-	 */
-	public void createIndex(Index index) {
-		String ddl = CUBRIDSQLHelper.getInstance(null).getIndexDDL(index.getTable().getOwner(), index.getTable().getName(),
-				index, "", config.isAddUserSchema());
-		index.setDDL(ddl);
-		executeDDL(ddl + ";\n", DBObject.OBJ_TYPE_INDEX, createResultHandler(index), 
-				config.isAddUserSchema() ? index.getTable().getSourceOwner() : config.getSourceConParams().getConUser());
-	}
+    /**
+     * Import records of tables. The records' content are including source columns + source values.
+     *
+     * @param stc to be imported
+     * @param records to be imported
+     * @return success count
+     */
+    public int importRecords(final SourceTableConfig stc, final List<Record> records) {
+        String tmpDataFileName = getRandomTempFileName() + config.getDataFileExt();
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("[VAR]tmpDataFileName=" + tmpDataFileName);
+        }
+        File file = new File(tmpDataFileName);
+        int successCnt;
+        try {
+            final Table tt = config.getTargetTableSchema(stc.getTarget());
+            if (null == tt) {
+                throw new NormalMigrationException(
+                        "Target Table " + stc.getTarget() + " not found.");
+            }
+            PathUtils.createFile(file);
+            // Cache to get better performance
+            successCnt = importFileWriter.writeData(stc, records, file, tt);
+            if (successCnt != records.size()) {
+                eventHandler.handleEvent(
+                        new ImportRecordsEvent(
+                                stc,
+                                records.size() - successCnt,
+                                new NormalMigrationException(ERROR_RECORD_MSG),
+                                null));
+            }
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("[VAR]successCnt=" + successCnt);
+            }
+            handleDataFile(tmpDataFileName, stc, successCnt, records.size());
+        } catch (Exception ex) {
+            throw new BreakMigrationException(ex);
+        }
+        return successCnt;
+    }
 
-	/**
-	 * Create sequence
-	 * 
-	 * @param sq the sequence to be created.
-	 */
-	public void createSequence(Sequence sq) {
-		String ddl = CUBRIDSQLHelper.getInstance(null).getSequenceDDL(sq, config.isAddUserSchema());
-		sq.setDDL(ddl);
-		executeDDL(ddl + ";\n", DBObject.OBJ_TYPE_SEQUENCE, createResultHandler(sq), 
-				config.isAddUserSchema() ? sq.getSourceOwner() : config.getSourceConParams().getConUser());
-	}
-	
-	/**
-	 * Create synonym
-	 * 
-	 * @param sq the synonym to be created.
-	 */
-	public void createSynonym(Synonym sn) {
-		String ddl = CUBRIDSQLHelper.getInstance(null).getSynonymDDL(sn, config.isAddUserSchema());
-		sn.setDDL(ddl);
-		executeDDL(ddl + ";\n", DBObject.OBJ_TYPE_SYNONYM, createResultHandler(sn), 
-				config.isAddUserSchema() ? sn.getSourceOwner() : config.getSourceConParams().getConUser());
-	}
-	
-	/**
-	 * Create grant
-	 * 
-	 * @param gr the grant to be created.
-	 */
-	public void createGrant(Grant gr) {
-		String ddl = CUBRIDSQLHelper.getInstance(null).getGrantDDL(gr, config.isAddUserSchema());
-		gr.setDDL(ddl);
-		executeDDL(ddl + ";\n", DBObject.OBJ_TYPE_GRANT, createResultHandler(gr), 
-				config.isAddUserSchema() ? gr.getSourceOwner() : config.getSourceConParams().getConUser(), gr.getSourceObjectOwner());
-	}
-	
-	public void createSchema(Schema schema) {
+    /**
+     * Create table
+     *
+     * @param table to be created
+     */
+    public void createTable(final Table table) {
+        StringBuffer sql = new StringBuffer();
+        // Create new table
+        String ddl = CUBRIDSQLHelper.getInstance(null).getTableDDL(table, config.isAddUserSchema());
+        table.setDDL(ddl);
+        sql.append(ddl).append("\n");
+        executeDDL(
+                sql.toString(),
+                DBObject.OBJ_TYPE_TABLE,
+                createResultHandler(table),
+                config.isAddUserSchema()
+                        ? table.getSourceOwner()
+                        : config.getSourceConParams().getConUser());
+    }
 
-	}
+    /**
+     * Create view
+     *
+     * @param view to be created
+     */
+    public void createView(View view) {
+        String viewDDL =
+                CUBRIDSQLHelper.getInstance(null).getViewDDL(view, config.isAddUserSchema());
+        view.setDDL(viewDDL);
+        executeDDL(
+                viewDDL + "\n",
+                DBObject.OBJ_TYPE_VIEW,
+                createResultHandler(view),
+                config.isAddUserSchema()
+                        ? view.getSourceOwner()
+                        : config.getSourceConParams().getConUser());
+    }
+
+    /**
+     * Create view alter
+     *
+     * @param view to be created
+     */
+    public void alterView(View view) {
+        String viewAlterDDL =
+                CUBRIDSQLHelper.getInstance(null).getViewAlterDDL(view, config.isAddUserSchema());
+        view.setAlterDDL(viewAlterDDL);
+        executeDDL(
+                viewAlterDDL + "\n",
+                DBObject.OBJ_TYPE_VIEW_QUERY_SPEC,
+                createResultHandler(view),
+                config.isAddUserSchema()
+                        ? view.getSourceOwner()
+                        : config.getSourceConParams().getConUser());
+    }
+
+    /**
+     * Create primary key
+     *
+     * @param pk to be created
+     */
+    public void createPK(PK pk) {
+        String ddl =
+                CUBRIDSQLHelper.getInstance(null)
+                        .getPKDDL(
+                                pk.getTable().getOwner(),
+                                pk.getTable().getName(),
+                                pk.getName(),
+                                pk.getPkColumns(),
+                                config.isAddUserSchema());
+        pk.setDDL(ddl);
+        executeDDL(
+                ddl + ";\n",
+                DBObject.OBJ_TYPE_PK,
+                createResultHandler(pk),
+                config.isAddUserSchema()
+                        ? pk.getTable().getSourceOwner()
+                        : config.getSourceConParams().getConUser());
+    }
+
+    /**
+     * Create foreign key
+     *
+     * @param fk to be created
+     */
+    public void createFK(FK fk) {
+        String ddl =
+                CUBRIDSQLHelper.getInstance(null)
+                        .getFKDDL(
+                                fk.getTable().getOwner(),
+                                fk.getTable().getName(),
+                                fk,
+                                config.isAddUserSchema());
+        fk.setDDL(ddl);
+        executeDDL(
+                ddl + ";\n",
+                DBObject.OBJ_TYPE_FK,
+                createResultHandler(fk),
+                config.isAddUserSchema()
+                        ? fk.getTable().getSourceOwner()
+                        : config.getSourceConParams().getConUser());
+    }
+
+    /**
+     * Create index
+     *
+     * @param index to be created
+     */
+    public void createIndex(Index index) {
+        String ddl =
+                CUBRIDSQLHelper.getInstance(null)
+                        .getIndexDDL(
+                                index.getTable().getOwner(),
+                                index.getTable().getName(),
+                                index,
+                                "",
+                                config.isAddUserSchema());
+        index.setDDL(ddl);
+        executeDDL(
+                ddl + ";\n",
+                DBObject.OBJ_TYPE_INDEX,
+                createResultHandler(index),
+                config.isAddUserSchema()
+                        ? index.getTable().getSourceOwner()
+                        : config.getSourceConParams().getConUser());
+    }
+
+    /**
+     * Create sequence
+     *
+     * @param sq the sequence to be created.
+     */
+    public void createSequence(Sequence sq) {
+        String ddl = CUBRIDSQLHelper.getInstance(null).getSequenceDDL(sq, config.isAddUserSchema());
+        sq.setDDL(ddl);
+        executeDDL(
+                ddl + ";\n",
+                DBObject.OBJ_TYPE_SEQUENCE,
+                createResultHandler(sq),
+                config.isAddUserSchema()
+                        ? sq.getSourceOwner()
+                        : config.getSourceConParams().getConUser());
+    }
+
+    /**
+     * Create synonym
+     *
+     * @param sq the synonym to be created.
+     */
+    public void createSynonym(Synonym sn) {
+        String ddl = CUBRIDSQLHelper.getInstance(null).getSynonymDDL(sn, config.isAddUserSchema());
+        sn.setDDL(ddl);
+        executeDDL(
+                ddl + ";\n",
+                DBObject.OBJ_TYPE_SYNONYM,
+                createResultHandler(sn),
+                config.isAddUserSchema()
+                        ? sn.getSourceOwner()
+                        : config.getSourceConParams().getConUser());
+    }
+
+    /**
+     * Create grant
+     *
+     * @param gr the grant to be created.
+     */
+    public void createGrant(Grant gr) {
+        String ddl = CUBRIDSQLHelper.getInstance(null).getGrantDDL(gr, config.isAddUserSchema());
+        gr.setDDL(ddl);
+        executeDDL(
+                ddl + ";\n",
+                DBObject.OBJ_TYPE_GRANT,
+                createResultHandler(gr),
+                config.isAddUserSchema()
+                        ? gr.getSourceOwner()
+                        : config.getSourceConParams().getConUser(),
+                gr.getSourceObjectOwner());
+    }
+
+    public void createSchema(Schema schema) {}
 }

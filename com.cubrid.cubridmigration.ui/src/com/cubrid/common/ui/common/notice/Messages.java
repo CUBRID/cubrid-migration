@@ -31,21 +31,21 @@ package com.cubrid.common.ui.common.notice;
 import org.eclipse.osgi.util.NLS;
 
 public class Messages extends NLS {
-	static {
-		NLS.initializeMessages("com.cubrid.common.ui.common.notice.Messages", Messages.class);
-	}
+    static {
+        NLS.initializeMessages("com.cubrid.common.ui.common.notice.Messages", Messages.class);
+    }
 
-	public static String titleNoticeDashboard;
-	public static String titleCUBRIDManager;
-	public static String titleCUBRIDQuery;
-	public static String titleCUBRIDMigration;
-	public static String titleCommonAction;
-	public static String titleReleaseNews;
-	public static String titleMajorFeatures;
-	public static String titleHowStart;
-	public static String titleTutorials;
-	public static String titleAnnouncement;
-	public static String titleTechTrends;
-	public static String titleUsefulLinks;
-	public static String networkConnectionError;
+    public static String titleNoticeDashboard;
+    public static String titleCUBRIDManager;
+    public static String titleCUBRIDQuery;
+    public static String titleCUBRIDMigration;
+    public static String titleCommonAction;
+    public static String titleReleaseNews;
+    public static String titleMajorFeatures;
+    public static String titleHowStart;
+    public static String titleTutorials;
+    public static String titleAnnouncement;
+    public static String titleTechTrends;
+    public static String titleUsefulLinks;
+    public static String networkConnectionError;
 }

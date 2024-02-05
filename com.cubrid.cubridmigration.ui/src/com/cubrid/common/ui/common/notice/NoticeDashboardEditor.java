@@ -35,47 +35,44 @@ import org.eclipse.ui.forms.editor.FormEditor;
 
 /**
  * Notice Dashboard Editor
- * 
+ *
  * @author Tobi
  * @version 1.0
  * @date 2013-1-28
  */
 public class NoticeDashboardEditor extends FormEditor {
-	public static final String ID = NoticeDashboardEditor.class.getName();
+    public static final String ID = NoticeDashboardEditor.class.getName();
 
-	private String client = ApplicationType.CUBRID_MANAGER.getRssName();
+    private String client = ApplicationType.CUBRID_MANAGER.getRssName();
 
-	public void doSave(IProgressMonitor arg0) {
-	}
+    public void doSave(IProgressMonitor arg0) {}
 
-	public void doSaveAs() {
-	}
+    public void doSaveAs() {}
 
-	public boolean isDirty() {
-		return false;
-	}
+    public boolean isDirty() {
+        return false;
+    }
 
-	public boolean isSaveAsAllowed() {
-		return false;
-	}
+    public boolean isSaveAsAllowed() {
+        return false;
+    }
 
-	public void init(IEditorSite site, IEditorInput input) throws PartInitException {
-		setPartName(input.getName());
-		super.init(site, input);
-		if (input instanceof NoticeDashboardInput) {
-			this.client = ((NoticeDashboardInput) input).getClient();
-		}
-	}
+    public void init(IEditorSite site, IEditorInput input) throws PartInitException {
+        setPartName(input.getName());
+        super.init(site, input);
+        if (input instanceof NoticeDashboardInput) {
+            this.client = ((NoticeDashboardInput) input).getClient();
+        }
+    }
 
-	public void setFocus() {
-	}
+    public void setFocus() {}
 
-	protected void addPages() {
-		try {
-			addPage(new NoticeDashboardPage(this, "1", "", this.client));
-			// addPage(new CMExtensionsPage(this, "2", "Extensions"));
-		} catch (PartInitException e) {
-			e.printStackTrace();
-		}
-	}
+    protected void addPages() {
+        try {
+            addPage(new NoticeDashboardPage(this, "1", "", this.client));
+            // addPage(new CMExtensionsPage(this, "2", "Extensions"));
+        } catch (PartInitException e) {
+            e.printStackTrace();
+        }
+    }
 }

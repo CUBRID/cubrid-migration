@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2009 Search Solution Corporation. All rights reserved by Search
  * Solution.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met: -
  * Redistributions of source code must retain the above copyright notice, this
@@ -11,7 +11,7 @@
  * with the distribution. - Neither the name of the <ORGANIZATION> nor the names
  * of its contributors may be used to endorse or promote products derived from
  * this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -23,7 +23,7 @@
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
- * 
+ *
  */
 
 package com.cubrid.cubridmigration.app.handler;
@@ -31,22 +31,19 @@ package com.cubrid.cubridmigration.app.handler;
 import com.cubrid.common.ui.handler.AbstractDropdownMenuHandler;
 
 /**
- * 
  * This action is responsible to pop migration tool bar menus
- * 
+ *
  * @author Kevin Cao
  * @version 1.0 - 2014-3-07 created by Kevin Cao
  */
-public final class DropdownMenuHandler extends
-		AbstractDropdownMenuHandler {
+public final class DropdownMenuHandler extends AbstractDropdownMenuHandler {
 
-	/**
-	 * Users can override this method to pop other menus
-	 * 
-	 * 
-	 * @return Menu ID in the extensions
-	 */
-	protected String getMenuID() {
-		return "com.cubrid.cubridmigration.toolbar.popmenu.script";
-	}
+    /**
+     * Users can override this method to pop other menus
+     *
+     * @return Menu ID in the extensions
+     */
+    protected String getMenuID() {
+        return "com.cubrid.cubridmigration.toolbar.popmenu.script";
+    }
 }

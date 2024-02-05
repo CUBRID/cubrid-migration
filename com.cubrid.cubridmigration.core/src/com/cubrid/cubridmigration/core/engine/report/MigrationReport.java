@@ -1,45 +1,33 @@
 /*
- * Copyright (C) 2009 Search Solution Corporation. All rights reserved by Search Solution. 
+ * Copyright (C) 2009 Search Solution Corporation. All rights reserved by Search Solution.
  *
- * Redistribution and use in source and binary forms, with or without modification, 
- * are permitted provided that the following conditions are met: 
+ * Redistribution and use in source and binary forms, with or without modification,
+ * are permitted provided that the following conditions are met:
  *
- * - Redistributions of source code must retain the above copyright notice, 
- *   this list of conditions and the following disclaimer. 
+ * - Redistributions of source code must retain the above copyright notice,
+ *   this list of conditions and the following disclaimer.
  *
- * - Redistributions in binary form must reproduce the above copyright notice, 
- *   this list of conditions and the following disclaimer in the documentation 
- *   and/or other materials provided with the distribution. 
+ * - Redistributions in binary form must reproduce the above copyright notice,
+ *   this list of conditions and the following disclaimer in the documentation
+ *   and/or other materials provided with the distribution.
  *
- * - Neither the name of the <ORGANIZATION> nor the names of its contributors 
- *   may be used to endorse or promote products derived from this software without 
- *   specific prior written permission. 
+ * - Neither the name of the <ORGANIZATION> nor the names of its contributors
+ *   may be used to endorse or promote products derived from this software without
+ *   specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED 
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. 
- * IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, 
- * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, 
- * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, 
- * OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, 
- * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
- * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY 
- * OF SUCH DAMAGE. 
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
+ * IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+ * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+ * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA,
+ * OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
+ * OF SUCH DAMAGE.
  *
  */
 package com.cubrid.cubridmigration.core.engine.report;
-
-import java.beans.XMLEncoder;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import org.apache.commons.lang.StringUtils;
 
 import com.cubrid.cubridmigration.core.common.CUBRIDIOUtils;
 import com.cubrid.cubridmigration.core.common.Closer;
@@ -66,735 +54,763 @@ import com.cubrid.cubridmigration.core.engine.event.ExportRecordsEvent;
 import com.cubrid.cubridmigration.core.engine.event.ImportCSVEvent;
 import com.cubrid.cubridmigration.core.engine.event.ImportRecordsEvent;
 import com.cubrid.cubridmigration.core.engine.event.ImportSQLsEvent;
+import java.beans.XMLEncoder;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import org.apache.commons.lang.StringUtils;
 
 /**
- * 
  * Migration Report model
- * 
+ *
  * @author Kevin Cao
  * @version 1.0 - 2011-11-7 created by Kevin Cao
  */
-public class MigrationReport implements
-		Serializable {
+public class MigrationReport implements Serializable {
 
-	private static final long serialVersionUID = -6045872698227171614L;
+    private static final long serialVersionUID = -6045872698227171614L;
 
-	private final static String[] OVERVIEW_TYPES = new String[] {DBObject.OBJ_TYPE_SCHEMA, DBObject.OBJ_TYPE_TABLE,
-			DBObject.OBJ_TYPE_VIEW, DBObject.OBJ_TYPE_PK, DBObject.OBJ_TYPE_FK,
-			DBObject.OBJ_TYPE_INDEX, DBObject.OBJ_TYPE_SEQUENCE, DBObject.OBJ_TYPE_SYNONYM, 
-			DBObject.OBJ_TYPE_TRIGGER, DBObject.OBJ_TYPE_FUNCTION, DBObject.OBJ_TYPE_PROCEDURE, 
-			DBObject.OBJ_TYPE_GRANT, DBObject.OBJ_TYPE_RECORD};
+    private static final String[] OVERVIEW_TYPES =
+            new String[] {
+                DBObject.OBJ_TYPE_SCHEMA,
+                DBObject.OBJ_TYPE_TABLE,
+                DBObject.OBJ_TYPE_VIEW,
+                DBObject.OBJ_TYPE_PK,
+                DBObject.OBJ_TYPE_FK,
+                DBObject.OBJ_TYPE_INDEX,
+                DBObject.OBJ_TYPE_SEQUENCE,
+                DBObject.OBJ_TYPE_SYNONYM,
+                DBObject.OBJ_TYPE_TRIGGER,
+                DBObject.OBJ_TYPE_FUNCTION,
+                DBObject.OBJ_TYPE_PROCEDURE,
+                DBObject.OBJ_TYPE_GRANT,
+                DBObject.OBJ_TYPE_RECORD
+            };
 
-	/**
-	 * get DBObj Name
-	 * 
-	 * @param obj DBObject
-	 * @return name displayed in table
-	 */
-	private static String getDBObjName(DBObject obj) {
-		if (obj instanceof PK && ("PRIMARY".equals(obj.getName()) || obj.getName() == null)) {
-			return "primary key of " + ((PK) obj).getTable().getName();
-		} else if (obj instanceof Index) {
-			return "[" + ((Index) obj).getTable().getName() + "]" + obj.getName();
-		} else if (obj instanceof Table) {
-			Table tempTable = (Table) obj;
-			
-			if (tempTable.getOwner() != null) { 
-				return tempTable.getOwner() + "." + tempTable.getName();
-			} else {
-				return tempTable.getName();
-			}
-		} else if (obj instanceof Synonym) {
-			Synonym synonym = (Synonym) obj;
-			return synonym.getOwner() + "." + synonym.getName();
-		} else if (obj instanceof Grant) {
-			Grant grant = (Grant) obj;
-			return grant.getName();
-		}
-		
-		return obj.getName();
-	}
+    /**
+     * get DBObj Name
+     *
+     * @param obj DBObject
+     * @return name displayed in table
+     */
+    private static String getDBObjName(DBObject obj) {
+        if (obj instanceof PK && ("PRIMARY".equals(obj.getName()) || obj.getName() == null)) {
+            return "primary key of " + ((PK) obj).getTable().getName();
+        } else if (obj instanceof Index) {
+            return "[" + ((Index) obj).getTable().getName() + "]" + obj.getName();
+        } else if (obj instanceof Table) {
+            Table tempTable = (Table) obj;
 
-	private long totalStartTime;
-	private long totalEndTime;
+            if (tempTable.getOwner() != null) {
+                return tempTable.getOwner() + "." + tempTable.getName();
+            } else {
+                return tempTable.getName();
+            }
+        } else if (obj instanceof Synonym) {
+            Synonym synonym = (Synonym) obj;
+            return synonym.getOwner() + "." + synonym.getName();
+        } else if (obj instanceof Grant) {
+            Grant grant = (Grant) obj;
+            return grant.getName();
+        }
 
-	//private List<MigrationOverviewResult> overviewReults;
-	private final List<DBObjMigrationResult> dbObjectsResult = new ArrayList<DBObjMigrationResult>();
+        return obj.getName();
+    }
 
-	private final List<RecordMigrationResult> recMigResults = new ArrayList<RecordMigrationResult>();
+    private long totalStartTime;
+    private long totalEndTime;
 
-	private final List<DataFileImportResult> dataFileResults = new ArrayList<DataFileImportResult>();
-	
-	private final List<ObjNameMigrationResult> objNameResult = new ArrayList<ObjNameMigrationResult>();
+    // private List<MigrationOverviewResult> overviewReults;
+    private final List<DBObjMigrationResult> dbObjectsResult =
+            new ArrayList<DBObjMigrationResult>();
 
-	private String configSummary = "";
+    private final List<RecordMigrationResult> recMigResults =
+            new ArrayList<RecordMigrationResult>();
 
-	private MigrationBriefReport brief;
+    private final List<DataFileImportResult> dataFileResults =
+            new ArrayList<DataFileImportResult>();
 
-	private final List<String> errorSQLFiles = new ArrayList<String>();
+    private final List<ObjNameMigrationResult> objNameResult =
+            new ArrayList<ObjNameMigrationResult>();
 
-	/**
-	 * add DbObjects Result
-	 * 
-	 * @param dbObjectsResult DBObjMigrationResult
-	 */
-	public void addDbObjectsResult(DBObjMigrationResult dbObjectsResult) {
-		this.dbObjectsResult.add(dbObjectsResult);
-	}
+    private String configSummary = "";
 
-	/**
-	 * Add Export CSV event to report.
-	 * 
-	 * @param event ExportCSVEvent
-	 */
-	public void addExpCSVEvent(ExportCSVEvent event) {
-		for (DataFileImportResult re : dataFileResults) {
-			if (!re.getFileName().equals(event.getSourceCSV().getName())) {
-				continue;
-			}
-			re.setExportCount(re.getExportCount() + event.getRecordCount());
-			break;
-		}
-	}
+    private MigrationBriefReport brief;
 
-	/**
-	 * add Export Migration Record Result
-	 * 
-	 * @param event ExportRecordsEvent
-	 */
-	public void addExpMigRecResult(ExportRecordsEvent event) {
-		RecordMigrationResult result = getRecMigResults(event.getSourceTable().getOwner(), 
-				event.getSourceTable().getName(),
-				event.getSourceTable().getTarget());
-		result.setExpCount(result.getExpCount() + event.getRecordCount());
-		if (result.getTotalCount() < result.getExpCount()) {
-			result.setTotalCount(result.getExpCount());
-		}
-		if (result.getEndExportTime() < event.getEventTime().getTime()) {
-			result.setEndExportTime(event.getEventTime().getTime());
-		}
-	}
+    private final List<String> errorSQLFiles = new ArrayList<String>();
 
-	/**
-	 * add Import Migration Record Result
-	 * 
-	 * @param event ImportRecordsEvent
-	 */
-	public void addImpMigRecResult(ImportRecordsEvent event) {
-		RecordMigrationResult result = getRecMigResults(event.getSourceTable().getOwner(), 
-				event.getSourceTable().getName(),
-				event.getSourceTable().getTarget());
-		if (event.isSuccess()) {
-			result.setImpCount(result.getImpCount() + event.getRecordCount());
-		}
-		if (result.getStartImportTime() == 0) {
-			result.setStartImportTime(event.getEventTime().getTime());
-		}
-		if (result.getEndImportTime() < event.getEventTime().getTime()) {
-			result.setEndImportTime(event.getEventTime().getTime());
-		}
-		if (StringUtils.isNotBlank(event.getErrorFile())) {
-			addErrorSQLFile(event.getErrorFile());
-		}
-	}
+    /**
+     * add DbObjects Result
+     *
+     * @param dbObjectsResult DBObjMigrationResult
+     */
+    public void addDbObjectsResult(DBObjMigrationResult dbObjectsResult) {
+        this.dbObjectsResult.add(dbObjectsResult);
+    }
 
-	/**
-	 * Add a event of SQL importing
-	 * 
-	 * @param result ImportSQLsEvent
-	 */
-	public void addImportCSVEvent(ImportCSVEvent result) {
-		for (DataFileImportResult re : dataFileResults) {
-			if (!re.getFileName().equals(result.getCsv().getName())) {
-				continue;
-			}
-			//re.setExportCount(re.getExportCount() + result.getRecordCount());
-			if (result.isSuccess()) {
-				re.setImportCount(re.getImportCount() + result.getRecordCount());
-			}
-			if (StringUtils.isNotBlank(result.getErrorFile())) {
-				addErrorSQLFile(result.getErrorFile());
-			}
-			break;
-		}
-	}
+    /**
+     * Add Export CSV event to report.
+     *
+     * @param event ExportCSVEvent
+     */
+    public void addExpCSVEvent(ExportCSVEvent event) {
+        for (DataFileImportResult re : dataFileResults) {
+            if (!re.getFileName().equals(event.getSourceCSV().getName())) {
+                continue;
+            }
+            re.setExportCount(re.getExportCount() + event.getRecordCount());
+            break;
+        }
+    }
 
-	/**
-	 * Add a event of SQL importing
-	 * 
-	 * @param result ImportSQLsEvent
-	 */
-	public void addSQLImportEvent(ImportSQLsEvent result) {
-		for (DataFileImportResult re : dataFileResults) {
-			if (!re.getFileName().equals(result.getSqlFile())) {
-				continue;
-			}
-			re.setExportCount(re.getExportCount() + result.getRecordCount());
-			if (result.isSuccess()) {
-				re.setImportCount(re.getImportCount() + result.getRecordCount());
-			}
-			if (StringUtils.isNotBlank(result.getErrorFile())) {
-				addErrorSQLFile(result.getErrorFile());
-			}
-			break;
-		}
-	}
+    /**
+     * add Export Migration Record Result
+     *
+     * @param event ExportRecordsEvent
+     */
+    public void addExpMigRecResult(ExportRecordsEvent event) {
+        RecordMigrationResult result =
+                getRecMigResults(
+                        event.getSourceTable().getOwner(),
+                        event.getSourceTable().getName(),
+                        event.getSourceTable().getTarget());
+        result.setExpCount(result.getExpCount() + event.getRecordCount());
+        if (result.getTotalCount() < result.getExpCount()) {
+            result.setTotalCount(result.getExpCount());
+        }
+        if (result.getEndExportTime() < event.getEventTime().getTime()) {
+            result.setEndExportTime(event.getEventTime().getTime());
+        }
+    }
 
-	/**
-	 * create a new DBObjectMigrationResult object
-	 * 
-	 * @param dbo DBObject
-	 */
-	private void createDBObjMigResult(DBObject dbo) {
-		DBObjMigrationResult objResult = new DBObjMigrationResult();
-		objResult.setObjName(getDBObjName(dbo));
-		objResult.setObjType(dbo.getObjType());
-		objResult.setObjOwner(getObjectOwner(dbo));
-		dbObjectsResult.add(objResult);
-	}
-	
-	/**
-	 * create a new ObjNameMigrationResult object
-	 * 
-	 * @param sc SourceConfig
-	 */
-	private void setObjNameResult(String objType, String source, String target) {
-		ObjNameMigrationResult onmr = new ObjNameMigrationResult(objType, source, target);
-		objNameResult.add(onmr);
-	}
+    /**
+     * add Import Migration Record Result
+     *
+     * @param event ImportRecordsEvent
+     */
+    public void addImpMigRecResult(ImportRecordsEvent event) {
+        RecordMigrationResult result =
+                getRecMigResults(
+                        event.getSourceTable().getOwner(),
+                        event.getSourceTable().getName(),
+                        event.getSourceTable().getTarget());
+        if (event.isSuccess()) {
+            result.setImpCount(result.getImpCount() + event.getRecordCount());
+        }
+        if (result.getStartImportTime() == 0) {
+            result.setStartImportTime(event.getEventTime().getTime());
+        }
+        if (result.getEndImportTime() < event.getEventTime().getTime()) {
+            result.setEndImportTime(event.getEventTime().getTime());
+        }
+        if (StringUtils.isNotBlank(event.getErrorFile())) {
+            addErrorSQLFile(event.getErrorFile());
+        }
+    }
 
-	public String getConfigSummary() {
-		return configSummary;
-	}
+    /**
+     * Add a event of SQL importing
+     *
+     * @param result ImportSQLsEvent
+     */
+    public void addImportCSVEvent(ImportCSVEvent result) {
+        for (DataFileImportResult re : dataFileResults) {
+            if (!re.getFileName().equals(result.getCsv().getName())) {
+                continue;
+            }
+            // re.setExportCount(re.getExportCount() + result.getRecordCount());
+            if (result.isSuccess()) {
+                re.setImportCount(re.getImportCount() + result.getRecordCount());
+            }
+            if (StringUtils.isNotBlank(result.getErrorFile())) {
+                addErrorSQLFile(result.getErrorFile());
+            }
+            break;
+        }
+    }
 
-	/**
-	 * getSqlResults
-	 * 
-	 * @return List<SQLImportResult>
-	 */
-	public List<DataFileImportResult> getDataFileResults() {
-		return new ArrayList<DataFileImportResult>(dataFileResults);
-	}
+    /**
+     * Add a event of SQL importing
+     *
+     * @param result ImportSQLsEvent
+     */
+    public void addSQLImportEvent(ImportSQLsEvent result) {
+        for (DataFileImportResult re : dataFileResults) {
+            if (!re.getFileName().equals(result.getSqlFile())) {
+                continue;
+            }
+            re.setExportCount(re.getExportCount() + result.getRecordCount());
+            if (result.isSuccess()) {
+                re.setImportCount(re.getImportCount() + result.getRecordCount());
+            }
+            if (StringUtils.isNotBlank(result.getErrorFile())) {
+                addErrorSQLFile(result.getErrorFile());
+            }
+            break;
+        }
+    }
 
-	/**
-	 * 
-	 * Retrieves the DBObjMigrationResults
-	 * 
-	 * @return List<DBObjMigrationResult>
-	 */
-	public List<DBObjMigrationResult> getDbObjectsResult() {
-		return new ArrayList<DBObjMigrationResult>(dbObjectsResult);
-	}
-	
-	/**
-	 * Retrieves the objNameResults
-	 * 
-	 * @return
-	 */
-	public List<ObjNameMigrationResult> getObjNameResult() {
-		return new ArrayList<ObjNameMigrationResult>(objNameResult);
-	}
+    /**
+     * create a new DBObjectMigrationResult object
+     *
+     * @param dbo DBObject
+     */
+    private void createDBObjMigResult(DBObject dbo) {
+        DBObjMigrationResult objResult = new DBObjMigrationResult();
+        objResult.setObjName(getDBObjName(dbo));
+        objResult.setObjType(dbo.getObjType());
+        objResult.setObjOwner(getObjectOwner(dbo));
+        dbObjectsResult.add(objResult);
+    }
 
-	/**
-	 * Retrieves the database object's migration result by DB Object.
-	 * 
-	 * @param obj DBObject
-	 * @return DBObjMigrationResult
-	 */
-	public DBObjMigrationResult getDBObjResult(DBObject obj) {
-		for (DBObjMigrationResult or : dbObjectsResult) {
-			if (or.getObjName().equals(getDBObjName(obj))
-					&& or.getObjType().equals(obj.getObjType())
-					&& !(hasSameNameObj(or, obj))) {
-				return or;
-			}
-		}
-		DBObjMigrationResult result = new DBObjMigrationResult();
-		
-		result.setObjName(getDBObjName(obj));
-		result.setObjType(obj.getObjType());
-		result.setObjOwner(getObjectOwner(obj));
-		dbObjectsResult.add(result);
-		return result;
-	}
-	
-	/**
-	 * If the dbobject has the same name in another schema, it returns the result separately through the owner.
-	 * 
-	 * @param or DBObjMigrationResult
-	 * @param obj DBObject
-	 * @return has same name object in dbObjectResult
-	 */
-	private boolean hasSameNameObj(DBObjMigrationResult or, DBObject obj) {
-		if (or.getObjOwner() == null) {
-			return false;
-		}
-		return !(or.getObjOwner().equalsIgnoreCase(getObjectOwner(obj)));
-	}
-	
-	private String getObjectOwner(DBObject obj) {
-		if (obj instanceof Table) {
-			return ((Table) obj).getOwner();
-		} else if (obj instanceof View) {
-			return ((View) obj).getOwner();
-		} else if (obj instanceof Sequence) {
-			return ((Sequence) obj).getOwner();
-		} else if (obj instanceof Index) {
-			return ((Index) obj).getTable().getOwner();
-		} else if (obj instanceof FK) {
-			return ((FK) obj).getTable().getOwner();
-		} else if (obj instanceof PK) {
-			return ((PK) obj).getTable().getOwner();
-		} else {
-			return null;
-		}
-	}
+    /**
+     * create a new ObjNameMigrationResult object
+     *
+     * @param sc SourceConfig
+     */
+    private void setObjNameResult(String objType, String source, String target) {
+        ObjNameMigrationResult onmr = new ObjNameMigrationResult(objType, source, target);
+        objNameResult.add(onmr);
+    }
 
-	/**
-	 * Sum the overview results of migration
-	 * 
-	 * @return List of MigrationOverviewResult
-	 */
-	public List<MigrationOverviewResult> getOverviewResults() {
-		Map<String, MigrationOverviewResult> map = new HashMap<String, MigrationOverviewResult>();
-		//DB objects overview
-		for (DBObjMigrationResult rs : dbObjectsResult) {
-			MigrationOverviewResult mor = map.get(rs.getObjType());
-			if (mor == null) {
-				mor = new MigrationOverviewResult();
-				map.put(rs.getObjType(), mor);
-				mor.setObjType(rs.getObjType());
-			}
-			mor.incExpCount(1);
-			if (rs.isSucceed()) {
-				mor.incImpCount(1);
-			}
-			mor.incTotalCount(1);
-		}
-		//Records overview
-		MigrationOverviewResult recMor = map.get(DBObject.OBJ_TYPE_RECORD);
-		if (recMor == null) {
-			recMor = new MigrationOverviewResult();
-			map.put(DBObject.OBJ_TYPE_RECORD, recMor);
-			recMor.setObjType(DBObject.OBJ_TYPE_RECORD);
-		}
-		for (RecordMigrationResult rs : recMigResults) {
-			recMor.incExpCount(rs.getExpCount());
-			recMor.incImpCount(rs.getImpCount());
-			recMor.incTotalCount(rs.getTotalCount());
-		}
-		//build result list by a order.
-		List<MigrationOverviewResult> result = new ArrayList<MigrationOverviewResult>();
-		for (String type : OVERVIEW_TYPES) {
-			MigrationOverviewResult mor = map.get(type);
-			if (mor == null) {
-				mor = new MigrationOverviewResult();
-				mor.setObjType(type);
-				mor.setExpCount(0);
-				mor.setImpCount(0);
-				mor.setTotalCount(0);
-			}
-			result.add(mor);
-		}
-		return result;
-	}
+    public String getConfigSummary() {
+        return configSummary;
+    }
 
-	public List<RecordMigrationResult> getRecMigResults() {
-		return recMigResults;
-	}
+    /**
+     * getSqlResults
+     *
+     * @return List<SQLImportResult>
+     */
+    public List<DataFileImportResult> getDataFileResults() {
+        return new ArrayList<DataFileImportResult>(dataFileResults);
+    }
 
-	/**
-	 * get Record Migration Results
-	 * 
-	 * @param source String
-	 * @param target String
-	 * @return RecordMigrationResult
-	 */
-	public RecordMigrationResult getRecMigResults(String owner, String source, String target) {
-		for (RecordMigrationResult rmr : recMigResults) {
-			// for single schema
-			String rmrSource = rmr.getSource();
-			if (owner == null 
-					&& rmrSource.equalsIgnoreCase(source)) {
-				return rmr;
-			}
-			// for multi schema
-			String srcSchema = rmr.getSrcSchema();
-			if (srcSchema != null 
-					&& srcSchema.equalsIgnoreCase(owner) 
-					&& rmrSource.equalsIgnoreCase(source)) {
-				return rmr;
-			}
-		}
-		RecordMigrationResult result = new RecordMigrationResult();
-		result.setSource(source);
-		result.setTarget(target);
-		recMigResults.add(result);
-		return result;
-	}
+    /**
+     * Retrieves the DBObjMigrationResults
+     *
+     * @return List<DBObjMigrationResult>
+     */
+    public List<DBObjMigrationResult> getDbObjectsResult() {
+        return new ArrayList<DBObjMigrationResult>(dbObjectsResult);
+    }
 
-	/**
-	 * Retrieves the end time of migration
-	 * 
-	 * @return total end time
-	 */
-	public long getTotalEndTime() {
-		return totalEndTime;
-	}
+    /**
+     * Retrieves the objNameResults
+     *
+     * @return
+     */
+    public List<ObjNameMigrationResult> getObjNameResult() {
+        return new ArrayList<ObjNameMigrationResult>(objNameResult);
+    }
 
-	/**
-	 * Retrieves the start time of migration
-	 * 
-	 * @return Long of start time
-	 */
-	public long getTotalStartTime() {
-		return totalStartTime;
-	}
+    /**
+     * Retrieves the database object's migration result by DB Object.
+     *
+     * @param obj DBObject
+     * @return DBObjMigrationResult
+     */
+    public DBObjMigrationResult getDBObjResult(DBObject obj) {
+        for (DBObjMigrationResult or : dbObjectsResult) {
+            if (or.getObjName().equals(getDBObjName(obj))
+                    && or.getObjType().equals(obj.getObjType())
+                    && !(hasSameNameObj(or, obj))) {
+                return or;
+            }
+        }
+        DBObjMigrationResult result = new DBObjMigrationResult();
 
-	/**
-	 * Check if the report has error.
-	 * 
-	 * @return true if it has error.
-	 */
-	public boolean hasError() {
-		for (DBObjMigrationResult rst : dbObjectsResult) {
-			if (StringUtils.isNotBlank(rst.getError())) {
-				return true;
-			}
-		}
-		for (RecordMigrationResult rst : recMigResults) {
-			if (rst.getExpCount() != rst.getImpCount()) {
-				return true;
-			}
-		}
-		for (DataFileImportResult rst : dataFileResults) {
-			if (rst.getExportCount() != rst.getImportCount()) {
-				return true;
-			}
-		}
-		return false;
-	}
+        result.setObjName(getDBObjName(obj));
+        result.setObjType(obj.getObjType());
+        result.setObjOwner(getObjectOwner(obj));
+        dbObjectsResult.add(result);
+        return result;
+    }
 
-	/**
-	 * Initialize the report.
-	 * 
-	 * @param config of Migration
-	 * @param restore boolean
-	 */
-	public void initReport(MigrationConfiguration config, boolean restore) {
-		dbObjectsResult.clear();
-		recMigResults.clear();
-		totalStartTime = 0L;
-		totalEndTime = 0L;
+    /**
+     * If the dbobject has the same name in another schema, it returns the result separately through
+     * the owner.
+     *
+     * @param or DBObjMigrationResult
+     * @param obj DBObject
+     * @return has same name object in dbObjectResult
+     */
+    private boolean hasSameNameObj(DBObjMigrationResult or, DBObject obj) {
+        if (or.getObjOwner() == null) {
+            return false;
+        }
+        return !(or.getObjOwner().equalsIgnoreCase(getObjectOwner(obj)));
+    }
 
-		if (config.sourceIsSQL()) {
-			List<String> files = config.getSqlFiles();
-			for (String fl : files) {
-				DataFileImportResult sir = new DataFileImportResult();
-				sir.setFileName(fl);
-				sir.setExportCount(0);
-				sir.setImportCount(0);
-				dataFileResults.add(sir);
-			}
-			return;
-		}
-		if (config.sourceIsCSV()) {
-			List<SourceCSVConfig> files = config.getCSVConfigs();
-			for (SourceCSVConfig fl : files) {
-				DataFileImportResult sir = new DataFileImportResult();
-				sir.setFileName(fl.getName());
-				sir.setExportCount(0);
-				sir.setImportCount(0);
-				dataFileResults.add(sir);
-			}
-			return;
-		}
-		List<PK> pks = new ArrayList<PK>();
-		List<FK> fks = new ArrayList<FK>();
-		List<Index> indexes = new ArrayList<Index>();
-		for (SourceEntryTableConfig setc : config.getExpEntryTableCfg()) {
-			if (!setc.isCreateNewTable()) {
-				continue;
-			}
-			Table tt = config.getTargetTableSchema(setc.getTarget());
-			if (tt == null) {
-				continue;
-			}
-			if (getDBObjResult(tt) != null) {
-				continue;
-			}
-			createDBObjMigResult(tt);
-			//If it is not creating new table, the PK,FK and index will not be recreated. 
-			if (!setc.isCreateNewTable()) {
-				continue;
-			}
+    private String getObjectOwner(DBObject obj) {
+        if (obj instanceof Table) {
+            return ((Table) obj).getOwner();
+        } else if (obj instanceof View) {
+            return ((View) obj).getOwner();
+        } else if (obj instanceof Sequence) {
+            return ((Sequence) obj).getOwner();
+        } else if (obj instanceof Index) {
+            return ((Index) obj).getTable().getOwner();
+        } else if (obj instanceof FK) {
+            return ((FK) obj).getTable().getOwner();
+        } else if (obj instanceof PK) {
+            return ((PK) obj).getTable().getOwner();
+        } else {
+            return null;
+        }
+    }
 
-			PK pk = tt.getPk();
-			if (setc.isCreatePK() && pk != null && !pk.getPkColumns().isEmpty()) {
-				pks.add(pk);
-			}
-			fks.addAll(tt.getFks());
-			indexes.addAll(tt.getIndexes());
-		}
+    /**
+     * Sum the overview results of migration
+     *
+     * @return List of MigrationOverviewResult
+     */
+    public List<MigrationOverviewResult> getOverviewResults() {
+        Map<String, MigrationOverviewResult> map = new HashMap<String, MigrationOverviewResult>();
+        // DB objects overview
+        for (DBObjMigrationResult rs : dbObjectsResult) {
+            MigrationOverviewResult mor = map.get(rs.getObjType());
+            if (mor == null) {
+                mor = new MigrationOverviewResult();
+                map.put(rs.getObjType(), mor);
+                mor.setObjType(rs.getObjType());
+            }
+            mor.incExpCount(1);
+            if (rs.isSucceed()) {
+                mor.incImpCount(1);
+            }
+            mor.incTotalCount(1);
+        }
+        // Records overview
+        MigrationOverviewResult recMor = map.get(DBObject.OBJ_TYPE_RECORD);
+        if (recMor == null) {
+            recMor = new MigrationOverviewResult();
+            map.put(DBObject.OBJ_TYPE_RECORD, recMor);
+            recMor.setObjType(DBObject.OBJ_TYPE_RECORD);
+        }
+        for (RecordMigrationResult rs : recMigResults) {
+            recMor.incExpCount(rs.getExpCount());
+            recMor.incImpCount(rs.getImpCount());
+            recMor.incTotalCount(rs.getTotalCount());
+        }
+        // build result list by a order.
+        List<MigrationOverviewResult> result = new ArrayList<MigrationOverviewResult>();
+        for (String type : OVERVIEW_TYPES) {
+            MigrationOverviewResult mor = map.get(type);
+            if (mor == null) {
+                mor = new MigrationOverviewResult();
+                mor.setObjType(type);
+                mor.setExpCount(0);
+                mor.setImpCount(0);
+                mor.setTotalCount(0);
+            }
+            result.add(mor);
+        }
+        return result;
+    }
 
-		for (SourceSQLTableConfig setc : config.getExpSQLCfg()) {
-			if (!setc.isCreateNewTable()) {
-				continue;
-			}
-			Table tt = config.getTargetTableSchema(setc.getTarget());
-			if (tt == null) {
-				continue;
-			}
-			if (getDBObjResult(tt) != null) {
-				continue;
-			}
-			createDBObjMigResult(tt);
-		}
+    public List<RecordMigrationResult> getRecMigResults() {
+        return recMigResults;
+    }
 
-		for (PK pk : pks) {
-			createDBObjMigResult(pk);
-		}
-		for (FK fk : fks) {
-			createDBObjMigResult(fk);
-		}
-		for (Index idx : indexes) {
-			createDBObjMigResult(idx);
-		}
-		List<View> views = config.getTargetViewSchema();
-		for (View vw : views) {
-			createDBObjMigResult(vw);
-		}
-		List<Sequence> sequences = config.getTargetSerialSchema();
-		for (Sequence sq : sequences) {
-			createDBObjMigResult(sq);
-		}
+    /**
+     * get Record Migration Results
+     *
+     * @param source String
+     * @param target String
+     * @return RecordMigrationResult
+     */
+    public RecordMigrationResult getRecMigResults(String owner, String source, String target) {
+        for (RecordMigrationResult rmr : recMigResults) {
+            // for single schema
+            String rmrSource = rmr.getSource();
+            if (owner == null && rmrSource.equalsIgnoreCase(source)) {
+                return rmr;
+            }
+            // for multi schema
+            String srcSchema = rmr.getSrcSchema();
+            if (srcSchema != null
+                    && srcSchema.equalsIgnoreCase(owner)
+                    && rmrSource.equalsIgnoreCase(source)) {
+                return rmr;
+            }
+        }
+        RecordMigrationResult result = new RecordMigrationResult();
+        result.setSource(source);
+        result.setTarget(target);
+        recMigResults.add(result);
+        return result;
+    }
 
-		List<SourceEntryTableConfig> allExportTables = config.getExpEntryTableCfg();
-		for (SourceTableConfig stc : allExportTables) {
-			if (!stc.isCreateNewTable() && !stc.isMigrateData()) {
-				continue;
-			}
-			RecordMigrationResult result = new RecordMigrationResult();
-			result.setSrcSchema(stc.getOwner());
-			result.setSource(stc.getName());
-			result.setTarget(stc.getTarget());
-			if (!restore) {
-				result.setTotalCount(0);
-			} else if (stc.isMigrateData()) {
-				Table table = config.getSrcTableSchema(stc.getOwner(), stc.getName());
-				if (table != null) {
-					result.setTotalCount(table.getTableRowCount());
-				}
+    /**
+     * Retrieves the end time of migration
+     *
+     * @return total end time
+     */
+    public long getTotalEndTime() {
+        return totalEndTime;
+    }
 
-			}
-			recMigResults.add(result);
-		}
+    /**
+     * Retrieves the start time of migration
+     *
+     * @return Long of start time
+     */
+    public long getTotalStartTime() {
+        return totalStartTime;
+    }
 
-		List<SourceSQLTableConfig> allExportSqlTables = config.getExpSQLCfg();
-		for (SourceSQLTableConfig sstc : allExportSqlTables) {
-			if (!sstc.isCreateNewTable() && !sstc.isMigrateData()) {
-				continue;
-			}
-			RecordMigrationResult result = new RecordMigrationResult();
-			result.setSource(sstc.getName());
-			result.setTarget(sstc.getTarget());
-			if (!restore) {
-				result.setTotalCount(0);
-			} else if (sstc.isMigrateData()) {
-				Table srcTableSchema = config.getSrcTableSchema(sstc.getOwner(), sstc.getName());
-				result.setTotalCount(srcTableSchema == null ? 0 : srcTableSchema.getTableRowCount());
-			}
-			recMigResults.add(result);
-		}
-		
-		// Schema
-		List<Schema> ssc = null;
-		if (config.getTargetSchemaList().size() > 0) {
-			ssc = config.getTargetSchemaList();
-		} else {
-			Collection<Schema> schemas = config.getScriptSchemaMapping().values();
-			ssc = new ArrayList<Schema>(schemas);
-		}
-		
-		for (Schema schema : ssc) {
-			if (!schema.getName().equalsIgnoreCase(schema.getTargetSchemaName())) {
-				setObjNameResult(DBObject.OBJ_TYPE_SCHEMA, schema.getName(), schema.getTargetSchemaName());
-			}
-		}
-		
-		// Table
-		List<SourceEntryTableConfig> expTable = config.getExpEntryTableCfg();
-		for (SourceEntryTableConfig setc : expTable) {
-			if (!setc.getName().equalsIgnoreCase(setc.getTarget())) {
-				setObjNameResult(DBObject.OBJ_TYPE_TABLE, setc.getName(), setc.getTarget());
-			}
-		}
-		
-		// View
-		List<SourceViewConfig> expView = config.getExpViewCfg();
-		for (SourceViewConfig svc : expView) {
-			if (!svc.getName().equalsIgnoreCase(svc.getTarget())) {
-				setObjNameResult(DBObject.OBJ_TYPE_VIEW, svc.getName(), svc.getTarget());
-			}
-		}
-		
-		// Serial
-		List<SourceSequenceConfig> expSerials = config.getExpSerialCfg();
-		for (SourceSequenceConfig serials : expSerials) {
-			if (!serials.getName().equalsIgnoreCase(serials.getTarget())) {
-				setObjNameResult(DBObject.OBJ_TYPE_SEQUENCE, serials.getName(), serials.getTarget());
-			}
-		}
-		
-		// Synonym
-		List<SourceSynonymConfig> expSynonym = config.getExpSynonymCfg();
-		for (SourceSynonymConfig synonym : expSynonym) {
-			if (!synonym.getName().equalsIgnoreCase(synonym.getTarget())) {
-				setObjNameResult(DBObject.OBJ_TYPE_SYNONYM, synonym.getName(), synonym.getTarget());
-			}
-		}
-	}
+    /**
+     * Check if the report has error.
+     *
+     * @return true if it has error.
+     */
+    public boolean hasError() {
+        for (DBObjMigrationResult rst : dbObjectsResult) {
+            if (StringUtils.isNotBlank(rst.getError())) {
+                return true;
+            }
+        }
+        for (RecordMigrationResult rst : recMigResults) {
+            if (rst.getExpCount() != rst.getImpCount()) {
+                return true;
+            }
+        }
+        for (DataFileImportResult rst : dataFileResults) {
+            if (rst.getExportCount() != rst.getImportCount()) {
+                return true;
+            }
+        }
+        return false;
+    }
 
-	public void setConfigSummary(String configSummary) {
-		this.configSummary = configSummary;
-	}
+    /**
+     * Initialize the report.
+     *
+     * @param config of Migration
+     * @param restore boolean
+     */
+    public void initReport(MigrationConfiguration config, boolean restore) {
+        dbObjectsResult.clear();
+        recMigResults.clear();
+        totalStartTime = 0L;
+        totalEndTime = 0L;
 
-	/**
-	 * Set SQL importing results
-	 * 
-	 * @param sqlResults List<SQLImportResult>
-	 */
-	public void setDataFileResults(List<DataFileImportResult> sqlResults) {
-		this.dataFileResults.clear();
-		if (sqlResults == null) {
-			return;
-		}
-		this.dataFileResults.addAll(sqlResults);
-	}
+        if (config.sourceIsSQL()) {
+            List<String> files = config.getSqlFiles();
+            for (String fl : files) {
+                DataFileImportResult sir = new DataFileImportResult();
+                sir.setFileName(fl);
+                sir.setExportCount(0);
+                sir.setImportCount(0);
+                dataFileResults.add(sir);
+            }
+            return;
+        }
+        if (config.sourceIsCSV()) {
+            List<SourceCSVConfig> files = config.getCSVConfigs();
+            for (SourceCSVConfig fl : files) {
+                DataFileImportResult sir = new DataFileImportResult();
+                sir.setFileName(fl.getName());
+                sir.setExportCount(0);
+                sir.setImportCount(0);
+                dataFileResults.add(sir);
+            }
+            return;
+        }
+        List<PK> pks = new ArrayList<PK>();
+        List<FK> fks = new ArrayList<FK>();
+        List<Index> indexes = new ArrayList<Index>();
+        for (SourceEntryTableConfig setc : config.getExpEntryTableCfg()) {
+            if (!setc.isCreateNewTable()) {
+                continue;
+            }
+            Table tt = config.getTargetTableSchema(setc.getTarget());
+            if (tt == null) {
+                continue;
+            }
+            if (getDBObjResult(tt) != null) {
+                continue;
+            }
+            createDBObjMigResult(tt);
+            // If it is not creating new table, the PK,FK and index will not be recreated.
+            if (!setc.isCreateNewTable()) {
+                continue;
+            }
 
-	/**
-	 * Set DbObjects Result
-	 * 
-	 * @param values List<DBObjMigrationResult>
-	 */
-	public void setDbObjectsResult(List<DBObjMigrationResult> values) {
-		this.dbObjectsResult.clear();
-		if (values != null) {
-			dbObjectsResult.addAll(values);
-		}
-	}
+            PK pk = tt.getPk();
+            if (setc.isCreatePK() && pk != null && !pk.getPkColumns().isEmpty()) {
+                pks.add(pk);
+            }
+            fks.addAll(tt.getFks());
+            indexes.addAll(tt.getIndexes());
+        }
 
-	/**
-	 * Set Record Migration Results
-	 * 
-	 * @param values List<RecordMigrationResult>
-	 */
-	public void setRecMigResults(List<RecordMigrationResult> values) {
-		recMigResults.clear();
-		if (values != null) {
-			recMigResults.addAll(values);
-		}
-	}
-	
-	public void setObjNameResult(List<ObjNameMigrationResult> values) {
-		this.objNameResult.clear();
-		if (values != null) {
-			objNameResult.addAll(values);
-		}
-	}
+        for (SourceSQLTableConfig setc : config.getExpSQLCfg()) {
+            if (!setc.isCreateNewTable()) {
+                continue;
+            }
+            Table tt = config.getTargetTableSchema(setc.getTarget());
+            if (tt == null) {
+                continue;
+            }
+            if (getDBObjResult(tt) != null) {
+                continue;
+            }
+            createDBObjMigResult(tt);
+        }
 
-	/**
-	 * Set the end time of migration
-	 * 
-	 * @param totalEndTime Long of start time
-	 */
-	public void setTotalEndTime(long totalEndTime) {
-		this.totalEndTime = totalEndTime;
-	}
+        for (PK pk : pks) {
+            createDBObjMigResult(pk);
+        }
+        for (FK fk : fks) {
+            createDBObjMigResult(fk);
+        }
+        for (Index idx : indexes) {
+            createDBObjMigResult(idx);
+        }
+        List<View> views = config.getTargetViewSchema();
+        for (View vw : views) {
+            createDBObjMigResult(vw);
+        }
+        List<Sequence> sequences = config.getTargetSerialSchema();
+        for (Sequence sq : sequences) {
+            createDBObjMigResult(sq);
+        }
 
-	/**
-	 * Set the start time of migration
-	 * 
-	 * @param totalStartTime Long of start time
-	 */
-	public void setTotalStartTime(long totalStartTime) {
-		this.totalStartTime = totalStartTime;
-	}
+        List<SourceEntryTableConfig> allExportTables = config.getExpEntryTableCfg();
+        for (SourceTableConfig stc : allExportTables) {
+            if (!stc.isCreateNewTable() && !stc.isMigrateData()) {
+                continue;
+            }
+            RecordMigrationResult result = new RecordMigrationResult();
+            result.setSrcSchema(stc.getOwner());
+            result.setSource(stc.getName());
+            result.setTarget(stc.getTarget());
+            if (!restore) {
+                result.setTotalCount(0);
+            } else if (stc.isMigrateData()) {
+                Table table = config.getSrcTableSchema(stc.getOwner(), stc.getName());
+                if (table != null) {
+                    result.setTotalCount(table.getTableRowCount());
+                }
+            }
+            recMigResults.add(result);
+        }
 
-	public MigrationBriefReport getBrief() {
-		return brief;
-	}
+        List<SourceSQLTableConfig> allExportSqlTables = config.getExpSQLCfg();
+        for (SourceSQLTableConfig sstc : allExportSqlTables) {
+            if (!sstc.isCreateNewTable() && !sstc.isMigrateData()) {
+                continue;
+            }
+            RecordMigrationResult result = new RecordMigrationResult();
+            result.setSource(sstc.getName());
+            result.setTarget(sstc.getTarget());
+            if (!restore) {
+                result.setTotalCount(0);
+            } else if (sstc.isMigrateData()) {
+                Table srcTableSchema = config.getSrcTableSchema(sstc.getOwner(), sstc.getName());
+                result.setTotalCount(
+                        srcTableSchema == null ? 0 : srcTableSchema.getTableRowCount());
+            }
+            recMigResults.add(result);
+        }
 
-	public void setBrief(MigrationBriefReport brief) {
-		this.brief = brief;
-	}
+        // Schema
+        List<Schema> ssc = null;
+        if (config.getTargetSchemaList().size() > 0) {
+            ssc = config.getTargetSchemaList();
+        } else {
+            Collection<Schema> schemas = config.getScriptSchemaMapping().values();
+            ssc = new ArrayList<Schema>(schemas);
+        }
 
-	/**
-	 * Save to a xml file
-	 * 
-	 * @param reportFile output file
-	 */
-	public void save2ReportFile(String reportFile) {
-		XMLEncoder xe = null;
-		MigrationBriefReport mbr = brief;
-		try {
-			final FileOutputStream out = new FileOutputStream(reportFile);
-			xe = new XMLEncoder(out);
-			//Don't save brief information to file
-			brief = null;
-			xe.writeObject(this);
-			xe.flush();
-		} catch (IOException ex) {
-			throw new RuntimeException(ex);
-		} finally {
-			brief = mbr;
-			Closer.close(xe);
-		}
-	}
+        for (Schema schema : ssc) {
+            if (!schema.getName().equalsIgnoreCase(schema.getTargetSchemaName())) {
+                setObjNameResult(
+                        DBObject.OBJ_TYPE_SCHEMA, schema.getName(), schema.getTargetSchemaName());
+            }
+        }
 
-	/**
-	 * loadFromReportFile
-	 * 
-	 * @param reportFile String
-	 * @return MigrationReport
-	 */
-	public static MigrationReport loadFromReportFile(String reportFile) {
-		return (MigrationReport) CUBRIDIOUtils.loadObjectFromXML(reportFile);
-	}
+        // Table
+        List<SourceEntryTableConfig> expTable = config.getExpEntryTableCfg();
+        for (SourceEntryTableConfig setc : expTable) {
+            if (!setc.getName().equalsIgnoreCase(setc.getTarget())) {
+                setObjNameResult(DBObject.OBJ_TYPE_TABLE, setc.getName(), setc.getTarget());
+            }
+        }
 
-	/**
-	 * Add error sql file to report
-	 * 
-	 * @param fileName full name of the file
-	 */
-	public void addErrorSQLFile(String fileName) {
-		if (errorSQLFiles.indexOf(fileName) >= 0) {
-			return;
-		}
-		errorSQLFiles.add(fileName);
-	}
+        // View
+        List<SourceViewConfig> expView = config.getExpViewCfg();
+        for (SourceViewConfig svc : expView) {
+            if (!svc.getName().equalsIgnoreCase(svc.getTarget())) {
+                setObjNameResult(DBObject.OBJ_TYPE_VIEW, svc.getName(), svc.getTarget());
+            }
+        }
 
-	/**
-	 * Retrieves the copy of errorSQLFiles
-	 * 
-	 * @return errorSQLFiles
-	 */
-	public List<String> getErrorSQLFiles() {
-		return new ArrayList<String>(errorSQLFiles);
-	}
+        // Serial
+        List<SourceSequenceConfig> expSerials = config.getExpSerialCfg();
+        for (SourceSequenceConfig serials : expSerials) {
+            if (!serials.getName().equalsIgnoreCase(serials.getTarget())) {
+                setObjNameResult(
+                        DBObject.OBJ_TYPE_SEQUENCE, serials.getName(), serials.getTarget());
+            }
+        }
 
-	/**
-	 * Set error sql file to report
-	 * 
-	 * @param errorSQLFiles List<String>
-	 */
-	public void setErrorSQLFiles(List<String> errorSQLFiles) {
-		this.errorSQLFiles.clear();
-		if (errorSQLFiles == null) {
-			return;
-		}
-		for (String file : errorSQLFiles) {
-			addErrorSQLFile(file);
-		}
-	}
+        // Synonym
+        List<SourceSynonymConfig> expSynonym = config.getExpSynonymCfg();
+        for (SourceSynonymConfig synonym : expSynonym) {
+            if (!synonym.getName().equalsIgnoreCase(synonym.getTarget())) {
+                setObjNameResult(DBObject.OBJ_TYPE_SYNONYM, synonym.getName(), synonym.getTarget());
+            }
+        }
+    }
+
+    public void setConfigSummary(String configSummary) {
+        this.configSummary = configSummary;
+    }
+
+    /**
+     * Set SQL importing results
+     *
+     * @param sqlResults List<SQLImportResult>
+     */
+    public void setDataFileResults(List<DataFileImportResult> sqlResults) {
+        this.dataFileResults.clear();
+        if (sqlResults == null) {
+            return;
+        }
+        this.dataFileResults.addAll(sqlResults);
+    }
+
+    /**
+     * Set DbObjects Result
+     *
+     * @param values List<DBObjMigrationResult>
+     */
+    public void setDbObjectsResult(List<DBObjMigrationResult> values) {
+        this.dbObjectsResult.clear();
+        if (values != null) {
+            dbObjectsResult.addAll(values);
+        }
+    }
+
+    /**
+     * Set Record Migration Results
+     *
+     * @param values List<RecordMigrationResult>
+     */
+    public void setRecMigResults(List<RecordMigrationResult> values) {
+        recMigResults.clear();
+        if (values != null) {
+            recMigResults.addAll(values);
+        }
+    }
+
+    public void setObjNameResult(List<ObjNameMigrationResult> values) {
+        this.objNameResult.clear();
+        if (values != null) {
+            objNameResult.addAll(values);
+        }
+    }
+
+    /**
+     * Set the end time of migration
+     *
+     * @param totalEndTime Long of start time
+     */
+    public void setTotalEndTime(long totalEndTime) {
+        this.totalEndTime = totalEndTime;
+    }
+
+    /**
+     * Set the start time of migration
+     *
+     * @param totalStartTime Long of start time
+     */
+    public void setTotalStartTime(long totalStartTime) {
+        this.totalStartTime = totalStartTime;
+    }
+
+    public MigrationBriefReport getBrief() {
+        return brief;
+    }
+
+    public void setBrief(MigrationBriefReport brief) {
+        this.brief = brief;
+    }
+
+    /**
+     * Save to a xml file
+     *
+     * @param reportFile output file
+     */
+    public void save2ReportFile(String reportFile) {
+        XMLEncoder xe = null;
+        MigrationBriefReport mbr = brief;
+        try {
+            final FileOutputStream out = new FileOutputStream(reportFile);
+            xe = new XMLEncoder(out);
+            // Don't save brief information to file
+            brief = null;
+            xe.writeObject(this);
+            xe.flush();
+        } catch (IOException ex) {
+            throw new RuntimeException(ex);
+        } finally {
+            brief = mbr;
+            Closer.close(xe);
+        }
+    }
+
+    /**
+     * loadFromReportFile
+     *
+     * @param reportFile String
+     * @return MigrationReport
+     */
+    public static MigrationReport loadFromReportFile(String reportFile) {
+        return (MigrationReport) CUBRIDIOUtils.loadObjectFromXML(reportFile);
+    }
+
+    /**
+     * Add error sql file to report
+     *
+     * @param fileName full name of the file
+     */
+    public void addErrorSQLFile(String fileName) {
+        if (errorSQLFiles.indexOf(fileName) >= 0) {
+            return;
+        }
+        errorSQLFiles.add(fileName);
+    }
+
+    /**
+     * Retrieves the copy of errorSQLFiles
+     *
+     * @return errorSQLFiles
+     */
+    public List<String> getErrorSQLFiles() {
+        return new ArrayList<String>(errorSQLFiles);
+    }
+
+    /**
+     * Set error sql file to report
+     *
+     * @param errorSQLFiles List<String>
+     */
+    public void setErrorSQLFiles(List<String> errorSQLFiles) {
+        this.errorSQLFiles.clear();
+        if (errorSQLFiles == null) {
+            return;
+        }
+        for (String file : errorSQLFiles) {
+            addErrorSQLFile(file);
+        }
+    }
 }

@@ -27,6 +27,11 @@
  */
 package com.cubrid.cubridmigration.ui.wizard.dialog;
 
+import com.cubrid.cubridmigration.ui.MigrationUIPlugin;
+import com.cubrid.cubridmigration.ui.common.UICommonTool;
+import com.cubrid.cubridmigration.ui.message.Messages;
+import com.cubrid.cubridmigration.ui.script.MigrationScript;
+import com.cubrid.cubridmigration.ui.script.MigrationScriptManager;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
@@ -40,139 +45,128 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
-import com.cubrid.cubridmigration.ui.MigrationUIPlugin;
-import com.cubrid.cubridmigration.ui.common.UICommonTool;
-import com.cubrid.cubridmigration.ui.message.Messages;
-import com.cubrid.cubridmigration.ui.script.MigrationScript;
-import com.cubrid.cubridmigration.ui.script.MigrationScriptManager;
-
 /**
- * 
  * Users select migration's running mode: run now/reservation/cancel
- * 
+ *
  * @author caoyilin
  * @version 1.0 - 2013-3-1 created by caoyilin
  */
-public class MigrationRunModeDialog extends
-		Dialog {
+public class MigrationRunModeDialog extends Dialog {
 
-	private Text txtName;
-	private String migrationName;
-	private MigrationScript script = null;
+    private Text txtName;
+    private String migrationName;
+    private MigrationScript script = null;
 
-	public MigrationRunModeDialog(Shell parentShell) {
-		super(parentShell);
-	}
+    public MigrationRunModeDialog(Shell parentShell) {
+        super(parentShell);
+    }
 
-	/**
-	 * constrainShellSize
-	 * 
-	 */
-	protected void constrainShellSize() {
-		super.constrainShellSize();
-		getShell().setSize(480, 258);
-		UICommonTool.centerShell(getShell());
-	}
+    /** constrainShellSize */
+    protected void constrainShellSize() {
+        super.constrainShellSize();
+        getShell().setSize(480, 258);
+        UICommonTool.centerShell(getShell());
+    }
 
-	/**
-	 * Press button event.
-	 * 
-	 * @param buttonId the ID of button being pressed
-	 */
-	protected void buttonPressed(int buttonId) {
-		migrationName = txtName.getText().trim();
-		if (buttonId != IDialogConstants.CANCEL_ID) {
-			String error = MigrationScriptManager.getInstance().checkScriptName(migrationName,
-					script);
-			if (StringUtils.isNotBlank(error)) {
-				MessageDialog.openError(getShell(), Messages.msgError, error);
-				return;
-			}
-		}
-		if (buttonId == IDialogConstants.NEXT_ID) {
-			setReturnCode(IDialogConstants.NEXT_ID);
-			close();
-		}
-		super.buttonPressed(buttonId);
-	}
+    /**
+     * Press button event.
+     *
+     * @param buttonId the ID of button being pressed
+     */
+    protected void buttonPressed(int buttonId) {
+        migrationName = txtName.getText().trim();
+        if (buttonId != IDialogConstants.CANCEL_ID) {
+            String error =
+                    MigrationScriptManager.getInstance().checkScriptName(migrationName, script);
+            if (StringUtils.isNotBlank(error)) {
+                MessageDialog.openError(getShell(), Messages.msgError, error);
+                return;
+            }
+        }
+        if (buttonId == IDialogConstants.NEXT_ID) {
+            setReturnCode(IDialogConstants.NEXT_ID);
+            close();
+        }
+        super.buttonPressed(buttonId);
+    }
 
-	/**
-	 * Create buttons in button bar
-	 * 
-	 * @param parent the parent composite
-	 */
-	protected void createButtonsForButtonBar(Composite parent) {
-		createButton(parent, IDialogConstants.OK_ID, Messages.btnStartNow, true);
-		createButton(parent, IDialogConstants.NEXT_ID, Messages.btnReservation, false);
-		createButton(parent, IDialogConstants.CANCEL_ID, Messages.btnCancel, false);
-	}
+    /**
+     * Create buttons in button bar
+     *
+     * @param parent the parent composite
+     */
+    protected void createButtonsForButtonBar(Composite parent) {
+        createButton(parent, IDialogConstants.OK_ID, Messages.btnStartNow, true);
+        createButton(parent, IDialogConstants.NEXT_ID, Messages.btnReservation, false);
+        createButton(parent, IDialogConstants.CANCEL_ID, Messages.btnCancel, false);
+    }
 
-	/**
-	 * Creates the page content
-	 * 
-	 * @param parent the parent composite to contain the dialog area
-	 * @return the dialog area control
-	 */
-	protected Control createDialogArea(Composite parent) {
-		this.getShell().setText(Messages.titleRunMigration);
-		Composite rootCom = new Composite(parent, SWT.NONE);
-		rootCom.setLayout(new GridLayout());
-		rootCom.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+    /**
+     * Creates the page content
+     *
+     * @param parent the parent composite to contain the dialog area
+     * @return the dialog area control
+     */
+    protected Control createDialogArea(Composite parent) {
+        this.getShell().setText(Messages.titleRunMigration);
+        Composite rootCom = new Composite(parent, SWT.NONE);
+        rootCom.setLayout(new GridLayout());
+        rootCom.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 
-		Composite workArea1 = new Composite(rootCom, SWT.BORDER);
-		workArea1.setLayout(new GridLayout(2, false));
-		workArea1.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, false));
+        Composite workArea1 = new Composite(rootCom, SWT.BORDER);
+        workArea1.setLayout(new GridLayout(2, false));
+        workArea1.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, false));
 
-		Label lblName = new Label(workArea1, SWT.NONE);
-		lblName.setText("Migration Name:");
-		txtName = new Text(workArea1, SWT.BORDER);
-		txtName.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
-		txtName.setText(this.migrationName);
-		txtName.selectAll();
+        Label lblName = new Label(workArea1, SWT.NONE);
+        lblName.setText("Migration Name:");
+        txtName = new Text(workArea1, SWT.BORDER);
+        txtName.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+        txtName.setText(this.migrationName);
+        txtName.selectAll();
 
-		Composite workArea = new Composite(rootCom, SWT.BORDER);
-		workArea.setLayout(new GridLayout(2, false));
-		workArea.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+        Composite workArea = new Composite(rootCom, SWT.BORDER);
+        workArea.setLayout(new GridLayout(2, false));
+        workArea.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 
-		Label btnImageStartNow = new Label(workArea, SWT.NONE);
-		GridData layoutData = new GridData(SWT.RIGHT, SWT.CENTER, false, false);
-		layoutData.horizontalIndent = 15;
-		layoutData.verticalIndent = 15;
+        Label btnImageStartNow = new Label(workArea, SWT.NONE);
+        GridData layoutData = new GridData(SWT.RIGHT, SWT.CENTER, false, false);
+        layoutData.horizontalIndent = 15;
+        layoutData.verticalIndent = 15;
 
-		btnImageStartNow.setLayoutData(layoutData);
-		btnImageStartNow.setImage(MigrationUIPlugin.getImage("icon/tb/tb_new_wizard.png"));
+        btnImageStartNow.setLayoutData(layoutData);
+        btnImageStartNow.setImage(MigrationUIPlugin.getImage("icon/tb/tb_new_wizard.png"));
 
-		Label lblStartNow = new Label(workArea, SWT.NONE);
-		layoutData = new GridData(SWT.FILL, SWT.CENTER, true, false);
-		layoutData.horizontalIndent = 5;
-		layoutData.verticalIndent = 15;
-		lblStartNow.setLayoutData(layoutData);
-		lblStartNow.setText(Messages.lblStartNow);
+        Label lblStartNow = new Label(workArea, SWT.NONE);
+        layoutData = new GridData(SWT.FILL, SWT.CENTER, true, false);
+        layoutData.horizontalIndent = 5;
+        layoutData.verticalIndent = 15;
+        lblStartNow.setLayoutData(layoutData);
+        lblStartNow.setText(Messages.lblStartNow);
 
-		Label btnImageReservation = new Label(workArea, SWT.NONE);
-		layoutData = new GridData(SWT.RIGHT, SWT.CENTER, false, false);
-		layoutData.horizontalIndent = 15;
-		layoutData.verticalIndent = 5;
-		btnImageReservation.setLayoutData(layoutData);
-		btnImageReservation.setImage(MigrationUIPlugin.getImage("icon/tb/tb_reservation.png"));
-		Label lblReservation = new Label(workArea, SWT.NONE);
-		layoutData = new GridData(SWT.FILL, SWT.CENTER, true, false);
-		layoutData.horizontalIndent = 5;
-		layoutData.verticalIndent = 5;
-		lblReservation.setLayoutData(layoutData);
-		lblReservation.setText(Messages.lblReservation);
-		return workArea;
-	}
+        Label btnImageReservation = new Label(workArea, SWT.NONE);
+        layoutData = new GridData(SWT.RIGHT, SWT.CENTER, false, false);
+        layoutData.horizontalIndent = 15;
+        layoutData.verticalIndent = 5;
+        btnImageReservation.setLayoutData(layoutData);
+        btnImageReservation.setImage(MigrationUIPlugin.getImage("icon/tb/tb_reservation.png"));
+        Label lblReservation = new Label(workArea, SWT.NONE);
+        layoutData = new GridData(SWT.FILL, SWT.CENTER, true, false);
+        layoutData.horizontalIndent = 5;
+        layoutData.verticalIndent = 5;
+        lblReservation.setLayoutData(layoutData);
+        lblReservation.setText(Messages.lblReservation);
+        return workArea;
+    }
 
-	public String getMigrationName() {
-		return migrationName;
-	}
+    public String getMigrationName() {
+        return migrationName;
+    }
 
-	public void setMigrationName(String migrationName) {
-		this.migrationName = migrationName == null ? "" : migrationName;
-	}
+    public void setMigrationName(String migrationName) {
+        this.migrationName = migrationName == null ? "" : migrationName;
+    }
 
-	public void setScript(MigrationScript script) {
-		this.script = script;
-	}
+    public void setScript(MigrationScript script) {
+        this.script = script;
+    }
 }

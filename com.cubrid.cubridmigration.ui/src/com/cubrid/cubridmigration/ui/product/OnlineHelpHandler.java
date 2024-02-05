@@ -27,8 +27,8 @@
  */
 package com.cubrid.cubridmigration.ui.product;
 
+import com.cubrid.cubridmigration.ui.message.Messages;
 import java.net.URL;
-
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
@@ -36,36 +36,31 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.browser.IWebBrowser;
 import org.eclipse.ui.browser.IWorkbenchBrowserSupport;
 
-import com.cubrid.cubridmigration.ui.message.Messages;
-
 /**
- * 
  * HelpAction
- * 
+ *
  * @author pangqiren
  * @version 1.0 - 2011-7-25 created by pangqiren
  */
-public class OnlineHelpHandler extends
-		AbstractHandler {
+public class OnlineHelpHandler extends AbstractHandler {
 
-	/**
-	 * Show online help
-	 * 
-	 * @param event ExecutionEvent
-	 * @return NULL
-	 * @throws ExecutionException ex
-	 */
-	public Object execute(ExecutionEvent event) throws ExecutionException {
-		String url = Messages.msgCubridHelpSiteUrl;
+    /**
+     * Show online help
+     *
+     * @param event ExecutionEvent
+     * @return NULL
+     * @throws ExecutionException ex
+     */
+    public Object execute(ExecutionEvent event) throws ExecutionException {
+        String url = Messages.msgCubridHelpSiteUrl;
 
-		try {
-			IWorkbenchBrowserSupport support = PlatformUI.getWorkbench().getBrowserSupport();
-			IWebBrowser browser = support.getExternalBrowser();
-			browser.openURL(new URL(url));
-			return null;
-		} catch (Exception e) {
-			return null;
-		}
-
-	}
+        try {
+            IWorkbenchBrowserSupport support = PlatformUI.getWorkbench().getBrowserSupport();
+            IWebBrowser browser = support.getExternalBrowser();
+            browser.openURL(new URL(url));
+            return null;
+        } catch (Exception e) {
+            return null;
+        }
+    }
 }

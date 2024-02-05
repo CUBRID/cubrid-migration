@@ -27,6 +27,8 @@
  */
 package com.cubrid.cubridmigration.ui.product;
 
+import com.cubrid.cubridmigration.ui.MigrationUIPlugin;
+import com.cubrid.cubridmigration.ui.message.Messages;
 import org.eclipse.core.runtime.IProduct;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.dialogs.IDialogConstants;
@@ -46,197 +48,203 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 
-import com.cubrid.cubridmigration.ui.MigrationUIPlugin;
-import com.cubrid.cubridmigration.ui.message.Messages;
-
 /**
- * 
  * This dialog show about message about CUBRID Manager
- * 
+ *
  * @author pangqiren
  * @version 1.0 - 2009-6-15 created by pangqiren
  */
-public class AboutDialog extends
-		ProductInfoDialog {
+public class AboutDialog extends ProductInfoDialog {
 
-	private String productName;
-	private final IProduct product;
-	private StyledText text;
+    private String productName;
+    private final IProduct product;
+    private StyledText text;
 
-	public AboutDialog(Shell parentShell) {
-		super(parentShell);
-		product = Platform.getProduct();
-		if (product != null) {
-			productName = product.getName();
-		}
-		if (productName == null) {
-			productName = Messages.productName;
-		}
-		String[] strs = Version.buildVersionId.split("\\.");
-		String message = Messages.bind(Messages.aboutMessage, new String[] {productName,
-				Version.releaseVersion, strs[strs.length - 1], Messages.msgCubridHomePageUrl,
-				Messages.msgCubridProjectSiteUrl, Messages.msgCUBRIDToolsSiteURL});
-		this.setItem(scan(message));
-	}
+    public AboutDialog(Shell parentShell) {
+        super(parentShell);
+        product = Platform.getProduct();
+        if (product != null) {
+            productName = product.getName();
+        }
+        if (productName == null) {
+            productName = Messages.productName;
+        }
+        String[] strs = Version.buildVersionId.split("\\.");
+        String message =
+                Messages.bind(
+                        Messages.aboutMessage,
+                        new String[] {
+                            productName,
+                            Version.releaseVersion,
+                            strs[strs.length - 1],
+                            Messages.msgCubridHomePageUrl,
+                            Messages.msgCubridProjectSiteUrl,
+                            Messages.msgCUBRIDToolsSiteURL
+                        });
+        this.setItem(scan(message));
+    }
 
-	protected int getShellStyle() {
-		return super.getShellStyle() | SWT.RESIZE | SWT.MAX;
-	}
+    protected int getShellStyle() {
+        return super.getShellStyle() | SWT.RESIZE | SWT.MAX;
+    }
 
-	/**
-	 * Configures the given shell in preparation for opening this window in it.
-	 * 
-	 * @param newShell the shell
-	 */
-	protected void configureShell(Shell newShell) {
-		super.configureShell(newShell);
-		newShell.setText(Messages.bind(Messages.titleAboutDialog,
-				new String[] {Messages.productName}));
-	}
+    /**
+     * Configures the given shell in preparation for opening this window in it.
+     *
+     * @param newShell the shell
+     */
+    protected void configureShell(Shell newShell) {
+        super.configureShell(newShell);
+        newShell.setText(
+                Messages.bind(Messages.titleAboutDialog, new String[] {Messages.productName}));
+    }
 
-	/**
-	 * Create buttons in button bar
-	 * 
-	 * @param parent the parent composite
-	 */
-	protected void createButtonsForButtonBar(Composite parent) {
-		createButton(parent, IDialogConstants.OK_ID, Messages.btnOK, true);
-	}
+    /**
+     * Create buttons in button bar
+     *
+     * @param parent the parent composite
+     */
+    protected void createButtonsForButtonBar(Composite parent) {
+        createButton(parent, IDialogConstants.OK_ID, Messages.btnOK, true);
+    }
 
-	/**
-	 * Creates the page content
-	 * 
-	 * @param parent the parent composite to contain the dialog area
-	 * @return the dialog area control
-	 */
-	protected Control createDialogArea(Composite parent) {
-		final Cursor hand = new Cursor(parent.getDisplay(), SWT.CURSOR_HAND);
-		final Cursor busy = new Cursor(parent.getDisplay(), SWT.CURSOR_WAIT);
-		setHandCursor(hand);
-		setBusyCursor(busy);
-		getShell().addDisposeListener(new DisposeListener() {
-			public void widgetDisposed(DisposeEvent event) {
-				setHandCursor(null);
-				hand.dispose();
-				setBusyCursor(null);
-				busy.dispose();
-			}
-		});
+    /**
+     * Creates the page content
+     *
+     * @param parent the parent composite to contain the dialog area
+     * @return the dialog area control
+     */
+    protected Control createDialogArea(Composite parent) {
+        final Cursor hand = new Cursor(parent.getDisplay(), SWT.CURSOR_HAND);
+        final Cursor busy = new Cursor(parent.getDisplay(), SWT.CURSOR_WAIT);
+        setHandCursor(hand);
+        setBusyCursor(busy);
+        getShell()
+                .addDisposeListener(
+                        new DisposeListener() {
+                            public void widgetDisposed(DisposeEvent event) {
+                                setHandCursor(null);
+                                hand.dispose();
+                                setBusyCursor(null);
+                                busy.dispose();
+                            }
+                        });
 
-		// brand the about box if there is product info
-		Image aboutImage = null;
-		if (product != null) {
-			ImageDescriptor imageDescriptor = MigrationUIPlugin.getImageDescriptor("icon/about.gif");
-			if (imageDescriptor != null) {
-				aboutImage = imageDescriptor.createImage();
-			}
-		}
+        // brand the about box if there is product info
+        Image aboutImage = null;
+        if (product != null) {
+            ImageDescriptor imageDescriptor =
+                    MigrationUIPlugin.getImageDescriptor("icon/about.gif");
+            if (imageDescriptor != null) {
+                aboutImage = imageDescriptor.createImage();
+            }
+        }
 
-		Composite workArea = new Composite(parent, SWT.NONE);
-		GridLayout workLayout = new GridLayout();
-		workLayout.marginHeight = 0;
-		workLayout.marginWidth = 0;
-		workLayout.verticalSpacing = 0;
-		workLayout.horizontalSpacing = 0;
-		workArea.setLayout(workLayout);
-		workArea.setLayoutData(new GridData(GridData.FILL_BOTH));
+        Composite workArea = new Composite(parent, SWT.NONE);
+        GridLayout workLayout = new GridLayout();
+        workLayout.marginHeight = 0;
+        workLayout.marginWidth = 0;
+        workLayout.verticalSpacing = 0;
+        workLayout.horizontalSpacing = 0;
+        workArea.setLayout(workLayout);
+        workArea.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-		// page group
-		Color background = JFaceColors.getBannerBackground(parent.getDisplay());
-		Color foreground = JFaceColors.getBannerForeground(parent.getDisplay());
-		Composite top = (Composite) super.createDialogArea(workArea);
+        // page group
+        Color background = JFaceColors.getBannerBackground(parent.getDisplay());
+        Color foreground = JFaceColors.getBannerForeground(parent.getDisplay());
+        Composite top = (Composite) super.createDialogArea(workArea);
 
-		// override any layout inherited from createDialogArea
-		GridLayout layout = new GridLayout();
-		layout.marginHeight = 0;
-		layout.marginWidth = 0;
-		layout.verticalSpacing = 0;
-		layout.horizontalSpacing = 0;
-		top.setLayout(layout);
-		top.setLayoutData(new GridData(GridData.FILL_BOTH));
-		top.setBackground(background);
-		top.setForeground(foreground);
+        // override any layout inherited from createDialogArea
+        GridLayout layout = new GridLayout();
+        layout.marginHeight = 0;
+        layout.marginWidth = 0;
+        layout.verticalSpacing = 0;
+        layout.horizontalSpacing = 0;
+        top.setLayout(layout);
+        top.setLayoutData(new GridData(GridData.FILL_BOTH));
+        top.setBackground(background);
+        top.setForeground(foreground);
 
-		// the image & text
-		Composite topContainer = new Composite(top, SWT.NONE);
-		topContainer.setBackground(background);
-		topContainer.setForeground(foreground);
+        // the image & text
+        Composite topContainer = new Composite(top, SWT.NONE);
+        topContainer.setBackground(background);
+        topContainer.setForeground(foreground);
 
-		layout = new GridLayout();
-		layout.numColumns = (aboutImage == null || getItem() == null ? 1 : 2);
-		layout.marginWidth = 0;
-		layout.marginHeight = 0;
-		layout.verticalSpacing = 0;
-		layout.horizontalSpacing = 0;
-		topContainer.setLayout(layout);
-		GridData data = new GridData();
-		data.horizontalAlignment = GridData.FILL;
-		data.grabExcessHorizontalSpace = true;
-		topContainer.setLayoutData(data);
+        layout = new GridLayout();
+        layout.numColumns = (aboutImage == null || getItem() == null ? 1 : 2);
+        layout.marginWidth = 0;
+        layout.marginHeight = 0;
+        layout.verticalSpacing = 0;
+        layout.horizontalSpacing = 0;
+        topContainer.setLayout(layout);
+        GridData data = new GridData();
+        data.horizontalAlignment = GridData.FILL;
+        data.grabExcessHorizontalSpace = true;
+        topContainer.setLayoutData(data);
 
-		// image on left side of dialog
-		if (aboutImage != null) {
-			Label imageLabel = new Label(topContainer, SWT.NONE);
-			imageLabel.setBackground(background);
-			imageLabel.setForeground(foreground);
+        // image on left side of dialog
+        if (aboutImage != null) {
+            Label imageLabel = new Label(topContainer, SWT.NONE);
+            imageLabel.setBackground(background);
+            imageLabel.setForeground(foreground);
 
-			data = new GridData();
-			data.horizontalAlignment = GridData.FILL;
-			data.verticalAlignment = GridData.BEGINNING;
-			data.grabExcessHorizontalSpace = false;
-			imageLabel.setLayoutData(data);
-			imageLabel.setImage(aboutImage);
-		}
+            data = new GridData();
+            data.horizontalAlignment = GridData.FILL;
+            data.verticalAlignment = GridData.BEGINNING;
+            data.grabExcessHorizontalSpace = false;
+            imageLabel.setLayoutData(data);
+            imageLabel.setImage(aboutImage);
+        }
 
-		if (getItem() != null) {
-			Composite textContainer = new Composite(topContainer, SWT.NONE);
-			textContainer.setBackground(background);
-			textContainer.setForeground(foreground);
+        if (getItem() != null) {
+            Composite textContainer = new Composite(topContainer, SWT.NONE);
+            textContainer.setBackground(background);
+            textContainer.setForeground(foreground);
 
-			layout = new GridLayout();
-			layout.numColumns = 1;
-			textContainer.setLayout(layout);
-			data = new GridData();
-			data.horizontalAlignment = GridData.FILL;
-			data.verticalAlignment = GridData.BEGINNING;
-			data.grabExcessHorizontalSpace = true;
-			textContainer.setLayoutData(data);
+            layout = new GridLayout();
+            layout.numColumns = 1;
+            textContainer.setLayout(layout);
+            data = new GridData();
+            data.horizontalAlignment = GridData.FILL;
+            data.verticalAlignment = GridData.BEGINNING;
+            data.grabExcessHorizontalSpace = true;
+            textContainer.setLayoutData(data);
 
-			// text on the right
-			text = new StyledText(textContainer, SWT.MULTI | SWT.READ_ONLY);
-			text.setCaret(null);
-			text.setFont(parent.getFont());
-			data = new GridData();
-			data.horizontalAlignment = GridData.FILL;
-			data.verticalAlignment = GridData.BEGINNING;
-			data.grabExcessHorizontalSpace = true;
-			text.setText(getItem().getText());
-			text.setLayoutData(data);
-			text.setCursor(null);
-			text.setBackground(background);
-			text.setForeground(foreground);
-			setLinkRanges(text, getItem().getLinkRanges());
-			addListeners(text);
-		}
+            // text on the right
+            text = new StyledText(textContainer, SWT.MULTI | SWT.READ_ONLY);
+            text.setCaret(null);
+            text.setFont(parent.getFont());
+            data = new GridData();
+            data.horizontalAlignment = GridData.FILL;
+            data.verticalAlignment = GridData.BEGINNING;
+            data.grabExcessHorizontalSpace = true;
+            text.setText(getItem().getText());
+            text.setLayoutData(data);
+            text.setCursor(null);
+            text.setBackground(background);
+            text.setForeground(foreground);
+            setLinkRanges(text, getItem().getLinkRanges());
+            addListeners(text);
+        }
 
-		// horizontal bar
-		Label bar = new Label(workArea, SWT.HORIZONTAL | SWT.SEPARATOR);
-		data = new GridData();
-		data.horizontalAlignment = GridData.FILL;
-		bar.setLayoutData(data);
+        // horizontal bar
+        Label bar = new Label(workArea, SWT.HORIZONTAL | SWT.SEPARATOR);
+        data = new GridData();
+        data.horizontalAlignment = GridData.FILL;
+        bar.setLayoutData(data);
 
-		// add image buttons for bundle groups that have them
-		Composite bottom = (Composite) super.createDialogArea(workArea);
-		// override any layout inherited from createDialogArea
-		layout = new GridLayout();
-		bottom.setLayout(layout);
-		bottom.setLayoutData(new GridData(GridData.FILL_BOTH));
+        // add image buttons for bundle groups that have them
+        Composite bottom = (Composite) super.createDialogArea(workArea);
+        // override any layout inherited from createDialogArea
+        layout = new GridLayout();
+        bottom.setLayout(layout);
+        bottom.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-		// spacer
-		bar = new Label(bottom, SWT.NONE);
-		data = new GridData();
-		data.horizontalAlignment = GridData.FILL;
-		bar.setLayoutData(data);
-		return workArea;
-	}
+        // spacer
+        bar = new Label(bottom, SWT.NONE);
+        data = new GridData();
+        data.horizontalAlignment = GridData.FILL;
+        bar.setLayoutData(data);
+        return workArea;
+    }
 }

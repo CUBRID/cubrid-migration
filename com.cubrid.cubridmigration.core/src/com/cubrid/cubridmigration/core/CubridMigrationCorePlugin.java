@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2012 Search Solution Corporation. All rights reserved by Search
  * Solution.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met: -
  * Redistributions of source code must retain the above copyright notice, this
@@ -11,7 +11,7 @@
  * with the distribution. - Neither the name of the <ORGANIZATION> nor the names
  * of its contributors may be used to endorse or promote products derived from
  * this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -23,7 +23,7 @@
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
- * 
+ *
  */
 package com.cubrid.cubridmigration.core;
 
@@ -32,47 +32,46 @@ import org.osgi.framework.BundleContext;
 
 /**
  * CUBRID migration core plugin
- * 
+ *
  * @author moulinwang
  * @version 1.0 - 2009-9-18
  */
-public class CubridMigrationCorePlugin extends
-		Plugin {
-	public static final String PLUGIN_ID = "com.cubrid.cubridmigration.core";
-	private static CubridMigrationCorePlugin plugin;
+public class CubridMigrationCorePlugin extends Plugin {
+    public static final String PLUGIN_ID = "com.cubrid.cubridmigration.core";
+    private static CubridMigrationCorePlugin plugin;
 
-	public CubridMigrationCorePlugin() {
-		super();
-	}
+    public CubridMigrationCorePlugin() {
+        super();
+    }
 
-	/**
-	 * Start plguin
-	 * 
-	 * @param context BundleContext
-	 * @throws Exception ex
-	 */
-	public void start(BundleContext context) throws Exception {
-		super.start(context);
-		plugin = this;
-	}
+    /**
+     * Start plguin
+     *
+     * @param context BundleContext
+     * @throws Exception ex
+     */
+    public void start(BundleContext context) throws Exception {
+        super.start(context);
+        plugin = this;
+    }
 
-	/**
-	 * stop plguin
-	 * 
-	 * @param context BundleContext
-	 * @throws Exception ex
-	 */
-	public void stop(BundleContext context) throws Exception {
-		plugin = null;
-		super.stop(context);
-	}
+    /**
+     * stop plguin
+     *
+     * @param context BundleContext
+     * @throws Exception ex
+     */
+    public void stop(BundleContext context) throws Exception {
+        plugin = null;
+        super.stop(context);
+    }
 
-	/**
-	 * Returns the shared instance
-	 * 
-	 * @return the shared instance
-	 */
-	public static CubridMigrationCorePlugin getDefault() {
-		return plugin;
-	}
+    /**
+     * Returns the shared instance
+     *
+     * @return the shared instance
+     */
+    public static CubridMigrationCorePlugin getDefault() {
+        return plugin;
+    }
 }

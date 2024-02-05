@@ -1,41 +1,33 @@
 /*
- * Copyright (C) 2009 Search Solution Corporation. All rights reserved by Search Solution. 
+ * Copyright (C) 2009 Search Solution Corporation. All rights reserved by Search Solution.
  *
- * Redistribution and use in source and binary forms, with or without modification, 
- * are permitted provided that the following conditions are met: 
+ * Redistribution and use in source and binary forms, with or without modification,
+ * are permitted provided that the following conditions are met:
  *
- * - Redistributions of source code must retain the above copyright notice, 
- *   this list of conditions and the following disclaimer. 
+ * - Redistributions of source code must retain the above copyright notice,
+ *   this list of conditions and the following disclaimer.
  *
- * - Redistributions in binary form must reproduce the above copyright notice, 
- *   this list of conditions and the following disclaimer in the documentation 
- *   and/or other materials provided with the distribution. 
+ * - Redistributions in binary form must reproduce the above copyright notice,
+ *   this list of conditions and the following disclaimer in the documentation
+ *   and/or other materials provided with the distribution.
  *
- * - Neither the name of the <ORGANIZATION> nor the names of its contributors 
- *   may be used to endorse or promote products derived from this software without 
- *   specific prior written permission. 
+ * - Neither the name of the <ORGANIZATION> nor the names of its contributors
+ *   may be used to endorse or promote products derived from this software without
+ *   specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED 
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. 
- * IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, 
- * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, 
- * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, 
- * OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, 
- * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
- * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY 
- * OF SUCH DAMAGE. 
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
+ * IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+ * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+ * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA,
+ * OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
+ * OF SUCH DAMAGE.
  *
  */
 package com.cubrid.cubridmigration.core.engine.importer.impl;
-
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 
 import com.cubrid.cubridmigration.core.common.Closer;
 import com.cubrid.cubridmigration.core.common.DBUtils;
@@ -66,401 +58,431 @@ import com.cubrid.cubridmigration.core.engine.importer.Importer;
 import com.cubrid.cubridmigration.core.trans.DBTransformHelper;
 import com.cubrid.cubridmigration.cubrid.CUBRIDSQLHelper;
 import com.cubrid.cubridmigration.cubrid.stmt.CUBRIDParameterSetter;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 /**
- * OnlineImporter responses to import database objects to target through JDBC
- * driver.
- * 
+ * OnlineImporter responses to import database objects to target through JDBC driver.
+ *
  * @author Kevin Cao
  * @version 1.0 - 2011-8-3 created by Kevin Cao
  */
-public class JDBCImporter extends
-		Importer {
+public class JDBCImporter extends Importer {
 
-	private final JDBCConManager connectionManager;
-	private final MigrationConfiguration config;
-	private final CUBRIDParameterSetter parameterSetter;
-	private final ErrorRecords2SQLFileWriter errorRecordsWriter;
-	
-	public JDBCImporter(MigrationContext mrManager) {
-		super(mrManager);
-		this.parameterSetter = mrManager.getParamSetter();
-		this.config = mrManager.getConfig();
-		this.connectionManager = mrManager.getConnManager();
-		this.errorRecordsWriter = new ErrorRecords2SQLFileWriter(mrManager);
-	}
+    private final JDBCConManager connectionManager;
+    private final MigrationConfiguration config;
+    private final CUBRIDParameterSetter parameterSetter;
+    private final ErrorRecords2SQLFileWriter errorRecordsWriter;
 
-	/**
-	 * Execute DDL.
-	 * 
-	 * @param sql String
-	 */
-	public void executeDDL(String sql) {
-		Connection conn = connectionManager.getTargetConnection(); //NOPMD
-		Statement stmt = null; //NOPMD
-		try {
-			stmt = conn.createStatement();
-			stmt.execute(sql);
-		} catch (SQLException ex) {
-			throw new NormalMigrationException(ex);
-		} finally {
-			DBUtils.commit(conn);
-			Closer.close(stmt);
-			connectionManager.closeTar(conn);
-		}
-	}
+    public JDBCImporter(MigrationContext mrManager) {
+        super(mrManager);
+        this.parameterSetter = mrManager.getParamSetter();
+        this.config = mrManager.getConfig();
+        this.connectionManager = mrManager.getConnManager();
+        this.errorRecordsWriter = new ErrorRecords2SQLFileWriter(mrManager);
+    }
 
-	/**
-	 * 
-	 * Create table
-	 * 
-	 * @param table Table
-	 */
-	public void createTable(Table table) {
-		String sql = CUBRIDSQLHelper.getInstance(null).getTableDDL(table, config.isAddUserSchema());
-		table.setDDL(sql);
-		try {
-			executeDDL(sql);
-			createObjectSuccess(table);
-		} catch (RuntimeException e) {
-			createObjectFailed(table, e);
-			return;
-		}
-	}
+    /**
+     * Execute DDL.
+     *
+     * @param sql String
+     */
+    public void executeDDL(String sql) {
+        Connection conn = connectionManager.getTargetConnection(); // NOPMD
+        Statement stmt = null; // NOPMD
+        try {
+            stmt = conn.createStatement();
+            stmt.execute(sql);
+        } catch (SQLException ex) {
+            throw new NormalMigrationException(ex);
+        } finally {
+            DBUtils.commit(conn);
+            Closer.close(stmt);
+            connectionManager.closeTar(conn);
+        }
+    }
 
-	/**
-	 * Create View
-	 * 
-	 * @param view View
-	 */
-	public void createView(View view) {
-		String viewDDL = CUBRIDSQLHelper.getInstance(null).getViewDDL(view, config.isAddUserSchema());
-		view.setDDL(viewDDL);
-		try {
-			executeDDL(viewDDL);
-			createObjectSuccess(view);
-		} catch (RuntimeException e) {
-			createObjectFailed(view, e);
-		}
-	}
-	
-	/**
-	 * Create View Alter
-	 * 
-	 * @param view View
-	 */
-	public void alterView(View view) {
-		String viewAlterDDL = CUBRIDSQLHelper.getInstance(null).getViewAlterDDL(view, config.isAddUserSchema());
-		view.setAlterDDL(viewAlterDDL);
-		try {
-			executeDDL(viewAlterDDL);
-			createObjectSuccess(view);
-		} catch (RuntimeException e) {
-			createObjectFailed(view, e);
-		}
-	}
+    /**
+     * Create table
+     *
+     * @param table Table
+     */
+    public void createTable(Table table) {
+        String sql = CUBRIDSQLHelper.getInstance(null).getTableDDL(table, config.isAddUserSchema());
+        table.setDDL(sql);
+        try {
+            executeDDL(sql);
+            createObjectSuccess(table);
+        } catch (RuntimeException e) {
+            createObjectFailed(table, e);
+            return;
+        }
+    }
 
-	/**
-	 * Create primary key
-	 * 
-	 * @param pk primary key
-	 */
-	public void createPK(PK pk) {
-		String ddl = CUBRIDSQLHelper.getInstance(null).getPKDDL(pk.getTable().getOwner(), pk.getTable().getName(),
-				pk.getName(), pk.getPkColumns(), config.isAddUserSchema());
-		pk.setDDL(ddl);
-		try {
-			executeDDL(ddl);
-			createObjectSuccess(pk);
-		} catch (RuntimeException e) {
-			createObjectFailed(pk, e);
-		}
+    /**
+     * Create View
+     *
+     * @param view View
+     */
+    public void createView(View view) {
+        String viewDDL =
+                CUBRIDSQLHelper.getInstance(null).getViewDDL(view, config.isAddUserSchema());
+        view.setDDL(viewDDL);
+        try {
+            executeDDL(viewDDL);
+            createObjectSuccess(view);
+        } catch (RuntimeException e) {
+            createObjectFailed(view, e);
+        }
+    }
 
-	}
+    /**
+     * Create View Alter
+     *
+     * @param view View
+     */
+    public void alterView(View view) {
+        String viewAlterDDL =
+                CUBRIDSQLHelper.getInstance(null).getViewAlterDDL(view, config.isAddUserSchema());
+        view.setAlterDDL(viewAlterDDL);
+        try {
+            executeDDL(viewAlterDDL);
+            createObjectSuccess(view);
+        } catch (RuntimeException e) {
+            createObjectFailed(view, e);
+        }
+    }
 
-	/**
-	 * Create foreign key
-	 * 
-	 * @param fk foreign key
-	 */
-	public void createFK(FK fk) {
-		String ddl = CUBRIDSQLHelper.getInstance(null).getFKDDL(fk.getTable().getOwner(), fk.getTable().getName(), 
-				fk, config.isAddUserSchema());
-		fk.setDDL(ddl);
-		try {
-			executeDDL(ddl);
-			createObjectSuccess(fk);
-		} catch (RuntimeException e) {
-			createObjectFailed(fk, e);
-		}
-	}
+    /**
+     * Create primary key
+     *
+     * @param pk primary key
+     */
+    public void createPK(PK pk) {
+        String ddl =
+                CUBRIDSQLHelper.getInstance(null)
+                        .getPKDDL(
+                                pk.getTable().getOwner(),
+                                pk.getTable().getName(),
+                                pk.getName(),
+                                pk.getPkColumns(),
+                                config.isAddUserSchema());
+        pk.setDDL(ddl);
+        try {
+            executeDDL(ddl);
+            createObjectSuccess(pk);
+        } catch (RuntimeException e) {
+            createObjectFailed(pk, e);
+        }
+    }
 
-	/**
-	 * Create index
-	 * 
-	 * @param index Index
-	 */
-	public void createIndex(Index index) {
-		String ddl = CUBRIDSQLHelper.getInstance(null).getIndexDDL(index.getTable().getOwner(), index.getTable().getName(),
-				index, "", config.isAddUserSchema());
-		index.setDDL(ddl);
-		try {
-			executeDDL(ddl);
-			createObjectSuccess(index);
-		} catch (RuntimeException e) {
-			createObjectFailed(index, e);
-		}
+    /**
+     * Create foreign key
+     *
+     * @param fk foreign key
+     */
+    public void createFK(FK fk) {
+        String ddl =
+                CUBRIDSQLHelper.getInstance(null)
+                        .getFKDDL(
+                                fk.getTable().getOwner(),
+                                fk.getTable().getName(),
+                                fk,
+                                config.isAddUserSchema());
+        fk.setDDL(ddl);
+        try {
+            executeDDL(ddl);
+            createObjectSuccess(fk);
+        } catch (RuntimeException e) {
+            createObjectFailed(fk, e);
+        }
+    }
 
-	}
+    /**
+     * Create index
+     *
+     * @param index Index
+     */
+    public void createIndex(Index index) {
+        String ddl =
+                CUBRIDSQLHelper.getInstance(null)
+                        .getIndexDDL(
+                                index.getTable().getOwner(),
+                                index.getTable().getName(),
+                                index,
+                                "",
+                                config.isAddUserSchema());
+        index.setDDL(ddl);
+        try {
+            executeDDL(ddl);
+            createObjectSuccess(index);
+        } catch (RuntimeException e) {
+            createObjectFailed(index, e);
+        }
+    }
 
-	/**
-	 * Create sequence
-	 * 
-	 * @param sq sequence
-	 */
-	public void createSequence(Sequence sq) {
-		String ddl = CUBRIDSQLHelper.getInstance(null).getSequenceDDL(sq, config.isAddUserSchema());
-		sq.setDDL(ddl);
-		try {
-			executeDDL(ddl);
-			createObjectSuccess(sq);
-		} catch (RuntimeException e) {
-			createObjectFailed(sq, e);
-		}
-	}
-	
-	/**
-	 * Create synonym
-	 * 
-	 * @param sn synonym
-	 */
-	public void createSynonym(Synonym sn) {
-		String ddl = CUBRIDSQLHelper.getInstance(null).getSynonymDDL(sn, config.isAddUserSchema());
-		sn.setDDL(ddl);
-		try {
-			executeDDL(ddl);
-			createObjectSuccess(sn);
-		} catch (RuntimeException e) {
-			createObjectFailed(sn, e);
-		}
-	}
-	
-	/**
-	 * Create grant
-	 * 
-	 * @param gr grant
-	 */
-	public void createGrant(Grant gr) {
-		String ddl = CUBRIDSQLHelper.getInstance(null).getGrantDDL(gr, config.isAddUserSchema());
-		gr.setDDL(ddl);
-		try {
-			executeDDL(ddl);
-			createObjectSuccess(gr);
-		} catch (RuntimeException e) {
-			createObjectFailed(gr, e);
-		}
-	}
+    /**
+     * Create sequence
+     *
+     * @param sq sequence
+     */
+    public void createSequence(Sequence sq) {
+        String ddl = CUBRIDSQLHelper.getInstance(null).getSequenceDDL(sq, config.isAddUserSchema());
+        sq.setDDL(ddl);
+        try {
+            executeDDL(ddl);
+            createObjectSuccess(sq);
+        } catch (RuntimeException e) {
+            createObjectFailed(sq, e);
+        }
+    }
 
-	/**
-	 * Import records ,if connection lost, it will be retry 3 times.
-	 * 
-	 * @param stc Table
-	 * @param records List<Record>
-	 * @return success count
-	 */
-	public int importRecords(SourceTableConfig stc, List<Record> records) {
-		int retryCount = 0;
-		mrManager.getStatusMgr().addImpCount(stc.getOwner(), stc.getName(), records.size());
-		while (true) {
-			try {
-				return simpleImportRecords(stc, records);
-			} catch (JDBCConnectErrorException ex) {
-				if (retryCount < 3) {
-					retryCount++;
-					ThreadUtils.threadSleep(2000, eventHandler);
-				} else {
-					eventHandler.handleEvent(new ImportRecordsEvent(stc, records.size(), ex, null));
-					return 0;
-				}
-			} catch (Exception e) {
-				eventHandler.handleEvent(new ImportRecordsEvent(stc, records.size(), e, null));
-				return 0;
-			}
-		}
-	}
+    /**
+     * Create synonym
+     *
+     * @param sn synonym
+     */
+    public void createSynonym(Synonym sn) {
+        String ddl = CUBRIDSQLHelper.getInstance(null).getSynonymDDL(sn, config.isAddUserSchema());
+        sn.setDDL(ddl);
+        try {
+            executeDDL(ddl);
+            createObjectSuccess(sn);
+        } catch (RuntimeException e) {
+            createObjectFailed(sn, e);
+        }
+    }
 
-	/**
-	 * If database connect is closed by server, it needs retry 5 times
-	 * 
-	 * @param ex the exception raised.
-	 * @return true:need retry.
-	 */
-	private boolean isConnectionCutDown(SQLException ex) {
-		String message = ex.getMessage();
-		return message.indexOf("Connection or Statement might be closed") >= 0
-				|| message.indexOf("Cannot communicate with the broker") >= 0
-				|| ex.getErrorCode() == -2019 || ex.getErrorCode() == -21003
-				&& ex.getErrorCode() == -2003;
-	}
+    /**
+     * Create grant
+     *
+     * @param gr grant
+     */
+    public void createGrant(Grant gr) {
+        String ddl = CUBRIDSQLHelper.getInstance(null).getGrantDDL(gr, config.isAddUserSchema());
+        gr.setDDL(ddl);
+        try {
+            executeDDL(ddl);
+            createObjectSuccess(gr);
+        } catch (RuntimeException e) {
+            createObjectFailed(gr, e);
+        }
+    }
 
-	/**
-	 * get Insert DML
-	 * 
-	 * @param tt target table object
-	 * @return SQL string with parameters
-	 */
-	public String getTargetInsertDML(SourceTableConfig tt) {
-		StringBuffer nameBuf = new StringBuffer("insert into ");
-		
-		if (config.isAddUserSchema()) {
-			nameBuf.append(tt.getTargetOwner())
-			.append(".");
-		}
-		
-		nameBuf.append(CUBRIDSQLHelper.getInstance(null).getQuotedObjName(tt.getTarget()))
-			.append(" (");
-		StringBuffer valueBuf = new StringBuffer(" values (");
-		List<SourceColumnConfig> columns = tt.getColumnConfigList();
-		int len = columns.size();
-		for (int i = 0; i < len; i++) {
-			if (i > 0) {
-				nameBuf.append(", ");
-				valueBuf.append(", ");
-			}
-			String columnName = columns.get(i).getTarget();
-			nameBuf.append('"').append(columnName).append('"');
-			valueBuf.append('?');
-		}
-		nameBuf.append(')');
-		valueBuf.append(')');
-		nameBuf.append(valueBuf);
-		return nameBuf.toString();
-	}
+    /**
+     * Import records ,if connection lost, it will be retry 3 times.
+     *
+     * @param stc Table
+     * @param records List<Record>
+     * @return success count
+     */
+    public int importRecords(SourceTableConfig stc, List<Record> records) {
+        int retryCount = 0;
+        mrManager.getStatusMgr().addImpCount(stc.getOwner(), stc.getName(), records.size());
+        while (true) {
+            try {
+                return simpleImportRecords(stc, records);
+            } catch (JDBCConnectErrorException ex) {
+                if (retryCount < 3) {
+                    retryCount++;
+                    ThreadUtils.threadSleep(2000, eventHandler);
+                } else {
+                    eventHandler.handleEvent(new ImportRecordsEvent(stc, records.size(), ex, null));
+                    return 0;
+                }
+            } catch (Exception e) {
+                eventHandler.handleEvent(new ImportRecordsEvent(stc, records.size(), e, null));
+                return 0;
+            }
+        }
+    }
 
-	/**
-	 * Import with no retry.
-	 * 
-	 * @param stc Table
-	 * @param records List<Record>
-	 * @return success record count
-	 * @throws SQLException when SQL error
-	 */
-	private int simpleImportRecords(SourceTableConfig stc, List<Record> records) throws SQLException {
-		//Auto commit is false by default.
-		Connection conn = connectionManager.getTargetConnection(); //NOPMD
-		PreparedStatement stmt = null; //NOPMD
-		int result = 0;
-		try {
-			//get target table
-			final Table tt = config.getTargetTableSchema(stc.getTargetOwner(), stc.getTarget());
-			if (tt == null) {
-				return 0;
-			}
-			String sql = getTargetInsertDML(stc);
-			try {
-				stmt = conn.prepareStatement(sql);
+    /**
+     * If database connect is closed by server, it needs retry 5 times
+     *
+     * @param ex the exception raised.
+     * @return true:need retry.
+     */
+    private boolean isConnectionCutDown(SQLException ex) {
+        String message = ex.getMessage();
+        return message.indexOf("Connection or Statement might be closed") >= 0
+                || message.indexOf("Cannot communicate with the broker") >= 0
+                || ex.getErrorCode() == -2019
+                || ex.getErrorCode() == -21003 && ex.getErrorCode() == -2003;
+    }
 
-				for (Record rc : records) {
-					if (rc == null) {
-						continue;
-					}
-					try {
-						Record trec = createTargetRecord(stc, tt, rc);
-						parameterSetter.setRecord2Statement(trec, stmt);
-						stmt.addBatch();
-					} catch (SQLException ex) {
-						if (isConnectionCutDown(ex)) {
-							throw new JDBCConnectErrorException(ex);
-						}
-						eventHandler.handleEvent(new SingleRecordErrorEvent(rc, ex));
-					} catch (Exception ex) {
-						eventHandler.handleEvent(new SingleRecordErrorEvent(rc, ex));
-					}
-				}
-				int[] exers = stmt.executeBatch();
-				DBUtils.commit(conn);
-				for (int rs : exers) {
-					result += rs;
-				}
-				if (result != records.size()) {
-					eventHandler.handleEvent(new ImportRecordsEvent(stc, records.size() - result,
-							new NormalMigrationException(ERROR_RECORD_MSG), null));
-				}
-				if (result > 0) {
-					eventHandler.handleEvent(new ImportRecordsEvent(stc, result));
-				}
-			} catch (SQLException ex) {
-				if (isConnectionCutDown(ex)) {
-					throw new JDBCConnectErrorException(ex);
-				}
-				DBUtils.rollback(conn);
-				//If SQL has errors, write the records to a SQL files.
-				String file = null;
-				if (config.isWriteErrorRecords()) {
-					List<Record> errorRecords = new ArrayList<Record>();
-					for (Record rc : records) {
-						if (rc == null) {
-							continue;
-						}
-						Record trec = createTargetRecord(stc, tt, rc);
-						if (trec != null) {
-							errorRecords.add(trec);
-						}
-					}
-					file = errorRecordsWriter.writeSQLRecords(stc, errorRecords);
-				}
-				eventHandler.handleEvent(new ImportRecordsEvent(stc, records.size(), ex, file));
-			}
-		} finally {
-			Closer.close(stmt);
-			connectionManager.closeTar(conn);
-		}
-		return result;
-	}
+    /**
+     * get Insert DML
+     *
+     * @param tt target table object
+     * @return SQL string with parameters
+     */
+    public String getTargetInsertDML(SourceTableConfig tt) {
+        StringBuffer nameBuf = new StringBuffer("insert into ");
 
-	/**
-	 * Create a target record by source record
-	 * 
-	 * @param stc SourceTableConfig
-	 * @param tt Target Table
-	 * @param rrec source record
-	 * @return Target record
-	 */
-	private Record createTargetRecord(SourceTableConfig stc, Table tt, Record rrec) {
-		Record trec = new Record();
-		Map<String, Object> recordMap = rrec.getColumnValueMap();
-		DBTransformHelper dbHelper = config.getDBTransformHelper();
-		for (Record.ColumnValue cv : rrec.getColumnValueList()) {
-			SourceColumnConfig scc = stc.getColumnConfig(cv.getColumn().getName());
-			if (scc == null) {
-				continue;
-			}
-			Column targetColumn = tt.getColumnByName(scc.getTarget());
-			if (targetColumn == null) {
-				continue;
-			}
-			Object targetValue;
-			try {
-				targetValue = dbHelper.convertValueToTargetDBValue(config, recordMap, scc,
-						cv.getColumn(), targetColumn, cv.getValue());
-			} catch (UserDefinedHandlerException ex) {
-				targetValue = cv.getValue();
-				eventHandler.handleEvent(new SingleRecordErrorEvent(rrec, ex));
-			}
-			trec.addColumnValue(targetColumn, targetValue);
-		}
-		return trec;
-	}
+        if (config.isAddUserSchema()) {
+            nameBuf.append(tt.getTargetOwner()).append(".");
+        }
 
-	public void createSchema(Schema dummySchema) {
-		String ddl = CUBRIDSQLHelper.getInstance(null).getSchemaDDL(dummySchema);
-		dummySchema.setDDL(ddl);
-		try {
-			executeDDL(ddl);
-			createObjectSuccess(dummySchema);
-		} catch (RuntimeException e) {
-			createObjectFailed(dummySchema, e);
-		}
-	}
+        nameBuf.append(CUBRIDSQLHelper.getInstance(null).getQuotedObjName(tt.getTarget()))
+                .append(" (");
+        StringBuffer valueBuf = new StringBuffer(" values (");
+        List<SourceColumnConfig> columns = tt.getColumnConfigList();
+        int len = columns.size();
+        for (int i = 0; i < len; i++) {
+            if (i > 0) {
+                nameBuf.append(", ");
+                valueBuf.append(", ");
+            }
+            String columnName = columns.get(i).getTarget();
+            nameBuf.append('"').append(columnName).append('"');
+            valueBuf.append('?');
+        }
+        nameBuf.append(')');
+        valueBuf.append(')');
+        nameBuf.append(valueBuf);
+        return nameBuf.toString();
+    }
 
+    /**
+     * Import with no retry.
+     *
+     * @param stc Table
+     * @param records List<Record>
+     * @return success record count
+     * @throws SQLException when SQL error
+     */
+    private int simpleImportRecords(SourceTableConfig stc, List<Record> records)
+            throws SQLException {
+        // Auto commit is false by default.
+        Connection conn = connectionManager.getTargetConnection(); // NOPMD
+        PreparedStatement stmt = null; // NOPMD
+        int result = 0;
+        try {
+            // get target table
+            final Table tt = config.getTargetTableSchema(stc.getTargetOwner(), stc.getTarget());
+            if (tt == null) {
+                return 0;
+            }
+            String sql = getTargetInsertDML(stc);
+            try {
+                stmt = conn.prepareStatement(sql);
+
+                for (Record rc : records) {
+                    if (rc == null) {
+                        continue;
+                    }
+                    try {
+                        Record trec = createTargetRecord(stc, tt, rc);
+                        parameterSetter.setRecord2Statement(trec, stmt);
+                        stmt.addBatch();
+                    } catch (SQLException ex) {
+                        if (isConnectionCutDown(ex)) {
+                            throw new JDBCConnectErrorException(ex);
+                        }
+                        eventHandler.handleEvent(new SingleRecordErrorEvent(rc, ex));
+                    } catch (Exception ex) {
+                        eventHandler.handleEvent(new SingleRecordErrorEvent(rc, ex));
+                    }
+                }
+                int[] exers = stmt.executeBatch();
+                DBUtils.commit(conn);
+                for (int rs : exers) {
+                    result += rs;
+                }
+                if (result != records.size()) {
+                    eventHandler.handleEvent(
+                            new ImportRecordsEvent(
+                                    stc,
+                                    records.size() - result,
+                                    new NormalMigrationException(ERROR_RECORD_MSG),
+                                    null));
+                }
+                if (result > 0) {
+                    eventHandler.handleEvent(new ImportRecordsEvent(stc, result));
+                }
+            } catch (SQLException ex) {
+                if (isConnectionCutDown(ex)) {
+                    throw new JDBCConnectErrorException(ex);
+                }
+                DBUtils.rollback(conn);
+                // If SQL has errors, write the records to a SQL files.
+                String file = null;
+                if (config.isWriteErrorRecords()) {
+                    List<Record> errorRecords = new ArrayList<Record>();
+                    for (Record rc : records) {
+                        if (rc == null) {
+                            continue;
+                        }
+                        Record trec = createTargetRecord(stc, tt, rc);
+                        if (trec != null) {
+                            errorRecords.add(trec);
+                        }
+                    }
+                    file = errorRecordsWriter.writeSQLRecords(stc, errorRecords);
+                }
+                eventHandler.handleEvent(new ImportRecordsEvent(stc, records.size(), ex, file));
+            }
+        } finally {
+            Closer.close(stmt);
+            connectionManager.closeTar(conn);
+        }
+        return result;
+    }
+
+    /**
+     * Create a target record by source record
+     *
+     * @param stc SourceTableConfig
+     * @param tt Target Table
+     * @param rrec source record
+     * @return Target record
+     */
+    private Record createTargetRecord(SourceTableConfig stc, Table tt, Record rrec) {
+        Record trec = new Record();
+        Map<String, Object> recordMap = rrec.getColumnValueMap();
+        DBTransformHelper dbHelper = config.getDBTransformHelper();
+        for (Record.ColumnValue cv : rrec.getColumnValueList()) {
+            SourceColumnConfig scc = stc.getColumnConfig(cv.getColumn().getName());
+            if (scc == null) {
+                continue;
+            }
+            Column targetColumn = tt.getColumnByName(scc.getTarget());
+            if (targetColumn == null) {
+                continue;
+            }
+            Object targetValue;
+            try {
+                targetValue =
+                        dbHelper.convertValueToTargetDBValue(
+                                config,
+                                recordMap,
+                                scc,
+                                cv.getColumn(),
+                                targetColumn,
+                                cv.getValue());
+            } catch (UserDefinedHandlerException ex) {
+                targetValue = cv.getValue();
+                eventHandler.handleEvent(new SingleRecordErrorEvent(rrec, ex));
+            }
+            trec.addColumnValue(targetColumn, targetValue);
+        }
+        return trec;
+    }
+
+    public void createSchema(Schema dummySchema) {
+        String ddl = CUBRIDSQLHelper.getInstance(null).getSchemaDDL(dummySchema);
+        dummySchema.setDDL(ddl);
+        try {
+            executeDDL(ddl);
+            createObjectSuccess(dummySchema);
+        } catch (RuntimeException e) {
+            createObjectFailed(dummySchema, e);
+        }
+    }
 }

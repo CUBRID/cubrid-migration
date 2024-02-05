@@ -1,21 +1,18 @@
 package au.com.bytecode.opencsv;
 
 /**
- Copyright 2005 Bytecode Pty Ltd.
-
- Licensed under the Apache License, Version 2.0 (the "License");
- you may not use this file except in compliance with the License.
- You may obtain a copy of the License at
-
- http://www.apache.org/licenses/LICENSE-2.0
-
- Unless required by applicable law or agreed to in writing, software
- distributed under the License is distributed on an "AS IS" BASIS,
- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- See the License for the specific language governing permissions and
- limitations under the License.
+ * Copyright 2005 Bytecode Pty Ltd.
+ *
+ * <p>Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
+ * except in compliance with the License. You may obtain a copy of the License at
+ *
+ * <p>http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * <p>Unless required by applicable law or agreed to in writing, software distributed under the
+ * License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the License for the specific language governing permissions and
+ * limitations under the License.
  */
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Reader;
@@ -24,252 +21,241 @@ import java.util.List;
 
 /**
  * A very simple CSV reader released under a commercial-friendly license.
- * 
+ *
  * @author Glen Smith
- * 
  */
 public class CSVReader {
-	private BufferedReader br;
+    private BufferedReader br;
 
-	private boolean hasNext = true;
+    private boolean hasNext = true;
 
-	private char separator;
+    private char separator;
 
-	private char quotechar;
+    private char quotechar;
 
-	private int skipLines;
+    private int skipLines;
 
-	private boolean linesSkiped;
+    private boolean linesSkiped;
 
-	/** The default separator to use if none is supplied to the constructor. */
-	public static final char DEFAULT_SEPARATOR = ',';
+    /** The default separator to use if none is supplied to the constructor. */
+    public static final char DEFAULT_SEPARATOR = ',';
 
-	/**
-	 * The default quote character to use if none is supplied to the
-	 * constructor.
-	 */
-	public static final char DEFAULT_QUOTE_CHARACTER = '"';
+    /** The default quote character to use if none is supplied to the constructor. */
+    public static final char DEFAULT_QUOTE_CHARACTER = '"';
 
-	/**
-	 * The default line to start reading.
-	 */
-	public static final int DEFAULT_SKIP_LINES = 0;
-	public static final String NULL = "NULL";
+    /** The default line to start reading. */
+    public static final int DEFAULT_SKIP_LINES = 0;
 
-	/**
-	 * Constructs CSVReader using a comma for the separator.
-	 * 
-	 * @param reader the reader to an underlying CSV source.
-	 */
-	public CSVReader(Reader reader) {
-		this(reader, DEFAULT_SEPARATOR);
-	}
+    public static final String NULL = "NULL";
 
-	/**
-	 * Constructs CSVReader with supplied separator.
-	 * 
-	 * @param reader the reader to an underlying CSV source.
-	 * @param separator the delimiter to use for separating entries.
-	 */
-	public CSVReader(Reader reader, char separator) {
-		this(reader, separator, DEFAULT_QUOTE_CHARACTER);
-	}
+    /**
+     * Constructs CSVReader using a comma for the separator.
+     *
+     * @param reader the reader to an underlying CSV source.
+     */
+    public CSVReader(Reader reader) {
+        this(reader, DEFAULT_SEPARATOR);
+    }
 
-	/**
-	 * Constructs CSVReader with supplied separator and quote char.
-	 * 
-	 * @param reader the reader to an underlying CSV source.
-	 * @param separator the delimiter to use for separating entries
-	 * @param quotechar the character to use for quoted elements
-	 */
-	public CSVReader(Reader reader, char separator, char quotechar) {
-		this(reader, separator, quotechar, DEFAULT_SKIP_LINES);
-	}
+    /**
+     * Constructs CSVReader with supplied separator.
+     *
+     * @param reader the reader to an underlying CSV source.
+     * @param separator the delimiter to use for separating entries.
+     */
+    public CSVReader(Reader reader, char separator) {
+        this(reader, separator, DEFAULT_QUOTE_CHARACTER);
+    }
 
-	/**
-	 * Constructs CSVReader with supplied separator and quote char.
-	 * 
-	 * @param reader the reader to an underlying CSV source.
-	 * @param separator the delimiter to use for separating entries
-	 * @param quotechar the character to use for quoted elements
-	 * @param line the line number to skip for start reading
-	 */
-	public CSVReader(Reader reader, char separator, char quotechar, int line) {
-		this.br = new BufferedReader(reader);
-		this.separator = separator;
-		this.quotechar = quotechar;
-		this.skipLines = line;
-	}
+    /**
+     * Constructs CSVReader with supplied separator and quote char.
+     *
+     * @param reader the reader to an underlying CSV source.
+     * @param separator the delimiter to use for separating entries
+     * @param quotechar the character to use for quoted elements
+     */
+    public CSVReader(Reader reader, char separator, char quotechar) {
+        this(reader, separator, quotechar, DEFAULT_SKIP_LINES);
+    }
 
-	/**
-	 * Reads the entire file into a List with each element being a String[] of
-	 * tokens.
-	 * 
-	 * @return a List of String[], with each String[] representing a line of the
-	 *         file.
-	 * 
-	 * @throws IOException if bad things happen during the read
-	 */
-	public List<String[]> readAll() throws IOException {
+    /**
+     * Constructs CSVReader with supplied separator and quote char.
+     *
+     * @param reader the reader to an underlying CSV source.
+     * @param separator the delimiter to use for separating entries
+     * @param quotechar the character to use for quoted elements
+     * @param line the line number to skip for start reading
+     */
+    public CSVReader(Reader reader, char separator, char quotechar, int line) {
+        this.br = new BufferedReader(reader);
+        this.separator = separator;
+        this.quotechar = quotechar;
+        this.skipLines = line;
+    }
 
-		List<String[]> allElements = new ArrayList<String[]>();
+    /**
+     * Reads the entire file into a List with each element being a String[] of tokens.
+     *
+     * @return a List of String[], with each String[] representing a line of the file.
+     * @throws IOException if bad things happen during the read
+     */
+    public List<String[]> readAll() throws IOException {
 
-		while (hasNext) {
-			String[] nextLineAsTokens = readNext();
+        List<String[]> allElements = new ArrayList<String[]>();
 
-			if (nextLineAsTokens != null) {
-				allElements.add(nextLineAsTokens);
-			}
-		}
+        while (hasNext) {
+            String[] nextLineAsTokens = readNext();
 
-		return allElements;
+            if (nextLineAsTokens != null) {
+                allElements.add(nextLineAsTokens);
+            }
+        }
 
-	}
+        return allElements;
+    }
 
-	/**
-	 * Reads the next line from the buffer and converts to a string array.
-	 * 
-	 * @return a string array with each comma-separated element as a separate
-	 *         entry.
-	 * 
-	 * @throws IOException if bad things happen during the read
-	 */
-	public String[] readNext() throws IOException {
+    /**
+     * Reads the next line from the buffer and converts to a string array.
+     *
+     * @return a string array with each comma-separated element as a separate entry.
+     * @throws IOException if bad things happen during the read
+     */
+    public String[] readNext() throws IOException {
 
-		String nextLine = getNextLine();
-		return hasNext ? parseLine(nextLine) : null;
-	}
+        String nextLine = getNextLine();
+        return hasNext ? parseLine(nextLine) : null;
+    }
 
-	/**
-	 * Reads the next line from the file.
-	 * 
-	 * @return the next line from the file without trailing newline
-	 * @throws IOException if bad things happen during the read
-	 */
-	private String getNextLine() throws IOException {
-		if (!this.linesSkiped) {
-			for (int i = 0; i < skipLines; i++) {
-				br.readLine();
-			}
+    /**
+     * Reads the next line from the file.
+     *
+     * @return the next line from the file without trailing newline
+     * @throws IOException if bad things happen during the read
+     */
+    private String getNextLine() throws IOException {
+        if (!this.linesSkiped) {
+            for (int i = 0; i < skipLines; i++) {
+                br.readLine();
+            }
 
-			this.linesSkiped = true;
-		}
+            this.linesSkiped = true;
+        }
 
-		String nextLine = br.readLine();
+        String nextLine = br.readLine();
 
-		if (nextLine == null) {
-			hasNext = false;
-		}
+        if (nextLine == null) {
+            hasNext = false;
+        }
 
-		return hasNext ? nextLine : null;
-	}
+        return hasNext ? nextLine : null;
+    }
 
-	/**
-	 * Parses an incoming String and returns an array of elements.
-	 * 
-	 * @param line the string to parse
-	 * @return the comma-tokenized list of elements, or null if nextLine is null
-	 * @throws IOException if bad things happen during the read
-	 */
-	private String[] parseLine(String line) throws IOException {
-		if (line == null) {
-			return null;
-		}
+    /**
+     * Parses an incoming String and returns an array of elements.
+     *
+     * @param line the string to parse
+     * @return the comma-tokenized list of elements, or null if nextLine is null
+     * @throws IOException if bad things happen during the read
+     */
+    private String[] parseLine(String line) throws IOException {
+        if (line == null) {
+            return null;
+        }
 
-		String nextLine = line;
-		List<String> tokensOnThisLine = new ArrayList<String>();
-		StringBuffer sb = new StringBuffer();
-		boolean inQuotes = false;
-		boolean startWithQuote = false;
-		boolean endWithQuote = false;
+        String nextLine = line;
+        List<String> tokensOnThisLine = new ArrayList<String>();
+        StringBuffer sb = new StringBuffer();
+        boolean inQuotes = false;
+        boolean startWithQuote = false;
+        boolean endWithQuote = false;
 
-		do {
-			if (inQuotes) {
-				// continuing a quoted section, reappend newline
-				sb.append("\n");
-				nextLine = getNextLine();
+        do {
+            if (inQuotes) {
+                // continuing a quoted section, reappend newline
+                sb.append("\n");
+                nextLine = getNextLine();
 
-				if (nextLine == null) {
-					break;
-				}
-			}
+                if (nextLine == null) {
+                    break;
+                }
+            }
 
-			for (int i = 0; i < nextLine.length(); i++) {
+            for (int i = 0; i < nextLine.length(); i++) {
 
-				char c = nextLine.charAt(i);
+                char c = nextLine.charAt(i);
 
-				if (c == quotechar) {
-					if (sb.length() == 0) {
-						startWithQuote = true;
-					} else {
-						if (nextLine.length() == i + 1) {
-							endWithQuote = true;
-						}
-					}
-					if (inQuotes && nextLine.length() > (i + 1)
-							&& nextLine.charAt(i + 1) == quotechar) {
-						sb.append(nextLine.charAt(i + 1));
-						i++;
-					} else {
-						inQuotes = !inQuotes;
+                if (c == quotechar) {
+                    if (sb.length() == 0) {
+                        startWithQuote = true;
+                    } else {
+                        if (nextLine.length() == i + 1) {
+                            endWithQuote = true;
+                        }
+                    }
+                    if (inQuotes
+                            && nextLine.length() > (i + 1)
+                            && nextLine.charAt(i + 1) == quotechar) {
+                        sb.append(nextLine.charAt(i + 1));
+                        i++;
+                    } else {
+                        inQuotes = !inQuotes;
 
-						if (i > 2 && nextLine.charAt(i - 1) != this.separator
-								&& nextLine.length() > (i + 1)
-								&& nextLine.charAt(i + 1) != this.separator) {
-							sb.append(c);
-						}
-					}
-				} else if (c == separator && !inQuotes) {
-					if (nextLine.charAt(i - 1) == quotechar) {
-						endWithQuote = true;
-					}
+                        if (i > 2
+                                && nextLine.charAt(i - 1) != this.separator
+                                && nextLine.length() > (i + 1)
+                                && nextLine.charAt(i + 1) != this.separator) {
+                            sb.append(c);
+                        }
+                    }
+                } else if (c == separator && !inQuotes) {
+                    if (nextLine.charAt(i - 1) == quotechar) {
+                        endWithQuote = true;
+                    }
 
-					String str = sb.toString();
+                    String str = sb.toString();
 
-					if (startWithQuote && endWithQuote) {
-						tokensOnThisLine.add(str);
-					} else {
-						if (str.equals(NULL)) {
-							str = null;
-						}
+                    if (startWithQuote && endWithQuote) {
+                        tokensOnThisLine.add(str);
+                    } else {
+                        if (str.equals(NULL)) {
+                            str = null;
+                        }
 
-						tokensOnThisLine.add(str);
-					}
+                        tokensOnThisLine.add(str);
+                    }
 
-					sb = new StringBuffer(); // start work on next token
-					startWithQuote = false;
-					endWithQuote = false;
-				} else {
-					sb.append(c);
-				}
-			}
+                    sb = new StringBuffer(); // start work on next token
+                    startWithQuote = false;
+                    endWithQuote = false;
+                } else {
+                    sb.append(c);
+                }
+            }
 
-		} while (inQuotes);
+        } while (inQuotes);
 
-		String str = sb.toString();
+        String str = sb.toString();
 
-		if (startWithQuote && endWithQuote) {
-			tokensOnThisLine.add(str);
-		} else {
-			if (str.equals(NULL)) {
-				str = null;
-			}
+        if (startWithQuote && endWithQuote) {
+            tokensOnThisLine.add(str);
+        } else {
+            if (str.equals(NULL)) {
+                str = null;
+            }
 
-			tokensOnThisLine.add(str);
-		}
+            tokensOnThisLine.add(str);
+        }
 
-		return (String[]) tokensOnThisLine.toArray(new String[tokensOnThisLine.size()]);
+        return (String[]) tokensOnThisLine.toArray(new String[tokensOnThisLine.size()]);
+    }
 
-	}
-
-	/**
-	 * Closes the underlying reader.
-	 * 
-	 * @throws IOException if the close fails
-	 */
-	public void close() throws IOException {
-		br.close();
-		br = null;
-	}
-
+    /**
+     * Closes the underlying reader.
+     *
+     * @throws IOException if the close fails
+     */
+    public void close() throws IOException {
+        br.close();
+        br = null;
+    }
 }
