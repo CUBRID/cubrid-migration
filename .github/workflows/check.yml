@@ -1,0 +1,54 @@
+#
+#
+#  Copyright 2016 CUBRID Corporation
+# 
+#   Licensed under the Apache License, Version 2.0 (the "License");
+#   you may not use this file except in compliance with the License.
+#   You may obtain a copy of the License at
+# 
+#       http://www.apache.org/licenses/LICENSE-2.0
+# 
+#   Unless required by applicable law or agreed to in writing, software
+#   distributed under the License is distributed on an "AS IS" BASIS,
+#   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#   See the License for the specific language governing permissions and
+#   limitations under the License.
+# 
+name: github-checks
+on:
+  pull_request:
+    branches:
+      - develop
+      - release/eclipse_upgrade
+      - release/Daejeon-NIRS
+
+jobs:
+  pr-style:
+    name: pr-style
+    runs-on: ubuntu-latest
+    steps:
+      - uses: deepakputhraya/action-pr-title@master
+        with:
+          regex: '^\[[A-Z]+-\d+\]\s.+'
+  code-style:
+    name: code-style
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - id: files
+        uses: jitterbit/get-changed-files@v1
+        continue-on-error: true
+      - uses: axel-op/googlejavaformat-action@v3
+        with:
+          skipCommit: true
+          version: 1.7
+          args: "--aosp --replace --set-exit-if-changed"
+          run: |
+            for f in ${{ steps.files.outputs.added_modified }}; do
+              files: $f
+            done
+      - name: Suggest code changes
+        if: ${{ failure() }}
+        uses: reviewdog/action-suggester@v1
+        with:
+          tool_name: code-style (indent, googlejavaformat)
