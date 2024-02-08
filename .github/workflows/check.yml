@@ -19,8 +19,7 @@ on:
   pull_request:
     branches:
       - develop
-      - release/eclipse_upgrade
-      - release/Daejeon-NIRS
+      - release/**
 
 jobs:
   pr-style:
