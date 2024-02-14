@@ -29,8 +29,6 @@
  */
 package com.cubrid.cubridmigration.core.common;
 
-
-
 import org.junit.Test;
 
 public class SSHUtilsTest {

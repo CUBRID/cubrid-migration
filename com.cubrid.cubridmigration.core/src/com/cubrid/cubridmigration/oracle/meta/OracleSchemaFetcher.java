@@ -1482,8 +1482,8 @@ public final class OracleSchemaFetcher extends AbstractJDBCSchemaFetcher {
         if (LOG.isDebugEnabled()) {
             LOG.debug("[IN]getQueryText()");
         }
-        ResultSet rs = null; // NOPMD	
-        PreparedStatement stmt = null; // NOPMD	
+        ResultSet rs = null; // NOPMD
+        PreparedStatement stmt = null; // NOPMD
         try {
             stmt = conn.prepareStatement(SQL_SHOW_VIEW_QUERYTEXT);
             stmt.setString(1, schemaName);

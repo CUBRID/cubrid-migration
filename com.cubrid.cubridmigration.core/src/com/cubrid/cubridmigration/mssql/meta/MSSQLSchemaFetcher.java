@@ -158,7 +158,7 @@ public final class MSSQLSchemaFetcher extends AbstractJDBCSchemaFetcher {
         final SQLHelper sqlHelper = cp.getDatabaseType().getSQLHelper(null);
         for (Schema schema : schemaList) {
             ResultSet rs = null; // NOPMD
-            PreparedStatement stmt = null; // NOPMD	
+            PreparedStatement stmt = null; // NOPMD
             try {
                 stmt = conn.prepareStatement(SHOW_IDENTITY.replace(CATALOG_NAME, catalogName));
                 stmt.setInt(1, schemaNameIDMap.get(schema.getName()));
@@ -531,7 +531,7 @@ public final class MSSQLSchemaFetcher extends AbstractJDBCSchemaFetcher {
     private String getCatalogCharset(final Connection conn, final Catalog catalog)
             throws SQLException {
         ResultSet rs = null; // NOPMD
-        PreparedStatement stmt = null; // NOPMD	
+        PreparedStatement stmt = null; // NOPMD
         try {
             stmt = conn.prepareStatement(SHOW_CHARSET.replace(CATALOG_NAME, catalog.getName()));
             stmt.setString(1, catalog.getName());

@@ -126,10 +126,8 @@ public final class DBUtils {
                 newExp = "EXTRACT(" + dateExp + " FROM " + columnName + ")";
             } else {
                 if ("MOD".equals(funcStr)) {
-                    newExp =
-                            partition
-                                    .getPartitionExp(); // process in
-                                                        // MySQL2CUBRID.resetColumnsAndIndexes()
+                    newExp = partition.getPartitionExp(); // process in
+                    // MySQL2CUBRID.resetColumnsAndIndexes()
                 } else {
                     newExp = supportPartitionExp.get(funcStr) + "(" + columnName + ")";
                 }

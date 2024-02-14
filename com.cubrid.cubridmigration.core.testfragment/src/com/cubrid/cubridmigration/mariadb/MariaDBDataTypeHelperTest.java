@@ -29,7 +29,6 @@
  */
 package com.cubrid.cubridmigration.mariadb;
 
-
 import com.cubrid.cubridmigration.core.dbobject.Column;
 import com.cubrid.cubridmigration.core.engine.config.MigrationConfiguration;
 import com.cubrid.cubridmigration.core.engine.template.TemplateParserTest;

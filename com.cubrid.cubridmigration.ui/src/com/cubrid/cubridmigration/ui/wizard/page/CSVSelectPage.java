@@ -840,7 +840,7 @@ public class CSVSelectPage extends MigrationWizardPage {
                                     Messages.msgParsingCSVFiles,
                                     IProgressMonitor
                                             .UNKNOWN); // Refresh columns information and parsing
-                                                       // preview
+                            // preview
                             final MigrationWizard wizard = getMigrationWizard();
                             MigrationConfiguration config = wizard.getMigrationConfig();
                             config.reparseCSVFiles(wizard.getTargetCatalog().getSchemas().get(0));
