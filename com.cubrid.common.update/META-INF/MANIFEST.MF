@@ -2,10 +2,12 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: CUBRID Tools Common Update Plug-in
 Bundle-SymbolicName: com.cubrid.common.update;singleton:=true
-Bundle-Version: 9.2.0.qualifier
-Bundle-Localization: plugin
+Bundle-Version: 1.0.0.qualifier
+Bundle-Vendor: CUBRID
 Bundle-Activator: com.cubrid.common.update.p2.UpdatePlugin
-Bundle-Vendor: Search Solution Corporation
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Bundle-Localization: plugin
+Bundle-ActivationPolicy: lazy
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
  org.eclipse.equinox.p2.ui,
@@ -13,8 +15,6 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.equinox.p2.core,
  org.eclipse.equinox.p2.metadata,
  org.eclipse.equinox.p2.engine
-Bundle-ActivationPolicy: lazy
-Export-Package: com.cubrid.common.update.p2;uses:="org.eclipse.osgi.util,org.eclipse.ui.plugin,org.osgi.framework",
- com.cubrid.common.update.p2.handler;uses:="org.eclipse.equinox.p2.ui,org.eclipse.core.runtime.jobs"
 Bundle-ClassPath: .,
  lib/com.cubrid.update.external.jar
+Export-Package: com.cubrid.common.update.p2

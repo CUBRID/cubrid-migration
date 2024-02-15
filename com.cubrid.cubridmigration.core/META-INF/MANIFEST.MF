@@ -2,11 +2,13 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Core Plug-in
 Bundle-SymbolicName: com.cubrid.cubridmigration.core
-Bundle-Version: 9.3.0.qualifier
+Bundle-Version: 1.0.0.qualifier
 Bundle-Activator: com.cubrid.cubridmigration.core.CubridMigrationCorePlugin
 Bundle-Vendor: CUBRID
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Require-Bundle: org.eclipse.core.runtime,
- com.cubrid.common.configuration;bundle-version="9.2.0"
+ com.cubrid.common.configuration;bundle-version="1.0.0",
+ com.cubrid.cubridmigration.core
 Bundle-ActivationPolicy: lazy
 Bundle-ClassPath: lib/commons-beanutils-1.8.0.jar,
  lib/commons-collections-3.2.1.jar,
@@ -373,13 +375,6 @@ Export-Package:
  org.apache.commons.beanutils.locale.converters;uses:="org.apache.commons.beanutils.locale",
  org.apache.commons.cli,
  org.apache.commons.collections;uses:="org.apache.commons.collections.keyvalue,new org.apache.commons.collections",
- org.apache.commons.collections.bag;uses:="org.apache.commons.collections,org.apache.commons.collections.collection,org.apache.commons.collections.set",
- org.apache.commons.collections.bidimap;
-  uses:="org.apache.commons.collections.iterators,
-   org.apache.commons.collections.keyvalue,
-   org.apache.commons.collections.map,
-   org.apache.commons.collections,
-   org.apache.commons.collections.collection",
  org.apache.commons.collections.buffer;uses:="org.apache.commons.collections,org.apache.commons.collections.collection",
  org.apache.commons.collections.collection;uses:="org.apache.commons.collections",
  org.apache.commons.collections.comparators;uses:="org.apache.commons.collections",
@@ -401,6 +396,7 @@ Export-Package:
    new org.apache.commons.collections.set,
    org.apache.commons.collections,
    org.apache.commons.collections.collection",
+ org.apache.commons.io,
  org.apache.commons.lang;uses:="org.apache.commons.lang.exception",
  org.apache.commons.lang.builder,
  org.apache.commons.lang.enums,
@@ -631,5 +627,3 @@ Export-Package:
  org.slf4j;uses:="org.slf4j.spi,org.slf4j.helpers",
  org.slf4j.helpers;uses:="org.slf4j.spi,org.slf4j",
  org.slf4j.spi;uses:="org.slf4j"
-Bundle-RequiredExecutionEnvironment: J2SE-1.5,
- JavaSE-1.6

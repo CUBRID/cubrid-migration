@@ -2,18 +2,17 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: CUBRID Migration Toolkit UI Plug-in
 Bundle-SymbolicName: com.cubrid.cubridmigration.ui;singleton:=true
-Bundle-Version: 9.3.0.qualifier
+Bundle-Version: 1.0.0.qualifier
 Bundle-Activator: com.cubrid.cubridmigration.ui.MigrationUIPlugin
 Bundle-Vendor: CUBRID
+Bundle-ActivationPolicy: lazy
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Bundle-Localization: plugin
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
  org.eclipse.ui.forms,
  com.cubrid.cubridmigration.core,
  com.cubrid.common.configuration
-Bundle-ActivationPolicy: lazy
-Bundle-RequiredExecutionEnvironment: J2SE-1.5,
- JavaSE-1.6
-Bundle-Localization: plugin
 Bundle-ClassPath: lib/activation.jar,
  lib/mail.jar,
  lib/cron4j-2.1.1.jar,

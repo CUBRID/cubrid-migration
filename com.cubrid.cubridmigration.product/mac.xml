@@ -1,0 +1,62 @@
+<assembly xmlns="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.0 http://maven.apache.org/xsd/assembly-1.1.0.xsd">
+    <id>mac</id>
+	
+    <!-- 배포할 양식 -->
+    <formats>
+        <format>tar.gz</format>
+    </formats>
+
+   <fileSets>
+     <fileSet>
+       <directory>${basedir}/target/products/com.cubrid.cubridmigration.product/macosx/cocoa/x86_64/Cubridmigration.app/Contents/Eclipse/configuration/</directory>
+       <outputDirectory>configuration</outputDirectory>
+     </fileSet>
+	 
+	 <fileSet>
+       <directory>${basedir}/target/products/com.cubrid.cubridmigration.product/macosx/cocoa/x86_64/Cubridmigration.app/Contents/Eclipse/plugins/</directory>
+       <outputDirectory>plugins</outputDirectory>
+     </fileSet>
+	 
+	 <fileSet>
+       <directory>${basedir}/target/products/com.cubrid.cubridmigration.product/macosx/cocoa/x86_64/Cubridmigration.app/Contents/Eclipse/features/</directory>
+       <outputDirectory>features</outputDirectory>
+     </fileSet>
+	 
+	 <fileSet>
+       <directory>${basedir}/target/products/com.cubrid.cubridmigration.product/macosx/cocoa/x86_64/Cubridmigration.app/Contents/Eclipse/p2/</directory>
+       <outputDirectory>p2</outputDirectory>
+     </fileSet>
+     
+     <fileSet>
+     	<directory>${basedir}/target/products/com.cubrid.cubridmigration.product/macosx/cocoa/x86_64/Cubridmigration.app/Contents/MacOS/</directory>
+     	<outputDirectory>/</outputDirectory>
+		<includes>
+     		<include>cubridmigration</include>
+     	</includes>
+     </fileSet>
+	 
+	 <fileSet>
+       <directory>${basedir}/target/products/com.cubrid.cubridmigration.product/macosx/cocoa/x86_64/Cubridmigration.app/Contents/Eclipse/</directory>
+       <outputDirectory>/</outputDirectory>
+	   <includes>
+     		<include>cubridmigration.ini</include>
+     	</includes>
+     </fileSet>
+	 
+	 <fileSet>
+       <directory>${basedir}/target/products/com.cubrid.cubridmigration.product/macosx/cocoa/x86_64/Cubridmigration.app/Contents/Resources/</directory>
+       <outputDirectory>/</outputDirectory>
+	   <includes>
+     		<include>cubridmigration.icns</include>
+     	</includes>
+     </fileSet>
+     
+     <fileSet>
+       <directory>${basedir}/../com.cubrid.cubridmigration.core/jdbc/</directory>
+       <outputDirectory>jdbc</outputDirectory>
+       <includes>
+     		<include>**/*.jar</include>
+     	</includes>
+     </fileSet>
+   </fileSets>
+</assembly>

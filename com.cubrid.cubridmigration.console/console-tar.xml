@@ -1,0 +1,49 @@
+<assembly xmlns="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.0 http://maven.apache.org/xsd/assembly-1.1.0.xsd">
+    <id>linux</id>
+    <!-- 배포할 양식 -->
+    <formats>
+        <format>tar.gz</format>
+    </formats>
+
+   <fileSets>
+     <fileSet>
+       <directory>${basedir}</directory>
+       <includes>
+         <include>migration.sh</include>
+       </includes>
+     </fileSet>
+     
+     <fileSet>
+     	<directory>${basedir}/../com.cubrid.cubridmigration.core/src/</directory>
+        <outputDirectory>/</outputDirectory>
+     	<includes>
+     		<include>**/*.properties</include>
+     	</includes>
+     </fileSet>
+     
+     <fileSet>
+       <directory>${basedir}/../com.cubrid.cubridmigration.core/jdbc/</directory>
+       <outputDirectory>jdbc</outputDirectory>
+       <includes>
+     		<include>**/*.jar</include>
+     	</includes>
+     </fileSet>
+   </fileSets>
+
+   <!-- dcs의 core.jar파일은 lib 폴더가 아닌 root path에 위치시키는 설정 -->
+    <dependencySets>
+        <dependencySet>
+            <!-- jar들이 배포되는 위치 -->
+            <outputDirectory>lib</outputDirectory>
+            <excludes>
+                <exclude>com.cubrid.cubridmigration:com.cubrid.cubridmigration.command</exclude>
+            </excludes>
+        </dependencySet>
+        <dependencySet>
+            <outputDirectory>/</outputDirectory>
+            <includes>
+                <include>com.cubrid.cubridmigration:com.cubrid.cubridmigration.command</include>
+            </includes>
+        </dependencySet>
+    </dependencySets>
+</assembly>

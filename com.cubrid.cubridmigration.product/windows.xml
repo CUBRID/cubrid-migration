@@ -1,0 +1,47 @@
+<assembly xmlns="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.0 http://maven.apache.org/xsd/assembly-1.1.0.xsd">
+    <id>windows</id>
+	
+    <!-- 배포할 양식 -->
+    <formats>
+        <format>zip</format>
+    </formats>
+
+   <fileSets>
+     <fileSet>
+       <directory>${basedir}/target/products/com.cubrid.cubridmigration.product/win32/win32/x86_64/cubridmigration/configuration</directory>
+       <outputDirectory>configuration</outputDirectory>
+     </fileSet>
+	 
+	 <fileSet>
+       <directory>${basedir}/target/products/com.cubrid.cubridmigration.product/win32/win32/x86_64/cubridmigration/plugins</directory>
+       <outputDirectory>plugins</outputDirectory>
+     </fileSet>
+	 
+	 <fileSet>
+       <directory>${basedir}/target/products/com.cubrid.cubridmigration.product/win32/win32/x86_64/cubridmigration/features</directory>
+       <outputDirectory>features</outputDirectory>
+     </fileSet>
+	 
+	 <fileSet>
+       <directory>${basedir}/target/products/com.cubrid.cubridmigration.product/win32/win32/x86_64/cubridmigration/p2</directory>
+       <outputDirectory>p2</outputDirectory>
+     </fileSet>
+     
+     <fileSet>
+     	<directory>${basedir}/target/products/com.cubrid.cubridmigration.product/win32/win32/x86_64/cubridmigration/</directory>
+     	<outputDirectory>/</outputDirectory>
+		<includes>
+     		<include>cubridmigration.exe</include>
+			<include>cubridmigration.ini</include>
+     	</includes>
+     </fileSet>
+     
+     <fileSet>
+       <directory>${basedir}/../com.cubrid.cubridmigration.core/jdbc/</directory>
+       <outputDirectory>jdbc</outputDirectory>
+       <includes>
+     		<include>**/*.jar</include>
+     	</includes>
+     </fileSet>
+   </fileSets>
+</assembly>

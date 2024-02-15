@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?pde version="3.5"?>
+
+<product name="CUBRID Migration" uid="com.cubrid.cubridmigration.product" id="com.cubrid.cubridmigration.product" application="com.cubrid.cubridmigration.app.application" version="9.3.0.qualifier" useFeatures="true" includeLaunchers="true">
+   <configIni use="default">
+   </configIni>
+
+   <launcherArgs>
+      <programArgsMac>-vm ../Eclipse/jre/Contents/Home/bin/java</programArgsMac>
+      <vmArgs>-Xms400M
+-Xmx800M
+-XX:PermSize=64M
+-XX:MaxPermSize=256M
+-XX:+UnlockExperimentalVMOptions 
+-XX:+UseG1GC
+-XX:+IgnoreUnrecognizedVMOptions --add-modules=ALL-SYSTEM -Dosgi.requiredJavaVersion=1.8</vmArgs>
+      <vmArgsMac>-XstartOnFirstThread </vmArgsMac>
+   </launcherArgs>
+
+   <windowImages i16="icons/cubridmigration16.gif" i32="icons/cubridmigration32.gif" i48="icons/cubridmigration48.gif" i64="icons/cubridmigration64.gif"/>
+
+   <splash
+      location="com.cubrid.cubridmigration.product"/>
+   <launcher name="cubridmigration">
+      <linux icon="/icons/cubridmigration.xpm"/>
+      <macosx icon="/icons/cubridmigration.icns"/>
+      <solaris/>
+      <win useIco="true">
+         <ico path="/icons/cubridmigration.ico"/>
+         <bmp/>
+      </win>
+   </launcher>
+
+   <vm>
+   </vm>
+
+   <plugins>
+   </plugins>
+
+   <features>
+		<feature id="com.cubrid.common.update.feature" />
+        <feature id="com.cubrid.cubridmigration.app.feature" />
+		<feature id="com.cubrid.cubridmigration.plugin.feature" />
+   </features>
+
+    <configurations>
+        <plugin id="org.eclipse.osgi" autoStart="true" startLevel="-1"/>
+        <plugin id="org.apache.felix.scr" autoStart="true" startLevel="2"/>
+        <plugin id="org.eclipse.equinox.simpleconfigurator" autoStart="true" startLevel="1"/>
+		<plugin id="org.eclipse.core.runtime" autoStart="true" startLevel="4"/>
+        <plugin id="org.eclipse.equinox.common" autoStart="true" startLevel="2"/>
+        <plugin id="org.eclipse.equinox.event" autoStart="true" startLevel="2"/>
+        <!-- This is important because simpleconfigurator conflicts with update.configurator -->
+        <plugin id="org.eclipse.update.configurator" autoStart="false" startLevel="10"/>
+    </configurations>
+</product>
