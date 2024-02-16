@@ -1,0 +1,10 @@
+Bundle-ManifestVersion: 2
+Bundle-Name: CUBRID Migration Toolkit App Update Site
+Bundle-SymbolicName: com.cubrid.cubridmigration.app.update.site;singleton:=true
+Bundle-Version: 1.0.0.qualifier
+Bundle-Activator: com.cubrid.cubridmigration.app.update.site
+Bundle-Vendor: CUBRID
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Bundle-Localization: plugin
+Bundle-ActivationPolicy: lazy
+Bundle-ClassPath: .

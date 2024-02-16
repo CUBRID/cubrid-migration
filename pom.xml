@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+         xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>com.cubrid.cubridmigration</groupId>
+    <artifactId>cubridmigration</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+    <packaging>pom</packaging>
+
+    <properties>
+        <cubridmigration-version>11.2.0.0000</cubridmigration-version>
+        <cubridmigration-product>Cubrid-Migration</cubridmigration-product>
+        <tycho-version>1.7.0</tycho-version>
+        <eclipse-version>2020-06</eclipse-version>
+        <eclipse-repo-url>https://download.eclipse.org/releases</eclipse-repo-url>
+        <eclipse-p2-repo.url>${eclipse-repo-url}/${eclipse-version}/</eclipse-p2-repo.url>
+        
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
+    </properties>
+
+    <repositories>
+        <repository>
+            <id>eclipse-p2-repo</id>
+            <url>${eclipse-p2-repo.url}</url>
+            <layout>p2</layout>
+        </repository>
+        
+        <repository>
+            <id>CMT-repo-org</id>
+            <name>CMT-repo-org</name>
+            <url>https://ftp.cubrid.org/CUBRID_Tools/Dev/lib</url>
+        </repository>
+    </repositories>
+     
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.eclipse.tycho</groupId>
+                <artifactId>target-platform-configuration</artifactId>
+                <version>${tycho-version}</version>
+                <configuration>
+                    <pomDependencies>consider</pomDependencies>
+                    <environments>
+                        <environment>
+                            <os>win32</os>
+                            <ws>win32</ws>
+                            <arch>x86_64</arch>
+                        </environment>
+                        <environment>
+                            <os>linux</os>
+                            <ws>gtk</ws>
+                            <arch>x86_64</arch>
+                        </environment>
+                        <environment>
+                            <os>macosx</os>
+                            <ws>cocoa</ws>
+                            <arch>x86_64</arch>
+                        </environment>
+                    </environments>
+                </configuration>
+            </plugin>
+        
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <version>2.6</version>
+            </plugin>
+        
+            <plugin>
+                <groupId>org.eclipse.tycho</groupId>
+                <artifactId>tycho-maven-plugin</artifactId>
+                <version>${tycho-version}</version>
+                <extensions>true</extensions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.eclipse.tycho</groupId>
+                <artifactId>tycho-compiler-plugin</artifactId>
+                <version>${tycho-version}</version>
+                <configuration>
+                    <useProjectSettings>false</useProjectSettings>
+                    <source>1.8</source>
+                    <target>1.8</target>
+                    <compilerVersion>1.8</compilerVersion>
+                </configuration>
+            </plugin>
+             
+            <plugin>
+                <groupId>org.eclipse.tycho</groupId>
+                <artifactId>tycho-packaging-plugin</artifactId>
+                <version>${tycho-version}</version>
+                <configuration>
+                    <archive>
+                        <manifestEntries>
+                            <Built-By>com.cubrid</Built-By>
+                            <Created-By>com.cubrid</Created-By>
+                            <Build-Time>${maven.build.timestamp}</Build-Time>
+                        </manifestEntries>
+                        <addMavenDescriptor>false</addMavenDescriptor>
+                    </archive>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+    <profiles>
+        <profile>
+            <id>desktop</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <modules>
+                <!-- plugins -->
+                <module>com.cubrid.common.configuration</module>
+                <module>com.cubrid.common.update</module>
+                <module>com.cubrid.cubridmigration.core</module>
+                <module>com.cubrid.cubridmigration.app</module>
+                <module>com.cubrid.cubridmigration.plugin</module>
+                <module>com.cubrid.cubridmigration.ui</module>
+                
+                <!-- features -->
+                <module>com.cubrid.cubridmigration.app.feature</module>
+                <module>com.cubrid.cubridmigration.plugin.feature</module>
+                <module>com.cubrid.common.update.feature</module>
+                
+                <!--site -->
+                <module>com.cubrid.cubridmigration.plugin.update.site</module>
+                <module>com.cubrid.cubridmigration.app.update.site</module>
+                
+                <!-- Products -->
+                <module>com.cubrid.cubridmigration.product</module>
+            </modules>
+        </profile>
+        
+        <profile>
+            <id>console</id>
+    
+            <modules>
+                <module>com.cubrid.common.configuration</module>
+                <module>com.cubrid.cubridmigration.core</module>
+                <module>com.cubrid.cubridmigration.command</module>
+                <module>com.cubrid.cubridmigration.console</module>
+            </modules>
+        </profile>
+    </profiles>
+</project>
