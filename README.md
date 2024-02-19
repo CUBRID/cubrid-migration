@@ -38,3 +38,27 @@ cd cubridmigration/com.cubrid.cubridmigration.ui.testfragment/
 wget http://ftp.cubrid.org/CUBRID_Docs/CMT/cmt-test-3rdparty-drivers.zip
 unzip cmt-test-3rdparty-drivers.zip -d jdbc
 ```
+
+## Build from sources
+
+### Prerequisites
+1. [OpenJDK 8](https://adoptium.net/temurin/releases/?version=8)
+2. [Apache Maven 3.9.6](https://maven.apache.org/download.cgi)
+3. git
+4. Internet access
+
+### Build
+
+```
+git clone -b release/eclipse_upgrade --single-branch https://github.com/CUBRID/cubrid-migration.git eclipse_upgrade
+cd eclipse_upgrade
+
+// all build
+sh build -X
+
+// desktop build
+sh build -profile desktop -X
+
+// console build
+sh build -profile console -X
+```
