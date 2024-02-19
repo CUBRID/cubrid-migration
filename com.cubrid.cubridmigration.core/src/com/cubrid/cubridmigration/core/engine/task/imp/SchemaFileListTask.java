@@ -70,7 +70,7 @@ public class SchemaFileListTask extends ImportTask {
                 writeFile(schemaName);
             }
         } else {
-            String conUser = config.getSourceConParams().getConUser();
+            String conUser = config.getSrcConnOwner();
             LOG.debug("Write to info file for " + conUser);
             writeFile(conUser);
         }

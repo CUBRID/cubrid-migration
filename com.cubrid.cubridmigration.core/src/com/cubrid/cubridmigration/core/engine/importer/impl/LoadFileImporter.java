@@ -168,10 +168,13 @@ public class LoadFileImporter extends OfflineImporter {
         synchronized (lockObj) {
             MigrationDirAndFilesManager mdfm = mrManager.getDirAndFilesMgr();
 
-            String schemaName =
-                    config.isAddUserSchema()
-                            ? stc.getOwner()
-                            : config.getSourceConParams().getConUser();
+            final String schemaName;
+            if (config.sourceIsXMLDump()) {
+                schemaName = config.getSrcConnOwner();
+            } else {
+                schemaName = config.isAddUserSchema() ? stc.getOwner() : config.getSrcConnOwner();
+            }
+
             if (!tableFiles.containsKey(schemaName + stc.getName())) {
                 tableFiles.put(
                         schemaName + stc.getName(),
