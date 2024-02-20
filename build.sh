@@ -71,12 +71,12 @@ function copy_desktopcmt_to_directory ()
 
 function copy_consolecmt_to_directory ()
 {
-  CONSOLE_LINUX=$CONSOLE_TARGET/cubridmigration_console-linux.tar.gz
+  CONSOLE_LINUX=$CONSOLE_TARGET/cubridmigration-console-linux.tar.gz
   if [ -e $CONSOLE_LINUX ]; then
     cp -vfp $CONSOLE_LINUX $TARGET
   fi
 
-  CONSOLE_WINDOWS=$CONSOLE_TARGET/cubridmigration_console-windows.zip
+  CONSOLE_WINDOWS=$CONSOLE_TARGET/cubridmigration-console-windows.zip
   if [ -e $CONSOLE_WINDOWS ]; then
     cp -vfp $CONSOLE_WINDOWS $TARGET
   fi
