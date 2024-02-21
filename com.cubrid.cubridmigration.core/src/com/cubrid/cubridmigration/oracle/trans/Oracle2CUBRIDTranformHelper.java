@@ -380,7 +380,7 @@ public class Oracle2CUBRIDTranformHelper extends DBTransformHelper {
         String lowerCaseDefaultValue = defaultValue.toLowerCase(Locale.US);
 
         // Function names should be lowerCases
-        String[] functions = {"to_char", "to_date"};
+        String[] functions = {"to_char", "to_date", "cast"};
 
         for (String function : functions) {
             if (lowerCaseDefaultValue.startsWith(function)) {
