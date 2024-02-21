@@ -78,7 +78,8 @@ public class CleanDBTask extends ImportTask {
         Map<String, List<String>> fkDropQueryBySchemaMap = new HashMap<String, List<String>>();
         Map<String, List<String>> tbTruncateQueryBySchemaMap = new HashMap<String, List<String>>();
 
-        String conUser = config.getSourceConParams().getConUser();
+        String conUser = config.getSrcConnOwner();
+
         for (SourceEntryTableConfig setc : config.getExpEntryTableCfg()) {
             if (!setc.isCreateNewTable()) {
                 continue;

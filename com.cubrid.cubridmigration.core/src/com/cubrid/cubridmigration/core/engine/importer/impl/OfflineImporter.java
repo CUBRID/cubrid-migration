@@ -685,9 +685,7 @@ public abstract class OfflineImporter extends Importer {
                 sql.toString(),
                 DBObject.OBJ_TYPE_TABLE,
                 createResultHandler(table),
-                config.isAddUserSchema()
-                        ? table.getSourceOwner()
-                        : config.getSourceConParams().getConUser());
+                config.isAddUserSchema() ? table.getSourceOwner() : config.getSrcConnOwner());
     }
 
     /**
@@ -703,9 +701,7 @@ public abstract class OfflineImporter extends Importer {
                 viewDDL + "\n",
                 DBObject.OBJ_TYPE_VIEW,
                 createResultHandler(view),
-                config.isAddUserSchema()
-                        ? view.getSourceOwner()
-                        : config.getSourceConParams().getConUser());
+                config.isAddUserSchema() ? view.getSourceOwner() : config.getSrcConnOwner());
     }
 
     /**
@@ -721,9 +717,7 @@ public abstract class OfflineImporter extends Importer {
                 viewAlterDDL + "\n",
                 DBObject.OBJ_TYPE_VIEW_QUERY_SPEC,
                 createResultHandler(view),
-                config.isAddUserSchema()
-                        ? view.getSourceOwner()
-                        : config.getSourceConParams().getConUser());
+                config.isAddUserSchema() ? view.getSourceOwner() : config.getSrcConnOwner());
     }
 
     /**
@@ -747,7 +741,7 @@ public abstract class OfflineImporter extends Importer {
                 createResultHandler(pk),
                 config.isAddUserSchema()
                         ? pk.getTable().getSourceOwner()
-                        : config.getSourceConParams().getConUser());
+                        : config.getSrcConnOwner());
     }
 
     /**
@@ -770,7 +764,7 @@ public abstract class OfflineImporter extends Importer {
                 createResultHandler(fk),
                 config.isAddUserSchema()
                         ? fk.getTable().getSourceOwner()
-                        : config.getSourceConParams().getConUser());
+                        : config.getSrcConnOwner());
     }
 
     /**
@@ -788,13 +782,14 @@ public abstract class OfflineImporter extends Importer {
                                 "",
                                 config.isAddUserSchema());
         index.setDDL(ddl);
+
         executeDDL(
                 ddl + ";\n",
                 DBObject.OBJ_TYPE_INDEX,
                 createResultHandler(index),
                 config.isAddUserSchema()
                         ? index.getTable().getSourceOwner()
-                        : config.getSourceConParams().getConUser());
+                        : config.getSrcConnOwner());
     }
 
     /**
@@ -809,9 +804,7 @@ public abstract class OfflineImporter extends Importer {
                 ddl + ";\n",
                 DBObject.OBJ_TYPE_SEQUENCE,
                 createResultHandler(sq),
-                config.isAddUserSchema()
-                        ? sq.getSourceOwner()
-                        : config.getSourceConParams().getConUser());
+                config.isAddUserSchema() ? sq.getSourceOwner() : config.getSrcConnOwner());
     }
 
     /**
@@ -826,9 +819,7 @@ public abstract class OfflineImporter extends Importer {
                 ddl + ";\n",
                 DBObject.OBJ_TYPE_SYNONYM,
                 createResultHandler(sn),
-                config.isAddUserSchema()
-                        ? sn.getSourceOwner()
-                        : config.getSourceConParams().getConUser());
+                config.isAddUserSchema() ? sn.getSourceOwner() : config.getSrcConnOwner());
     }
 
     /**
@@ -843,9 +834,7 @@ public abstract class OfflineImporter extends Importer {
                 ddl + ";\n",
                 DBObject.OBJ_TYPE_GRANT,
                 createResultHandler(gr),
-                config.isAddUserSchema()
-                        ? gr.getSourceOwner()
-                        : config.getSourceConParams().getConUser(),
+                config.isAddUserSchema() ? gr.getSourceOwner() : config.getSrcConnOwner(),
                 gr.getSourceObjectOwner());
     }
 
