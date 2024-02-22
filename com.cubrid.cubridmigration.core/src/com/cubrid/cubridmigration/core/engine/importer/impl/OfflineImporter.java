@@ -51,6 +51,7 @@ import com.cubrid.cubridmigration.core.engine.config.MigrationConfiguration;
 import com.cubrid.cubridmigration.core.engine.config.SourceColumnConfig;
 import com.cubrid.cubridmigration.core.engine.config.SourceTableConfig;
 import com.cubrid.cubridmigration.core.engine.event.ImportRecordsEvent;
+import com.cubrid.cubridmigration.core.engine.event.MigrationXLSNoSupportEvent;
 import com.cubrid.cubridmigration.core.engine.event.SingleRecordErrorEvent;
 import com.cubrid.cubridmigration.core.engine.exception.BreakMigrationException;
 import com.cubrid.cubridmigration.core.engine.exception.NormalMigrationException;
@@ -271,6 +272,7 @@ public abstract class OfflineImporter extends Importer {
             try {
                 List<String> lobFiles = new ArrayList<String>();
                 int total = 0;
+                int fail = 0;
                 for (Record re : records) {
                     if (re == null) {
                         continue;
@@ -282,14 +284,25 @@ public abstract class OfflineImporter extends Importer {
 
                     int index = 0;
                     for (String val : res) {
-                        sheet.addCell(new jxl.write.Label(index++, total, val));
+                        if (val.length() > 32767) {
+                            sheet.addCell(new jxl.write.Label(index++, total, ""));
+                            eventHandler.handleEvent(
+                                    new MigrationXLSNoSupportEvent(
+                                            tt.getName(),
+                                            total,
+                                            index,
+                                            "Too long data (data length in xml must be less than 32768.)"));
+                            fail++;
+                        } else {
+                            sheet.addCell(new jxl.write.Label(index++, total, val));
+                        }
                     }
 
                     total++;
                 }
 
                 workbook.write();
-                return total;
+                return total - fail;
             } finally {
                 workbook.close();
             }
