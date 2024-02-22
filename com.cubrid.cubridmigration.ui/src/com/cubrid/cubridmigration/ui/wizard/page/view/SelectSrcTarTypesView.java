@@ -30,7 +30,6 @@
  */
 package com.cubrid.cubridmigration.ui.wizard.page.view;
 
-import com.cubrid.common.ui.swt.Resources;
 import com.cubrid.cubridmigration.core.common.log.LogUtil;
 import com.cubrid.cubridmigration.core.engine.config.MigrationConfiguration;
 import com.cubrid.cubridmigration.ui.MigrationUIPlugin;
@@ -47,7 +46,6 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Text;
 import org.osgi.service.prefs.BackingStoreException;
 
 /**
@@ -92,7 +90,7 @@ public class SelectSrcTarTypesView {
 
         Group grpSrc = new Group(sectionClient, SWT.NONE);
         grpSrc.setLayout(new GridLayout());
-        grpSrc.setLayoutData(new GridData(SWT.LEFT, SWT.FILL, false, true));
+        grpSrc.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
         grpSrc.setText(Messages.msgSrcType);
 
         btnOnlineCUBRIDSrc =
@@ -159,7 +157,7 @@ public class SelectSrcTarTypesView {
 
         Group grpTar = new Group(sectionClient, SWT.NONE);
         grpTar.setLayout(new GridLayout());
-        grpTar.setLayoutData(new GridData(SWT.LEFT, SWT.FILL, false, true));
+        grpTar.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
         grpTar.setText(Messages.msgDestType);
 
         btnOnlineTar =
@@ -216,21 +214,12 @@ public class SelectSrcTarTypesView {
     private Button createSrcTarTypeBtn(Composite parent, String name, String des) {
         Button result = new Button(parent, SWT.RADIO);
         result.setText(name);
+        result.setToolTipText(des);
         {
             GridData gd = new GridData(SWT.LEFT, SWT.TOP, false, false);
             gd.verticalIndent = 8;
             result.setLayoutData(gd);
         }
-        Text txt = new Text(parent, SWT.MULTI | SWT.WRAP | SWT.READ_ONLY);
-        {
-            GridData gd = new GridData(SWT.LEFT, SWT.TOP, false, false);
-            gd.horizontalIndent = 15;
-            gd.widthHint = 370;
-            txt.setLayoutData(gd);
-        }
-        txt.setBackground(parent.getBackground());
-        txt.setForeground(Resources.getInstance().getColor(SWT.COLOR_DARK_GRAY));
-        txt.setText(des);
         return result;
     }
 

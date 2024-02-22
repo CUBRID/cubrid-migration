@@ -38,8 +38,10 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.dialogs.PageChangedEvent;
+import org.eclipse.jface.dialogs.PageChangingEvent;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
@@ -53,6 +55,8 @@ public class SelectSrcTarTypesPage extends MigrationWizardPage {
 
     private static final Logger LOG = LogUtil.getLogger(SelectSrcTarTypesPage.class);
     private SelectSrcTarTypesView comSelection;
+    private Composite mainCom;
+    private ScrolledComposite scComposite;
 
     public SelectSrcTarTypesPage(String pageName) {
         super(pageName);
@@ -66,6 +70,7 @@ public class SelectSrcTarTypesPage extends MigrationWizardPage {
      * @param event PageChangedEvent
      */
     protected void afterShowCurrentPage(PageChangedEvent event) {
+        mainCom.setVisible(true);
         MigrationConfiguration config = getMigrationWizard().getMigrationConfig();
 
         if (config.isOldScript()) {
@@ -92,12 +97,26 @@ public class SelectSrcTarTypesPage extends MigrationWizardPage {
      * @param parent Composite
      */
     public void createControl(Composite parent) {
-        Composite container = new Composite(parent, SWT.NONE);
+        mainCom = new Composite(parent, SWT.NONE);
+        mainCom.setLayout(new GridLayout(1, false));
+
+        scComposite = new ScrolledComposite(mainCom, SWT.H_SCROLL | SWT.V_SCROLL);
+        GridData gd = new GridData(SWT.FILL, SWT.FILL, true, true);
+        gd.heightHint = 300;
+        scComposite.setLayoutData(gd);
+        scComposite.setLayout(new GridLayout(1, false));
+
+        Composite container = new Composite(scComposite, SWT.NONE);
         container.setLayout(new GridLayout());
         setControl(container);
         container.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
         comSelection = new SelectSrcTarTypesView(container);
         afterShowCurrentPage(null);
+
+        scComposite.setMinSize(container.computeSize(SWT.DEFAULT, SWT.DEFAULT));
+        scComposite.setContent(container);
+        scComposite.setExpandHorizontal(true);
+        scComposite.setExpandVertical(true);
     }
 
     /**
@@ -129,5 +148,10 @@ public class SelectSrcTarTypesPage extends MigrationWizardPage {
             return false;
         }
         return true;
+    }
+
+    @Override
+    protected void handlePageLeaving(PageChangingEvent event) {
+        mainCom.setVisible(false);
     }
 }
