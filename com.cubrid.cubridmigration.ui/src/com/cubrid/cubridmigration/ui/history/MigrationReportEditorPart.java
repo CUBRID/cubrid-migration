@@ -52,6 +52,7 @@ import org.eclipse.jface.viewers.DoubleClickEvent;
 import org.eclipse.jface.viewers.IDoubleClickListener;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -229,7 +230,11 @@ public class MigrationReportEditorPart extends EditorPart {
         comOverview.setLayout(new GridLayout());
         comOverview.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false));
 
-        Composite comTime = new Composite(comOverview, SWT.NONE);
+        ScrolledComposite scComposite = new ScrolledComposite(comOverview, SWT.H_SCROLL);
+        scComposite.setLayout(new GridLayout(1, false));
+        scComposite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
+
+        Composite comTime = new Composite(scComposite, SWT.NONE);
         comTime.setLayout(new GridLayout(8, false));
         comTime.setLayoutData(new GridData(SWT.FILL, SWT.TOP, false, false));
 
@@ -280,6 +285,12 @@ public class MigrationReportEditorPart extends EditorPart {
                         }
                     });
         }
+
+        scComposite.setContent(comTime);
+        scComposite.setExpandHorizontal(true);
+        scComposite.setExpandVertical(true);
+        scComposite.setMinSize(comTime.computeSize(SWT.DEFAULT, SWT.DEFAULT));
+        scComposite.layout(true);
 
         TableViewerBuilder tvBuilder = new TableViewerBuilder();
         tvBuilder.setColumnNames(MigrationReportUIController.TABLE_HEADER_OVERVIEW);
