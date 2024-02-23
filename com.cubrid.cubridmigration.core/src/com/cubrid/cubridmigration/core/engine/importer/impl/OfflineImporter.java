@@ -95,6 +95,8 @@ public abstract class OfflineImporter extends Importer {
     protected static final int FILE_SCHEMA_IDX = 2;
     protected static final int FILE_DATA_LOB = 3;
 
+    private static final int MAX_EXCEL_CELL_LENGTH = 32767
+
     protected MigrationConfiguration config;
 
     // LoadDB command can not support multi-thread. LoadDBFile task runs in this pool.
@@ -284,7 +286,7 @@ public abstract class OfflineImporter extends Importer {
 
                     int index = 0;
                     for (String val : res) {
-                        if (val.length() > 32767) {
+                        if (val.length() > MAX_EXCEL_CELL_LENGTH) {
                             sheet.addCell(new jxl.write.Label(index++, total, ""));
                             eventHandler.handleEvent(
                                     new MigrationXLSNoSupportEvent(
