@@ -95,7 +95,7 @@ public abstract class OfflineImporter extends Importer {
     protected static final int FILE_SCHEMA_IDX = 2;
     protected static final int FILE_DATA_LOB = 3;
 
-    private static final int MAX_EXCEL_CELL_LENGTH = 32767
+    private static final int MAX_EXCEL_CELL_LENGTH = 32767;
 
     protected MigrationConfiguration config;
 
