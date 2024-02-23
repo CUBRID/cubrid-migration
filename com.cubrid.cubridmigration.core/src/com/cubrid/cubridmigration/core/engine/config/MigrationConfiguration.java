@@ -882,8 +882,7 @@ public class MigrationConfiguration {
                 addTargetObjectFileName(schema.getName(), isSplit, isOneTableOneFile);
             }
         } else {
-            addTargetObjectFileName(
-                    this.getSourceConParams().getConUser(), isSplit, isOneTableOneFile);
+            addTargetObjectFileName(this.getSrcConnOwner(), isSplit, isOneTableOneFile);
         }
     }
 
@@ -1657,7 +1656,7 @@ public class MigrationConfiguration {
                 mergeTargetFilePath(schema.getName(), tempPath, path2);
             }
         } else {
-            mergeTargetFilePath(getSourceConParams().getConUser(), tempPath, path2);
+            mergeTargetFilePath(getSrcConnOwner(), tempPath, path2);
         }
     }
 
@@ -5030,5 +5029,13 @@ public class MigrationConfiguration {
         return PathUtils.mergePath(
                 PathUtils.mergePath(this.getFileRepositroyPath(), targetSchemaName),
                 fileName.toString());
+    }
+
+    public String getSrcConnOwner() {
+        if (this.sourceIsXMLDump()) {
+            return getSrcCatalog().getName();
+        } else {
+            return getSourceConParams().getConUser();
+        }
     }
 }
