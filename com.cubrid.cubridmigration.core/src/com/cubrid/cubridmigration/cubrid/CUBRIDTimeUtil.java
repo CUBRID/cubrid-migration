@@ -161,6 +161,67 @@ public class CUBRIDTimeUtil { // NOPMD
         "''MM-dd-yyyy HH:mm:ss''"
     };
 
+    private static String[] dateTimeFunctions = {
+        "ADDDATE",
+        "DATE_ADD",
+        "ADDTIME",
+        "ADD_MONTHS",
+        "CURDATE",
+        "CURRENT_DATE",
+        "CURRENT_DATETIME",
+        "NOW",
+        "CURTIME",
+        "CURRENT_TIME",
+        "CURRENT_TIMESTAMP",
+        "LOCALTIME",
+        "LOCALTIMESTAMP",
+        "DATE",
+        "DATEDIFF",
+        "DATE_SUB",
+        "SUBDATE",
+        "DAY",
+        "DAYOFMONTH",
+        "DAYOFWEEK",
+        "DAYOFYEAR",
+        "EXTRACT",
+        "FROM_DAYS",
+        "FROM_TZ",
+        "FROM_UNIXTIME",
+        "HOUR",
+        "LAST_DAY",
+        "MAKEDATE",
+        "MAKETIME",
+        "MINUTE",
+        "MONTH",
+        "MONTHS_BETWEEN",
+        "NEW_TIME",
+        "QUARTER",
+        "ROUND",
+        "SEC_TO_TIME",
+        "SECOND",
+        "SYS_DATE",
+        "SYSDATE",
+        "SYS_DATETIME",
+        "SYSDATETIME",
+        "SYS_TIME",
+        "SYSTIME",
+        "SYS_TIMESTAMP",
+        "SYSTIMESTAMP",
+        "TIME",
+        "TIME_TO_SEC",
+        "TIMEDIFF",
+        "TIMESTAMP",
+        "TO_DAYS",
+        "TRUNC",
+        "TZ_OFFSET",
+        "UNIX_TIMESTAMP",
+        "UTC_DATE",
+        "UTC_TIME",
+        "WEEK",
+        "WEEKDAY",
+        "YEAR"
+    };
+
     /**
      * Format date into yyyy-MM-dd with default time zone and default format
      *
@@ -517,5 +578,23 @@ public class CUBRIDTimeUtil { // NOPMD
         formatter.parse(datestring, pp);
 
         return pp.getIndex() == datestring.length();
+    }
+
+    /**
+     * validate of date/time functions supported by CUBRID
+     *
+     * @param dateTime date/time function that requires verification
+     * @return boolean true: CUBRID support; false: CUBRID not support
+     */
+    public static boolean validateDateTimeFunction(String dateTime) {
+        String upperDateTime = dateTime.toUpperCase(Locale.US);
+
+        for (String function : dateTimeFunctions) {
+            if (upperDateTime.startsWith(function)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }
