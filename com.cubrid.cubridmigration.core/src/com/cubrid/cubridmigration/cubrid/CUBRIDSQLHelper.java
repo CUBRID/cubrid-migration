@@ -613,54 +613,25 @@ public class CUBRIDSQLHelper extends SQLHelper {
         sb.append(getOwnerNameWithDot(view.getOwner(), addUserSchema));
         sb.append(getQuotedObjName(viewName));
 
-        // Column definitions are not necessarily.
-        //		sb.append("(");
-        //		List<Column> list = view.getColumns();
-        //
-        //		for (Iterator<Column> iterator = list.iterator(); iterator.hasNext();) {
-        //			Column column = (Column) iterator.next();
-        //
-        //			String type = column.getShownDataType();
-        //			sb.append(NEWLINE).append(" ").append(
-        //					getDBQualifier(column.getName())).append(" ").append(type);
-        //			String defaultv = column.getDefaultValue();
-        //
-        //			if (defaultv != null) {
-        //				defaultv = CUBRIDFormator.formatValue(column.getDataType(),
-        //						column.getSubDataType(), column.getScale(), defaultv).getFormatResult();
-        //
-        //				if (defaultv != null) {
-        //					sb.append(" DEFAULT ").append(defaultv);
-        //				}
-        //			}
-        //
-        //			sb.append(",");
-        //		}
-        //
-        //		if (!list.isEmpty() && sb.length() > 0) {
-        //			sb.deleteCharAt(sb.length() - 1);
-        //		}
-        //
-        //		sb.append(")").append(NEWLINE);
-
         List<Column> columnList = view.getColumns();
+        if (!columnList.isEmpty()) {
+            sb.append("(").append(NEWLINE);
+            for (int i = 0; i < columnList.size(); i++) {
+                Column col = columnList.get(i);
 
-        sb.append("(").append(NEWLINE);
-        for (int i = 0; i < columnList.size(); i++) {
-            Column col = columnList.get(i);
+                if (i > 0) {
+                    sb.append(",").append(NEWLINE);
+                }
 
-            if (i > 0) {
-                sb.append(",").append(NEWLINE);
+                sb.append(getQuotedObjName(col.getName()));
+                sb.append(" ").append(col.getShownDataType());
+
+                if (col.getComment() != null) {
+                    sb.append(" COMMENT ").append(col.getComment());
+                }
             }
-
-            sb.append(getQuotedObjName(col.getName()));
-            sb.append(" ").append(col.getShownDataType());
-
-            if (col.getComment() != null) {
-                sb.append(" COMMENT ").append(col.getComment());
-            }
+            sb.append(NEWLINE).append(")");
         }
-        sb.append(NEWLINE).append(")");
 
         if (view.getComment() != null) {
             sb.append(" ").append("COMMENT \'" + view.getComment() + "\'");
