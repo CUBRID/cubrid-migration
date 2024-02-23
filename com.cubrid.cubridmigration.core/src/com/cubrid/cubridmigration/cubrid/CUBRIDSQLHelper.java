@@ -119,14 +119,7 @@ public class CUBRIDSQLHelper extends SQLHelper {
             bf.append(" SHARED ").append(defaultv);
         } else if ((column.getDataType().equals("datetime")
                         || column.getDataType().equals("timestamp"))
-                && ("CURRENT_TIMESTAMP".equalsIgnoreCase(value)
-                        || "SYS_TIMESTAMP".equalsIgnoreCase(value)
-                        || "SYSTIMESTAMP".equalsIgnoreCase(value)
-                        || "SYS_DATETIME".equalsIgnoreCase(value)
-                        || "SYSDATETIME".equalsIgnoreCase(value)
-                        || "CURRENT_DATETIME".equalsIgnoreCase(value)
-                        || "CURRENT_DATETIME()".equalsIgnoreCase(value)
-                        || "NOW()".equalsIgnoreCase(value))) {
+                && CUBRIDTimeUtil.validateDateTimeFunction(value)) {
             bf.append(" DEFAULT ").append(value);
         } else {
             String defaultv = column.getDefaultValue();

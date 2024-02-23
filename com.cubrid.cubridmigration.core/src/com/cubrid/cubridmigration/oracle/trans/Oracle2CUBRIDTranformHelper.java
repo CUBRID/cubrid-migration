@@ -59,6 +59,18 @@ import org.apache.commons.lang.StringUtils;
  */
 public class Oracle2CUBRIDTranformHelper extends DBTransformHelper {
 
+    private static final String[] ORACLE_DATETIME_FUNCTION = {
+        "CURDATE",
+        "CURRENT_DATE",
+        "CURTIME",
+        "CURRENT_TIMESTAMP",
+        "DBTIMEZONE",
+        "LOCALTIMESTAMP",
+        "SESSIONTIMEZONE",
+        "SYSDATE",
+        "SYSTIMESTAMP"
+    };
+
     public Oracle2CUBRIDTranformHelper(
             AbstractDataTypeMappingHelper dataTypeMapping, ToCUBRIDDataConverterFacade cf) {
         super(dataTypeMapping, cf);
@@ -306,8 +318,8 @@ public class Oracle2CUBRIDTranformHelper extends DBTransformHelper {
         }
 
         if ((dataType.indexOf("TIMESTAMP") > -1 || "DATE".equalsIgnoreCase(dataType))
-                && defaultValue.toLowerCase(Locale.US).startsWith("sysdate")) {
-            cubridColumn.setDefaultValue("CURRENT_TIMESTAMP");
+                && isDefaultDateTimeFunction(defaultValue)) {
+            cubridColumn.setDefaultValue(defaultValue);
             return;
         }
 
@@ -384,6 +396,24 @@ public class Oracle2CUBRIDTranformHelper extends DBTransformHelper {
 
         for (String function : functions) {
             if (lowerCaseDefaultValue.startsWith(function)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Oracle date/time function validation
+     *
+     * @param defaultValue
+     * @return true: Oracle support; false: Oracle not support
+     */
+    private boolean isDefaultDateTimeFunction(String defaultValue) {
+        String upperCaseDefaultValue = defaultValue.toUpperCase(Locale.US);
+
+        for (String function : ORACLE_DATETIME_FUNCTION) {
+            if (upperCaseDefaultValue.startsWith(function)) {
                 return true;
             }
         }
