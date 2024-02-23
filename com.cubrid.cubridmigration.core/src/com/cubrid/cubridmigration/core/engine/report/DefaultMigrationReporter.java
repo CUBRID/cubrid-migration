@@ -48,6 +48,7 @@ import com.cubrid.cubridmigration.core.engine.event.MigrationEvent;
 import com.cubrid.cubridmigration.core.engine.event.MigrationFinishedEvent;
 import com.cubrid.cubridmigration.core.engine.event.MigrationNoSupportEvent;
 import com.cubrid.cubridmigration.core.engine.event.MigrationStartEvent;
+import com.cubrid.cubridmigration.core.engine.event.MigrationXLSNoSupportEvent;
 import com.cubrid.cubridmigration.core.engine.event.StartExpTableEvent;
 import com.cubrid.cubridmigration.core.engine.template.MigrationTemplateParser;
 import com.cubrid.cubridmigration.cubrid.CUBRIDTimeUtil;
@@ -213,6 +214,11 @@ public abstract class DefaultMigrationReporter implements IMigrationReporter {
                 return;
             }
             pwNonsupport.append(dbObject.getDDL());
+            pwNonsupport.append("\n");
+            pwNonsupport.flush();
+        } else if (event instanceof MigrationXLSNoSupportEvent) {
+            MigrationXLSNoSupportEvent ev = (MigrationXLSNoSupportEvent) event;
+            pwNonsupport.append(ev.toString());
             pwNonsupport.append("\n");
             pwNonsupport.flush();
         } else if (event instanceof MigrationFinishedEvent) {
