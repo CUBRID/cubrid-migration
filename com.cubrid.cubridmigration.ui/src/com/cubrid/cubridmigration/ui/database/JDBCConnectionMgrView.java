@@ -91,6 +91,7 @@ public class JDBCConnectionMgrView {
         /** constructor */
         public RefreshAction() {
             setText(Messages.refreshButtonLabel);
+            setToolTipText(Messages.refreshButtonDescription);
             setImageDescriptor(MigrationUIPlugin.getImageDescriptor("icon/refresh.gif"));
         }
 
@@ -306,6 +307,7 @@ public class JDBCConnectionMgrView {
         Button btnRefresh = new Button(buttonContainer, SWT.NONE);
         btnRefresh.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
         btnRefresh.setText(Messages.refreshButtonLabel);
+        btnRefresh.setToolTipText(Messages.refreshButtonDescription);
         btnRefresh.addSelectionListener(
                 new SelectionAdapter() {
 
