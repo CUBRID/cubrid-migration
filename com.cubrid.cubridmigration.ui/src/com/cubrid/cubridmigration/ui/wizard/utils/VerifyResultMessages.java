@@ -41,6 +41,7 @@ public class VerifyResultMessages {
     private String errorMessage;
     private String warningMessage;
     private String confirmMessage;
+    private String pkConfirmMsg;
 
     public VerifyResultMessages() {
         // do nothing.
@@ -50,6 +51,18 @@ public class VerifyResultMessages {
         this.errorMessage = errorMessage;
         this.warningMessage = warningMessage;
         this.confirmMessage = confirmMessage;
+        this.pkConfirmMsg = "";
+    }
+
+    public VerifyResultMessages(
+            String errorMessage,
+            String warningMessage,
+            String confirmMessage,
+            String pkConfirmMsg) {
+        this.errorMessage = errorMessage;
+        this.warningMessage = warningMessage;
+        this.confirmMessage = confirmMessage;
+        this.pkConfirmMsg = pkConfirmMsg;
     }
 
     /**
@@ -79,6 +92,10 @@ public class VerifyResultMessages {
         return !StringUtils.isEmpty(confirmMessage);
     }
 
+    public boolean hasPKConfirm() {
+        return !StringUtils.isEmpty(pkConfirmMsg);
+    }
+
     public String getErrorMessage() {
         return errorMessage;
     }
@@ -101,5 +118,13 @@ public class VerifyResultMessages {
 
     public void setConfirmMessage(String confirmMessage) {
         this.confirmMessage = confirmMessage;
+    }
+
+    public String getPKConfirmMessage() {
+        return pkConfirmMsg;
+    }
+
+    public void setPKConfirmMessage(String pkConfirmMsg) {
+        this.pkConfirmMsg = pkConfirmMsg;
     }
 }
