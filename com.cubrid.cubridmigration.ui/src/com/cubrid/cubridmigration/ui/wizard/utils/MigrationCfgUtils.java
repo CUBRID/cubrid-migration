@@ -222,6 +222,7 @@ public class MigrationCfgUtils {
         try {
             StringBuffer sbWarning = new StringBuffer();
             StringBuffer sbConfirm = new StringBuffer();
+            StringBuffer pkConfirm = new StringBuffer();
             if (!config.hasObjects2Export()) {
                 throw new MigrationConfigurationCheckingErrorException(
                         "There is no object to be migrated.");
@@ -231,16 +232,17 @@ public class MigrationCfgUtils {
                 result = checkCSVCfg(config);
             } else {
                 result = checkEntryTableCfg(config);
-                mergeVerifyResults(sbWarning, sbConfirm, result);
+                mergeVerifyResults(sbWarning, sbConfirm, pkConfirm, result);
                 result = checkSQLTableCfg(config);
-                mergeVerifyResults(sbWarning, sbConfirm, result);
+                mergeVerifyResults(sbWarning, sbConfirm, pkConfirm, result);
                 result = checkViewCfg(config);
-                mergeVerifyResults(sbWarning, sbConfirm, result);
+                mergeVerifyResults(sbWarning, sbConfirm, pkConfirm, result);
                 result = checkSerialCfg(config);
-                mergeVerifyResults(sbWarning, sbConfirm, result);
+                mergeVerifyResults(sbWarning, sbConfirm, pkConfirm, result);
             }
             result.setWarningMessage(sbWarning.toString().trim());
             result.setConfirmMessage(sbConfirm.toString().trim());
+            result.setPKConfirmMessage(pkConfirm.toString().trim());
             return result;
         } catch (MigrationConfigurationCheckingErrorException ex) {
             return new VerifyResultMessages(ex.getMessage(), null, null);
@@ -316,6 +318,7 @@ public class MigrationCfgUtils {
     protected VerifyResultMessages checkEntryTableCfg(MigrationConfiguration config) {
         StringBuffer sbWarning = new StringBuffer();
         StringBuffer sbConfirm = new StringBuffer();
+        StringBuffer pkConfirm = new StringBuffer();
         for (SourceEntryTableConfig setc : config.getExpEntryTableCfg()) {
             VerifyResultMessages result = checkEntryTableCfg(config, setc);
             if (result.hasWarning() && sbWarning.indexOf(result.getWarningMessage()) < 0) {
@@ -324,9 +327,15 @@ public class MigrationCfgUtils {
             if (result.hasConfirm() && sbConfirm.indexOf(result.getConfirmMessage()) < 0) {
                 sbConfirm.append(result.getConfirmMessage()).append(LINE_SEP);
             }
+            if (result.hasPKConfirm() && pkConfirm.indexOf(result.getPKConfirmMessage()) < 0) {
+                pkConfirm.append(result.getPKConfirmMessage()).append(LINE_SEP);
+            }
         }
         return new VerifyResultMessages(
-                null, sbWarning.toString().trim(), sbConfirm.toString().trim());
+                null,
+                sbWarning.toString().trim(),
+                sbConfirm.toString().trim(),
+                pkConfirm.toString().trim());
     }
 
     /**
@@ -371,6 +380,7 @@ public class MigrationCfgUtils {
         StringBuffer sbWarn = new StringBuffer();
         StringBuffer sbConfirm = new StringBuffer();
         StringBuffer sbNoPkTable = new StringBuffer();
+        StringBuffer sbpkConfirm = new StringBuffer();
         // If there is no PK in the source table, output a warning.
         if (!srcTable.hasPK()) {
             if (config.getSrcCatalog().getSchemas().size() > 1) {
@@ -379,14 +389,13 @@ public class MigrationCfgUtils {
 
             sbNoPkTable.append(srcTable.getName());
 
-            String errorMessage =
-                    NLS.bind(Messages.objectMapPageErrMsgNoPK, sbNoPkTable.toString());
-            sbConfirm.append(errorMessage).append(LINE_SEP);
+            sbpkConfirm.append(NLS.bind(Messages.objectMapPageErrMsgNoPK, sbNoPkTable.toString()));
+            sbpkConfirm.append(LINE_SEP);
         }
         checkTableIsInTargetDb(config, setc, targetTable, sbConfirm);
         checkTableColumns(config, setc, srcTable, targetTable, sbConfirm);
         checkEntryTableConstrains(setc, targetTable, sbWarn, sbConfirm);
-        return createVerifyResult(sbWarn, sbConfirm);
+        return createVerifyResult(sbWarn, sbConfirm, sbpkConfirm);
     }
 
     /**
@@ -664,17 +673,6 @@ public class MigrationCfgUtils {
                 String errorMessage =
                         NLS.bind(Messages.objectMapPageErrMsgColumnNotMatched, bindings);
                 sbConfirm.append(errorMessage).append(LINE_SEP);
-            } else if (verifyInfo.getResult() == VerifyInfo.TYPE_NOENOUGH_LENGTH) {
-                String[] bindings =
-                        new String[] {
-                            scol.getName(),
-                            scol.getShownDataType(),
-                            tcol.getName(),
-                            tcol.getShownDataType(),
-                            srcTable.getName()
-                        };
-                String errorMessage = NLS.bind(Messages.msgErrColumnNotEnoughLength, bindings);
-                sbConfirm.append(errorMessage).append(LINE_SEP);
             }
         }
         return createVerifyResult(sbWarn, sbConfirm);
@@ -752,17 +750,6 @@ public class MigrationCfgUtils {
                         };
                 String errorMessage =
                         NLS.bind(Messages.objectMapPageErrMsgColumnNotMatched, bindings);
-                sbConfirm.append(errorMessage).append(LINE_SEP);
-            } else if (verifyInfo.getResult() == VerifyInfo.TYPE_NOENOUGH_LENGTH) {
-                String[] bindings =
-                        new String[] {
-                            scol.getName(),
-                            scol.getShownDataType(),
-                            tcol.getName(),
-                            tcol.getShownDataType(),
-                            srcTable.getName()
-                        };
-                String errorMessage = NLS.bind(Messages.msgErrColumnNotEnoughLength, bindings);
                 sbConfirm.append(errorMessage).append(LINE_SEP);
             }
         }
@@ -889,6 +876,17 @@ public class MigrationCfgUtils {
         return result;
     }
 
+    protected VerifyResultMessages createVerifyResult(
+            StringBuffer sbWarn, StringBuffer sbConfirm, StringBuffer pkConfirm) {
+        VerifyResultMessages result = createVerifyResult(sbWarn, sbConfirm);
+
+        if (pkConfirm.length() > 0) {
+            result.setPKConfirmMessage(pkConfirm.toString().trim());
+        }
+
+        return result;
+    }
+
     /** @return true if user should change the target character type's size to avoid data lost. */
     public boolean doesNeedToChangeCharacterTypeSize() {
         return DatabaseType.MYSQL.equals(config.getSourceDBType())
@@ -946,12 +944,18 @@ public class MigrationCfgUtils {
      * @param result VerifyResultMessages
      */
     protected void mergeVerifyResults(
-            StringBuffer sbWarning, StringBuffer sbConfirm, VerifyResultMessages result) {
+            StringBuffer sbWarning,
+            StringBuffer sbConfirm,
+            StringBuffer pkConfirm,
+            VerifyResultMessages result) {
         if (result.hasWarning()) {
             sbWarning.append(result.getWarningMessage()).append(LINE_SEP);
         }
         if (result.hasConfirm()) {
             sbConfirm.append(result.getConfirmMessage()).append(LINE_SEP);
+        }
+        if (result.hasPKConfirm()) {
+            pkConfirm.append(result.getPKConfirmMessage()).append(LINE_SEP);
         }
     }
 
