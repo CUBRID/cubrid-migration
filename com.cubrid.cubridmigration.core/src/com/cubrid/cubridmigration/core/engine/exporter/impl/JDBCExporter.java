@@ -52,6 +52,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import org.apache.log4j.Logger;
 
 /**
@@ -143,33 +144,70 @@ public class JDBCExporter extends MigrationExporter {
      * @return new record object
      */
     protected Record createNewRecord(Table st, List<SourceColumnConfig> expCols, ResultSet rs) {
+        Column sCol = null;
+        Record record = new Record();
         try {
-            Record record = new Record();
             final DBExportHelper srcDBExportHelper = getSrcDBExportHelper();
             for (int ci = 1; ci <= expCols.size(); ci++) {
                 SourceColumnConfig cc = expCols.get(ci - 1);
-                Column sCol = st.getColumnByName(cc.getName());
+                sCol = st.getColumnByName(cc.getName());
                 Object value = srcDBExportHelper.getJdbcObject(rs, sCol);
                 record.addColumnValue(sCol, value);
             }
             return record;
         } catch (NormalMigrationException e) {
-            LOG.error("", e);
+            LOG.error("[RECORD ERROR]", e);
             eventHandler.handleEvent(new MigrationErrorEvent(e));
         } catch (SQLException e) {
-            LOG.error("", e);
+            LOG.error("[RECORD ERROR]", e);
             eventHandler.handleEvent(
                     new MigrationErrorEvent(
                             new NormalMigrationException(
-                                    "Transform table [" + st.getName() + "] record error.", e)));
+                                    "[RECORD ERROR]  table: "
+                                            + st.getName()
+                                            + "  column: "
+                                            + (sCol != null ? sCol.getName() : "")
+                                            + "  pk:"
+                                            + getPkValues(st, record),
+                                    e)));
         } catch (Exception e) {
-            LOG.error("", e);
+            LOG.error("[RECORD ERROR]", e);
             eventHandler.handleEvent(
                     new MigrationErrorEvent(
                             new NormalMigrationException(
-                                    "Transform table [" + st.getName() + "] record error.", e)));
+                                    "[RECORD ERROR]  table: "
+                                            + st.getName()
+                                            + "  column: "
+                                            + (sCol != null ? sCol.getName() : "")
+                                            + "  pk:"
+                                            + getPkValues(st, record),
+                                    e)));
         }
         return null;
+    }
+
+    /**
+     * Returns the value of pk to be used when RECORD ERROR
+     *
+     * @param table Table
+     * @param record Record
+     * @return Returns the value of pk
+     */
+    private String getPkValues(Table table, Record record) {
+        List<String> tablePkColumns = table.getPk() != null ? table.getPk().getPkColumns() : null;
+        Map<String, Object> columnValueMap = record.getColumnValueMap();
+        StringBuffer pkValue = new StringBuffer();
+
+        if (tablePkColumns == null || columnValueMap.isEmpty()) {
+            return " NULL";
+        }
+
+        for (String tablePkColumn : tablePkColumns) {
+            String value = columnValueMap.get(tablePkColumn).toString();
+            pkValue.append(" " + value);
+        }
+
+        return pkValue.toString();
     }
 
     /**
