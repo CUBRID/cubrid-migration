@@ -42,6 +42,7 @@ import com.cubrid.cubridmigration.core.engine.RecordExportedListener;
 import com.cubrid.cubridmigration.core.engine.ThreadUtils;
 import com.cubrid.cubridmigration.core.engine.config.SourceColumnConfig;
 import com.cubrid.cubridmigration.core.engine.config.SourceTableConfig;
+import com.cubrid.cubridmigration.core.engine.event.LobMigrationErrorEvent;
 import com.cubrid.cubridmigration.core.engine.event.MigrationErrorEvent;
 import com.cubrid.cubridmigration.core.engine.exception.NormalMigrationException;
 import com.cubrid.cubridmigration.core.engine.exporter.MigrationExporter;
@@ -150,6 +151,22 @@ public class JDBCExporter extends MigrationExporter {
                 SourceColumnConfig cc = expCols.get(ci - 1);
                 Column sCol = st.getColumnByName(cc.getName());
                 Object value = srcDBExportHelper.getJdbcObject(rs, sCol);
+
+                if (value instanceof LobMigrationErrorEvent) {
+                    LobMigrationErrorEvent LobError = (LobMigrationErrorEvent) value;
+                    String lobWarning =
+                            "[LOB WARNING]  table: "
+                                    + st.getName()
+                                    + "  column: "
+                                    + (sCol != null ? sCol.getName() : "")
+                                    + "  pk:"
+                                    + getPkValues(st, record);
+
+                    LOG.warn(lobWarning, LobError.getError());
+                    eventHandler.handleEvent(
+                            new MigrationErrorEvent(
+                                    new NormalMigrationException(lobWarning, LobError.getError())));
+                }
                 record.addColumnValue(sCol, value);
             }
             return record;

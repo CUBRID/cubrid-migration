@@ -35,6 +35,7 @@ import com.cubrid.cubridmigration.core.dbobject.Column;
 import com.cubrid.cubridmigration.core.dbobject.PK;
 import com.cubrid.cubridmigration.core.dbtype.DatabaseType;
 import com.cubrid.cubridmigration.core.engine.config.SourceSequenceConfig;
+import com.cubrid.cubridmigration.core.engine.event.LobMigrationErrorEvent;
 import com.cubrid.cubridmigration.core.export.DBExportHelper;
 import com.cubrid.cubridmigration.core.export.IExportDataHandler;
 import com.cubrid.cubridmigration.core.export.handler.CharTypeHandler;
@@ -84,10 +85,18 @@ public class OracleExportHelper extends DBExportHelper {
     public Object getJdbcObject(final ResultSet rs, final Column column) throws SQLException {
         String oraType = OracleDataTypeHelper.getOracleDataTypeKey(column.getDataType());
         IExportDataHandler edh = handlerMap2.get(oraType);
-        if (edh != null) {
-            return edh.getJdbcObject(rs, column);
+        try {
+            if (edh != null) {
+                return edh.getJdbcObject(rs, column);
+            }
+            return super.getJdbcObject(rs, column);
+        } catch (SQLException e) {
+            if (column.getDataType().equalsIgnoreCase("BLOB")
+                    || column.getDataType().equalsIgnoreCase("CLOB")) {
+                return new LobMigrationErrorEvent(e);
+            }
+            throw new SQLException();
         }
-        return super.getJdbcObject(rs, column);
     }
 
     /**
