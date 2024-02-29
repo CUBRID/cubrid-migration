@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Search Solution Corporation. All rights reserved by Search Solution.
+ * Copyright (C) 2016 CUBRID Corporation. All rights reserved by Search Solution.
  *
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
@@ -27,41 +27,49 @@
  * OF SUCH DAMAGE.
  *
  */
-package com.cubrid.cubridmigration.core.engine.task.exp;
 
+package com.cubrid.cubridmigration.core.engine.event;
+
+import com.cubrid.cubridmigration.core.dbobject.DBObject;
 import com.cubrid.cubridmigration.core.dbobject.FK;
-import com.cubrid.cubridmigration.core.dbobject.Table;
-import com.cubrid.cubridmigration.core.engine.config.MigrationConfiguration;
-import com.cubrid.cubridmigration.core.engine.config.SourceTableConfig;
-import com.cubrid.cubridmigration.core.engine.event.MigrationFKWarningEvent;
-import com.cubrid.cubridmigration.core.engine.task.ExportTask;
 
 /**
- * FKExportTask Description
+ * Foreign key option setting alert event
  *
- * @author Kevin Cao
- * @version 1.0 - 2011-8-10 created by Kevin Cao
+ * @author Dongmin Kim
  */
-public class FKExportTask extends ExportTask {
-    protected MigrationConfiguration config;
-    protected SourceTableConfig sourceTableConfig;
+public class MigrationFKWarningEvent extends MigrationEvent {
 
-    public FKExportTask(MigrationConfiguration config, SourceTableConfig tf) {
-        this.config = config;
-        this.sourceTableConfig = tf;
+    private final DBObject dbObject;
+
+    public DBObject getDbObject() {
+        return dbObject;
     }
 
-    /** Execute export operation */
-    protected void executeExportTask() {
-        Table tt = config.getTargetTableSchema(sourceTableConfig.getTarget());
-        for (FK fk : tt.getFks()) {
-            importTaskExecutor.execute((Runnable) taskFactory.createImportFKTask(fk));
+    public MigrationFKWarningEvent(DBObject dbObject) {
+        this.dbObject = dbObject;
+    }
+
+    /**
+     * Event to string.
+     *
+     * @return event string
+     */
+    public String toString() {
+        if (dbObject == null) {
+            return "NULL";
         }
 
-        for (FK fk : tt.getFks()) {
-            if (fk.isChangedReferentialAction()) {
-                eventHandler.handleEvent(new MigrationFKWarningEvent(fk));
-            }
-        }
+        FK fk = (FK) dbObject;
+        return "[FK_WARNING] table: "
+                + fk.getTable().getName()
+                + "  fk: "
+                + fk.getName()
+                + "  Change option(SET NULL -> RESTRICT)";
+    }
+
+    @Override
+    public int getLevel() {
+        return 0;
     }
 }
