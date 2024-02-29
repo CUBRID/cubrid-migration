@@ -587,6 +587,10 @@ public class CUBRIDTimeUtil { // NOPMD
      * @return boolean true: CUBRID support; false: CUBRID not support
      */
     public static boolean validateDateTimeFunction(String dateTime) {
+        if (dateTime == null) {
+            return false;
+        }
+
         String upperDateTime = dateTime.toUpperCase(Locale.US);
 
         for (String function : dateTimeFunctions) {
