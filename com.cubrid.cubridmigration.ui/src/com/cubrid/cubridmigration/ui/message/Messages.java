@@ -699,6 +699,7 @@ public class Messages extends NLS {
     public static String productName;
     public static String progressMetadata;
     public static String refreshButtonLabel;
+    public static String refreshButtonDescription;
     public static String refreshDBConnActionMessage;
     public static String removeButtonLabel;
     public static String schemaMappingPageTitle;
