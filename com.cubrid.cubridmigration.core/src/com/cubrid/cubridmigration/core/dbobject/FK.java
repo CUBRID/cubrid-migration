@@ -58,12 +58,11 @@ public class FK extends DBObject {
     private String name;
     private String ddl;
 
-    // private int deferability;
     private int deleteRule;
     private int updateRule;
+    private boolean changedReferentialAction = false;
 
     private String referencedTableName;
-    // private String onCacheObject;
 
     private final Map<String, String> col2RefMapping = new TreeMap<String, String>();
 
@@ -246,6 +245,14 @@ public class FK extends DBObject {
 
     public Map<String, String> getColumns() {
         return new TreeMap<String, String>(col2RefMapping);
+    }
+
+    public void setChangedReferentialAction(boolean changed) {
+        this.changedReferentialAction = changed;
+    }
+
+    public boolean isChangedReferentialAction() {
+        return this.changedReferentialAction;
     }
 
     /**

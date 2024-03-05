@@ -45,7 +45,9 @@ import com.cubrid.cubridmigration.core.dbobject.Table;
 import com.cubrid.cubridmigration.core.dbobject.View;
 import com.cubrid.cubridmigration.core.sql.SQLHelper;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.apache.commons.lang.StringUtils;
@@ -61,10 +63,18 @@ public class CUBRIDSQLHelper extends SQLHelper {
 
     private static final Logger LOG = LogUtil.getLogger(CUBRIDSQLHelper.class);
 
+    private static enum ReferentialAction {
+        CASCADE,
+        RESTRICT,
+        SET_NULL,
+        NO_ACTION
+    }
+
     private static final String[] UPDATE_RULE =
             new String[] {"CASCADE", "RESTRICT", "SET NULL", "NO ACTION"};
     private static final String[] DELETE_RULE =
             new String[] {"CASCADE", "RESTRICT", "SET NULL", "NO ACTION"};
+
     private static final String NEWLINE = "\n";
     private static final String HINT = "/*+ NO_STATS */";
     private static final String END_LINE_CHAR = ";";
@@ -177,6 +187,35 @@ public class CUBRIDSQLHelper extends SQLHelper {
     }
 
     /**
+     * If the referential action is 'SET NULL', check the column and change it to 'RESTRICT' if it
+     * is 'NOT NULL'
+     *
+     * @param referentialAction int
+     * @param fk FK
+     * @return int
+     */
+    private int changeReferentialAction(int referentialAction, FK fk) {
+        if (referentialAction != ReferentialAction.SET_NULL.ordinal()) {
+            return referentialAction;
+        }
+
+        List<String> fkColumnNames = fk.getColumnNames();
+        Map<String, Column> tableColumnMap = new HashMap<String, Column>();
+        for (Column column : fk.getTable().getColumns()) {
+            tableColumnMap.put(column.getName(), column);
+        }
+
+        for (String columnName : fkColumnNames) {
+            if (!tableColumnMap.get(columnName).isNullable()) {
+                fk.setChangedReferentialAction(true);
+                return ReferentialAction.RESTRICT.ordinal();
+            }
+        }
+
+        return referentialAction;
+    }
+
+    /**
      * DDL of FK in creating and altering a schema
      *
      * @param fk FK
@@ -222,8 +261,10 @@ public class CUBRIDSQLHelper extends SQLHelper {
         }
 
         bf.append(")");
-        bf.append(" ON DELETE ").append(DELETE_RULE[fk.getDeleteRule()]);
-        bf.append(" ON UPDATE ").append(UPDATE_RULE[fk.getUpdateRule()]);
+        bf.append(" ON DELETE ")
+                .append(DELETE_RULE[changeReferentialAction(fk.getDeleteRule(), fk)]);
+        bf.append(" ON UPDATE ")
+                .append(UPDATE_RULE[changeReferentialAction(fk.getUpdateRule(), fk)]);
         return bf.toString();
     }
 
