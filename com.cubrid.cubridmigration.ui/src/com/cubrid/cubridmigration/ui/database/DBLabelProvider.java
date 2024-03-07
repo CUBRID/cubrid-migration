@@ -84,12 +84,14 @@ public class DBLabelProvider implements ITableLabelProvider {
             case 2:
                 return info.getDbName();
             case 3:
-                return info.getHostIp();
+                return info.getUser();
             case 4:
-                return info.getPort() + "";
+                return info.getHostIp();
             case 5:
-                return DatabaseType.getDatabaseTypeByID(info.getDatabaseTypeID()).getName();
+                return info.getPort() + "";
             case 6:
+                return DatabaseType.getDatabaseTypeByID(info.getDatabaseTypeID()).getName();
+            case 7:
                 return info.getCharacterEncoding();
             default:
                 return null;
