@@ -712,6 +712,7 @@ public class Messages extends NLS {
     public static String sourceDBPageTableCharset;
     public static String sourceDBPageTableConnNm;
     public static String sourceDBPageTableDbNm;
+    public static String sourceDBPageTableUserNm;
     public static String sourceDBPageTableDbType;
     public static String sourceDBPageTableIP;
     public static String sourceDBPageTablePort;

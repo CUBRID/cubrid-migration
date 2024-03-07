@@ -227,12 +227,13 @@ public class JDBCConnectionMgrView {
                     "",
                     Messages.sourceDBPageTableConnNm,
                     Messages.sourceDBPageTableDbNm,
+                    Messages.sourceDBPageTableUserNm,
                     Messages.sourceDBPageTableIP,
                     Messages.sourceDBPageTablePort,
                     Messages.sourceDBPageTableDbType,
                     Messages.sourceDBPageTableCharset
                 });
-        tvBuilder.setColumnWidths(new int[] {28, 150, 120, 110, 85, 121, 110});
+        tvBuilder.setColumnWidths(new int[] {28, 150, 120, 110, 110, 85, 121, 110});
         tvBuilder.setContentProvider(
                 new DBContentProvider(MigrationWizard.getSupportedSrcDBTypes()));
         tvBuilder.setLabelProvider(new DBLabelProvider());
