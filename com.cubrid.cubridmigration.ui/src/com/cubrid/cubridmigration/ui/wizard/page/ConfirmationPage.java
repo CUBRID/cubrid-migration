@@ -29,6 +29,8 @@
  */
 package com.cubrid.cubridmigration.ui.wizard.page;
 
+import static com.cubrid.cubridmigration.core.dbtype.DatabaseType.getDatabaseTypeByID;
+
 import com.cubrid.cubridmigration.core.common.log.LogUtil;
 import com.cubrid.cubridmigration.core.connection.ConnParameters;
 import com.cubrid.cubridmigration.core.dbobject.Schema;
@@ -101,6 +103,11 @@ public class ConfirmationPage extends BaseConfirmationPage {
                     .append(srcConnParameters.getHost())
                     .append(lineSeparator)
                     .append(tabSeparator)
+                    .append(Messages.confirmDatabaseType)
+                    .append("  ")
+                    .append(getDatabaseTypeByID(srcConnParameters.getDbType()).getName())
+                    .append(lineSeparator)
+                    .append(tabSeparator)
                     .append(Messages.confirmDatabaseName)
                     .append("  ")
                     .append(srcConnParameters.getDbName())
@@ -166,6 +173,11 @@ public class ConfirmationPage extends BaseConfirmationPage {
                     .append(tcp.getHost())
                     .append(lineSeparator)
                     .append(tabSeparator)
+                    .append(Messages.confirmDatabaseType)
+                    .append("  ")
+                    .append(getDatabaseTypeByID(tcp.getDbType()).getName())
+                    .append(lineSeparator)
+                    .append(tabSeparator)
                     .append(Messages.confirmDatabaseName)
                     .append("  ")
                     .append(tcp.getDbName())
@@ -199,6 +211,15 @@ public class ConfirmationPage extends BaseConfirmationPage {
             }
             text.append(migration.getTargetDataFileFormatLabel());
             text.append(")").append(lineSeparator).append(tabSeparator);
+
+            text.append(Messages.confirmDatabaseType)
+                    .append("  ")
+                    .append(
+                            migration.isAddUserSchema()
+                                    ? Messages.confirmCubrid112Higher
+                                    : Messages.confirmCubrid110Lower)
+                    .append(lineSeparator)
+                    .append(tabSeparator);
 
             text.append(Messages.confirmPath).append("  ");
             if (styleRanges != null) {
