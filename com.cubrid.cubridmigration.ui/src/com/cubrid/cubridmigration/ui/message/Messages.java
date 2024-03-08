@@ -227,7 +227,10 @@ public class Messages extends NLS {
     public static String commonToolMysqlMsg4;
     public static String commonToolMysqlMsg5;
     public static String confirmCharset;
+    public static String confirmCubrid112Higher;
+    public static String confirmCubrid110Lower;
     public static String confirmDatabaseName;
+    public static String confirmDatabaseType;
     public static String confirmFile;
     public static String confirmFileRepository;
     public static String confirmHostIP;
