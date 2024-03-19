@@ -172,7 +172,7 @@ public class ExportScriptDialog extends TransFileBySSHDialog {
     /** Checking and changing JDBC driver directory changes */
     private void changeJDBCDriverDirectory() {
         String jdbcDriverDir = txtJdbcDriverDir.getText().trim();
-        if (jdbcDriverDir.isEmpty() || jdbcDriverDir == null) {
+        if (jdbcDriverDir == null || jdbcDriverDir.isEmpty()) {
             return;
         }
 
@@ -182,7 +182,7 @@ public class ExportScriptDialog extends TransFileBySSHDialog {
     /** Checking and changing output directory changes */
     private void changeOutputDirectory() {
         String outputDir = txtOutputDir.getText().trim();
-        if (outputDir.isEmpty() || outputDir == null) {
+        if (outputDir == null || outputDir.isEmpty()) {
             return;
         }
 
