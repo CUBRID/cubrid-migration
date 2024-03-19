@@ -83,6 +83,8 @@ public class TransFileBySSHDialog extends Dialog {
     protected Text txtUser;
     protected Text txtPublicKey;
     protected Text txtPwd;
+    protected Text txtJdbcDriverDir;
+    protected Text txtOutputDir;
     protected Button btnBrowseKey;
     protected Button btnEnableLocal;
     protected Button btnEnableRemote;
@@ -106,8 +108,8 @@ public class TransFileBySSHDialog extends Dialog {
      * @param newShell to be set
      */
     protected void configureShell(Shell newShell) {
-        newShell.setMinimumSize(300, 500);
-        newShell.setSize(500, 500);
+        newShell.setMinimumSize(300, 550);
+        newShell.setSize(500, 550);
         CompositeUtils.centerDialog(newShell);
         super.configureShell(newShell);
     }
@@ -302,6 +304,24 @@ public class TransFileBySSHDialog extends Dialog {
         btnSaveHost.setText(Messages.btnSaveRemoteServer);
         btnSaveHost.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 2, 1));
         btnSaveHost.setSelection(true);
+
+        Group directoryGrp = new Group(result, SWT.NONE);
+        directoryGrp.setLayout(new GridLayout(3, false));
+        directoryGrp.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, false));
+
+        Label lblJdbc = new Label(directoryGrp, SWT.NONE);
+        lblJdbc.setText(Messages.lblJdbcDriverDir);
+        lblJdbc.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
+
+        txtJdbcDriverDir = new Text(directoryGrp, SWT.BORDER);
+        txtJdbcDriverDir.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
+
+        Label lblOutput = new Label(directoryGrp, SWT.NONE);
+        lblOutput.setText(Messages.lblOutputDir);
+        lblOutput.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
+
+        txtOutputDir = new Text(directoryGrp, SWT.BORDER);
+        txtOutputDir.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
         // ----------------------------------------------------------
         initComposites();
         updateControlsStatus();
@@ -339,6 +359,9 @@ public class TransFileBySSHDialog extends Dialog {
         btnAuSettings.setEnabled(
                 selection && !btnUseProxy.getSelection() && cboAuthType.getSelectionIndex() == 2);
         btnSaveHost.setEnabled(selection);
+
+        txtJdbcDriverDir.setEnabled(getTypeButtonStyle() == SWT.CHECK ? true : false);
+        txtOutputDir.setEnabled(getTypeButtonStyle() == SWT.CHECK ? true : false);
     }
 
     /**

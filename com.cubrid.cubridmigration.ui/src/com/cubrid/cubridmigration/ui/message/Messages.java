@@ -433,6 +433,7 @@ public class Messages extends NLS {
     public static String lblIncrementValue;
     public static String lblIndexName;
     public static String lblIndexQuickSetting;
+    public static String lblJdbcDriverDir;
     public static String lblKrbConfFile;
     public static String lblLog;
     public static String lblLogVolPath;

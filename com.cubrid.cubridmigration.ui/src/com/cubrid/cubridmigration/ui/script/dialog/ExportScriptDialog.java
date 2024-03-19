@@ -169,6 +169,26 @@ public class ExportScriptDialog extends TransFileBySSHDialog {
         return rf;
     }
 
+    /** Checking and changing JDBC driver directory changes */
+    private void changeJDBCDriverDirectory() {
+        String jdbcDriverDir = txtJdbcDriverDir.getText().trim();
+        if (jdbcDriverDir.isEmpty() || jdbcDriverDir == null) {
+            return;
+        }
+
+        config.getSourceConParams().setDriverFileName(jdbcDriverDir);
+    }
+
+    /** Checking and changing output directory changes */
+    private void changeOutputDirectory() {
+        String outputDir = txtOutputDir.getText().trim();
+        if (outputDir.isEmpty() || outputDir == null) {
+            return;
+        }
+
+        config.setFileRepositroyPath(outputDir);
+    }
+
     /** OK pressed */
     protected void okPressed() {
         if (!(btnEnableLocal.getSelection() || btnEnableRemote.getSelection())) {
@@ -177,6 +197,8 @@ public class ExportScriptDialog extends TransFileBySSHDialog {
         }
         if (tmpFile == null) {
             tmpFile = PathUtils.getBaseTempDir() + UUID.randomUUID() + ".xml";
+            changeJDBCDriverDirectory();
+            changeOutputDirectory();
             MigrationTemplateParser.save(config, tmpFile, isSaveSchema);
         }
         if (!checkInput()) {
