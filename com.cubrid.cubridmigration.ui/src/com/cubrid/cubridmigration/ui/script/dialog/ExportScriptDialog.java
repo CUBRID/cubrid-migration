@@ -155,6 +155,13 @@ public class ExportScriptDialog extends TransFileBySSHDialog {
         txtRemoteFile.setText(prefers.get(SSH_FILE, rf));
     }
 
+    @Override
+    protected void updateDirectoryStatus() {
+        txtSourceJdbcDriverDir.setEnabled(true);
+        txtTargetJdbcDriverDir.setEnabled(config.targetIsOnline() ? true : false);
+        txtOutputDir.setEnabled(!config.targetIsOnline() ? true : false);
+    }
+
     /**
      * Retrieves the default migration script name
      *
@@ -169,24 +176,35 @@ public class ExportScriptDialog extends TransFileBySSHDialog {
         return rf;
     }
 
-    /** Checking and changing JDBC driver directory changes */
-    private void changeJDBCDriverDirectory() {
-        String jdbcDriverDir = txtJdbcDriverDir.getText().trim();
-        if (jdbcDriverDir == null || jdbcDriverDir.isEmpty()) {
+    /** Checking and changing source JDBC driver directory */
+    private void changeSourceJDBCDriverDirectory() {
+        String jdbcDriverDir = txtSourceJdbcDriverDir.getText().trim();
+        if (isEmptyDirectory(jdbcDriverDir)) {
             return;
         }
-
         config.getSourceConParams().setDriverFileName(jdbcDriverDir);
     }
 
-    /** Checking and changing output directory changes */
-    private void changeOutputDirectory() {
-        String outputDir = txtOutputDir.getText().trim();
-        if (outputDir == null || outputDir.isEmpty()) {
+    /** Checking and changing target JDBC driver directory */
+    private void changeTargetJDBCDriverDirectory() {
+        String jdbcDriverDir = txtTargetJdbcDriverDir.getText().trim();
+        if (isEmptyDirectory(jdbcDriverDir)) {
             return;
         }
+        config.getTargetConParams().setDriverFileName(jdbcDriverDir);
+    }
 
+    /** Checking and changing output directory */
+    private void changeOutputDirectory() {
+        String outputDir = txtOutputDir.getText().trim();
+        if (isEmptyDirectory(outputDir)) {
+            return;
+        }
         config.setFileRepositroyPath(outputDir);
+    }
+
+    private boolean isEmptyDirectory(String dir) {
+        return dir == null || dir.isEmpty() ? true : false;
     }
 
     /** OK pressed */
@@ -197,7 +215,8 @@ public class ExportScriptDialog extends TransFileBySSHDialog {
         }
         if (tmpFile == null) {
             tmpFile = PathUtils.getBaseTempDir() + UUID.randomUUID() + ".xml";
-            changeJDBCDriverDirectory();
+            changeSourceJDBCDriverDirectory();
+            changeTargetJDBCDriverDirectory();
             changeOutputDirectory();
             MigrationTemplateParser.save(config, tmpFile, isSaveSchema);
         }

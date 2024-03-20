@@ -83,7 +83,8 @@ public class TransFileBySSHDialog extends Dialog {
     protected Text txtUser;
     protected Text txtPublicKey;
     protected Text txtPwd;
-    protected Text txtJdbcDriverDir;
+    protected Text txtSourceJdbcDriverDir;
+    protected Text txtTargetJdbcDriverDir;
     protected Text txtOutputDir;
     protected Button btnBrowseKey;
     protected Button btnEnableLocal;
@@ -108,8 +109,8 @@ public class TransFileBySSHDialog extends Dialog {
      * @param newShell to be set
      */
     protected void configureShell(Shell newShell) {
-        newShell.setMinimumSize(300, 550);
-        newShell.setSize(500, 550);
+        newShell.setMinimumSize(300, 600);
+        newShell.setSize(500, 600);
         CompositeUtils.centerDialog(newShell);
         super.configureShell(newShell);
     }
@@ -309,12 +310,19 @@ public class TransFileBySSHDialog extends Dialog {
         directoryGrp.setLayout(new GridLayout(3, false));
         directoryGrp.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, false));
 
-        Label lblJdbc = new Label(directoryGrp, SWT.NONE);
-        lblJdbc.setText(Messages.lblJdbcDriverDir);
-        lblJdbc.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
+        Label lblSourceJdbc = new Label(directoryGrp, SWT.NONE);
+        lblSourceJdbc.setText(Messages.lblSourceJdbcDriverDir);
+        lblSourceJdbc.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
 
-        txtJdbcDriverDir = new Text(directoryGrp, SWT.BORDER);
-        txtJdbcDriverDir.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
+        txtSourceJdbcDriverDir = new Text(directoryGrp, SWT.BORDER);
+        txtSourceJdbcDriverDir.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
+
+        Label lblTargetJdbc = new Label(directoryGrp, SWT.NONE);
+        lblTargetJdbc.setText(Messages.lblTargetJdbcDriverDir);
+        lblTargetJdbc.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
+
+        txtTargetJdbcDriverDir = new Text(directoryGrp, SWT.BORDER);
+        txtTargetJdbcDriverDir.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
 
         Label lblOutput = new Label(directoryGrp, SWT.NONE);
         lblOutput.setText(Messages.lblOutputDir);
@@ -360,9 +368,11 @@ public class TransFileBySSHDialog extends Dialog {
                 selection && !btnUseProxy.getSelection() && cboAuthType.getSelectionIndex() == 2);
         btnSaveHost.setEnabled(selection);
 
-        txtJdbcDriverDir.setEnabled(getTypeButtonStyle() == SWT.CHECK ? true : false);
-        txtOutputDir.setEnabled(getTypeButtonStyle() == SWT.CHECK ? true : false);
+        updateControlsStatus();
     }
+
+    /** Update directory status. */
+    protected void updateDirectoryStatus() {}
 
     /**
      * Current host information

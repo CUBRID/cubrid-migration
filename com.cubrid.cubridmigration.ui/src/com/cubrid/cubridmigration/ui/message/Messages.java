@@ -433,7 +433,6 @@ public class Messages extends NLS {
     public static String lblIncrementValue;
     public static String lblIndexName;
     public static String lblIndexQuickSetting;
-    public static String lblJdbcDriverDir;
     public static String lblKrbConfFile;
     public static String lblLog;
     public static String lblLogVolPath;
@@ -467,6 +466,7 @@ public class Messages extends NLS {
     public static String lblShared;
     public static String lblSource;
     public static String lblSourceDBPart;
+    public static String lblSourceJdbcDriverDir;
     public static String lblSourceTableName;
     public static String lblSourceTablePartition;
     public static String lblSourceTalbeName;
@@ -480,6 +480,7 @@ public class Messages extends NLS {
     public static String lblSynonymObjectOwnerName;
     public static String lblTableName;
     public static String lblTarget;
+    public static String lblTargetJdbcDriverDir;
     public static String lblTargetTableName;
     public static String lblTargetTablePartition;
     public static String lblTichetCacheFile;
