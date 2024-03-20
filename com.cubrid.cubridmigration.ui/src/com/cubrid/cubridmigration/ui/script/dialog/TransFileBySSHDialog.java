@@ -368,7 +368,7 @@ public class TransFileBySSHDialog extends Dialog {
                 selection && !btnUseProxy.getSelection() && cboAuthType.getSelectionIndex() == 2);
         btnSaveHost.setEnabled(selection);
 
-        updateControlsStatus();
+        updateDirectoryStatus();
     }
 
     /** Update directory status. */
