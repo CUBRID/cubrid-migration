@@ -310,7 +310,7 @@ public class TransFileBySSHDialog extends Dialog {
 
         Label lblChangeMigrationScriptDir = new Label(result, SWT.NONE);
         lblChangeMigrationScriptDir.setText(Messages.lblScriptChangeDirectory);
-        
+
         Group directoryGrp = new Group(result, SWT.NONE);
         directoryGrp.setLayout(new GridLayout(4, false));
         directoryGrp.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, false));
@@ -321,7 +321,9 @@ public class TransFileBySSHDialog extends Dialog {
         Image questionImage050 =
                 new Image(
                         Display.getDefault(),
-                        questionImage.getImageData().scaledTo((int) (width * 0.5), (int) (height * 0.5)));
+                        questionImage
+                                .getImageData()
+                                .scaledTo((int) (width * 0.5), (int) (height * 0.5)));
 
         Label lblSourceJdbc = new Label(directoryGrp, SWT.NONE);
         lblSourceJdbc.setText(Messages.lblSourceJdbcDriverDir);
