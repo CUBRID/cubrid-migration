@@ -391,6 +391,7 @@ public class Messages extends NLS {
     public static String lblAutoIncrement;
     public static String lblCacheNum;
     public static String lblRenamedObject;
+    public static String lblScriptChangeDirectory;
     public static String lblChangeTargetTable;
     public static String lblCharset;
     public static String lblClearAll;
@@ -445,7 +446,8 @@ public class Messages extends NLS {
     public static String lblNULLString;
     public static String lblOtherNULLString;
     public static String lblOutputDir;
-    public static String lblOutputDirQuestion;
+    public static String lblOutputFileDir;
+    public static String lblOutputFileDirQuestion;
     public static String lblOutputFilePrefix;
     public static String lblOverview;
     public static String lblPassword;
