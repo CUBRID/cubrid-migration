@@ -445,6 +445,7 @@ public class Messages extends NLS {
     public static String lblNULLString;
     public static String lblOtherNULLString;
     public static String lblOutputDir;
+    public static String lblOutputDirQuestion;
     public static String lblOutputFilePrefix;
     public static String lblOverview;
     public static String lblPassword;
@@ -467,6 +468,7 @@ public class Messages extends NLS {
     public static String lblSource;
     public static String lblSourceDBPart;
     public static String lblSourceJdbcDriverDir;
+    public static String lblSourceJdbcDriverDirQuestion;
     public static String lblSourceTableName;
     public static String lblSourceTablePartition;
     public static String lblSourceTalbeName;
@@ -481,6 +483,7 @@ public class Messages extends NLS {
     public static String lblTableName;
     public static String lblTarget;
     public static String lblTargetJdbcDriverDir;
+    public static String lblTargetJdbcDriverDirQuestion;
     public static String lblTargetTableName;
     public static String lblTargetTablePartition;
     public static String lblTichetCacheFile;

@@ -43,12 +43,14 @@ import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
@@ -307,12 +309,25 @@ public class TransFileBySSHDialog extends Dialog {
         btnSaveHost.setSelection(true);
 
         Group directoryGrp = new Group(result, SWT.NONE);
-        directoryGrp.setLayout(new GridLayout(3, false));
+        directoryGrp.setLayout(new GridLayout(4, false));
         directoryGrp.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, false));
+
+        Image questionImage = Display.getDefault().getSystemImage(SWT.ICON_QUESTION);
+        final int width = questionImage.getBounds().width;
+        final int height = questionImage.getBounds().height;
+        Image questionImage050 =
+                new Image(
+                        Display.getDefault(),
+                        image.getImageData().scaledTo((int) (width * 0.5), (int) (height * 0.5)));
 
         Label lblSourceJdbc = new Label(directoryGrp, SWT.NONE);
         lblSourceJdbc.setText(Messages.lblSourceJdbcDriverDir);
         lblSourceJdbc.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
+
+        Label lblSourceJdbcQuestion = new Label(directoryGrp, SWT.NONE);
+        lblSourceJdbcQuestion.setImage(questionImage050);
+        lblSourceJdbcQuestion.setToolTipText(Messages.lblSourceJdbcDriverDirQuestion);
+        lblSourceJdbcQuestion.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
 
         txtSourceJdbcDriverDir = new Text(directoryGrp, SWT.BORDER);
         txtSourceJdbcDriverDir.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
@@ -321,12 +336,22 @@ public class TransFileBySSHDialog extends Dialog {
         lblTargetJdbc.setText(Messages.lblTargetJdbcDriverDir);
         lblTargetJdbc.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
 
+        Label lblTargetJdbcQuestion = new Label(directoryGrp, SWT.NONE);
+        lblTargetJdbcQuestion.setImage(questionImage050);
+        lblTargetJdbcQuestion.setToolTipText(Messages.lblTargetJdbcDriverDirQuestion);
+        lblTargetJdbcQuestion.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
+
         txtTargetJdbcDriverDir = new Text(directoryGrp, SWT.BORDER);
         txtTargetJdbcDriverDir.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
 
         Label lblOutput = new Label(directoryGrp, SWT.NONE);
         lblOutput.setText(Messages.lblOutputDir);
         lblOutput.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
+
+        Label lblOutputQuestion = new Label(directoryGrp, SWT.NONE);
+        lblOutputQuestion.setImage(questionImage050);
+        lblOutputQuestion.setToolTipText(Messages.lblOutputDirQuestion);
+        lblOutputQuestion.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
 
         txtOutputDir = new Text(directoryGrp, SWT.BORDER);
         txtOutputDir.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
