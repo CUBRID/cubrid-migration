@@ -116,6 +116,13 @@ public class ImportScriptDialog extends TransFileBySSHDialog {
         txtRemoteFile.setText(prefers.get(SSH_FILE, ""));
     }
 
+    @Override
+    protected void updateDirectoryStatus() {
+        txtSourceJdbcDriverDir.setEnabled(false);
+        txtTargetJdbcDriverDir.setEnabled(false);
+        txtOutputDir.setEnabled(false);
+    }
+
     /** OK pressed */
     protected void okPressed() {
         if (!checkInput()) {
