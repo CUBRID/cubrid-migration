@@ -363,6 +363,8 @@ public class TransFileBySSHDialog extends Dialog {
         // ----------------------------------------------------------
         initComposites();
         updateControlsStatus();
+        updateDirectoryStatus();
+        updateDirectoryValue();
         return result;
     }
 
@@ -397,12 +399,13 @@ public class TransFileBySSHDialog extends Dialog {
         btnAuSettings.setEnabled(
                 selection && !btnUseProxy.getSelection() && cboAuthType.getSelectionIndex() == 2);
         btnSaveHost.setEnabled(selection);
-
-        updateDirectoryStatus();
     }
 
     /** Update directory status. */
     protected void updateDirectoryStatus() {}
+
+    /** Update directory value. */
+    protected void updateDirectoryValue() {}
 
     /**
      * Current host information

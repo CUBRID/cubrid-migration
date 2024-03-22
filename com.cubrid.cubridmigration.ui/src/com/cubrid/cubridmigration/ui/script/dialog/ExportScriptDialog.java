@@ -162,6 +162,16 @@ public class ExportScriptDialog extends TransFileBySSHDialog {
         txtOutputDir.setEnabled(!config.targetIsOnline() ? true : false);
     }
 
+    @Override
+    protected void updateDirectoryValue() {
+        txtSourceJdbcDriverDir.setText(config.getSourceConParams().getDriverFileName());
+        txtTargetJdbcDriverDir.setText(
+                txtTargetJdbcDriverDir.getEnabled()
+                        ? config.getTargetConParams().getDriverFileName()
+                        : "");
+        txtOutputDir.setText(txtOutputDir.getEnabled() ? config.getFileRepositroyPath() : "");
+    }
+
     /**
      * Retrieves the default migration script name
      *
