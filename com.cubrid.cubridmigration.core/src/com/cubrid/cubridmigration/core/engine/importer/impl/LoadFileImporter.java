@@ -437,13 +437,13 @@ public class LoadFileImporter extends OfflineImporter {
             if (objectType.equals(DBObject.OBJ_TYPE_TABLE)
                     || objectType.equals(DBObject.OBJ_TYPE_VIEW)
                     || objectType.equals(DBObject.OBJ_TYPE_VIEW_QUERY_SPEC)
-                    || objectType.equals(DBObject.OBJ_TYPE_PK)
-                    || objectType.equals(DBObject.OBJ_TYPE_FK)
                     || objectType.equals(DBObject.OBJ_TYPE_SEQUENCE)
                     || objectType.equals(DBObject.OBJ_TYPE_SYNONYM)
                     || objectType.equals(DBObject.OBJ_TYPE_GRANT)) {
                 return handleSchemaFile(owner);
-            } else if (objectType.equals(DBObject.OBJ_TYPE_INDEX)) {
+            } else if (objectType.equals(DBObject.OBJ_TYPE_INDEX)
+                    || objectType.equals(DBObject.OBJ_TYPE_PK)
+                    || objectType.equals(DBObject.OBJ_TYPE_FK)) {
                 return handleIndexFile(owner);
             }
         }
