@@ -53,7 +53,6 @@ public class Messages extends NLS {
     public static String btnAddFromHDFS;
     public static String btnAddUserSchema;
     public static String btnCreateUserSQL;
-    public static String btnSplitSchema;
     public static String btnAdvanced;
     public static String btnAdvancedSettings;
     public static String btnAgreed;
@@ -136,6 +135,8 @@ public class Messages extends NLS {
     public static String btnShowMessages;
     public static String btnShowWindowAgain;
     public static String btnSingleThreadImporting;
+    public static String btnSplitSchema;
+    public static String btnSplitSchemaQuestion;
     public static String btnSrcCSVFiles;
     public static String btnSrcCSVFilesDes;
     public static String btnSrcMySQLDumpDB;

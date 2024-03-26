@@ -666,12 +666,12 @@ public class SelectDestinationPage extends MigrationWizardPage {
             new Label(fileRepositoryContainer, SWT.NONE);
 
             Composite checkboxComposite = new Composite(fileRepositoryContainer, SWT.NONE);
-            GridLayout checkboxGridLayout = new GridLayout(1, false);
-            checkboxComposite.setLayout(checkboxGridLayout);
+            checkboxComposite.setLayout(new GridLayout(1, false));
 
             btnSplitSchema = new Button(checkboxComposite, SWT.CHECK);
             btnSplitSchema.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false));
             btnSplitSchema.setText(Messages.btnSplitSchema);
+            btnSplitSchema.setToolTipText(Messages.btnSplitSchemaQuestion);
             btnSplitSchema.setSelection(cfg.isSplitSchema());
 
             btnOneTableOneFile = new Button(checkboxComposite, SWT.CHECK);
