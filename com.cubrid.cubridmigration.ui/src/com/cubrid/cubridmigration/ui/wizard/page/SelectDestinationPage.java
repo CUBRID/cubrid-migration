@@ -57,12 +57,14 @@ import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.DirectoryDialog;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.PlatformUI;
@@ -665,23 +667,49 @@ public class SelectDestinationPage extends MigrationWizardPage {
             new Label(fileRepositoryContainer, SWT.NONE);
             new Label(fileRepositoryContainer, SWT.NONE);
 
-            Composite checkboxComposite = new Composite(fileRepositoryContainer, SWT.NONE);
-            GridLayout checkboxGridLayout = new GridLayout(1, false);
-            checkboxComposite.setLayout(checkboxGridLayout);
+            Image questionImage = Display.getDefault().getSystemImage(SWT.ICON_QUESTION);
+            final int width = questionImage.getBounds().width;
+            final int height = questionImage.getBounds().height;
+            Image questionImage050 =
+                    new Image(
+                            Display.getDefault(),
+                            questionImage
+                                    .getImageData()
+                                    .scaledTo((int) (width * 0.5), (int) (height * 0.5)));
 
-            btnSplitSchema = new Button(checkboxComposite, SWT.CHECK);
+            Composite checkboxComposite = new Composite(fileRepositoryContainer, SWT.NONE);
+            checkboxComposite.setLayout(new GridLayout(1, false));
+
+            Composite splitSchemaComposite = new Composite(checkboxComposite, SWT.NONE);
+            splitSchemaComposite.setLayout(new GridLayout(2, false));
+
+            btnSplitSchema = new Button(splitSchemaComposite, SWT.CHECK);
             btnSplitSchema.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false));
             btnSplitSchema.setText(Messages.btnSplitSchema);
             btnSplitSchema.setSelection(cfg.isSplitSchema());
 
-            btnOneTableOneFile = new Button(checkboxComposite, SWT.CHECK);
+            Label lblSplitSchema = new Label(splitSchemaComposite, SWT.NONE);
+            lblSplitSchema.setImage(questionImage050);
+            lblSplitSchema.setToolTipText(Messages.btnSplitSchemaQuestion);
+
+            Composite oneTableOneFileComposite = new Composite(checkboxComposite, SWT.NONE);
+            oneTableOneFileComposite.setLayout(new GridLayout(2, false));
+
+            btnOneTableOneFile = new Button(oneTableOneFileComposite, SWT.CHECK);
             btnOneTableOneFile.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
             btnOneTableOneFile.setText(Messages.btnOneTableOneFile);
 
-            btnCreateUserSQL = new Button(checkboxComposite, SWT.CHECK);
+            new Label(oneTableOneFileComposite, SWT.NONE);
+
+            Composite createUserSQLComposite = new Composite(checkboxComposite, SWT.NONE);
+            createUserSQLComposite.setLayout(new GridLayout(2, false));
+
+            btnCreateUserSQL = new Button(createUserSQLComposite, SWT.CHECK);
             btnCreateUserSQL.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
             btnCreateUserSQL.setText(Messages.btnCreateUserSQL);
             btnCreateUserSQL.setSelection(cfg.isCreateUserSQL());
+
+            new Label(createUserSQLComposite, SWT.NONE);
 
             if (!getMigrationWizard().isLoadMigrationScript() && firstVisible) {
                 btnSplitSchema.setSelection(true);
