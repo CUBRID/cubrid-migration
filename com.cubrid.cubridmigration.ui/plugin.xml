@@ -4,13 +4,6 @@
    <extension
          point="org.eclipse.ui.editors">
       <editor
-            id="com.cubrid.common.ui.common.notice.NoticeDashboardEditor"
-            class="com.cubrid.common.ui.common.notice.NoticeDashboardEditor"
-            default="false"
-            icon="icon/notice/new_info.png"
-            name="%noticeDashboard">
-      </editor>
-      <editor
             class="com.cubrid.cubridmigration.ui.wizard.editor.MigrationProgressEditorPart"
             default="false"
             id="com.cubrid.cubridmigration.ui.wizard.editor.MigrationProgressEditorPart"
