@@ -148,15 +148,7 @@ public final class OracleSchemaFetcher extends AbstractJDBCSchemaFetcher {
             "SELECT NAME FROM ALL_SOURCE S "
                     + "WHERE S.TYPE=? AND S.OWNER=? AND NOT S.NAME LIKE 'BIN$%'";
 
-    private static final String SQL_SHOW_DDL =
-            "SELECT DBMS_METADATA.GET_DDL(?, T.OBJECT_NAME, T.OWNER)\n"
-                    + "FROM (\n"
-                    + "	SELECT S.OBJECT_NAME, S.OWNER AS OWNER FROM ALL_OBJECTS S, ALL_TAB_PRIVS P\n"
-                    + "	WHERE S.OBJECT_NAME=P.TABLE_NAME AND S.OBJECT_TYPE=? AND P.TABLE_SCHEMA=? AND P.PRIVILEGE='SELECT'\n"
-                    + "	UNION\n"
-                    + "	SELECT OBJECT_NAME, ? AS OWNER FROM USER_OBJECTS\n"
-                    + "	WHERE OBJECT_TYPE=? AND NOT OBJECT_NAME LIKE 'BIN$%'\n"
-                    + ") T WHERE OBJECT_NAME=?";
+    private static final String SQL_SHOW_DDL = "SELECT DBMS_METADATA.GET_DDL(?, ?, ?) FROM dual";
 
     private static final String SQL_SHOW_SEQUENCES =
             "SELECT S.* FROM ALL_SEQUENCES S "
@@ -1188,11 +1180,8 @@ public final class OracleSchemaFetcher extends AbstractJDBCSchemaFetcher {
         try {
             preStmt = conn.prepareStatement(SQL_SHOW_DDL);
             preStmt.setString(1, objectType);
-            preStmt.setString(2, objectType);
+            preStmt.setString(2, objectName);
             preStmt.setString(3, schemaName);
-            preStmt.setString(4, schemaName);
-            preStmt.setString(5, objectType);
-            preStmt.setString(6, objectName);
             if (LOG.isDebugEnabled()) {
                 LOG.debug(
                         "[SQL]"
@@ -1202,19 +1191,10 @@ public final class OracleSchemaFetcher extends AbstractJDBCSchemaFetcher {
                                 + objectType
                                 + ", "
                                 + "2="
-                                + objectType
+                                + objectName
                                 + ", "
                                 + "3="
-                                + schemaName
-                                + ", "
-                                + "4="
-                                + schemaName
-                                + ", "
-                                + "5="
-                                + objectType
-                                + ", "
-                                + "6="
-                                + objectName);
+                                + schemaName);
             }
             rs = preStmt.executeQuery();
 
