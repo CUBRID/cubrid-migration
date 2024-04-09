@@ -7,6 +7,8 @@ DIR=$PWD
 TARGET=$DIR/target
 PRODUCT_TARGET=$DIR/com.cubrid.cubridmigration.product/target
 CONSOLE_TARGET=$DIR/com.cubrid.cubridmigration.console/target
+VERSION_DIR=$DIR/com.cubrid.cubridmigration.ui
+VERSION_FILE_PATH=${VERSION_DIR}/version.properties
 
 function show_usage ()
 {
@@ -49,6 +51,26 @@ function check_configuration ()
     echo maven not found.
     exit 1
   fi
+}
+
+function update_build_version ()
+{
+  echo "Version File Update....  (com.cubrid.cubridmigration.ui/version.properties)"
+
+  if [ -d ${DIR}/.git ]; then
+    COMMIT_NUMBER=$(git rev-list --count HEAD | awk '{ printf "%04d", $1 }')
+  else
+    COMMIT_NUMBER=0000
+  fi
+
+  RELEASE_VERSION=$(cat ${VERSION_FILE_PATH} | grep releaseVersion | cut -d '=' -f2)
+
+  echo "RELEASE_VERSION=" $RELEASE_VERSION
+  echo "COMMIT_NUMBER=" $COMMIT_NUMBER
+  FULL_VERSION=buildVersionId=${RELEASE_VERSION}.${COMMIT_NUMBER}
+
+  sed -i '/buildVersionId/d' ${VERSION_FILE_PATH}
+  echo $FULL_VERSION >> ${VERSION_FILE_PATH}
 }
 
 function copy_desktopcmt_to_directory ()
@@ -120,6 +142,7 @@ cmt_banner
 
 get_options "$@"
 check_configuration
+update_build_version
 
 if [ $PROFILE = "all" ] || [ $PROFILE = "a" ]; then
   $MVN clean package $MVN_DEBUG
