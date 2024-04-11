@@ -20,7 +20,7 @@
       </perspective>
    </extension>
    <extension
-         id="cubrid_migration_product"
+         id="product"
          point="org.eclipse.core.runtime.products">
       <product
             application="com.cubrid.cubridmigration.app.application"
