@@ -36,7 +36,7 @@
 
    <features>
 	<feature id="com.cubrid.common.update.feature" />
-    <feature id="com.cubrid.cubridmigration.app.feature" />
+        <feature id="com.cubrid.cubridmigration.app.feature" />
 	<feature id="com.cubrid.cubridmigration.plugin.feature" />
    </features>
 
