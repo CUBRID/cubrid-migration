@@ -22,6 +22,48 @@ on:
       - release/**
 
 jobs:
+  license:
+    name: license
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+      - uses: jitterbit/get-changed-files@v1
+        id: files
+        continue-on-error: true
+      - name: Check license
+        run: |
+          set +e
+          license_headers=.github/workflows/license_headers
+          result="PASS"
+
+          for f in ${{ steps.files.outputs.added_modified }}; do
+            if [ -d "$f" ]; then
+              continue
+            fi
+
+            ext=$(expr $f : ".*\(\..*\)")
+            case $ext in
+            .java) true;;
+            *) continue ;;
+            esac
+
+            result_for_f="FAIL"
+            for header in `find $license_headers -type f`; do
+              line_cnt=`wc -l < $header`
+              head -n $line_cnt $f | diff -q - $header
+              if [ $? -eq 0 ]; then
+                result_for_f="PASS"
+                break
+              fi
+            done
+
+            echo "$f: $result_for_f"
+            if [ "$result_for_f" = "FAIL" ]; then
+              result="FAIL"
+            fi
+          done
+          
+          test $result = "PASS"
   pr-style:
     name: pr-style
     runs-on: ubuntu-latest
