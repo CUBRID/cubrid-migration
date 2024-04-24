@@ -105,53 +105,5 @@
                tooltip="%ttShowHistory">
          </command>
       </menuContribution>
-   </extension>
-
-   <extension
-         point="org.eclipse.ui.preferencePages">
-      <page
-            class="com.cubrid.cubridmigration.ui.common.composite.MigrationConfigPage"
-            id="com.cubrid.cubridmigration.ui.common.composite.MigrationConfigPage"
-            name="%prefTitleMigration">
-      </page>
-      <page
-            category="com.cubrid.cubridmigration.ui.common.composite.MigrationConfigPage"
-            class="com.cubrid.cubridmigration.ui.common.composite.MySQLToCUBRIDTypeMapPage"
-            id="com.cubrid.cubridmigration.ui.common.composite.MySQLToCUBRIDTypeMapPage"
-            name="MySQL&gt;&gt;CUBRID">
-      </page>
-      <page
-            category="com.cubrid.cubridmigration.ui.common.composite.MySQLToCUBRIDTypeMapPage"
-            class="com.cubrid.cubridmigration.ui.common.composite.MySQLToCUBRIDParameterPage"
-            id="com.cubrid.cubridmigration.ui.common.composite.MySQLToCUBRIDParameterPage"
-            name="%OtherSettings">
-      </page>
-      <page
-            category="com.cubrid.cubridmigration.ui.common.composite.MigrationConfigPage"
-            class="com.cubrid.cubridmigration.ui.common.composite.CUBRID2CUBRIDTypeMapPage"
-            id="com.cubrid.cubridmigration.ui.common.composite.CUBRID2CUBRIDTypeMapPage"
-            name="CUBRID&gt;&gt;CUBRID">
-      </page>
-      <page
-            category="com.cubrid.cubridmigration.ui.common.composite.MigrationConfigPage"
-            class="com.cubrid.cubridmigration.ui.common.composite.Oracle2CUBRIDTypeMapPage"
-            id="com.cubrid.cubridmigration.ui.common.composite.Oracle2CUBRIDTypeMapPage"
-            name="Oracle&gt;&gt;CUBRID">
-      </page>
-      <page
-            category="com.cubrid.cubridmigration.ui.common.composite.MigrationConfigPage"
-            class="com.cubrid.cubridmigration.ui.common.composite.SQLServer2CUBRIDTypeMapPage"
-            id="com.cubrid.cubridmigration.ui.common.composite.SQLServer2CUBRIDTypeMapPage"
-            name="MSSQL&gt;&gt;CUBRID">
-      </page>
-      <!--
-      <page
-            category="com.cubrid.cubridmigration.ui.common.composite.MigrationConfigPage"
-            class="com.cubrid.cubridmigration.ui.preference.JDBCDriverManagePage"
-            id="com.cubrid.cubridmigration.ui.preference.JDBCDriverManagePage"
-            name="%JDBCDrivers">
-      </page>
-      -->
-   </extension>
-   
+   </extension> 
 </plugin>
