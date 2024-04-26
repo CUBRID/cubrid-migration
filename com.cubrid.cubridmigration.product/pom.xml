@@ -73,7 +73,7 @@
                             <descriptors>
                                 <descriptor>${basedir}/windows.xml</descriptor>
                             </descriptors>
-                            <finalName>cubridmigration</finalName>
+                            <finalName>${cubridmigration-product}-${cubridmigration-version}</finalName>
                         </configuration>
                     </execution>
                     
@@ -87,7 +87,7 @@
                             <descriptors>
                                 <descriptor>${basedir}/linux.xml</descriptor>
                             </descriptors>
-                            <finalName>cubridmigration</finalName>
+                            <finalName>${cubridmigration-product}-${cubridmigration-version}</finalName>
                         </configuration>
                     </execution>
                     
@@ -101,7 +101,7 @@
                             <descriptors>
                                 <descriptor>${basedir}/mac.xml</descriptor>
                             </descriptors>
-                            <finalName>cubridmigration</finalName>
+                            <finalName>${cubridmigration-product}-${cubridmigration-version}</finalName>
                         </configuration>
                     </execution>
                 </executions>

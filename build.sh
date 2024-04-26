@@ -7,8 +7,11 @@ DIR=$PWD
 TARGET=$DIR/target
 PRODUCT_TARGET=$DIR/com.cubrid.cubridmigration.product/target
 CONSOLE_TARGET=$DIR/com.cubrid.cubridmigration.console/target
-VERSION_DIR=$DIR/com.cubrid.cubridmigration.ui
-VERSION_FILE_PATH=${VERSION_DIR}/version.properties
+VERSION_FILE_PATH=$DIR/VERSION
+RELEASE_VERSION_FILE_PATH=$DIR/com.cubrid.cubridmigration.ui/version.properties
+RELEASE_VERSION=""
+CMT_PRODUCT_NAME="CUBRID-Migration-Toolkit"
+CMT_CONSOLE_NAME="$CMT_PRODUCT_NAME-console"
 
 function show_usage ()
 {
@@ -63,29 +66,29 @@ function update_build_version ()
     COMMIT_NUMBER=0000
   fi
 
-  RELEASE_VERSION=$(cat ${VERSION_FILE_PATH} | grep releaseVersion | cut -d '=' -f2)
-
-  echo "RELEASE_VERSION=" $RELEASE_VERSION
+  VERSION=$(cat ${VERSION_FILE_PATH} | grep version | cut -d '=' -f2)
+  echo "VERSION=" $VERSION
   echo "COMMIT_NUMBER=" $COMMIT_NUMBER
-  FULL_VERSION=buildVersionId=${RELEASE_VERSION}.${COMMIT_NUMBER}
 
-  sed -i '/buildVersionId/d' ${VERSION_FILE_PATH}
-  echo $FULL_VERSION >> ${VERSION_FILE_PATH}
+  RELEASE_VERSION=$VERSION.$COMMIT_NUMBER
+  sed -i '/buildVersionId/d' $RELEASE_VERSION_FILE_PATH
+  echo "buildVersionId="$RELEASE_VERSION >> $RELEASE_VERSION_FILE_PATH
+  echo "RELEASE_VERSION=" $RELEASE_VERSION
 }
 
 function copy_desktopcmt_to_directory ()
 {
-  CMT_LINUX=$PRODUCT_TARGET/cubridmigration-linux.tar.gz
+  CMT_LINUX=$PRODUCT_TARGET/$CMT_PRODUCT_NAME-$RELEASE_VERSION-linux.tar.gz
   if [ -e $CMT_LINUX ]; then
     cp -vfp $CMT_LINUX $TARGET
   fi
 
-  CMT_MAC=$PRODUCT_TARGET/cubridmigration-mac.tar.gz
+  CMT_MAC=$PRODUCT_TARGET/$CMT_PRODUCT_NAME-$RELEASE_VERSION-mac.tar.gz
   if [ -e $CMT_MAC ]; then
     cp -vfp $CMT_MAC $TARGET
   fi
 
-  CMT_WINDOWS=$PRODUCT_TARGET/cubridmigration-windows.zip
+  CMT_WINDOWS=$PRODUCT_TARGET/$CMT_PRODUCT_NAME-$RELEASE_VERSION-windows.zip
   if [ -e $CMT_WINDOWS ]; then
     cp -vfp $CMT_WINDOWS $TARGET
   fi
@@ -93,12 +96,12 @@ function copy_desktopcmt_to_directory ()
 
 function copy_consolecmt_to_directory ()
 {
-  CONSOLE_LINUX=$CONSOLE_TARGET/cubridmigration-console-linux.tar.gz
+  CONSOLE_LINUX=$CONSOLE_TARGET/$CMT_CONSOLE_NAME-$RELEASE_VERSION-linux.tar.gz
   if [ -e $CONSOLE_LINUX ]; then
     cp -vfp $CONSOLE_LINUX $TARGET
   fi
 
-  CONSOLE_WINDOWS=$CONSOLE_TARGET/cubridmigration-console-windows.zip
+  CONSOLE_WINDOWS=$CONSOLE_TARGET/$CMT_CONSOLE_NAME-$RELEASE_VERSION-windows.zip
   if [ -e $CONSOLE_WINDOWS ]; then
     cp -vfp $CONSOLE_WINDOWS $TARGET
   fi
@@ -145,12 +148,12 @@ check_configuration
 update_build_version
 
 if [ $PROFILE = "all" ] || [ $PROFILE = "a" ]; then
-  $MVN clean package $MVN_DEBUG
-  $MVN clean package -Pconsole $MVN_DEBUG
+  $MVN clean package -Dcubridmigration-version=$RELEASE_VERSION $MVN_DEBUG
+  $MVN clean package -Dcubridmigration-version=$RELEASE_VERSION -Pconsole $MVN_DEBUG
 elif [ $PROFILE = "desktop" ] || [ $PROFILE = "d" ]; then
-  $MVN clean package $MVN_DEBUG
+  $MVN clean package -Dcubridmigration-version=$RELEASE_VERSION $MVN_DEBUG
 elif [ $PROFILE = "console" ] || [ $PROFILE = "c" ]; then
-  $MVN clean package -Pconsole $MVN_DEBUG
+  $MVN clean package -Dcubridmigration-version=$RELEASE_VERSION -Pconsole $MVN_DEBUG
 else
   show_usage
 fi
