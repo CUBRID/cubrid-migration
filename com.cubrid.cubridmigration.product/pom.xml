@@ -29,7 +29,7 @@
                     <products>
                         <product>
                             <id>com.cubrid.cubridmigration.product</id>
-                            <archiveFileName>CUBRIDMigration-${cubridtools-version}</archiveFileName>
+                            <archiveFileName>CUBRIDMigration-${cubridmigration-version}</archiveFileName>
                             <rootFolders>
                                 <!-- for MacOSX, make sure you use a folder ending with .app , see bug 463670 -->
                                 <macosx>Cubridmigration.app</macosx>
