@@ -29,7 +29,7 @@
                     <products>
                         <product>
                             <id>com.cubrid.cubridmigration.product</id>
-                            <archiveFileName>CUBRIDMigration-${cubridtools-version}</archiveFileName>
+                            <archiveFileName>CUBRIDMigration-${cubridmigration-version}</archiveFileName>
                             <rootFolders>
                                 <!-- for MacOSX, make sure you use a folder ending with .app , see bug 463670 -->
                                 <macosx>Cubridmigration.app</macosx>
@@ -73,7 +73,7 @@
                             <descriptors>
                                 <descriptor>${basedir}/windows.xml</descriptor>
                             </descriptors>
-                            <finalName>cubridmigration</finalName>
+                            <finalName>${cubridmigration-product}-${cubridmigration-version}</finalName>
                         </configuration>
                     </execution>
                     
@@ -87,7 +87,7 @@
                             <descriptors>
                                 <descriptor>${basedir}/linux.xml</descriptor>
                             </descriptors>
-                            <finalName>cubridmigration</finalName>
+                            <finalName>${cubridmigration-product}-${cubridmigration-version}</finalName>
                         </configuration>
                     </execution>
                     
@@ -101,7 +101,7 @@
                             <descriptors>
                                 <descriptor>${basedir}/mac.xml</descriptor>
                             </descriptors>
-                            <finalName>cubridmigration</finalName>
+                            <finalName>${cubridmigration-product}-${cubridmigration-version}</finalName>
                         </configuration>
                     </execution>
                 </executions>
