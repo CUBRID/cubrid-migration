@@ -71,7 +71,7 @@ function update_build_version ()
   echo "releaseVersion=" $VERSION >> $RELEASE_VERSION_FILE_PATH
 
   RELEASE_VERSION=$VERSION.$COMMIT_NUMBER
-  sed -i '/buildVersionId/d' $RELEASE_VERSION_FILE_PATH
+  sed -i "/buildVersionId/d" $RELEASE_VERSION_FILE_PATH
   echo "buildVersionId="$RELEASE_VERSION >> $RELEASE_VERSION_FILE_PATH
   
   echo "VERSION=" $VERSION
