@@ -128,6 +128,7 @@ public class LoadFileImporter extends OfflineImporter {
                 new Data2StrTranslator(
                         mrManager.getDirAndFilesMgr().getMergeFilesDir(),
                         config,
+                        mrManager.getDirAndFilesMgr(),
                         config.getDestType());
     }
 

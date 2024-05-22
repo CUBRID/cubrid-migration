@@ -188,9 +188,6 @@ public abstract class OfflineImporter extends Importer {
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("[VAR]lobFiles.size=" + (lobFiles == null ? null : lobFiles.size()));
                 }
-                for (String lobFile : lobFiles) {
-                    sendLOBFile(lobFile, stc.getTarget());
-                }
                 return total;
             } finally {
                 pw.close();

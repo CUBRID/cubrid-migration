@@ -74,6 +74,7 @@ public class ErrorRecords2SQLFileWriter {
                 new Data2StrTranslator(
                         mrManager.getDirAndFilesMgr().getErrorFilesDir(),
                         mrManager.getConfig(),
+                        mrManager.getDirAndFilesMgr(),
                         MigrationConfiguration.DEST_SQL);
     }
 
