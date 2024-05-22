@@ -388,7 +388,7 @@ public class Data2StrTranslator implements IData2StrTranslator {
 
             boolean isPathExist = false;
             synchronized (this) {
-            	isPathExist = PathUtils.checkPathExist(parentFile);
+                isPathExist = PathUtils.checkPathExist(parentFile);
             }
 
             if (isPathExist) {
@@ -439,7 +439,7 @@ public class Data2StrTranslator implements IData2StrTranslator {
 
             boolean isPathExist = false;
             synchronized (this) {
-            	isPathExist = PathUtils.checkPathExist(parentFile);
+                isPathExist = PathUtils.checkPathExist(parentFile);
             }
 
             if (isPathExist) {

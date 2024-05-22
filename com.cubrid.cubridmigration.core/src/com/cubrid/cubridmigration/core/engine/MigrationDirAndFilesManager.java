@@ -105,7 +105,7 @@ public class MigrationDirAndFilesManager implements ICanDispose {
          * Example) 1/1, 34/1569, 129/64968
          */
         public String getLobDirDepth(String schemaName, String tableName) {
-    		checkLobFileCount();
+            checkLobFileCount();
             checkChildDirCount();
             return parentPath + File.separator + childPath;
         }
