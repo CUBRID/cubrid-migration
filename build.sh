@@ -67,12 +67,15 @@ function update_build_version ()
   fi
 
   VERSION=$(cat ${VERSION_FILE_PATH} | grep version | cut -d '=' -f2)
-  echo "VERSION=" $VERSION
-  echo "COMMIT_NUMBER=" $COMMIT_NUMBER
+  sed -i "/releaseVersion/d" $RELEASE_VERSION_FILE_PATH
+  echo "releaseVersion=" $VERSION >> $RELEASE_VERSION_FILE_PATH
 
   RELEASE_VERSION=$VERSION.$COMMIT_NUMBER
-  sed -i '/buildVersionId/d' $RELEASE_VERSION_FILE_PATH
+  sed -i "/buildVersionId/d" $RELEASE_VERSION_FILE_PATH
   echo "buildVersionId="$RELEASE_VERSION >> $RELEASE_VERSION_FILE_PATH
+  
+  echo "VERSION=" $VERSION
+  echo "COMMIT_NUMBER=" $COMMIT_NUMBER
   echo "RELEASE_VERSION=" $RELEASE_VERSION
 }
 
