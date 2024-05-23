@@ -104,7 +104,7 @@ public class MigrationDirAndFilesManager implements ICanDispose {
          * Returns the directory depth by combining the parent and child.
          * Example) 1/1, 34/1569, 129/64968
          */
-        public String getLobDirDepth(String schemaName, String tableName) {
+        public String getLobDirDepth() {
             checkLobFileCount();
             checkChildDirCount();
             return parentPath + File.separator + childPath;
@@ -206,7 +206,7 @@ public class MigrationDirAndFilesManager implements ICanDispose {
         if (!lobDirPaths.containsKey(key)) {
             lobDirPaths.put(key, new LobDirPath());
         }
-        return lobDirPaths.get(key).getLobDirDepth(schemaName, tableName);
+        return lobDirPaths.get(key).getLobDirDepth();
     }
 
     /**
