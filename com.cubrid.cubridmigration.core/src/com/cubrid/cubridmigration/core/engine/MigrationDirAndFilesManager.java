@@ -331,25 +331,6 @@ public class MigrationDirAndFilesManager implements ICanDispose {
         }
     }
 
-    //	public String getDataFile() {
-    //		if (config.targetIsFile()
-    //				&& !config.isOneTableOneFile()) {
-    //		}
-    //		if (config.targetIsOffline()) {
-    //
-    //		} else if (config.targetIsDBDump()) {
-    //
-    //		} else if (config.targetIsCSV()) {
-    //
-    //		} else if (config.targetIsSQL()) {
-    //
-    //		} else if (config.targetIsXLS()) {
-    //
-    //		}
-    //
-    //		return "";
-    //	}
-
     /** Dispose, remove useless directories. */
     public void dispose() {
         // Remove privateTempDir

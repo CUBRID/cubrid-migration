@@ -204,8 +204,7 @@ public class Data2StrTranslator implements IData2StrTranslator {
         if (dataVal == null) {
             return VALUE_NULL;
         }
-        // Integer scale = cubridColumn.getScale();
-        // Integer dataTypeID = cubridColumn.getJdbcIDOfDataType();
+
         final String schemaName = cubridColumn.getTableOrView().getOwner();
         final String tableName = cubridColumn.getTableOrView().getName();
         CUBRIDDataTypeHelper dataTypeHelper = CUBRIDDataTypeHelper.getInstance(null);

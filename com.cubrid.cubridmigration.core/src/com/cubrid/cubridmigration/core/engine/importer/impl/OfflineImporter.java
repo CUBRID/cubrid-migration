@@ -563,17 +563,6 @@ public abstract class OfflineImporter extends Importer {
         };
     }
 
-    //	/**
-    //	 * Retrieve the CM server object.
-    //	 *
-    //	 * @return current CM server
-    //	 */
-    //	protected CMSInfo getCMServer() {
-    //		return CMSManager.getInstance().findServer(
-    //				config.getCmServer().getHost(), config.getCmServer().getPort(),
-    //				config.getCmServer().getUser());
-    //	}
-
     /**
      * Retrieves the string for load DB command of record.
      *
