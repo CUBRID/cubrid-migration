@@ -47,7 +47,7 @@ function check_configuration ()
 
   if [ -n "${MAVEN_HOME}" ]; then
     echo MAVEN_HOME: ${MAVEN_HOME}
-    MVN="${MAVEN}/bin/mvn"
+    MVN="${MAVEN_HOME}/bin/mvn"
   fi
 
   if [ -z "$MVN" ]; then
