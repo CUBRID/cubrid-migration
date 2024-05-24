@@ -38,6 +38,7 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import org.apache.commons.lang.StringUtils;
 
 /**
@@ -80,6 +81,51 @@ public class MigrationDirAndFilesManager implements ICanDispose {
         }
     }
 
+    /**
+     * Saves the parent, child depth, and number of files of the LOB directory
+     *
+     * @author Dongmin Kim
+     */
+    static class LobDirPath {
+        private static final int LOB_DIR_COUNT_MAX = 65000;
+        private static final int LOB_FILE_COUNT_MAX = 100000;
+
+        private long parentPath;
+        private int childPath;
+        private int lobFileCount;
+
+        private LobDirPath() {
+            this.parentPath = 1;
+            this.childPath = 1;
+            this.lobFileCount = 1;
+        }
+
+        /*
+         * Returns the directory depth by combining the parent and child.
+         * Example) 1/1, 34/1569, 129/64968
+         */
+        public String getLobDirDepth() {
+            checkLobFileCount();
+            checkChildDirCount();
+            return parentPath + File.separator + childPath;
+        }
+
+        private void checkChildDirCount() {
+            if (childPath > LOB_DIR_COUNT_MAX) {
+                parentPath++;
+                childPath = 1;
+            }
+        }
+
+        private void checkLobFileCount() {
+            if (lobFileCount > LOB_FILE_COUNT_MAX) {
+                childPath++;
+                lobFileCount = 1;
+            }
+            lobFileCount++;
+        }
+    }
+
     private final MigrationConfiguration config;
 
     private String privateTempDir = null;
@@ -88,6 +134,7 @@ public class MigrationDirAndFilesManager implements ICanDispose {
     private String lobFilesDir = null;
 
     private final Map<String, DataFileInfo> dataFiles = new HashMap<String, DataFileInfo>();
+    private Map<String, LobDirPath> lobDirPaths = new ConcurrentHashMap<String, LobDirPath>();
 
     public MigrationDirAndFilesManager(MigrationConfiguration config) {
         this.config = config;
@@ -145,6 +192,21 @@ public class MigrationDirAndFilesManager implements ICanDispose {
         if (!lobDir.exists() && !lobDir.mkdirs()) {
             throw new BreakMigrationException("Invalid path:" + lobDir);
         }
+    }
+
+    /**
+     * Information needed to create an isolated LOB directory path
+     *
+     * @param schemaName String
+     * @param tableName String
+     * @return LOB directory object
+     */
+    public String getLobDirDepth(String schemaName, String tableName) {
+        String key = schemaName + tableName;
+        if (!lobDirPaths.containsKey(key)) {
+            lobDirPaths.put(key, new LobDirPath());
+        }
+        return lobDirPaths.get(key).getLobDirDepth();
     }
 
     /**
@@ -268,25 +330,6 @@ public class MigrationDirAndFilesManager implements ICanDispose {
             return dfi.getRecordCount() >= config.getMaxCountPerFile();
         }
     }
-
-    //	public String getDataFile() {
-    //		if (config.targetIsFile()
-    //				&& !config.isOneTableOneFile()) {
-    //		}
-    //		if (config.targetIsOffline()) {
-    //
-    //		} else if (config.targetIsDBDump()) {
-    //
-    //		} else if (config.targetIsCSV()) {
-    //
-    //		} else if (config.targetIsSQL()) {
-    //
-    //		} else if (config.targetIsXLS()) {
-    //
-    //		}
-    //
-    //		return "";
-    //	}
 
     /** Dispose, remove useless directories. */
     public void dispose() {
