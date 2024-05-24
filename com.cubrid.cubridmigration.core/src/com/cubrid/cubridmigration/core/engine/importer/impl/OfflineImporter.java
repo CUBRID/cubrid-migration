@@ -188,9 +188,6 @@ public abstract class OfflineImporter extends Importer {
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("[VAR]lobFiles.size=" + (lobFiles == null ? null : lobFiles.size()));
                 }
-                for (String lobFile : lobFiles) {
-                    sendLOBFile(lobFile, stc.getTarget());
-                }
                 return total;
             } finally {
                 pw.close();
@@ -565,17 +562,6 @@ public abstract class OfflineImporter extends Importer {
             }
         };
     }
-
-    //	/**
-    //	 * Retrieve the CM server object.
-    //	 *
-    //	 * @return current CM server
-    //	 */
-    //	protected CMSInfo getCMServer() {
-    //		return CMSManager.getInstance().findServer(
-    //				config.getCmServer().getHost(), config.getCmServer().getPort(),
-    //				config.getCmServer().getUser());
-    //	}
 
     /**
      * Retrieves the string for load DB command of record.

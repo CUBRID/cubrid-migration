@@ -37,6 +37,7 @@ import com.cubrid.cubridmigration.core.common.log.LogUtil;
 import com.cubrid.cubridmigration.core.datatype.DataTypeConstant;
 import com.cubrid.cubridmigration.core.dbobject.Column;
 import com.cubrid.cubridmigration.core.dbobject.Record.ColumnValue;
+import com.cubrid.cubridmigration.core.engine.MigrationDirAndFilesManager;
 import com.cubrid.cubridmigration.core.engine.config.MigrationConfiguration;
 import com.cubrid.cubridmigration.core.trans.IData2StrTranslator;
 import com.cubrid.cubridmigration.cubrid.exception.FormatCUBRIDDataTypeException;
@@ -97,11 +98,16 @@ public class Data2StrTranslator implements IData2StrTranslator {
             new HashMap<Integer, IFormatValueToString>();
 
     private final int targetDataFileFormat;
+    private final MigrationDirAndFilesManager dirAndFilesManager;
 
     public Data2StrTranslator(
-            String dataFilePath, MigrationConfiguration config, int targetDataFileFormat) {
+            String dataFilePath,
+            MigrationConfiguration config,
+            MigrationDirAndFilesManager dirAndFilesManager,
+            int targetDataFileFormat) {
         this.lobFilePath = dataFilePath;
         this.targetDataFileFormat = targetDataFileFormat;
+        this.dirAndFilesManager = dirAndFilesManager;
         // Initialize formaters mapping
         formaters.put(DataTypeConstant.CUBRID_DT_MONETARY, new IntegerToCUBRIDString());
         formaters.put(DataTypeConstant.CUBRID_DT_INTEGER, new IntegerToCUBRIDString());
@@ -198,8 +204,8 @@ public class Data2StrTranslator implements IData2StrTranslator {
         if (dataVal == null) {
             return VALUE_NULL;
         }
-        // Integer scale = cubridColumn.getScale();
-        // Integer dataTypeID = cubridColumn.getJdbcIDOfDataType();
+
+        final String schemaName = cubridColumn.getTableOrView().getOwner();
         final String tableName = cubridColumn.getTableOrView().getName();
         CUBRIDDataTypeHelper dataTypeHelper = CUBRIDDataTypeHelper.getInstance(null);
         if (dataTypeHelper.isCollection(cubridColumn.getDataType())) {
@@ -215,7 +221,9 @@ public class Data2StrTranslator implements IData2StrTranslator {
                     if (count > 0) {
                         bf.append(",");
                     }
-                    bf.append(exportToCUBRIDUnLoadFile(item, subDataType, tableName, lobFiles));
+                    bf.append(
+                            exportToCUBRIDUnLoadFile(
+                                    item, subDataType, schemaName, tableName, lobFiles));
                     count++;
                 }
                 bf.append("}");
@@ -231,7 +239,9 @@ public class Data2StrTranslator implements IData2StrTranslator {
                         bf.append(",");
                     }
 
-                    bf.append(exportToCUBRIDUnLoadFile(item, subDataType, tableName, lobFiles));
+                    bf.append(
+                            exportToCUBRIDUnLoadFile(
+                                    item, subDataType, schemaName, tableName, lobFiles));
                     count++;
                 }
                 bf.append("}");
@@ -261,7 +271,8 @@ public class Data2StrTranslator implements IData2StrTranslator {
                 throw new FormatCUBRIDDataTypeException(message, result.throwable);
             }
         }
-        return exportToCUBRIDUnLoadFile(dataVal, cubridColumn.getDataType(), tableName, lobFiles);
+        return exportToCUBRIDUnLoadFile(
+                dataVal, cubridColumn.getDataType(), schemaName, tableName, lobFiles);
     }
 
     /**
@@ -274,7 +285,11 @@ public class Data2StrTranslator implements IData2StrTranslator {
      * @return String
      */
     private String exportToCUBRIDUnLoadFile(
-            Object dataVal, String dataType, String tableName, List<String> lobFiles) {
+            Object dataVal,
+            String dataType,
+            String schemaName,
+            String tableName,
+            List<String> lobFiles) {
         CUBRIDDataTypeHelper cubDTHelper = CUBRIDDataTypeHelper.getInstance(null);
         Integer dataTypeID = cubDTHelper.getCUBRIDDataTypeID(dataType);
         IFormatValueToString formater = formaters.get(dataTypeID);
@@ -283,13 +298,13 @@ public class Data2StrTranslator implements IData2StrTranslator {
         }
         if (dataTypeID == DataTypeConstant.CUBRID_DT_BLOB) {
             if (targetDataFileFormat == MigrationConfiguration.DEST_DB_UNLOAD) {
-                return exportBlobToFile(dataVal, tableName, lobFiles);
+                return exportBlobToFile(dataVal, schemaName, tableName, lobFiles);
             }
             formater = formaters.get(DataTypeConstant.CUBRID_DT_BIT);
             return formater.format(dataVal);
         } else if (dataTypeID == DataTypeConstant.CUBRID_DT_CLOB) {
             if (targetDataFileFormat == MigrationConfiguration.DEST_DB_UNLOAD) {
-                return exportClobToFile(dataVal, tableName, lobFiles);
+                return exportClobToFile(dataVal, schemaName, tableName, lobFiles);
             }
             formater = formaters.get(DataTypeConstant.CUBRID_DT_VARCHAR);
             return formater.format(dataVal);
@@ -354,29 +369,41 @@ public class Data2StrTranslator implements IData2StrTranslator {
      * @param lobFiles to be uploaded
      * @return String
      */
-    private String exportBlobToFile(Object data, String targetTableName, List<String> lobFiles) {
+    private String exportBlobToFile(
+            Object data, String schemaName, String tableName, List<String> lobFiles) {
         if (data == null || lobFiles == null) {
             return VALUE_NULL;
         }
-        String blobFileName = targetTableName + "." + DBUtils.getIdentity();
+        String blobFileName = tableName + "." + DBUtils.getIdentity();
+        String lobDirDepth = dirAndFilesManager.getLobDirDepth(schemaName, tableName);
+
         String blobFilePath =
-                PathUtils.mergePath(lobFilePath, "/lob/" + targetTableName + "/" + blobFileName);
+                PathUtils.mergePath(
+                        lobFilePath, "/lob/" + tableName + "/" + lobDirDepth + "/" + blobFileName);
         blobFilePath = PathUtils.getLocalHostFilePath(blobFilePath);
 
         try {
             File parentFile = new File(blobFilePath).getParentFile();
 
-            if (PathUtils.checkPathExist(parentFile)) {
+            boolean isPathExist = false;
+            synchronized (this) {
+                isPathExist = PathUtils.checkPathExist(parentFile);
+            }
+
+            if (isPathExist) {
                 writeToFile(data, blobFilePath);
             }
+
             lobFiles.add(blobFilePath);
             return new StringBuffer(BLOB_HEADER)
                     .append(new File(blobFilePath).length())
                     .append(LOB_HEADER)
                     .append(LOBFILEPATH)
+                    .append(lobDirDepth)
+                    .append(File.separator)
                     .append(blobFileName)
                     .append("|")
-                    .append(targetTableName)
+                    .append(tableName)
                     .append("'")
                     .toString();
         } catch (Exception e) {
@@ -394,28 +421,41 @@ public class Data2StrTranslator implements IData2StrTranslator {
      * @param lobFiles to be uploaded
      * @return String
      */
-    private String exportClobToFile(Object data, String targetTableName, List<String> lobFiles) {
+    private String exportClobToFile(
+            Object data, String schemaName, String tableName, List<String> lobFiles) {
         if (data == null || lobFiles == null) {
             return VALUE_NULL;
         }
-        String clobFileName = targetTableName + DBUtils.getIdentity();
+        String clobFileName = tableName + DBUtils.getIdentity();
+        String lobDirDepth = dirAndFilesManager.getLobDirDepth(schemaName, tableName);
+
         String clobFilePath =
-                PathUtils.mergePath(lobFilePath, "/lob/" + targetTableName + "/" + clobFileName);
+                PathUtils.mergePath(
+                        lobFilePath, "/lob/" + tableName + "/" + lobDirDepth + "/" + clobFileName);
         clobFilePath = PathUtils.getLocalHostFilePath(clobFilePath);
         try {
             File parentFile = new File(clobFilePath).getParentFile();
-            if (PathUtils.checkPathExist(parentFile)) {
+
+            boolean isPathExist = false;
+            synchronized (this) {
+                isPathExist = PathUtils.checkPathExist(parentFile);
+            }
+
+            if (isPathExist) {
                 writeToFile(data, clobFilePath);
             }
+
             lobFiles.add(clobFilePath);
 
             return new StringBuffer(CLOB_HEADER)
                     .append(new File(clobFilePath).length())
                     .append(LOB_HEADER)
                     .append(LOBFILEPATH)
+                    .append(lobDirDepth)
+                    .append(File.separator)
                     .append(clobFileName)
                     .append("|")
-                    .append(targetTableName)
+                    .append(tableName)
                     .append("'")
                     .toString();
         } catch (Exception e) {
