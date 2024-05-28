@@ -406,6 +406,11 @@ public class SelectSourcePage extends MigrationWizardPage {
             }
             wzd.setOriginalSourceCatalog(catalog);
             MigrationConfiguration cfg = wzd.getMigrationConfig();
+
+            if (cfg.getName() == null) {
+                cfg.setName(catalog.getName() + "_" + cfg.getWizardStartDateTime());
+            }
+
             cfg.setSourceType(MigrationConfiguration.XML);
             cfg.setSourceFileName(txtXMLFile.getText());
             cfg.setSourceFileEncoding(cboFileCharset.getItem(cboFileCharset.getSelectionIndex()));
@@ -555,6 +560,11 @@ public class SelectSourcePage extends MigrationWizardPage {
                         return false;
                     }
                 }
+            }
+
+            // create configuration name
+            if (cfg.getName() == null) {
+                cfg.setName(catalog.getName() + "_" + cfg.getWizardStartDateTime());
             }
 
             if (isInputChanged() || wzd.getOriginalSourceCatalog() != catalog) {

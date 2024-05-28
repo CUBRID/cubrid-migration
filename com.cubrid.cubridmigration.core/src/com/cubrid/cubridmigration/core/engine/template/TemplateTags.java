@@ -122,6 +122,7 @@ public final class TemplateTags {
     public static final String ATTR_USER = "user";
     public static final String ATTR_VALUE = "value";
     public static final String ATTR_VERSION = "version";
+    public static final String ATTR_WIZARD_START_DATE_TIME = "wizardStartDateTime";
     // public static final String ATTR_WARNING_RATE = "warning_rate";
     public static final String ATTR_DIR = "dir";
     public static final String ATTR_SCHEMA = "schema";

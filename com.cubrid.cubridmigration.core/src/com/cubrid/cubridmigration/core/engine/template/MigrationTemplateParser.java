@@ -224,6 +224,8 @@ public final class MigrationTemplateParser {
             Element root = document.createElement(TemplateTags.TAG_MIGRATION);
             root.setAttribute(TemplateTags.ATTR_VERSION, VERSION);
             root.setAttribute(TemplateTags.ATTR_NAME, config.getName());
+            root.setAttribute(
+                    TemplateTags.ATTR_WIZARD_START_DATE_TIME, config.getWizardStartDateTime());
             document.appendChild(root);
             // Source
             createSourceNode(config, document, root, saveSchema);
