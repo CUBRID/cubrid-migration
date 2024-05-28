@@ -896,7 +896,7 @@ public class CSVSelectPage extends MigrationWizardPage {
         MigrationConfiguration config = wzd.getMigrationConfig();
 
         if (config.getName() == null) {
-            config.setName("CSV_" + config.getWizardStartDateTime());
+            config.setName("CSV", config.getWizardStartDateTime());
         }
 
         config.setSourceType(MigrationConfiguration.CSV);

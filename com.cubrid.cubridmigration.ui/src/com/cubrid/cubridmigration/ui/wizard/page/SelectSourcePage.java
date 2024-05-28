@@ -408,7 +408,7 @@ public class SelectSourcePage extends MigrationWizardPage {
             MigrationConfiguration cfg = wzd.getMigrationConfig();
 
             if (cfg.getName() == null) {
-                cfg.setName(catalog.getName() + "_" + cfg.getWizardStartDateTime());
+                cfg.setName(catalog.getName(), cfg.getWizardStartDateTime());
             }
 
             cfg.setSourceType(MigrationConfiguration.XML);
@@ -564,7 +564,7 @@ public class SelectSourcePage extends MigrationWizardPage {
 
             // create configuration name
             if (cfg.getName() == null) {
-                cfg.setName(catalog.getName() + "_" + cfg.getWizardStartDateTime());
+                cfg.setName(catalog.getName(), cfg.getWizardStartDateTime());
             }
 
             if (isInputChanged() || wzd.getOriginalSourceCatalog() != catalog) {
