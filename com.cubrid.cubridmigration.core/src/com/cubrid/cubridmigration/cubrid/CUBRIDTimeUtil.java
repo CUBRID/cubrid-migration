@@ -246,6 +246,17 @@ public class CUBRIDTimeUtil { // NOPMD
     }
 
     /**
+     * Format date into yyyyMMddHHmmss for use as a script name
+     *
+     * @param date Date
+     * @return yyyyMMddHHmmss
+     */
+    public static String wizardStarDateTimeFormat(Date date) {
+        return CUBRIDTimeUtil.getDateFormat("yyyyMMddHHmm", Locale.US, TimeZone.getDefault())
+                .format(date);
+    }
+
+    /**
      * Format date into yyyy-MM-dd HH:mm:ss.SSS with default time zone and default format
      *
      * @param date Date
