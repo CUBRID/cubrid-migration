@@ -4266,6 +4266,10 @@ public class MigrationConfiguration {
         this.name = name;
     }
 
+    public void setName(String prefix, String wizardDateTime) {
+        this.name = prefix + "_" + wizardDateTime;
+    }
+
     public void setWizardStartDateTime(String wizardStartDateTime) {
         this.wizardStartDateTime = wizardStartDateTime;
     }
