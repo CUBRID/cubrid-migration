@@ -409,7 +409,7 @@ public class SelectSourcePage extends MigrationWizardPage {
 
             if (cfg.getName() == null) {
                 cfg.setName(
-                        catalog.getDatabaseType().getName() + "_XML",
+                        catalog.getDatabaseType().getName() + "-XML",
                         catalog.getName(),
                         cfg.getWizardStartDateTime());
             }
