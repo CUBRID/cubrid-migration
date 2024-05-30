@@ -4270,6 +4270,10 @@ public class MigrationConfiguration {
         this.name = prefix + "_" + wizardDateTime;
     }
 
+    public void setName(String sourceDBType, String sourceDBName, String wizardDateTime) {
+        this.name = sourceDBType + "_" + sourceDBName + "_" + wizardDateTime;
+    }
+
     public void setWizardStartDateTime(String wizardStartDateTime) {
         this.wizardStartDateTime = wizardStartDateTime;
     }
