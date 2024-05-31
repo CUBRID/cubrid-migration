@@ -141,8 +141,8 @@ public class MigrationWizard extends Wizard implements IMigrationWizardStatus {
         setNeedsProgressMonitor(true);
         setDialogSettings(new DialogSettings("migration information"));
         migrationConfig = new MigrationConfiguration();
-        migrationConfig.setName(
-                CUBRIDTimeUtil.defaultFormatDateTime(new Date(System.currentTimeMillis())));
+        migrationConfig.setWizardStartDateTime(
+                CUBRIDTimeUtil.wizardStarDateTimeFormat(new Date(System.currentTimeMillis())));
     }
 
     public MigrationWizard(MigrationScript migrationScript) {

@@ -621,6 +621,9 @@ public class SQLSelectPage extends MigrationWizardPage {
             setErrorMessage(null);
         }
         MigrationConfiguration config = getMigrationWizard().getMigrationConfig();
+        if (config.getName() == null) {
+            config.setName("SQL", config.getWizardStartDateTime());
+        }
         config.setSqlFiles(sqls);
         config.setSourceFileEncoding(cbFileCharset.getText());
         config.setSourceType(MigrationConfiguration.SQL);

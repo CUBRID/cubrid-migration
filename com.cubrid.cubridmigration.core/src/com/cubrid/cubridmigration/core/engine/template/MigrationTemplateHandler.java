@@ -514,6 +514,8 @@ public final class MigrationTemplateHandler extends DefaultHandler {
             throws SAXException {
         if (TemplateTags.TAG_MIGRATION.equals(qName)) {
             config.setName(attributes.getValue(TemplateTags.ATTR_NAME));
+            config.setWizardStartDateTime(
+                    attributes.getValue(TemplateTags.ATTR_WIZARD_START_DATE_TIME));
             String version = attributes.getValue(TemplateTags.ATTR_VERSION);
             int versionValue = convertVersionToInt(version);
 

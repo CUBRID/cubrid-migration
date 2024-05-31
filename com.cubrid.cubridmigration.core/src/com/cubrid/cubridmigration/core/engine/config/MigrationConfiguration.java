@@ -229,6 +229,7 @@ public class MigrationConfiguration {
     private boolean implicitEstimate = false;
 
     private String name;
+    private String wizardStartDateTime;
     // True by default
     private boolean updateStatistics = true;
 
@@ -2612,6 +2613,10 @@ public class MigrationConfiguration {
         return name;
     }
 
+    public String getWizardStartDateTime() {
+        return wizardStartDateTime;
+    }
+
     public Catalog getOfflineSrcCatalog() {
         return offlineSrcCatalog;
     }
@@ -4259,6 +4264,18 @@ public class MigrationConfiguration {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public void setName(String prefix, String wizardDateTime) {
+        this.name = prefix + "_" + wizardDateTime;
+    }
+
+    public void setName(String sourceDBType, String sourceDBName, String wizardDateTime) {
+        this.name = sourceDBType + "_" + sourceDBName + "_" + wizardDateTime;
+    }
+
+    public void setWizardStartDateTime(String wizardStartDateTime) {
+        this.wizardStartDateTime = wizardStartDateTime;
     }
 
     public void setOfflineSrcCatalog(Catalog offlineSrcCatalog) {
