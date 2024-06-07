@@ -792,15 +792,15 @@ public class SchemaMappingPage extends MigrationWizardPage {
                     config.isAddUserSchema() ? srcTable.getSrcSchema() : config.getSrcConnOwner();
 
             if (splitSchema) {
-                tableFullName.put(schemaName, config.getTableFullName(schemaName));
-                viewFullName.put(schemaName, config.getViewFullName(schemaName));
-                viewQuerySpecFullName.put(schemaName, config.getViewQuerySpecFullName(schemaName));
-                pkFullName.put(schemaName, config.getPkFullName(schemaName));
-                fkFullName.put(schemaName, config.getFkFullName(schemaName));
-                serialFullName.put(schemaName, config.getSequenceFullName(schemaName));
+            	tableFullName.put(schemaName, config.buildLocalFileFullPath(schemaName, "class", null));
+            	viewFullName.put(schemaName, config.buildLocalFileFullPath(schemaName, "vclass", null));
+            	viewQuerySpecFullName.put(schemaName, config.buildLocalFileFullPath(schemaName, "vclass_query_spec", null));
+                pkFullName.put(schemaName, config.buildLocalFileFullPath(schemaName, "pk", null));
+                fkFullName.put(schemaName, config.buildLocalFileFullPath(schemaName, "fk", null));
+                serialFullName.put(schemaName, config.buildLocalFileFullPath(schemaName, "serial", null));
                 schemaFileListFullName.put(
-                        schemaName, config.getSchemaFileListFullName(schemaName));
-                synonymFileListFullName.put(schemaName, config.getSynonymFullName(schemaName));
+                        schemaName, config.buildLocalFileFullPath(schemaName, "info", null));
+                synonymFileListFullName.put(schemaName, config.buildLocalFileFullPath(schemaName, "synonym", null));
 
                 List<Grant> grantList = schema.getGrantList();
                 for (Grant grant : grantList) {
@@ -811,11 +811,11 @@ public class SchemaMappingPage extends MigrationWizardPage {
                     if (!grantMap.containsKey(grant.getSourceObjectOwner())) {
                         grantMap.put(
                                 grant.getSourceObjectOwner(),
-                                config.getGrantFullName(schemaName, grant.getSourceObjectOwner()));
+                                config.buildLocalFileFullPath(schemaName, "grant", grant.getSourceObjectOwner()));
                     }
                 }
             } else {
-                schemaFullName.put(schemaName, config.getSchemaFullName(schemaName));
+                schemaFullName.put(schemaName, config.buildLocalFileFullPath(schemaName, "schema", null));
             }
             if (config.isOneTableOneFile()) {
                 List<String> tableList = tableDataFileListFullName.get(schemaName);
@@ -823,14 +823,14 @@ public class SchemaMappingPage extends MigrationWizardPage {
                     if (tableList == null) {
                         tableList = new ArrayList<String>();
                     }
-                    tableList.add(config.getTableDataFullName(schemaName, table.getName()));
+                    tableList.add(config.buildLocalFileFullPath(schemaName, table.getName(), null));
                 }
                 tableDataFileListFullName.put(schemaName, tableList);
             } else {
-                dataFullName.put(schemaName, config.getDataFullName(schemaName));
+                dataFullName.put(schemaName, config.buildLocalFileFullPath(schemaName, "objects", null));
             }
-            indexFullName.put(schemaName, config.getIndexFullName(schemaName));
-            updateStatisticFullName.put(schemaName, config.getUpdateStatisticFullName(schemaName));
+            indexFullName.put(schemaName, config.buildLocalFileFullPath(schemaName, "indexes", null));
+            updateStatisticFullName.put(schemaName, config.buildLocalFileFullPath(schemaName, "updatestatistic", null));
         }
 
         if (!checkFileRepository()) {

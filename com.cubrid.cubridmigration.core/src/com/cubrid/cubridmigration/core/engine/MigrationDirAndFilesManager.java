@@ -167,7 +167,7 @@ public class MigrationDirAndFilesManager implements ICanDispose {
         privateErrorDir = errorDir.getAbsolutePath() + File.separator;
         // mergeFilesDir
         if (config.targetIsFile()) {
-            mergeFilesDir = config.getFileRepositroyPath();
+            mergeFilesDir = config.getFileRepositroyPath() + File.separator + config.getName() + File.separator;
         } else {
             mergeFilesDir = privateTempDir + "cache" + File.separatorChar;
         }

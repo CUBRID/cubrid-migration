@@ -288,6 +288,8 @@ public class CleanDBTask extends ImportTask {
                     new File(
                             config.getFileRepositroyPath()
                                     + File.separator
+                                    + config.getName()
+                                    + File.separator
                                     + ownerName
                                     + File.separator
                                     + ownerName
