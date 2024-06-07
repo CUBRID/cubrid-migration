@@ -30,6 +30,8 @@
  */
 package com.cubrid.cubridmigration.core.engine.config;
 
+import static com.cubrid.cubridmigration.core.common.PathUtils.mergePath;
+
 import au.com.bytecode.opencsv.CSVReader;
 import com.cubrid.cubridmigration.core.common.CUBRIDIOUtils;
 import com.cubrid.cubridmigration.core.common.CharsetUtils;
@@ -80,8 +82,6 @@ import java.util.TreeMap;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-
-import static com.cubrid.cubridmigration.core.common.PathUtils.mergePath;
 
 /**
  * MigrationConfiguration Description
@@ -892,14 +892,20 @@ public class MigrationConfiguration {
     private void addTargetObjectFileName(
             String schemaName, boolean isSplit, boolean isOneTableOneFile) {
         if (isSplit) {
-            this.addTargetTableFileName(schemaName, buildLocalFileFullPath(schemaName, "class", null));
-            this.addTargetViewFileName(schemaName, buildLocalFileFullPath(schemaName, "vclass", null));
-            this.addTargetViewQuerySpecFileName(schemaName, buildLocalFileFullPath(schemaName, "vclass_query_spec", null));
+            this.addTargetTableFileName(
+                    schemaName, buildLocalFileFullPath(schemaName, "class", null));
+            this.addTargetViewFileName(
+                    schemaName, buildLocalFileFullPath(schemaName, "vclass", null));
+            this.addTargetViewQuerySpecFileName(
+                    schemaName, buildLocalFileFullPath(schemaName, "vclass_query_spec", null));
             this.addTargetPkFileName(schemaName, buildLocalFileFullPath(schemaName, "pk", null));
             this.addTargetFkFileName(schemaName, buildLocalFileFullPath(schemaName, "fk", null));
-            this.addTargetSerialFileName(schemaName, buildLocalFileFullPath(schemaName, "serial", null));
-            this.addTargetSynonymFileName(schemaName, buildLocalFileFullPath(schemaName, "synonym", null));
-            this.addTargetSchemaFileListName(schemaName, buildLocalFileFullPath(schemaName, "info", null));
+            this.addTargetSerialFileName(
+                    schemaName, buildLocalFileFullPath(schemaName, "serial", null));
+            this.addTargetSynonymFileName(
+                    schemaName, buildLocalFileFullPath(schemaName, "synonym", null));
+            this.addTargetSchemaFileListName(
+                    schemaName, buildLocalFileFullPath(schemaName, "info", null));
 
             Map<String, Map<String, String>> grantFileListFullName =
                     new HashMap<String, Map<String, String>>();
@@ -912,11 +918,13 @@ public class MigrationConfiguration {
                     this.addTargetGrantFileName(
                             schemaName,
                             grant.getSourceGrantorName(),
-                            buildLocalFileFullPath(schemaName, "grant", grant.getSourceGrantorName()));
+                            buildLocalFileFullPath(
+                                    schemaName, "grant", grant.getSourceGrantorName()));
                 }
             }
         } else {
-            this.addTargetSchemaFileName(schemaName, buildLocalFileFullPath(schemaName, "schema", null));
+            this.addTargetSchemaFileName(
+                    schemaName, buildLocalFileFullPath(schemaName, "schema", null));
         }
         if (isOneTableOneFile) {
             for (SourceEntryTableConfig table : expTables) {
@@ -924,11 +932,14 @@ public class MigrationConfiguration {
                         schemaName, buildLocalFileFullPath(schemaName, table.getName(), null));
             }
         } else {
-            this.addTargetTableDataFileName(schemaName, buildLocalFileFullPath(schemaName, "objects", null));
+            this.addTargetTableDataFileName(
+                    schemaName, buildLocalFileFullPath(schemaName, "objects", null));
         }
         this.addTargetDataFileName(schemaName, buildLocalFileFullPath(schemaName, "object", null));
-        this.addTargetIndexFileName(schemaName, buildLocalFileFullPath(schemaName, "indexes", null));
-        this.addTargetUpdateStatisticFileName(schemaName, buildLocalFileFullPath(schemaName, "updatestatistic", null));
+        this.addTargetIndexFileName(
+                schemaName, buildLocalFileFullPath(schemaName, "indexes", null));
+        this.addTargetUpdateStatisticFileName(
+                schemaName, buildLocalFileFullPath(schemaName, "updatestatistic", null));
     }
 
     private String getTargetOwner(List<Schema> schemas, String owner) {
@@ -4767,54 +4778,58 @@ public class MigrationConfiguration {
     public void setTarSchemaDuplicate(boolean isTarSchemaDuplicate) {
         this.isTarSchemaDuplicate = isTarSchemaDuplicate;
     }
-    
+
     /**
-     * Destination type - Creates a file name and directory address to use when selecting Local CUBRID dump, SQL script, CSV, and XLS
-     * 
+     * Destination type - Creates a file name and directory address to use when selecting Local
+     * CUBRID dump, SQL script, CSV, and XLS
+     *
      * @param souceSchemaName
      * @param fileType
      * @param isDataFile
      * @return file full path
      */
-    public String buildLocalFileFullPath(String sourceSchemaName, String fileType, String grantTargetObjectOwnerName) {
-    	StringBuilder fileName = new StringBuilder();
-    	fileName.append(File.separator)
-    			.append(this.getTargetFilePrefix())
-    			.append("_")
-    			.append(sourceSchemaName)
-    			.append("_")
-    			.append(fileType)
-    			.append(fileExtName(fileType, grantTargetObjectOwnerName));
-    	
-    	return mergePath(mergePath(mergePath(getFileRepositroyPath(), getName()), sourceSchemaName), fileName.toString());
+    public String buildLocalFileFullPath(
+            String sourceSchemaName, String fileType, String grantTargetObjectOwnerName) {
+        StringBuilder fileName = new StringBuilder();
+        fileName.append(File.separator)
+                .append(this.getTargetFilePrefix())
+                .append("_")
+                .append(sourceSchemaName)
+                .append("_")
+                .append(fileType)
+                .append(fileExtName(fileType, grantTargetObjectOwnerName));
+
+        return mergePath(
+                mergePath(mergePath(getFileRepositroyPath(), getName()), sourceSchemaName),
+                fileName.toString());
     }
-    
+
     /**
      * Return different extensions depending on file type
-     * 
+     *
      * @param fileType
      * @param grantTargetObjectOwnerName
      * @return file extension
      */
     private String fileExtName(String fileType, String grantTargetObjectOwnerName) {
-    	switch (fileType) {
-    		case "schema":
-    		case "indexes":
-    		case "class":
-    		case "vclass":
-    		case "vclass_query_spec":
-    		case "pk":
-    		case "fk":
-    		case "serial":
-    		case "synonym":
-    		case "info":
-    		case "updatestatistic":
-    			return getDefaultTargetSchemaFileExtName();
-    		case "grant":
-    			return getTargetGrantFileExtName(grantTargetObjectOwnerName);
-    		default:
-    			return getDataFileExt();
-    	}
+        switch (fileType) {
+            case "schema":
+            case "indexes":
+            case "class":
+            case "vclass":
+            case "vclass_query_spec":
+            case "pk":
+            case "fk":
+            case "serial":
+            case "synonym":
+            case "info":
+            case "updatestatistic":
+                return getDefaultTargetSchemaFileExtName();
+            case "grant":
+                return getTargetGrantFileExtName(grantTargetObjectOwnerName);
+            default:
+                return getDataFileExt();
+        }
     }
 
     public String getSrcConnOwner() {
