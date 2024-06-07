@@ -379,7 +379,15 @@ public class Data2StrTranslator implements IData2StrTranslator {
 
         String blobFilePath =
                 PathUtils.mergePath(
-                        lobFilePath, "/lob/" + tableName + "/" + lobDirDepth + "/" + blobFileName);
+                        lobFilePath,
+                        "/lob/"
+                                + schemaName
+                                + "/"
+                                + tableName
+                                + "/"
+                                + lobDirDepth
+                                + "/"
+                                + blobFileName);
         blobFilePath = PathUtils.getLocalHostFilePath(blobFilePath);
 
         try {
@@ -431,7 +439,15 @@ public class Data2StrTranslator implements IData2StrTranslator {
 
         String clobFilePath =
                 PathUtils.mergePath(
-                        lobFilePath, "/lob/" + tableName + "/" + lobDirDepth + "/" + clobFileName);
+                        lobFilePath,
+                        "/lob/"
+                                + schemaName
+                                + "/"
+                                + tableName
+                                + "/"
+                                + lobDirDepth
+                                + "/"
+                                + clobFileName);
         clobFilePath = PathUtils.getLocalHostFilePath(clobFilePath);
         try {
             File parentFile = new File(clobFilePath).getParentFile();
