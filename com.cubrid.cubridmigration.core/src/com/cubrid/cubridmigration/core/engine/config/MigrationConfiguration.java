@@ -929,13 +929,10 @@ public class MigrationConfiguration {
         if (isOneTableOneFile) {
             for (SourceEntryTableConfig table : expTables) {
                 this.addTargetTableDataFileName(
-                        schemaName, buildLocalFileFullPath(schemaName, table.getName(), null));
+                        schemaName, buildDataFileFullPath(schemaName, table.getName()));
             }
-        } else {
-            this.addTargetTableDataFileName(
-                    schemaName, buildLocalFileFullPath(schemaName, "objects", null));
         }
-        this.addTargetDataFileName(schemaName, buildLocalFileFullPath(schemaName, "object", null));
+        this.addTargetDataFileName(schemaName, buildDataFileFullPath(schemaName, "object"));
         this.addTargetIndexFileName(
                 schemaName, buildLocalFileFullPath(schemaName, "indexes", null));
         this.addTargetUpdateStatisticFileName(
@@ -4792,7 +4789,7 @@ public class MigrationConfiguration {
             String sourceSchemaName, String fileType, String grantTargetObjectOwnerName) {
         StringBuilder fileName = new StringBuilder();
         fileName.append(File.separator)
-                .append(this.getTargetFilePrefix())
+                .append(getTargetFilePrefix())
                 .append("_")
                 .append(sourceSchemaName)
                 .append("_")
@@ -4801,6 +4798,31 @@ public class MigrationConfiguration {
 
         return mergePath(
                 mergePath(mergePath(getFileRepositroyPath(), getName()), sourceSchemaName),
+                fileName.toString());
+    }
+
+    /**
+     * Destination type - Creates a Data file name and directory address to use when selecting Local
+     * CUBRID dump, SQL script, CSV, and XLS
+     *
+     * @param sourceSchemaName
+     * @param fileType
+     * @return data file full path
+     */
+    public String buildDataFileFullPath(String sourceSchemaName, String fileType) {
+        StringBuilder fileName = new StringBuilder();
+        fileName.append(File.separator)
+                .append(getTargetFilePrefix())
+                .append("_")
+                .append(sourceSchemaName)
+                .append("_")
+                .append(fileType)
+                .append(getDataFileExt());
+
+        return mergePath(
+                mergePath(
+                        mergePath(mergePath(getFileRepositroyPath(), getName()), sourceSchemaName),
+                        isOneTableOneFile() ? "objects" : ""),
                 fileName.toString());
     }
 

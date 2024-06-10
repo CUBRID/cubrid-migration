@@ -831,13 +831,11 @@ public class SchemaMappingPage extends MigrationWizardPage {
                     if (tableList == null) {
                         tableList = new ArrayList<String>();
                     }
-                    tableList.add(config.buildLocalFileFullPath(schemaName, table.getName(), null));
+                    tableList.add(config.buildDataFileFullPath(schemaName, table.getName()));
                 }
                 tableDataFileListFullName.put(schemaName, tableList);
-            } else {
-                dataFullName.put(
-                        schemaName, config.buildLocalFileFullPath(schemaName, "objects", null));
             }
+            dataFullName.put(schemaName, config.buildDataFileFullPath(schemaName, "objects"));
             indexFullName.put(
                     schemaName, config.buildLocalFileFullPath(schemaName, "indexes", null));
             updateStatisticFullName.put(
