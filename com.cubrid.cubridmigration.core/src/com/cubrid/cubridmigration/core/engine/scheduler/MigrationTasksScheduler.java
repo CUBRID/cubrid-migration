@@ -141,7 +141,7 @@ public class MigrationTasksScheduler {
                 createCreateUserSQL();
             }
         }
-        
+
         clearObjectsDir();
     }
 
@@ -273,20 +273,24 @@ public class MigrationTasksScheduler {
         }
         PathUtils.deleteFile(new File(config.getFileRepositroyPath() + schemaName));
     }
-    
+
     /** Delete objects directory */
     private void clearObjectsDir() {
-   	MigrationConfiguration config = context.getConfig();
-   	Map<String, String> tableDataFiles = config.getTargetDataFileName();
-   	List<String> keys = new ArrayList<>(tableDataFiles.keySet());
-   	
-   	for (String key : keys) {
-   		File objectsFileParentPath = new File(new File(tableDataFiles.get(key)).getParent() + File.separator + "objects");
-   		if (!config.isOneTableOneFile() && PathUtils.checkPathEmpty(objectsFileParentPath)) {
-       		PathUtils.deleteFile(objectsFileParentPath);
-       	}
-   	}
-   }
+        MigrationConfiguration config = context.getConfig();
+        Map<String, String> tableDataFiles = config.getTargetDataFileName();
+        List<String> keys = new ArrayList<>(tableDataFiles.keySet());
+
+        for (String key : keys) {
+            File objectsFileParentPath =
+                    new File(
+                            new File(tableDataFiles.get(key)).getParent()
+                                    + File.separator
+                                    + "objects");
+            if (!config.isOneTableOneFile() && PathUtils.checkPathEmpty(objectsFileParentPath)) {
+                PathUtils.deleteFile(objectsFileParentPath);
+            }
+        }
+    }
 
     /** Waiting for step finished. */
     protected void await() {
