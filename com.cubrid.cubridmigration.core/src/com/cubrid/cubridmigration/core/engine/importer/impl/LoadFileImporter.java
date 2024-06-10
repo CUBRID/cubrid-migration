@@ -84,6 +84,8 @@ public class LoadFileImporter extends OfflineImporter {
                             + File.separator
                             + owner
                             + File.separator
+                            + "objects"
+                            + File.separator
                             + prefix
                             + "_"
                             + owner

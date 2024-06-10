@@ -81,6 +81,20 @@ public final class PathUtils {
 
         return false;
     }
+    
+    /**
+     * Checks if a directory is empty
+     * 
+     * @param directory the directory to check
+     * @return true if the directory is empty or does not contain any files, false otherwise
+     */
+    public static boolean checkPathEmpty(File directory) {
+    	if (directory.isDirectory()) {
+    		String[] files = directory.list();
+    		return files == null || files.length == 0;
+    	}
+    	return false;
+    }
 
     /**
      * Create file
