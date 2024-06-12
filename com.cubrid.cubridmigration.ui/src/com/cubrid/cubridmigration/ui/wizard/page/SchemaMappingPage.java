@@ -37,7 +37,6 @@ import com.cubrid.cubridmigration.core.common.log.LogUtil;
 import com.cubrid.cubridmigration.core.dbobject.Catalog;
 import com.cubrid.cubridmigration.core.dbobject.Grant;
 import com.cubrid.cubridmigration.core.dbobject.Schema;
-import com.cubrid.cubridmigration.core.dbobject.Table;
 import com.cubrid.cubridmigration.core.engine.config.MigrationConfiguration;
 import com.cubrid.cubridmigration.ui.common.CompositeUtils;
 import com.cubrid.cubridmigration.ui.common.dialog.DetailMessageDialog;
@@ -827,7 +826,12 @@ public class SchemaMappingPage extends MigrationWizardPage {
             }
             if (config.isOneTableOneFile()) {
                 List<String> tableList = new ArrayList<>();
-                schema.getTables().forEach(table -> tableList.add(config.buildDataFileFullPath(schemaName, table.getName())));
+                schema.getTables()
+                        .forEach(
+                                table ->
+                                        tableList.add(
+                                                config.buildDataFileFullPath(
+                                                        schemaName, table.getName())));
                 tableDataFileListFullName.put(schemaName, tableList);
             }
             dataFullName.put(schemaName, config.buildDataFileFullPath(schemaName, "objects"));
