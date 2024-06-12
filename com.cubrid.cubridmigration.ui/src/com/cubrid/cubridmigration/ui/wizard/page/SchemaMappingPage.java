@@ -826,13 +826,8 @@ public class SchemaMappingPage extends MigrationWizardPage {
                         schemaName, config.buildLocalFileFullPath(schemaName, "schema", null));
             }
             if (config.isOneTableOneFile()) {
-                List<String> tableList = tableDataFileListFullName.get(schemaName);
-                for (Table table : srcCatalog.getSchemaByName(schemaName).getTables()) {
-                    if (tableList == null) {
-                        tableList = new ArrayList<String>();
-                    }
-                    tableList.add(config.buildDataFileFullPath(schemaName, table.getName()));
-                }
+                List<String> tableList = new ArrayList<>();
+                schema.getTables().forEach(table -> tableList.add(config.buildDataFileFullPath(schemaName, table.getName())));
                 tableDataFileListFullName.put(schemaName, tableList);
             }
             dataFullName.put(schemaName, config.buildDataFileFullPath(schemaName, "objects"));
