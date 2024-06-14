@@ -35,6 +35,7 @@ import com.cubrid.cubridmigration.core.common.PathUtils;
 import com.cubrid.cubridmigration.core.common.log.LogUtil;
 import com.cubrid.cubridmigration.core.dbobject.DBObject;
 import com.cubrid.cubridmigration.core.dbobject.Table;
+import com.cubrid.cubridmigration.core.dbtype.DatabaseType;
 import com.cubrid.cubridmigration.core.engine.MigrationContext;
 import com.cubrid.cubridmigration.core.engine.MigrationDirAndFilesManager;
 import com.cubrid.cubridmigration.core.engine.MigrationStatusManager;
@@ -171,8 +172,10 @@ public class LoadFileImporter extends OfflineImporter {
             MigrationDirAndFilesManager mdfm = mrManager.getDirAndFilesMgr();
 
             final String schemaName;
-            if (config.sourceIsXMLDump()) {
-                schemaName = config.getSrcConnOwner();
+            DatabaseType sourceDBType = config.getSourceDBType();
+            if (sourceDBType == DatabaseType.MYSQL || sourceDBType == DatabaseType.MARIADB) {
+                String srcConnOwner = config.getSrcConnOwner();
+                schemaName = config.isAddUserSchema() ? srcConnOwner.toUpperCase() : srcConnOwner;
             } else {
                 schemaName = config.isAddUserSchema() ? stc.getOwner() : config.getSrcConnOwner();
             }
