@@ -231,6 +231,7 @@ public class MigrationConfiguration {
     private boolean implicitEstimate = false;
 
     private String name;
+    private String oldName;
     private String wizardStartDateTime;
     // True by default
     private boolean updateStatistics = true;
@@ -2622,6 +2623,10 @@ public class MigrationConfiguration {
     public String getName() {
         return name;
     }
+    
+    public String getOldName() {
+    	return oldName;
+    }
 
     public String getWizardStartDateTime() {
         return wizardStartDateTime;
@@ -4273,6 +4278,9 @@ public class MigrationConfiguration {
     }
 
     public void setName(String name) {
+    	if (name != null) {
+    		oldName = name;
+    	}
         this.name = name;
     }
 
