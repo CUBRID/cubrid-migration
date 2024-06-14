@@ -2623,9 +2623,9 @@ public class MigrationConfiguration {
     public String getName() {
         return name;
     }
-    
+
     public String getOldName() {
-    	return oldName;
+        return oldName;
     }
 
     public String getWizardStartDateTime() {
@@ -4278,9 +4278,9 @@ public class MigrationConfiguration {
     }
 
     public void setName(String name) {
-    	if (name != null) {
-    		oldName = name;
-    	}
+        if (name != null) {
+            oldName = name;
+        }
         this.name = name;
     }
 
