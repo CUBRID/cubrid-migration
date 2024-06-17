@@ -236,7 +236,8 @@ public class ConfirmationPage extends BaseConfirmationPage {
 
             int oldLength;
             boolean isCreateFileRepository = false;
-            boolean isAddUserSchema = migration.isAddUserSchema();
+            boolean isAddUserSchema =
+                    migration.getSrcCatalog().getDatabaseType().isSupportMultiSchema();
             String conUser = migration.getSrcConnOwner();
 
             if (migration.isSplitSchema()) {

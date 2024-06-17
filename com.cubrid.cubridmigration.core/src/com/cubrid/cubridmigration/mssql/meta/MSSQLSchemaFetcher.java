@@ -67,6 +67,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
@@ -672,7 +673,7 @@ public final class MSSQLSchemaFetcher extends AbstractJDBCSchemaFetcher {
             stmt = conn.prepareStatement(SHOW_SCHEMA_ID.replace(CATALOG_NAME, cp.getDbName()));
             rs = stmt.executeQuery();
             while (rs.next()) {
-                String schemaName = rs.getString(2);
+                String schemaName = rs.getString(2).toUpperCase(Locale.US);
                 Integer schemaID = rs.getInt(1);
                 schemaNameIDMap.put(schemaName, schemaID);
                 schemaNames.add(schemaName);

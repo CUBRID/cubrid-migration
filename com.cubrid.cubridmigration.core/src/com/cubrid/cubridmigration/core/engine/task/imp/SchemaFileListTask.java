@@ -63,7 +63,7 @@ public class SchemaFileListTask extends ImportTask {
     /** Execute import */
     @Override
     protected void executeImport() {
-        if (config.isAddUserSchema()) {
+        if (config.getSrcCatalog().getDatabaseType().isSupportMultiSchema()) {
             List<Schema> schemaList = config.getTargetSchemaList();
             for (Schema schema : schemaList) {
                 String schemaName = schema.getName();

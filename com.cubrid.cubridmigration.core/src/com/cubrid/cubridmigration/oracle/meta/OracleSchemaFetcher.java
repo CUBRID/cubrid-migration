@@ -1773,7 +1773,7 @@ public final class OracleSchemaFetcher extends AbstractJDBCSchemaFetcher {
             stmt = conn.createStatement();
             rs = stmt.executeQuery(sql);
             while (rs.next()) {
-                schemaNames.add(rs.getString(1));
+                schemaNames.add(rs.getString(1).toUpperCase(Locale.US));
             }
         } finally {
             Closer.close(rs);

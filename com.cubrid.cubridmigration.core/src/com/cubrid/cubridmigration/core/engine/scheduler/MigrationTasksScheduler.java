@@ -221,7 +221,7 @@ public class MigrationTasksScheduler {
                 schemaList = new ArrayList<Schema>(schemas);
             }
 
-            if (config.isAddUserSchema()) {
+            if (config.getSrcCatalog().getDatabaseType().isSupportMultiSchema()) {
                 for (Schema schema : schemaList) {
                     deleteFile(config, schema.getName());
                 }

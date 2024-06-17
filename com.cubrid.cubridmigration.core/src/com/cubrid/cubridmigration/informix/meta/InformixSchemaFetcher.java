@@ -58,6 +58,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import org.apache.log4j.Logger;
 
@@ -140,7 +141,7 @@ public class InformixSchemaFetcher extends AbstractJDBCSchemaFetcher {
         List<String> result = new ArrayList<String>();
         ResultSet resultSet = conn.getMetaData().getSchemas();
         while (resultSet.next()) {
-            String name = resultSet.getString("TABLE_SCHEM");
+            String name = resultSet.getString("TABLE_SCHEM").toUpperCase(Locale.US);
             result.add(name);
         }
         return result;

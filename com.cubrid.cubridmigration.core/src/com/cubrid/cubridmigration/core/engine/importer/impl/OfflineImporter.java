@@ -687,7 +687,9 @@ public abstract class OfflineImporter extends Importer {
                 sql.toString(),
                 DBObject.OBJ_TYPE_TABLE,
                 createResultHandler(table),
-                config.isAddUserSchema() ? table.getSourceOwner() : config.getSrcConnOwner());
+                config.getSrcCatalog().getDatabaseType().isSupportMultiSchema()
+                        ? table.getSourceOwner()
+                        : config.getSrcConnOwner());
     }
 
     /**
@@ -703,7 +705,9 @@ public abstract class OfflineImporter extends Importer {
                 viewDDL + "\n",
                 DBObject.OBJ_TYPE_VIEW,
                 createResultHandler(view),
-                config.isAddUserSchema() ? view.getSourceOwner() : config.getSrcConnOwner());
+                config.getSrcCatalog().getDatabaseType().isSupportMultiSchema()
+                        ? view.getSourceOwner()
+                        : config.getSrcConnOwner());
     }
 
     /**
@@ -719,7 +723,9 @@ public abstract class OfflineImporter extends Importer {
                 viewAlterDDL + "\n",
                 DBObject.OBJ_TYPE_VIEW_QUERY_SPEC,
                 createResultHandler(view),
-                config.isAddUserSchema() ? view.getSourceOwner() : config.getSrcConnOwner());
+                config.getSrcCatalog().getDatabaseType().isSupportMultiSchema()
+                        ? view.getSourceOwner()
+                        : config.getSrcConnOwner());
     }
 
     /**
@@ -741,7 +747,7 @@ public abstract class OfflineImporter extends Importer {
                 ddl + ";\n",
                 DBObject.OBJ_TYPE_PK,
                 createResultHandler(pk),
-                config.isAddUserSchema()
+                config.getSrcCatalog().getDatabaseType().isSupportMultiSchema()
                         ? pk.getTable().getSourceOwner()
                         : config.getSrcConnOwner());
     }
@@ -764,7 +770,7 @@ public abstract class OfflineImporter extends Importer {
                 ddl + ";\n",
                 DBObject.OBJ_TYPE_FK,
                 createResultHandler(fk),
-                config.isAddUserSchema()
+                config.getSrcCatalog().getDatabaseType().isSupportMultiSchema()
                         ? fk.getTable().getSourceOwner()
                         : config.getSrcConnOwner());
     }
@@ -789,7 +795,7 @@ public abstract class OfflineImporter extends Importer {
                 ddl + ";\n",
                 DBObject.OBJ_TYPE_INDEX,
                 createResultHandler(index),
-                config.isAddUserSchema()
+                config.getSrcCatalog().getDatabaseType().isSupportMultiSchema()
                         ? index.getTable().getSourceOwner()
                         : config.getSrcConnOwner());
     }
@@ -806,7 +812,9 @@ public abstract class OfflineImporter extends Importer {
                 ddl + ";\n",
                 DBObject.OBJ_TYPE_SEQUENCE,
                 createResultHandler(sq),
-                config.isAddUserSchema() ? sq.getSourceOwner() : config.getSrcConnOwner());
+                config.getSrcCatalog().getDatabaseType().isSupportMultiSchema()
+                        ? sq.getSourceOwner()
+                        : config.getSrcConnOwner());
     }
 
     /**
@@ -821,7 +829,9 @@ public abstract class OfflineImporter extends Importer {
                 ddl + ";\n",
                 DBObject.OBJ_TYPE_SYNONYM,
                 createResultHandler(sn),
-                config.isAddUserSchema() ? sn.getSourceOwner() : config.getSrcConnOwner());
+                config.getSrcCatalog().getDatabaseType().isSupportMultiSchema()
+                        ? sn.getSourceOwner()
+                        : config.getSrcConnOwner());
     }
 
     /**
@@ -836,7 +846,9 @@ public abstract class OfflineImporter extends Importer {
                 ddl + ";\n",
                 DBObject.OBJ_TYPE_GRANT,
                 createResultHandler(gr),
-                config.isAddUserSchema() ? gr.getSourceOwner() : config.getSrcConnOwner(),
+                config.getSrcCatalog().getDatabaseType().isSupportMultiSchema()
+                        ? gr.getSourceOwner()
+                        : config.getSrcConnOwner(),
                 gr.getSourceObjectOwner());
     }
 

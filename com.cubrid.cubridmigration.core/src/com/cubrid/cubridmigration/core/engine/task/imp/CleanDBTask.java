@@ -80,6 +80,8 @@ public class CleanDBTask extends ImportTask {
         Map<String, List<String>> tbTruncateQueryBySchemaMap = new HashMap<String, List<String>>();
 
         String conUser = config.getSrcConnOwner();
+        boolean isSourceDBSupportMultiSchema =
+                config.getSrcCatalog().getDatabaseType().isSupportMultiSchema();
 
         for (SourceEntryTableConfig setc : config.getExpEntryTableCfg()) {
             if (!setc.isCreateNewTable()) {
@@ -102,7 +104,7 @@ public class CleanDBTask extends ImportTask {
 
                     divideQueryBySchema(
                             fkDropQueryBySchemaMap,
-                            config.isAddUserSchema() ? setc.getTargetOwner() : conUser,
+                            isSourceDBSupportMultiSchema ? setc.getTargetOwner() : conUser,
                             query.toString());
                     execDDL(query.toString());
                 }
@@ -124,7 +126,7 @@ public class CleanDBTask extends ImportTask {
 
                     divideQueryBySchema(
                             dropQueryBySchemaMap,
-                            config.isAddUserSchema() ? setc.getTargetOwner() : conUser,
+                            isSourceDBSupportMultiSchema ? setc.getTargetOwner() : conUser,
                             query.toString());
                     execDDL(query.toString());
                 }
@@ -143,11 +145,11 @@ public class CleanDBTask extends ImportTask {
 
                 divideQueryBySchema(
                         dropQueryBySchemaMap,
-                        config.isAddUserSchema() ? setc.getTargetOwner() : conUser,
+                        isSourceDBSupportMultiSchema ? setc.getTargetOwner() : conUser,
                         query.toString());
                 divideQueryBySchema(
                         tbTruncateQueryBySchemaMap,
-                        config.isAddUserSchema() ? setc.getTargetOwner() : conUser,
+                        isSourceDBSupportMultiSchema ? setc.getTargetOwner() : conUser,
                         query.toString().replaceAll("DROP", "TRUNCATE"));
                 execDDL(query.toString());
             }
@@ -165,11 +167,11 @@ public class CleanDBTask extends ImportTask {
 
                 divideQueryBySchema(
                         dropQueryBySchemaMap,
-                        config.isAddUserSchema() ? sstc.getTargetOwner() : conUser,
+                        isSourceDBSupportMultiSchema ? sstc.getTargetOwner() : conUser,
                         query.toString());
                 divideQueryBySchema(
                         tbTruncateQueryBySchemaMap,
-                        sstc.getTargetOwner(),
+                        isSourceDBSupportMultiSchema ? sstc.getTargetOwner() : conUser,
                         query.toString().replaceAll("DROP", "TRUNCATE"));
                 execDDL(query.toString());
             }
@@ -187,11 +189,11 @@ public class CleanDBTask extends ImportTask {
 
                 divideQueryBySchema(
                         dropQueryBySchemaMap,
-                        config.isAddUserSchema() ? scc.getTargetOwner() : conUser,
+                        isSourceDBSupportMultiSchema ? scc.getTargetOwner() : conUser,
                         query.toString());
                 divideQueryBySchema(
                         tbTruncateQueryBySchemaMap,
-                        config.isAddUserSchema() ? scc.getTargetOwner() : conUser,
+                        isSourceDBSupportMultiSchema ? scc.getTargetOwner() : conUser,
                         query.toString().replaceAll("DROP", "TRUNCATE"));
                 execDDL(query.toString());
             }
@@ -209,7 +211,7 @@ public class CleanDBTask extends ImportTask {
 
                 divideQueryBySchema(
                         dropQueryBySchemaMap,
-                        config.isAddUserSchema() ? sc.getTargetOwner() : conUser,
+                        isSourceDBSupportMultiSchema ? sc.getTargetOwner() : conUser,
                         query.toString());
                 execDDL(query.toString());
             }
@@ -227,7 +229,7 @@ public class CleanDBTask extends ImportTask {
 
                 divideQueryBySchema(
                         dropQueryBySchemaMap,
-                        config.isAddUserSchema() ? sc.getTargetOwner() : conUser,
+                        isSourceDBSupportMultiSchema ? sc.getTargetOwner() : conUser,
                         query.toString());
                 execDDL(query.toString());
             }
@@ -245,7 +247,7 @@ public class CleanDBTask extends ImportTask {
 
                 divideQueryBySchema(
                         dropQueryBySchemaMap,
-                        config.isAddUserSchema() ? sc.getTargetOwner() : conUser,
+                        isSourceDBSupportMultiSchema ? sc.getTargetOwner() : conUser,
                         query.toString());
                 execDDL(query.toString());
             }
@@ -260,7 +262,7 @@ public class CleanDBTask extends ImportTask {
                 schemaList = new ArrayList<Schema>(schemas);
             }
 
-            if (config.isAddUserSchema()) {
+            if (isSourceDBSupportMultiSchema) {
                 for (Schema schema : schemaList) {
                     String ownerName = schema.getName();
                     writeFile(dropQueryBySchemaMap, ownerName, CLEAR_SQL);

@@ -788,7 +788,9 @@ public class SchemaMappingPage extends MigrationWizardPage {
             targetSchemaList.add(schema);
 
             String schemaName =
-                    config.isAddUserSchema() ? srcTable.getSrcSchema() : config.getSrcConnOwner();
+                    srcCatalog.getDatabaseType().isSupportMultiSchema()
+                            ? srcTable.getSrcSchema()
+                            : config.getSrcConnOwner();
 
             if (splitSchema) {
                 tableFullName.put(
@@ -881,7 +883,7 @@ public class SchemaMappingPage extends MigrationWizardPage {
     private boolean checkFileRepository() {
         StringBuffer buffer = new StringBuffer();
 
-        if (config.isAddUserSchema()) {
+        if (srcCatalog.getDatabaseType().isSupportMultiSchema()) {
             for (SrcTable srcTable : srcTableList) {
                 if (!srcTable.isSelected) {
                     continue;

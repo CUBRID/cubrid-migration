@@ -2373,7 +2373,7 @@ public final class CUBRIDSchemaFetcher extends AbstractJDBCSchemaFetcher {
             rs = stmt.executeQuery();
 
             while (rs.next()) {
-                schemaNames.add(rs.getString("name"));
+                schemaNames.add(rs.getString("name").toUpperCase(Locale.US));
             }
 
             if (schemaNames.isEmpty()) {
@@ -2406,7 +2406,7 @@ public final class CUBRIDSchemaFetcher extends AbstractJDBCSchemaFetcher {
         //		} else {
         //			result.add(cp.getDbName());
         //		}
-        result.add(cp.getConUser());
+        result.add(cp.getConUser().toUpperCase(Locale.US));
         return result;
     }
 
