@@ -35,7 +35,6 @@ import com.cubrid.cubridmigration.core.common.PathUtils;
 import com.cubrid.cubridmigration.core.common.log.LogUtil;
 import com.cubrid.cubridmigration.core.dbobject.DBObject;
 import com.cubrid.cubridmigration.core.dbobject.Table;
-import com.cubrid.cubridmigration.core.dbtype.DatabaseType;
 import com.cubrid.cubridmigration.core.engine.MigrationContext;
 import com.cubrid.cubridmigration.core.engine.MigrationDirAndFilesManager;
 import com.cubrid.cubridmigration.core.engine.MigrationStatusManager;
@@ -170,15 +169,10 @@ public class LoadFileImporter extends OfflineImporter {
             String fileName, final SourceTableConfig stc, final int impCount, final int expCount) {
         synchronized (lockObj) {
             MigrationDirAndFilesManager mdfm = mrManager.getDirAndFilesMgr();
-
-            final String schemaName;
-            DatabaseType sourceDBType = config.getSourceDBType();
-            if (sourceDBType == DatabaseType.MYSQL || sourceDBType == DatabaseType.MARIADB) {
-                String srcConnOwner = config.getSrcConnOwner();
-                schemaName = config.isAddUserSchema() ? srcConnOwner.toUpperCase() : srcConnOwner;
-            } else {
-                schemaName = config.isAddUserSchema() ? stc.getOwner() : config.getSrcConnOwner();
-            }
+            String schemaName =
+                    config.getSrcCatalog().getDatabaseType().isSupportMultiSchema()
+                            ? stc.getOwner()
+                            : config.getSrcConnOwner();
 
             if (!tableFiles.containsKey(schemaName + stc.getName())) {
                 tableFiles.put(
