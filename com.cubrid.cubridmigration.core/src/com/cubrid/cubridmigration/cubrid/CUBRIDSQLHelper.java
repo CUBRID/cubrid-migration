@@ -49,6 +49,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.apache.commons.lang.StringUtils;
@@ -79,6 +80,7 @@ public class CUBRIDSQLHelper extends SQLHelper {
     private static final String NEWLINE = "\n";
     private static final String HINT = "/*+ NO_STATS */";
     private static final String END_LINE_CHAR = ";";
+    public static final String SQL_NULL = "null";
 
     private static final CUBRIDSQLHelper HELPER = new CUBRIDSQLHelper();
 
@@ -683,6 +685,11 @@ public class CUBRIDSQLHelper extends SQLHelper {
      * @return String
      */
     public String getViewAlterDDL(View view, boolean addUserSchema) {
+        String viewQuerySpec = view.getQuerySpec();
+        if (viewQuerySpec == null || viewQuerySpec.isEmpty()) {
+            return SQL_NULL;
+        }
+
         StringBuffer sb = new StringBuffer();
         sb.append("ALTER VIEW ");
         String viewName = view.getName();
@@ -692,8 +699,8 @@ public class CUBRIDSQLHelper extends SQLHelper {
             sb.append(getQuotedObjName(viewName));
         }
 
-        sb.append(" ADD").append(" QUERY ").append(view.getQuerySpec());
-        sb.append(END_LINE_CHAR);
+        sb.append(" ADD").append(" QUERY ").append(viewQuerySpec);
+        sb.append(viewQuerySpec.endsWith(END_LINE_CHAR) ? "" : END_LINE_CHAR);
 
         return sb.toString();
     }

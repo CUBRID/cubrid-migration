@@ -52,6 +52,7 @@ import com.cubrid.cubridmigration.core.engine.event.MigrationStartEvent;
 import com.cubrid.cubridmigration.core.engine.event.MigrationXLSNoSupportEvent;
 import com.cubrid.cubridmigration.core.engine.event.StartExpTableEvent;
 import com.cubrid.cubridmigration.core.engine.template.MigrationTemplateParser;
+import com.cubrid.cubridmigration.cubrid.CUBRIDSQLHelper;
 import com.cubrid.cubridmigration.cubrid.CUBRIDTimeUtil;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -183,7 +184,10 @@ public abstract class DefaultMigrationReporter implements IMigrationReporter {
                 dbor.setSucceed(true);
                 dbor.setDdl(ev.getDbObject().getDDL());
                 if (ev.getDbObject().getObjType() == DBObject.OBJ_TYPE_VIEW) {
-                    dbor.setDdl(dbor.getDdl() + "\n" + ((View) ev.getDbObject()).getAlterDDL());
+                    String viewAlterDDL = ((View) ev.getDbObject()).getAlterDDL();
+                    if (!viewAlterDDL.equals(CUBRIDSQLHelper.SQL_NULL)) {
+                        dbor.setDdl(dbor.getDdl() + "\n" + viewAlterDDL);
+                    }
                 }
             } else {
                 DBObjMigrationResult dbor = report.getDBObjResult(ev.getDbObject());

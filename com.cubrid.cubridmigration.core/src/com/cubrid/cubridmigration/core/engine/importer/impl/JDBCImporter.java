@@ -152,8 +152,10 @@ public class JDBCImporter extends Importer {
                 CUBRIDSQLHelper.getInstance(null).getViewAlterDDL(view, config.isAddUserSchema());
         view.setAlterDDL(viewAlterDDL);
         try {
-            executeDDL(viewAlterDDL);
-            createObjectSuccess(view);
+            if (!viewAlterDDL.equals(CUBRIDSQLHelper.SQL_NULL)) {
+                executeDDL(viewAlterDDL);
+                createObjectSuccess(view);
+            }
         } catch (RuntimeException e) {
             createObjectFailed(view, e);
         }
