@@ -4279,7 +4279,7 @@ public class MigrationConfiguration {
 
     public void setName(String name) {
         if (this.name != null) {
-            oldName = name;
+            oldName = this.name;
         }
         this.name = name;
     }
