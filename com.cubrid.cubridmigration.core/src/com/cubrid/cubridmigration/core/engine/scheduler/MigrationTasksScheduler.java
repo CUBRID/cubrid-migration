@@ -297,6 +297,7 @@ public class MigrationTasksScheduler {
     /** Change the script name part of the local file path */
     private void changeLocalFilePath() {
         MigrationConfiguration config = context.getConfig();
+        String fileRootPath = config.getFileRepositroyPath();
         String oldName = config.getOldName();
         String newName = config.getName();
 
@@ -306,43 +307,53 @@ public class MigrationTasksScheduler {
 
         // schema
         config.setTargetSchemaFileName(
-                changeOldNameToNewName(config.getTargetSchemaFileName(), oldName, newName));
+                changeOldNameToNewName(
+                        config.getTargetSchemaFileName(), fileRootPath, oldName, newName));
 
         // class
         config.setTargetTableFileName(
-                changeOldNameToNewName(config.getTargetTableFileName(), oldName, newName));
+                changeOldNameToNewName(
+                        config.getTargetTableFileName(), fileRootPath, oldName, newName));
 
         // vclass
         config.setTargetViewFileName(
-                changeOldNameToNewName(config.getTargetViewFileName(), oldName, newName));
+                changeOldNameToNewName(
+                        config.getTargetViewFileName(), fileRootPath, oldName, newName));
 
         // vclass_query_spec
         config.setTargetViewQuerySpecFileName(
-                changeOldNameToNewName(config.getTargetViewQuerySpecFileName(), oldName, newName));
+                changeOldNameToNewName(
+                        config.getTargetViewQuerySpecFileName(), fileRootPath, oldName, newName));
 
         // objects
         config.setTargetDataFileName(
-                changeOldNameToNewName(config.getTargetDataFileName(), oldName, newName));
+                changeOldNameToNewName(
+                        config.getTargetDataFileName(), fileRootPath, oldName, newName));
 
         // index
         config.setTargetIndexFileName(
-                changeOldNameToNewName(config.getTargetIndexFileName(), oldName, newName));
+                changeOldNameToNewName(
+                        config.getTargetIndexFileName(), fileRootPath, oldName, newName));
 
         // pk
         config.setTargetPkFileName(
-                changeOldNameToNewName(config.getTargetPkFileName(), oldName, newName));
+                changeOldNameToNewName(
+                        config.getTargetPkFileName(), fileRootPath, oldName, newName));
 
         // fk
         config.setTargetFkFileName(
-                changeOldNameToNewName(config.getTargetFkFileName(), oldName, newName));
+                changeOldNameToNewName(
+                        config.getTargetFkFileName(), fileRootPath, oldName, newName));
 
         // serial
         config.setTargetSerialFileName(
-                changeOldNameToNewName(config.getTargetSerialFileName(), oldName, newName));
+                changeOldNameToNewName(
+                        config.getTargetSerialFileName(), fileRootPath, oldName, newName));
 
         // synonym
         config.setTargetSynonymFileName(
-                changeOldNameToNewName(config.getTargetSynonymFileName(), oldName, newName));
+                changeOldNameToNewName(
+                        config.getTargetSynonymFileName(), fileRootPath, oldName, newName));
 
         // grant
         Map<String, Map<String, String>> newGrantFilePathMap = new HashMap<>();
@@ -351,7 +362,8 @@ public class MigrationTasksScheduler {
             Map<String, String> grantFilePath = grantFilePathMap.get(schemaName);
             if (grantFilePath != null) {
                 newGrantFilePathMap.put(
-                        schemaName, changeOldNameToNewName(grantFilePath, oldName, newName));
+                        schemaName,
+                        changeOldNameToNewName(grantFilePath, fileRootPath, oldName, newName));
             }
         }
         config.setTargetGrantFileName(newGrantFilePathMap);
@@ -359,11 +371,12 @@ public class MigrationTasksScheduler {
         // updatestatistic
         config.setTargetUpdateStatisticFileName(
                 changeOldNameToNewName(
-                        config.getTargetUpdateStatisticFileName(), oldName, newName));
+                        config.getTargetUpdateStatisticFileName(), fileRootPath, oldName, newName));
 
         // info
         config.setTargetSchemaFileListName(
-                changeOldNameToNewName(config.getTargetSchemaFileListName(), oldName, newName));
+                changeOldNameToNewName(
+                        config.getTargetSchemaFileListName(), fileRootPath, oldName, newName));
 
         // table data file
         Map<String, List<String>> newTableDataFilePath = new HashMap<>();
@@ -373,31 +386,49 @@ public class MigrationTasksScheduler {
                             newTableDataFilePath.put(
                                     schemaName,
                                     changeOldNameToNewName(
-                                            tableDataFilePathList, oldName, newName));
+                                            tableDataFilePathList, fileRootPath, oldName, newName));
                         });
         config.setTargetTableDataFileName(newTableDataFilePath);
     }
 
     /** change directory path */
     private List<String> changeOldNameToNewName(
-            List<String> filePath, String oldName, String newName) {
+            List<String> filePath, String fileRootPath, String oldName, String newName) {
         List<String> newFilePath = new ArrayList<String>();
         filePath.forEach(
                 path -> {
-                    newFilePath.add(path.replace(oldName, newName));
+                    String newPath = removeRootPath(path, fileRootPath).replace(oldName, newName);
+                    newFilePath.add(addRootPath(newPath, fileRootPath));
                 });
         return newFilePath;
     }
 
     /** change directory path */
     private Map<String, String> changeOldNameToNewName(
-            Map<String, String> filePath, String oldName, String newName) {
+            Map<String, String> filePath, String fileRootPath, String oldName, String newName) {
         Map<String, String> newFilePath = new HashMap<>();
         filePath.forEach(
                 (schemaName, path) -> {
-                    newFilePath.put(schemaName, path.replace(oldName, newName));
+                    String newPath = removeRootPath(path, fileRootPath).replace(oldName, newName);
+                    newFilePath.put(schemaName, addRootPath(newPath, fileRootPath));
                 });
         return newFilePath;
+    }
+
+    /** add file root path */
+    private String addRootPath(String filePath, String fileRootPath) {
+        if (filePath.startsWith(fileRootPath)) {
+            return filePath;
+        }
+        return fileRootPath + filePath;
+    }
+
+    /** remove file root path */
+    private String removeRootPath(String fileFullPath, String fileRootPath) {
+        if (fileFullPath.startsWith(fileRootPath)) {
+            return fileFullPath.substring(fileRootPath.length());
+        }
+        return fileFullPath;
     }
 
     /** Waiting for step finished. */
