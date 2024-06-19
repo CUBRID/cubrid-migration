@@ -1097,7 +1097,9 @@ public class MigrationCfgUtils {
             targetVersion = (version.getDbMajorVersion() * 10) + version.getDbMinorVersion();
         }
 
-        if ((!cfg.targetIsOnline() && !cfg.isAddUserSchema())
+        if ((!cfg.targetIsOnline()
+                        && cfg.getSourceDBType().isSupportMultiSchema()
+                        && !cfg.isAddUserSchema())
                 || (cfg.targetIsOnline() && targetVersion < SUPPORT_MULTI_SCHEMA)) {
             for (Schema schema : schemas) {
                 createMap(allTablesCountMap, schema.getTables());
