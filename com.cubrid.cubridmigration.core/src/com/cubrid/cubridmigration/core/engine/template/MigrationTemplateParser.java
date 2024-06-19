@@ -819,6 +819,19 @@ public final class MigrationTemplateParser {
                 schemaElement.setAttribute(
                         TemplateTags.ATTR_TARGET_SCHEMA, schema.getTargetSchemaName());
             }
+        } else {
+            config.getScriptSchemaMapping()
+                    .forEach(
+                            (schemaName, schema) -> {
+                                Element schemaElement =
+                                        createElement(
+                                                document, schemas, TemplateTags.TAG_SCHEMA_INFO);
+                                schemaElement.setAttribute(
+                                        TemplateTags.ATTR_SCHEMA_NAME, schema.getName());
+                                schemaElement.setAttribute(
+                                        TemplateTags.ATTR_TARGET_SCHEMA,
+                                        schema.getTargetSchemaName());
+                            });
         }
 
         // tables
