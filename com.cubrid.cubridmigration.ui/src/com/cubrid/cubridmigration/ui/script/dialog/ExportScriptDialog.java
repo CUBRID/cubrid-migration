@@ -214,8 +214,23 @@ public class ExportScriptDialog extends TransFileBySSHDialog {
         config.setFileRepositroyPath(outputDir);
     }
 
+    /** change migration name */
+    private void changeMigrationName(String fName) {
+        config.setName(new File(fName).getName().split("\\.")[0]);
+    }
+
     private boolean isEmptyDirectory(String dir) {
         return dir == null || dir.isEmpty() ? true : false;
+    }
+
+    /** create temporary script xml */
+    private void createTempXml(String fName) {
+        tmpFile = PathUtils.getBaseTempDir() + UUID.randomUUID() + ".xml";
+        changeMigrationName(fName);
+        changeSourceJDBCDriverDirectory();
+        changeTargetJDBCDriverDirectory();
+        changeOutputDirectory();
+        MigrationTemplateParser.save(config, tmpFile, isSaveSchema);
     }
 
     /** OK pressed */
@@ -223,13 +238,6 @@ public class ExportScriptDialog extends TransFileBySSHDialog {
         if (!(btnEnableLocal.getSelection() || btnEnableRemote.getSelection())) {
             MessageDialog.openError(getShell(), Messages.msgError, Messages.errMsgNoExportScript);
             return;
-        }
-        if (tmpFile == null) {
-            tmpFile = PathUtils.getBaseTempDir() + UUID.randomUUID() + ".xml";
-            changeSourceJDBCDriverDirectory();
-            changeTargetJDBCDriverDirectory();
-            changeOutputDirectory();
-            MigrationTemplateParser.save(config, tmpFile, isSaveSchema);
         }
         if (!checkInput()) {
             return;
@@ -239,6 +247,7 @@ public class ExportScriptDialog extends TransFileBySSHDialog {
                 String fName = txtLocal.getText().trim();
                 File dest = new File(fName);
                 PathUtils.deleteFile(dest);
+                createTempXml(fName);
                 CUBRIDIOUtils.copyFile(new File(tmpFile), dest);
             } catch (Exception ex) {
                 LOG.error(ex);
@@ -257,6 +266,7 @@ public class ExportScriptDialog extends TransFileBySSHDialog {
                 Session session = SSHUtils.newSSHSession(host);
                 try {
                     String fName = txtRemoteFile.getText().trim();
+                    createTempXml(fName);
                     String scpResult = SSHUtils.scpTo(session, tmpFile, fName);
                     if (StringUtils.isNotBlank(scpResult)) {
                         DetailMessageDialog.openError(

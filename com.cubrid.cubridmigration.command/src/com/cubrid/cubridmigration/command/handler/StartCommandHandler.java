@@ -152,7 +152,6 @@ public class StartCommandHandler implements ConsoleCommandHandler {
     private MigrationConfiguration getConfig(String file) {
         try {
             MigrationConfiguration config = MigrationTemplateParser.parse(file);
-            config.setName(new File(file).getName());
             if (!initializeSource(config) || !initializeTarget(config)) {
                 printHelp();
                 return null;
