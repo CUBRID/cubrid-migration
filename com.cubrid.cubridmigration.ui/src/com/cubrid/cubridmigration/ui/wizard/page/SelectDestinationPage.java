@@ -38,6 +38,7 @@ import com.cubrid.cubridmigration.core.connection.ConnParameters;
 import com.cubrid.cubridmigration.core.dbobject.Catalog;
 import com.cubrid.cubridmigration.core.engine.config.MigrationConfiguration;
 import com.cubrid.cubridmigration.ui.common.Status;
+import com.cubrid.cubridmigration.ui.common.TooltipLabel;
 import com.cubrid.cubridmigration.ui.common.UICommonTool;
 import com.cubrid.cubridmigration.ui.database.IJDBCConnectionFilter;
 import com.cubrid.cubridmigration.ui.database.JDBCConnectionMgrView;
@@ -689,7 +690,7 @@ public class SelectDestinationPage extends MigrationWizardPage {
             btnSplitSchema.setText(Messages.btnSplitSchema);
             btnSplitSchema.setSelection(cfg.isSplitSchema());
 
-            Label lblSplitSchema = new Label(splitSchemaComposite, SWT.NONE);
+            TooltipLabel lblSplitSchema = new TooltipLabel(splitSchemaComposite, SWT.NONE);
             lblSplitSchema.setImage(questionImage050);
             lblSplitSchema.setToolTipText(Messages.btnSplitSchemaQuestion);
 

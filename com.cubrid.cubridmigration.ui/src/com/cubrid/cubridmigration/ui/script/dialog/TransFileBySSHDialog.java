@@ -34,6 +34,7 @@ import com.cubrid.cubridmigration.core.common.PathUtils;
 import com.cubrid.cubridmigration.core.common.SSHHost;
 import com.cubrid.cubridmigration.ui.MigrationUIPlugin;
 import com.cubrid.cubridmigration.ui.common.CompositeUtils;
+import com.cubrid.cubridmigration.ui.common.TooltipLabel;
 import com.cubrid.cubridmigration.ui.message.Messages;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
@@ -330,7 +331,7 @@ public class TransFileBySSHDialog extends Dialog {
         lblSourceJdbc.setText(Messages.lblSourceJdbcDriverDir);
         lblSourceJdbc.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
 
-        Label lblSourceJdbcQuestion = new Label(directoryGrp, SWT.NONE);
+        TooltipLabel lblSourceJdbcQuestion = new TooltipLabel(directoryGrp, SWT.NONE);
         lblSourceJdbcQuestion.setImage(questionImage050);
         lblSourceJdbcQuestion.setToolTipText(Messages.lblSourceJdbcDriverDirQuestion);
         lblSourceJdbcQuestion.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
@@ -342,7 +343,7 @@ public class TransFileBySSHDialog extends Dialog {
         lblTargetJdbc.setText(Messages.lblTargetJdbcDriverDir);
         lblTargetJdbc.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
 
-        Label lblTargetJdbcQuestion = new Label(directoryGrp, SWT.NONE);
+        TooltipLabel lblTargetJdbcQuestion = new TooltipLabel(directoryGrp, SWT.NONE);
         lblTargetJdbcQuestion.setImage(questionImage050);
         lblTargetJdbcQuestion.setToolTipText(Messages.lblTargetJdbcDriverDirQuestion);
         lblTargetJdbcQuestion.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
@@ -354,7 +355,7 @@ public class TransFileBySSHDialog extends Dialog {
         lblOutput.setText(Messages.lblOutputFileDir);
         lblOutput.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
 
-        Label lblOutputQuestion = new Label(directoryGrp, SWT.NONE);
+        TooltipLabel lblOutputQuestion = new TooltipLabel(directoryGrp, SWT.NONE);
         lblOutputQuestion.setImage(questionImage050);
         lblOutputQuestion.setToolTipText(Messages.lblOutputFileDirQuestion);
         lblOutputQuestion.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
