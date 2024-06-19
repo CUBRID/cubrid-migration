@@ -41,7 +41,6 @@ import org.apache.hadoop.fs.FileStatus;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
@@ -118,5 +117,4 @@ public class CUBRIDHadoopFileDialog extends Dialog {
     public List<String> getHdfsPath() {
         return new ArrayList<String>(hdfsPath);
     }
-
 }
