@@ -320,15 +320,6 @@ public class ScheduleMigrationTaskDialog extends Dialog {
     }
 
     /**
-     * The initial size of dialog
-     *
-     * @return Point
-     */
-    protected Point getInitialSize() {
-        return new Point(400, 300);
-    }
-
-    /**
      * Remove help button
      *
      * @return false

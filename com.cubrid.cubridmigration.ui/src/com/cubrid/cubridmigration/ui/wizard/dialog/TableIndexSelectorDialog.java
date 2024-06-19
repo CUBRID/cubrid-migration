@@ -199,7 +199,6 @@ public class TableIndexSelectorDialog extends Dialog {
     /** constrainShellSize */
     protected void constrainShellSize() {
         super.constrainShellSize();
-        getShell().setSize(720, 540);
         getShell().setText(Messages.lblSelectIndexes);
     }
 

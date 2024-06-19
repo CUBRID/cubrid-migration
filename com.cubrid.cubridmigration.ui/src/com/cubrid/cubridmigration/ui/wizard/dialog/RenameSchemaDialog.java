@@ -252,7 +252,6 @@ public class RenameSchemaDialog extends TitleAreaDialog {
     /** constrainShellSize */
     protected void constrainShellSize() {
         super.constrainShellSize();
-        getShell().setSize(540, 405);
         getShell().setText(Messages.msgSchemaInformation);
     }
 

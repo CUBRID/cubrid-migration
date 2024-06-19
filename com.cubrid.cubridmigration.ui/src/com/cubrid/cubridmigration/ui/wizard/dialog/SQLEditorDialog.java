@@ -135,7 +135,6 @@ public class SQLEditorDialog extends TitleAreaDialog {
     /** constrainShellSize */
     protected void constrainShellSize() {
         super.constrainShellSize();
-        getShell().setSize(700, 480);
         getShell().setText(Messages.addSQLDialogShellTitle);
         // TODO: Show supporting pagination query message.
         if (config.sourceIsOnline() && config.getSourceDBType().equals(DatabaseType.MSSQL)) {

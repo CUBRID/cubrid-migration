@@ -119,8 +119,4 @@ public class CUBRIDHadoopFileDialog extends Dialog {
         return new ArrayList<String>(hdfsPath);
     }
 
-    /** @return dialog size */
-    protected Point getInitialSize() {
-        return new Point(480, 160);
-    }
 }

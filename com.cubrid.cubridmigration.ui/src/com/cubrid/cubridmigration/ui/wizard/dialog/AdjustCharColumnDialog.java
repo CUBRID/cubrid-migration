@@ -399,7 +399,6 @@ public class AdjustCharColumnDialog extends Dialog {
     /** constrainShellSize */
     protected void constrainShellSize() {
         super.constrainShellSize();
-        getShell().setSize(820, 540);
         getShell().setText(Messages.titleSettingCharTypeColumns);
     }
 

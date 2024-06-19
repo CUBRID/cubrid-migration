@@ -177,7 +177,6 @@ public class KerberosSettingsDialog extends Dialog {
     /** @param newShell Shell */
     protected void configureShell(Shell newShell) {
         super.configureShell(newShell);
-        newShell.setSize(500, 160);
         CompositeUtils.centerDialog(newShell);
         newShell.setText("Kerberos Environment Settings");
     }

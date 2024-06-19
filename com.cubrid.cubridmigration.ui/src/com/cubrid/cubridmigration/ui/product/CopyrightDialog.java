@@ -155,7 +155,4 @@ public class CopyrightDialog extends TrayDialog {
         super.buttonPressed(buttonId);
     }
 
-    protected Point getInitialSize() {
-        return new Point(650, 500);
-    }
 }

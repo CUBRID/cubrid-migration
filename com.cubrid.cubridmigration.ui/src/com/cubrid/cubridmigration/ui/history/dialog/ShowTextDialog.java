@@ -163,15 +163,6 @@ public class ShowTextDialog extends TrayDialog {
     }
 
     /**
-     * The initial size of dialog
-     *
-     * @return Point
-     */
-    protected Point getInitialSize() {
-        return new Point(650, 500);
-    }
-
-    /**
      * Remove help button
      *
      * @return false

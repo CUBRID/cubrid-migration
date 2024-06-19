@@ -148,7 +148,6 @@ public class EditScriptDialog extends Dialog {
     /** constrainShellSize */
     protected void constrainShellSize() {
         super.constrainShellSize();
-        getShell().setSize(450, 162);
         getShell().setText(Messages.titleEditScript);
         CompositeUtils.centerDialog(getShell());
     }

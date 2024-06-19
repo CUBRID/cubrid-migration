@@ -67,7 +67,6 @@ public class MigrationRunModeDialog extends Dialog {
     /** constrainShellSize */
     protected void constrainShellSize() {
         super.constrainShellSize();
-        getShell().setSize(480, 258);
         UICommonTool.centerShell(getShell());
     }
 

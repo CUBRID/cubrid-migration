@@ -113,7 +113,6 @@ public class CopyScriptDialog extends Dialog {
     /** constrainShellSize */
     protected void constrainShellSize() {
         super.constrainShellSize();
-        getShell().setSize(450, 162);
         getShell().setText(Messages.titleNewScript);
     }
 

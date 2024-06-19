@@ -31,6 +31,7 @@
 package com.cubrid.cubridmigration.ui.database;
 
 import com.cubrid.cubridmigration.core.connection.ConnParameters;
+import com.cubrid.cubridmigration.ui.common.CompositeUtils;
 import com.cubrid.cubridmigration.ui.message.Messages;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.jface.dialogs.IDialogConstants;
@@ -69,12 +70,11 @@ public class JDBCPatternDialog extends TitleAreaDialog {
     protected void configureShell(Shell newShell) {
         super.configureShell(newShell);
         newShell.setText(Messages.jdbcPatternTitle);
-        newShell.setSize(480, 240);
         Composite parent = newShell.getParent();
         if (parent == null) {
             parent = newShell;
         }
-        newShell.setBounds(parent.getBounds().x, parent.getBounds().y, 480, 240);
+        CompositeUtils.centerDialog(newShell);
     }
 
     /**
@@ -103,7 +103,7 @@ public class JDBCPatternDialog extends TitleAreaDialog {
         panel.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 
         Label lblURL = new Label(panel, SWT.NONE);
-        lblURL.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false));
+        lblURL.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
         lblURL.setText("JDBC URL:");
 
         txtURL = new Text(panel, SWT.BORDER);

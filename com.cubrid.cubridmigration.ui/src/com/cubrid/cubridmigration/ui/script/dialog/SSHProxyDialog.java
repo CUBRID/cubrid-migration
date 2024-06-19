@@ -132,7 +132,6 @@ public class SSHProxyDialog extends Dialog {
      */
     protected void configureShell(Shell newShell) {
         newShell.setMinimumSize(300, 330);
-        newShell.setSize(500, 330);
         CompositeUtils.centerDialog(newShell);
         newShell.setText("SSH Proxy Settings");
         super.configureShell(newShell);

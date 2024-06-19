@@ -113,7 +113,6 @@ public class TransFileBySSHDialog extends Dialog {
      */
     protected void configureShell(Shell newShell) {
         newShell.setMinimumSize(300, 600);
-        newShell.setSize(500, 600);
         CompositeUtils.centerDialog(newShell);
         super.configureShell(newShell);
     }
