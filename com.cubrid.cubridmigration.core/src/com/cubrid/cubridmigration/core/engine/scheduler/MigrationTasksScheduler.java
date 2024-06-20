@@ -460,9 +460,12 @@ public class MigrationTasksScheduler {
         MigrationConfiguration config = context.getConfig();
         List<Schema> dummySchemaList = config.getTargetSchemaList();
 
-        for (Schema schema : dummySchemaList) {
-            executeTask(taskFactory.createImportSchemaTask(schema));
-        }
+        dummySchemaList.stream()
+                .distinct()
+                .forEach(
+                        schema -> {
+                            executeTask(taskFactory.createImportSchemaTask(schema));
+                        });
     }
 
     /** Schedule export table schema tasks. */

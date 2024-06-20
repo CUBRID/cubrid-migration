@@ -497,4 +497,9 @@ public class Schema extends DBObject implements Serializable {
     public String getDDL() {
         return createDDL;
     }
+
+    @Override
+    public String toString() {
+        return "Schema [name=" + name + ", targetSchemaName=" + targetSchemaName + "]";
+    }
 }
