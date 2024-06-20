@@ -55,6 +55,7 @@ import com.cubrid.cubridmigration.core.engine.config.SourceSQLTableConfig;
 import com.cubrid.cubridmigration.core.engine.config.SourceSequenceConfig;
 import com.cubrid.cubridmigration.core.engine.config.SourceTableConfig;
 import com.cubrid.cubridmigration.cubrid.CUBRIDDataTypeHelper;
+import com.cubrid.cubridmigration.cubrid.CUBRIDDatabase;
 import com.cubrid.cubridmigration.mysql.trans.MySQL2CUBRIDMigParas;
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -526,6 +527,10 @@ public final class MigrationTemplateHandler extends DefaultHandler {
         } else if (TemplateTags.TAG_SOURCE.equals(qName)) {
             isSourceNode = true;
             config.setSourceType(attributes.getValue(TemplateTags.ATTR_DB_TYPE));
+            if (config.getSourceDBType().equals(DatabaseType.CUBRID)) {
+                ((CUBRIDDatabase) config.getSourceDBType())
+                        .setVersion(attributes.getValue(TemplateTags.ATTR_VERSION));
+            }
         } else if (TemplateTags.TAG_TARGET.equals(qName)) {
             isSourceNode = false;
             config.setTargetDBVersion(attributes.getValue(TemplateTags.ATTR_VERSION));
@@ -873,8 +878,7 @@ public final class MigrationTemplateHandler extends DefaultHandler {
             config.setSplitSchema(getBoolean(attr.getValue(TemplateTags.ATTR_SPLIT_SCHEMA), false));
             config.setCreateUserSQL(
                     getBoolean(attr.getValue(TemplateTags.ATTR_CREATE_USER_SQL), false));
-            config.createDumpfile(
-                    config.isSplitSchema(), config.isAddUserSchema(), config.isOneTableOneFile());
+            config.createDumpfile(config.isSplitSchema(), config.isOneTableOneFile());
         } else if (TemplateTags.TAG_PARTITION_DDL.equals(qName)) {
             sqlStatement = new StringBuffer();
         }

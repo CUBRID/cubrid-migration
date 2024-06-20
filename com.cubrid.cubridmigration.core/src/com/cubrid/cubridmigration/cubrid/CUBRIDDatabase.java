@@ -165,4 +165,8 @@ public class CUBRIDDatabase extends DatabaseType {
 
         return bool1;
     }
+
+    public void setVersion(String version) {
+        dbVersion = Integer.valueOf(version);
+    }
 }

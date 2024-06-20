@@ -877,9 +877,8 @@ public class MigrationConfiguration {
         targetSynonyms.addAll(tempSynonyms);
     }
 
-    public void createDumpfile(
-            boolean isSplit, boolean isAddUserSchema, boolean isOneTableOneFile) {
-        if (isAddUserSchema) {
+    public void createDumpfile(boolean isSplit, boolean isOneTableOneFile) {
+        if (getSourceDBType().isSupportMultiSchema()) {
             Iterator<String> keys = scriptSchemaMapping.keySet().iterator();
             while (keys.hasNext()) {
                 Schema schema = scriptSchemaMapping.get(keys.next());

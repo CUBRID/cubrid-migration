@@ -44,7 +44,9 @@ import com.cubrid.cubridmigration.core.dbobject.Schema;
 import com.cubrid.cubridmigration.core.dbobject.Sequence;
 import com.cubrid.cubridmigration.core.dbobject.Synonym;
 import com.cubrid.cubridmigration.core.dbobject.Table;
+import com.cubrid.cubridmigration.core.dbobject.Version;
 import com.cubrid.cubridmigration.core.dbobject.View;
+import com.cubrid.cubridmigration.core.dbtype.DatabaseType;
 import com.cubrid.cubridmigration.core.engine.config.MigrationConfiguration;
 import com.cubrid.cubridmigration.core.engine.config.SourceCSVColumnConfig;
 import com.cubrid.cubridmigration.core.engine.config.SourceCSVConfig;
@@ -682,6 +684,13 @@ public final class MigrationTemplateParser {
         Element source = createElement(document, root, TemplateTags.TAG_SOURCE);
         source.setAttribute(TemplateTags.ATTR_DB_TYPE, config.getSourceTypeName());
         source.setAttribute(TemplateTags.ATTR_ONLINE, getBooleanString(config.sourceIsOnline()));
+        if (config.sourceIsOnline() && config.getSourceDBType().equals(DatabaseType.CUBRID)) {
+            Version cubridVersion = config.getSrcCatalog().getVersion();
+            source.setAttribute(
+                    TemplateTags.ATTR_VERSION,
+                    String.valueOf(cubridVersion.getDbMajorVersion())
+                            + String.valueOf(cubridVersion.getDbMinorVersion()));
+        }
         // connection
         if (config.sourceIsOnline()) {
             Element jdbc = createElement(document, source, TemplateTags.TAG_JDBC);
