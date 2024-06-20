@@ -31,6 +31,7 @@
 package com.cubrid.cubridmigration.cubrid.export;
 
 import com.cubrid.cubridmigration.core.common.Closer;
+import com.cubrid.cubridmigration.core.common.log.LogUtil;
 import com.cubrid.cubridmigration.core.connection.ConnParameters;
 import com.cubrid.cubridmigration.core.datatype.DataTypeConstant;
 import com.cubrid.cubridmigration.core.dbobject.PK;
@@ -54,6 +55,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.apache.log4j.Logger;
 
 /**
  * a class help to export CUBRID data and verify CUBRID sql statement
@@ -62,7 +64,7 @@ import java.util.regex.Pattern;
  * @version 1.0 - 2010-9-15
  */
 public class CUBRIDExportHelper extends DBExportHelper {
-    // private static final Logger LOG = LogUtil.getLogger(CUBRIDExportHelper.class);
+    private static final Logger LOG = LogUtil.getLogger(CUBRIDExportHelper.class);
 
     public CUBRIDExportHelper() {
         super();
@@ -229,6 +231,8 @@ public class CUBRIDExportHelper extends DBExportHelper {
                 return new BigInteger(rs.getString(1));
             }
         } catch (SQLException e) {
+            LOG.error("CUBRID_SERIAL_CURRENT_VALUE_SQL", e);
+        } finally {
             Closer.close(conn);
         }
         return null;
