@@ -527,6 +527,7 @@ public class SchemaMappingPage extends MigrationWizardPage {
         srcCatalog = wizard.getOriginalSourceCatalog().createCatalog();
         srcSchemaList = srcCatalog.getSchemas();
         Map<String, Schema> scriptSchemaMap = config.getScriptSchemaMapping();
+        List<Schema> targetSchemaList = config.getTargetSchemaList();
 
         for (Schema schema : srcSchemaList) {
             SrcTable srcTable = new SrcTable();
@@ -564,12 +565,18 @@ public class SchemaMappingPage extends MigrationWizardPage {
                     srcTable.setTarSchema(srcTable.getSrcSchema());
                 }
 
-            } else {
-                if (config.isAddUserSchema()) {
-                    srcTable.setTarSchema(srcTable.getSrcSchema());
-                } else {
+            } else if (config.isAddUserSchema() && !targetSchemaList.isEmpty()) {
+                for (Schema targetSchema : targetSchemaList) {
+                    if (targetSchema.getName().equals(schema.getName())) {
+                        srcTable.setTarSchema(targetSchema.getTargetSchemaName());
+                        break;
+                    }
+                }
+                if (srcTable.getTarSchema() == null || srcTable.getTarSchema().isEmpty()) {
                     srcTable.setTarSchema(srcTable.getSrcSchema());
                 }
+            } else {
+                srcTable.setTarSchema(srcTable.getSrcSchema());
             }
         }
     }

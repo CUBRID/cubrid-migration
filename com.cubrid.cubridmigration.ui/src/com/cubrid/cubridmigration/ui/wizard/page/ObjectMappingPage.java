@@ -149,10 +149,6 @@ public class ObjectMappingPage extends MigrationWizardPage implements IRefreshab
         // Refresh some status of current wizard.
         mw.refreshWizardStatus();
         util.setTargetCatalog(mw.getTargetCatalog(), mw);
-        if (!isFirstVisible) {
-            refreshTreeView();
-            return;
-        }
         try {
             // Update migration source database schema
             Catalog sourceCatalog = mw.getSourceCatalog();
@@ -202,7 +198,7 @@ public class ObjectMappingPage extends MigrationWizardPage implements IRefreshab
             isFirstVisible = false;
 
             // select all if there have no selected tables to migrate
-            if (isFirstVisible || !cfg.hasObjects2Export()) {
+            if (!cfg.hasObjects2Export()) {
                 cfg.setAll(true);
                 refreshCurrentView();
             }
