@@ -103,6 +103,11 @@ public class FileMergeRunnable implements Runnable, IMigrationTask {
             srcWB = Workbook.getWorkbook(new File(sourceFile));
             Sheet sheet = srcWB.getSheet(0);
 
+            File targetXLSFile = new File(targetFile);
+            if (!targetXLSFile.exists()) {
+                PathUtils.createFile(targetXLSFile);
+            }
+
             WorkbookSettings tarWS = new WorkbookSettings();
             tarWS.setEncoding(targetCharset);
             final File tarFile = new File(targetFile);
