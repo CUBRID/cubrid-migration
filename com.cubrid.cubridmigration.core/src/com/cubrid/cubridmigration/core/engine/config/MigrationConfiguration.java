@@ -726,8 +726,8 @@ public class MigrationConfiguration {
                                     isChangeObjectName(allSequencesCountMap, seq.getName()),
                                     seq.getOwner(),
                                     seq.getName()));
-                    sc.setCreate(false);
-                    sc.setReplace(false);
+                    sc.setCreate(isReset);
+                    sc.setReplace(isReset);
                     sc.setComment(seq.getComment());
                 } else if (sourceDBSchema.getTargetSchemaName() != null) {
                     if (!sourceDBSchema.getTargetSchemaName().equals(sc.getTargetOwner())) {
@@ -783,7 +783,7 @@ public class MigrationConfiguration {
                     sc.setClassName(StringUtils.lowerCase(grant.getClassName()));
                     sc.setClassOwner(getTargetOwner(schemas, grant.getClassOwner()));
                     sc.setGrantable(grant.isGrantable());
-                    sc.setCreate(false);
+                    sc.setCreate(isReset);
                     sc.setSourceObjectOwner(grant.getSourceObjectOwner());
                 } else if (sourceDBSchema.getTargetSchemaName() != null) {
                     if (!sourceDBSchema.getTargetSchemaName().equals(sc.getTargetOwner())) {
@@ -845,8 +845,8 @@ public class MigrationConfiguration {
                     sc.setTargetOwner(getTargetOwner(schemas, synonym.getOwner()));
                     sc.setObjectTargetName(StringUtils.lowerCase(synonym.getObjectName()));
                     sc.setObjectTargetOwner(synonym.getObjectOwner());
-                    sc.setCreate(false);
-                    sc.setReplace(false);
+                    sc.setCreate(isReset);
+                    sc.setReplace(isReset);
                     sc.setComment(synonym.getComment());
                 } else if (sourceDBSchema.getTargetSchemaName() != null) {
                     if (!sourceDBSchema.getTargetSchemaName().equals(sc.getTargetOwner())) {
@@ -1102,11 +1102,11 @@ public class MigrationConfiguration {
                                     srcTable.getOwner(),
                                     srcTable.getName()));
 
-                    setc.setCreateNewTable(false);
-                    setc.setCreatePartition(false);
-                    setc.setCreatePK(false);
-                    setc.setMigrateData(false);
-                    setc.setReplace(false);
+                    setc.setCreateNewTable(isReset);
+                    setc.setCreatePartition(isReset);
+                    setc.setCreatePK(isReset);
+                    setc.setMigrateData(isReset);
+                    setc.setReplace(isReset);
                     setc.setEnableExpOpt(srcTable.getPk() != null);
                 } else if (sourceDBSchema.getTargetSchemaName() != null) {
                     if (!sourceDBSchema.getTargetSchemaName().equals(setc.getTargetOwner())) {
@@ -1445,8 +1445,8 @@ public class MigrationConfiguration {
                                     vw.getOwner(),
                                     vw.getName()));
                     sc.setTargetOwner(sourceDBSchema.getTargetSchemaName());
-                    sc.setCreate(false);
-                    sc.setReplace(false);
+                    sc.setCreate(isReset);
+                    sc.setReplace(isReset);
                     sc.setComment(vw.getComment());
                 } else if (sourceDBSchema.getTargetSchemaName() != null) {
                     if (!sourceDBSchema.getTargetSchemaName().equals(sc.getTargetOwner())) {
@@ -2437,7 +2437,7 @@ public class MigrationConfiguration {
     public SourceSynonymConfig getExpSynonymCfg(String schema, String sourceName) {
         SourceSynonymConfig result = null;
         for (SourceSynonymConfig config : expSynonyms) {
-            if (config.getName().equals(sourceName)) {
+            if (config.getName().equalsIgnoreCase(sourceName)) {
                 if (schema == null) {
                     return config;
                 }

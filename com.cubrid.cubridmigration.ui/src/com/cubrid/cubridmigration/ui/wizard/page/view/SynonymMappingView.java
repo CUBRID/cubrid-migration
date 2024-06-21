@@ -140,6 +140,7 @@ public class SynonymMappingView extends AbstractMappingView {
         }
         grpSource.setSynonym(synonym);
         btnCreate.setSelection(synonymConfig.isCreate());
+        btnReplace.setSelection(synonymConfig.isReplace());
 
         Synonym tsynonym =
                 config.getTargetSynonymSchema(
