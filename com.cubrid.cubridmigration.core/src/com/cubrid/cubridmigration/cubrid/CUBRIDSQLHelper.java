@@ -150,8 +150,8 @@ public class CUBRIDSQLHelper extends SQLHelper {
         if (!column.isNullable() && isNotPKColumn) {
             bf.append(" NOT NULL");
         }
-        if (column.getComment() != null) {
-            bf.append(" comment \'" + column.getComment() + "\'");
+        if (column.getComment() != null && !column.getComment().isEmpty()) {
+            bf.append(" COMMENT \'" + column.getComment() + "\'");
         }
         if (column.isShared() || !column.isUnique() || !isNotPKColumn) {
             return bf.toString();
@@ -490,8 +490,8 @@ public class CUBRIDSQLHelper extends SQLHelper {
         if (table.isReuseOID()) {
             bf.append(" REUSE_OID");
         }
-        if (table.getComment() != null) {
-            bf.append(" comment = \'" + table.getComment() + "\'");
+        if (table.getComment() != null && !table.getComment().isEmpty()) {
+            bf.append(" COMMENT = \'" + table.getComment() + "\'");
         }
         if (DBUtils.supportedCubridPartition(table.getPartitionInfo())) {
             bf.append(NEWLINE).append(table.getPartitionInfo().getDDL());
@@ -662,14 +662,14 @@ public class CUBRIDSQLHelper extends SQLHelper {
                 sb.append(getQuotedObjName(col.getName()));
                 sb.append(" ").append(col.getShownDataType());
 
-                if (col.getComment() != null) {
-                    sb.append(" COMMENT ").append(col.getComment());
+                if (col.getComment() != null && !col.getComment().isEmpty()) {
+                    sb.append(" COMMENT \'").append(col.getComment()).append("\'");
                 }
             }
             sb.append(NEWLINE).append(")");
         }
 
-        if (view.getComment() != null) {
+        if (view.getComment() != null && !view.getComment().isEmpty()) {
             sb.append(" ").append("COMMENT \'" + view.getComment() + "\'");
         }
         sb.append(NEWLINE).append(END_LINE_CHAR);

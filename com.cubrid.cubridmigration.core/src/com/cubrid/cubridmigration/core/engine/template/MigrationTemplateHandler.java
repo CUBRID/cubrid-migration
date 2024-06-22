@@ -277,6 +277,7 @@ public final class MigrationTemplateHandler extends DefaultHandler {
         if (StringUtils.isEmpty(type)) {
             System.out.println(targetTable.getName() + ":" + column.getName());
         }
+        column.setComment(attributes.getValue(TemplateTags.ATTR_COMMENT));
         dtHelper.setColumnDataType(type, column);
         targetTable.addColumn(column);
         // column.setUnique(unique);
@@ -462,7 +463,7 @@ public final class MigrationTemplateHandler extends DefaultHandler {
                 targetTable.setOwner(null);
             }
         }
-
+        targetTable.setComment(attributes.getValue(TemplateTags.ATTR_COMMENT));
         config.addTargetTableSchema(targetTable);
     }
 
@@ -477,6 +478,7 @@ public final class MigrationTemplateHandler extends DefaultHandler {
         targetView.setTargetOwner(attributes.getValue(TemplateTags.ATTR_TARGET_OWNER));
         targetView.setName(attributes.getValue(TemplateTags.ATTR_NAME));
         targetView.setSourceOwner(attributes.getValue(TemplateTags.ATTR_SOURCE_OWNER));
+        targetView.setComment(attributes.getValue(TemplateTags.ATTR_COMMENT));
         config.addTargetViewSchema(targetView);
     }
 
@@ -490,6 +492,7 @@ public final class MigrationTemplateHandler extends DefaultHandler {
         targetView.addColumn(column);
         column.setTableOrView(targetView);
         column.setName(attributes.getValue(TemplateTags.ATTR_NAME));
+        column.setComment(attributes.getValue(TemplateTags.ATTR_COMMENT));
         dtHelper.setColumnDataType(attributes.getValue(TemplateTags.ATTR_TYPE), column);
     }
 
@@ -653,6 +656,7 @@ public final class MigrationTemplateHandler extends DefaultHandler {
                     getBoolean(attributes.getValue(TemplateTags.ATTR_EXP_OPT_COL), true));
             setc.setStartFromTargetMax(
                     getBoolean(attributes.getValue(TemplateTags.ATTR_START_TAR_MAX), false));
+            setc.setComment(attributes.getValue(TemplateTags.ATTR_COMMENT));
             config.addExpEntryTableCfg(setc);
 
         } else if (TemplateTags.TAG_COLUMN.equals(qName)) {
@@ -663,6 +667,7 @@ public final class MigrationTemplateHandler extends DefaultHandler {
             scc.setNeedTrim(getBoolean(attributes.getValue(TemplateTags.ATTR_TRIM), false));
             scc.setReplaceExpression(attributes.getValue(TemplateTags.ATTR_REPLACE_EXPRESSION));
             scc.setUserDataHandler(attributes.getValue(TemplateTags.ATTR_USER_DATA_HANDLER));
+            scc.setComment(attributes.getValue(TemplateTags.ATTR_COMMENT));
         } else if (TemplateTags.TAG_FK.equals(qName)) {
             ((SourceEntryTableConfig) srcTableCfg)
                     .addFKConfig(
@@ -712,7 +717,8 @@ public final class MigrationTemplateHandler extends DefaultHandler {
             config.addExpViewCfg(
                     attributes.getValue(TemplateTags.ATTR_OWNER),
                     attributes.getValue(TemplateTags.ATTR_NAME),
-                    attributes.getValue(TemplateTags.ATTR_TARGET));
+                    attributes.getValue(TemplateTags.ATTR_TARGET),
+                    attributes.getValue(TemplateTags.ATTR_COMMENT));
         } else if (TemplateTags.TAG_GRANT.equals(qName)) {
             config.addExpGrantCfg(
                     attributes.getValue(TemplateTags.ATTR_OWNER),

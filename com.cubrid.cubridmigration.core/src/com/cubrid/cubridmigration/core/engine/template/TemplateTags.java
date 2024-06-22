@@ -50,6 +50,7 @@ public final class TemplateTags {
     public static final String ATTR_CACHE_SIZE = "cache_size";
     public static final String ATTR_CHANGE_NAME = "change_name";
     public static final String ATTR_CHARSET = "charset";
+    public static final String ATTR_COMMENT = "comment";
     public static final String ATTR_COMMIT_COUNT = "commit_count";
     public static final String ATTR_CREATE = "create";
     public static final String ATTR_CREATE_USER_SQL = "create_user_sql";

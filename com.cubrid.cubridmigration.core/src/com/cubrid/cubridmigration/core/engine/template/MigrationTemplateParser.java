@@ -346,6 +346,7 @@ public final class MigrationTemplateParser {
                 colNode.setAttribute(TemplateTags.ATTR_NAME, col.getName());
                 colNode.setAttribute(TemplateTags.ATTR_TYPE, col.getShownDataType());
                 colNode.setAttribute(TemplateTags.ATTR_BASE_TYPE, col.getDataType());
+                colNode.setAttribute(TemplateTags.ATTR_COMMENT, col.getComment());
                 if (col.getSubDataType() != null) {
                     colNode.setAttribute(TemplateTags.ATTR_SUB_TYPE, col.getSubDataType());
                 }
@@ -449,6 +450,7 @@ public final class MigrationTemplateParser {
             table.setAttribute(
                     TemplateTags.ATTR_REUSE_OID, getBooleanString(targetTable.isReuseOID()));
             table.setAttribute(TemplateTags.ATTR_SOURCE_OWNER, targetTable.getSourceOwner());
+            table.setAttribute(TemplateTags.ATTR_COMMENT, targetTable.getComment());
 
             Element columns = createElement(document, table, TemplateTags.TAG_COLUMNS);
             List<Column> cols = targetTable.getColumns();
@@ -460,6 +462,7 @@ public final class MigrationTemplateParser {
                 colNode.setAttribute(TemplateTags.ATTR_NULL, getBooleanString(col.isNullable()));
                 colNode.setAttribute(
                         TemplateTags.ATTR_AUTO_INCREMENT, getBooleanString(col.isAutoIncrement()));
+                colNode.setAttribute(TemplateTags.ATTR_COMMENT, col.getComment());
 
                 colNode.setAttribute(TemplateTags.ATTR_UNIQUE, getBooleanString(col.isUnique()));
                 colNode.setAttribute(TemplateTags.ATTR_SHARED, getBooleanString(col.isShared()));
@@ -864,6 +867,7 @@ public final class MigrationTemplateParser {
             tbe.setAttribute(TemplateTags.ATTR_TARGET_SCHEMA, setc.getTargetOwner());
             tbe.setAttribute(
                     TemplateTags.ATTR_CHANGE_NAME, getBooleanString(setc.isChangeTableName()));
+            tbe.setAttribute(TemplateTags.ATTR_COMMENT, setc.getComment());
             if (setc.isEnableExpOpt()) {
                 tbe.setAttribute(
                         TemplateTags.ATTR_EXP_OPT_COL, getBooleanString(setc.isEnableExpOpt()));
@@ -881,6 +885,7 @@ public final class MigrationTemplateParser {
                 col.setAttribute(TemplateTags.ATTR_TRIM, getBooleanString(scc.isNeedTrim()));
                 col.setAttribute(TemplateTags.ATTR_REPLACE_EXPRESSION, scc.getReplaceExp());
                 col.setAttribute(TemplateTags.ATTR_USER_DATA_HANDLER, scc.getUserDataHandler());
+                col.setAttribute(TemplateTags.ATTR_COMMENT, scc.getComment());
             }
 
             List<SourceIndexConfig> indexConfigList = setc.getIndexConfigList();
@@ -971,6 +976,7 @@ public final class MigrationTemplateParser {
                 vwNode.setAttribute(TemplateTags.ATTR_OWNER, sc.getOwner());
                 vwNode.setAttribute(TemplateTags.ATTR_NAME, sc.getName());
                 vwNode.setAttribute(TemplateTags.ATTR_TARGET, sc.getTarget());
+                vwNode.setAttribute(TemplateTags.ATTR_COMMENT, sc.getComment());
             }
         }
         // source grants

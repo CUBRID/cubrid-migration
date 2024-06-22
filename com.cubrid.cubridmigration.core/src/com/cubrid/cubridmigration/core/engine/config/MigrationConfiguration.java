@@ -515,7 +515,7 @@ public class MigrationConfiguration {
      * @param viewName String
      * @param target String
      */
-    public void addExpViewCfg(String schema, String viewName, String target) {
+    public void addExpViewCfg(String schema, String viewName, String target, String comment) {
         if (srcCatalog != null) {
             throw new RuntimeException("Source database was specified.");
         }
@@ -524,6 +524,7 @@ public class MigrationConfiguration {
             sc = new SourceViewConfig();
             sc.setName(viewName);
             sc.setOwner(schema);
+            sc.setComment(comment);
             expViews.add(sc);
         }
         sc.setTarget(StringUtils.lowerCase(target));
@@ -1082,7 +1083,7 @@ public class MigrationConfiguration {
         for (Schema sourceDBSchema : schemas) {
             String prefix = "";
             if (StringUtils.isNotBlank(sourceDBSchema.getName())) {
-                prefix = sourceDBSchema.getTargetSchemaName() + ".";
+                prefix = sourceDBSchema.getName() + ".";
             }
             for (Table srcTable : sourceDBSchema.getTables()) {
                 SourceEntryTableConfig setc =
