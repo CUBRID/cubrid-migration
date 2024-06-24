@@ -339,13 +339,13 @@
 			<scale></scale>
 		</SourceDataType>
 		<TargetDataType>
-			<type>clob</type>
-			<precision></precision>
+			<type>varchar</type>
+			<precision>1073741823</precision>
 			<scale></scale>
 		</TargetDataType>
 		<TargetDataType>
-			<type>varchar</type>
-			<precision>1073741823</precision>
+			<type>clob</type>
+			<precision></precision>
 			<scale></scale>
 		</TargetDataType>
 	</DataTypeMapping>
@@ -357,13 +357,13 @@
 			<scale></scale>
 		</SourceDataType>
 		<TargetDataType>
-			<type>blob</type>
-			<precision></precision>
+			<type>bit varying</type>
+			<precision>1073741823</precision>
 			<scale></scale>
 		</TargetDataType>
 		<TargetDataType>
-			<type>bit varying</type>
-			<precision>1073741823</precision>
+			<type>blob</type>
+			<precision></precision>
 			<scale></scale>
 		</TargetDataType>
 	</DataTypeMapping>

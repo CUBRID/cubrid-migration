@@ -667,13 +667,13 @@
 			<scale></scale>
 		</SourceDataType>
 		<TargetDataType>
-			<type>blob</type>
-			<precision></precision>
+			<type>bit varying</type>
+			<precision>524280</precision>
 			<scale></scale>
 		</TargetDataType>
 		<TargetDataType>
-			<type>bit varying</type>
-			<precision>524280</precision>
+			<type>blob</type>
+			<precision></precision>
 			<scale></scale>
 		</TargetDataType>
 		<TargetDataType>
