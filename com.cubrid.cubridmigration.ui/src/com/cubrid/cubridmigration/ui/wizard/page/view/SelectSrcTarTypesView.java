@@ -76,8 +76,6 @@ public class SelectSrcTarTypesView {
     private Button btnOnlineInformixSrc;
 
     private Button btnDumpSrc;
-    private Button btnSQLSrc;
-    private Button btnCSVSrc;
 
     private final List<Button> srcButtons = new ArrayList<Button>(4);
 
