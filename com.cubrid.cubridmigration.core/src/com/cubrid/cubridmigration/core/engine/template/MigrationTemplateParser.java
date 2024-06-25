@@ -44,7 +44,6 @@ import com.cubrid.cubridmigration.core.dbobject.Schema;
 import com.cubrid.cubridmigration.core.dbobject.Sequence;
 import com.cubrid.cubridmigration.core.dbobject.Synonym;
 import com.cubrid.cubridmigration.core.dbobject.Table;
-import com.cubrid.cubridmigration.core.dbobject.Version;
 import com.cubrid.cubridmigration.core.dbobject.View;
 import com.cubrid.cubridmigration.core.dbtype.DatabaseType;
 import com.cubrid.cubridmigration.core.engine.config.MigrationConfiguration;
@@ -689,7 +688,8 @@ public final class MigrationTemplateParser {
         source.setAttribute(TemplateTags.ATTR_DB_TYPE, config.getSourceTypeName());
         source.setAttribute(TemplateTags.ATTR_ONLINE, getBooleanString(config.sourceIsOnline()));
         if (config.sourceIsOnline() && config.getSourceDBType().equals(DatabaseType.CUBRID)) {
-        	source.setAttribute(TemplateTags.ATTR_VERSION, String.valueOf(CUBRIDDatabase.dbVersion));
+            source.setAttribute(
+                    TemplateTags.ATTR_VERSION, String.valueOf(CUBRIDDatabase.dbVersion));
         }
         // connection
         if (config.sourceIsOnline()) {
