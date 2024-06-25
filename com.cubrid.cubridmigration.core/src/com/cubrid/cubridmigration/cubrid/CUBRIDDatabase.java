@@ -52,7 +52,7 @@ import org.apache.commons.lang.StringUtils;
  */
 public class CUBRIDDatabase extends DatabaseType {
 
-    private static int dbVersion;
+    public static int dbVersion;
 
     public CUBRIDDatabase() {
         super(

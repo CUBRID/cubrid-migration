@@ -60,6 +60,7 @@ import com.cubrid.cubridmigration.core.engine.config.SourceSequenceConfig;
 import com.cubrid.cubridmigration.core.engine.config.SourceSynonymConfig;
 import com.cubrid.cubridmigration.core.engine.config.SourceViewConfig;
 import com.cubrid.cubridmigration.core.engine.exception.ErrorMigrationTemplateException;
+import com.cubrid.cubridmigration.cubrid.CUBRIDDatabase;
 import com.cubrid.cubridmigration.mysql.trans.MySQL2CUBRIDMigParas;
 import java.io.File;
 import java.io.FileInputStream;
@@ -688,11 +689,7 @@ public final class MigrationTemplateParser {
         source.setAttribute(TemplateTags.ATTR_DB_TYPE, config.getSourceTypeName());
         source.setAttribute(TemplateTags.ATTR_ONLINE, getBooleanString(config.sourceIsOnline()));
         if (config.sourceIsOnline() && config.getSourceDBType().equals(DatabaseType.CUBRID)) {
-            Version cubridVersion = config.getSrcCatalog().getVersion();
-            source.setAttribute(
-                    TemplateTags.ATTR_VERSION,
-                    String.valueOf(cubridVersion.getDbMajorVersion())
-                            + String.valueOf(cubridVersion.getDbMinorVersion()));
+        	source.setAttribute(TemplateTags.ATTR_VERSION, String.valueOf(CUBRIDDatabase.dbVersion));
         }
         // connection
         if (config.sourceIsOnline()) {
