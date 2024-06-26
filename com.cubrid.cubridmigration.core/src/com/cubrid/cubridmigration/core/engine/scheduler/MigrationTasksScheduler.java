@@ -51,7 +51,6 @@ import com.cubrid.cubridmigration.core.engine.task.MigrationTaskFactory;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
@@ -89,7 +88,7 @@ public class MigrationTasksScheduler {
         config.cleanNoUsedConfigForStart();
         initUserDefinedHandlers();
 
-        changeLocalFilePath();
+        PathUtils.changeLocalFilePath(config);
         clearTargetDB();
         createSchema();
         createTables();
@@ -292,143 +291,6 @@ public class MigrationTasksScheduler {
                 PathUtils.deleteFile(objectsFileParentPath);
             }
         }
-    }
-
-    /** Change the script name part of the local file path */
-    private void changeLocalFilePath() {
-        MigrationConfiguration config = context.getConfig();
-        String fileRootPath = config.getFileRepositroyPath();
-        String oldName = config.getOldName();
-        String newName = config.getName();
-
-        if (oldName == null) {
-            return;
-        }
-
-        // schema
-        config.setTargetSchemaFileName(
-                changeOldNameToNewName(
-                        config.getTargetSchemaFileName(), fileRootPath, oldName, newName));
-
-        // class
-        config.setTargetTableFileName(
-                changeOldNameToNewName(
-                        config.getTargetTableFileName(), fileRootPath, oldName, newName));
-
-        // vclass
-        config.setTargetViewFileName(
-                changeOldNameToNewName(
-                        config.getTargetViewFileName(), fileRootPath, oldName, newName));
-
-        // vclass_query_spec
-        config.setTargetViewQuerySpecFileName(
-                changeOldNameToNewName(
-                        config.getTargetViewQuerySpecFileName(), fileRootPath, oldName, newName));
-
-        // objects
-        config.setTargetDataFileName(
-                changeOldNameToNewName(
-                        config.getTargetDataFileName(), fileRootPath, oldName, newName));
-
-        // index
-        config.setTargetIndexFileName(
-                changeOldNameToNewName(
-                        config.getTargetIndexFileName(), fileRootPath, oldName, newName));
-
-        // pk
-        config.setTargetPkFileName(
-                changeOldNameToNewName(
-                        config.getTargetPkFileName(), fileRootPath, oldName, newName));
-
-        // fk
-        config.setTargetFkFileName(
-                changeOldNameToNewName(
-                        config.getTargetFkFileName(), fileRootPath, oldName, newName));
-
-        // serial
-        config.setTargetSerialFileName(
-                changeOldNameToNewName(
-                        config.getTargetSerialFileName(), fileRootPath, oldName, newName));
-
-        // synonym
-        config.setTargetSynonymFileName(
-                changeOldNameToNewName(
-                        config.getTargetSynonymFileName(), fileRootPath, oldName, newName));
-
-        // grant
-        Map<String, Map<String, String>> newGrantFilePathMap = new HashMap<>();
-        Map<String, Map<String, String>> grantFilePathMap = config.getTargetGrantFileName();
-        for (String schemaName : grantFilePathMap.keySet()) {
-            Map<String, String> grantFilePath = grantFilePathMap.get(schemaName);
-            if (grantFilePath != null) {
-                newGrantFilePathMap.put(
-                        schemaName,
-                        changeOldNameToNewName(grantFilePath, fileRootPath, oldName, newName));
-            }
-        }
-        config.setTargetGrantFileName(newGrantFilePathMap);
-
-        // updatestatistic
-        config.setTargetUpdateStatisticFileName(
-                changeOldNameToNewName(
-                        config.getTargetUpdateStatisticFileName(), fileRootPath, oldName, newName));
-
-        // info
-        config.setTargetSchemaFileListName(
-                changeOldNameToNewName(
-                        config.getTargetSchemaFileListName(), fileRootPath, oldName, newName));
-
-        // table data file
-        Map<String, List<String>> newTableDataFilePath = new HashMap<>();
-        config.getTargetTableDataFileName()
-                .forEach(
-                        (schemaName, tableDataFilePathList) -> {
-                            newTableDataFilePath.put(
-                                    schemaName,
-                                    changeOldNameToNewName(
-                                            tableDataFilePathList, fileRootPath, oldName, newName));
-                        });
-        config.setTargetTableDataFileName(newTableDataFilePath);
-    }
-
-    /** change directory path */
-    private List<String> changeOldNameToNewName(
-            List<String> filePath, String fileRootPath, String oldName, String newName) {
-        List<String> newFilePath = new ArrayList<String>();
-        filePath.forEach(
-                path -> {
-                    String newPath = removeRootPath(path, fileRootPath).replace(oldName, newName);
-                    newFilePath.add(addRootPath(newPath, fileRootPath));
-                });
-        return newFilePath;
-    }
-
-    /** change directory path */
-    private Map<String, String> changeOldNameToNewName(
-            Map<String, String> filePath, String fileRootPath, String oldName, String newName) {
-        Map<String, String> newFilePath = new HashMap<>();
-        filePath.forEach(
-                (schemaName, path) -> {
-                    String newPath = removeRootPath(path, fileRootPath).replace(oldName, newName);
-                    newFilePath.put(schemaName, addRootPath(newPath, fileRootPath));
-                });
-        return newFilePath;
-    }
-
-    /** add file root path */
-    private String addRootPath(String filePath, String fileRootPath) {
-        if (filePath.startsWith(fileRootPath)) {
-            return filePath;
-        }
-        return fileRootPath + filePath;
-    }
-
-    /** remove file root path */
-    private String removeRootPath(String fileFullPath, String fileRootPath) {
-        if (fileFullPath.startsWith(fileRootPath)) {
-            return fileFullPath.substring(fileRootPath.length());
-        }
-        return fileFullPath;
     }
 
     /** Waiting for step finished. */

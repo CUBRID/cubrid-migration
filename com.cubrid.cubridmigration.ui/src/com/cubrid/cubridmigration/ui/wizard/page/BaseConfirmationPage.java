@@ -30,6 +30,7 @@
  */
 package com.cubrid.cubridmigration.ui.wizard.page;
 
+import com.cubrid.cubridmigration.core.common.PathUtils;
 import com.cubrid.cubridmigration.core.dbobject.Column;
 import com.cubrid.cubridmigration.core.dbobject.FK;
 import com.cubrid.cubridmigration.core.dbobject.Index;
@@ -170,7 +171,9 @@ public class BaseConfirmationPage extends MigrationWizardPage {
                         if (StringUtils.isBlank(name)) {
                             return;
                         }
-                        getMigrationWizard().getMigrationConfig().setName(name);
+                        MigrationConfiguration config = getMigrationWizard().getMigrationConfig();
+                        config.setName(name);
+                        PathUtils.changeLocalFilePath(config);
                         getMigrationWizard().saveMigrationScript(true, isSaveSchema());
                         btnUpdateScript.setEnabled(
                                 getMigrationWizard().getMigrationScript() != null);
