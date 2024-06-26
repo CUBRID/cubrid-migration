@@ -1522,10 +1522,6 @@ public final class CUBRIDSchemaFetcher extends AbstractJDBCSchemaFetcher {
 
                 column.setPrecision(prec);
                 column.setScale(scale);
-
-                if (comment != null) {
-                    comment = "\'" + comment + "\'";
-                }
                 column.setComment(comment);
                 table.addColumn(column);
 
