@@ -231,7 +231,7 @@ public class InformixSchemaFetcher extends AbstractJDBCSchemaFetcher {
 
             PreparedStatement stmt = conn.prepareStatement(RETREIVE_VIEW);
 
-            String schemaName = getSchemaName(schema);
+            String schemaName = getSchemaName(schema).toLowerCase(Locale.US);
             stmt.setString(1, schemaName);
             rs = stmt.executeQuery();
             while (rs.next()) {
@@ -262,7 +262,7 @@ public class InformixSchemaFetcher extends AbstractJDBCSchemaFetcher {
         try {
             PreparedStatement stmt = conn.prepareStatement(RETREIVE_TABLE);
 
-            String schemaName = getSchemaName(schema);
+            String schemaName = getSchemaName(schema).toLowerCase(Locale.US);
             stmt.setString(1, schemaName);
             rs = stmt.executeQuery();
             while (rs.next()) {
@@ -343,12 +343,13 @@ public class InformixSchemaFetcher extends AbstractJDBCSchemaFetcher {
         List<Schema> schemaList = catalog.getSchemas();
 
         for (Schema sc : schemaList) {
+            String schemaName = sc.getName().toLowerCase(Locale.US);
             // get procedures
-            List<Procedure> procedures = getProcedures(conn, sc.getName());
+            List<Procedure> procedures = getProcedures(conn, schemaName);
             sc.setProcedures(procedures);
 
             // get functions
-            List<Function> funcList = getFunctions(conn, sc.getName());
+            List<Function> funcList = getFunctions(conn, schemaName);
             sc.setFunctions(funcList);
         }
     }
@@ -427,7 +428,7 @@ public class InformixSchemaFetcher extends AbstractJDBCSchemaFetcher {
         List<Schema> schemaList = catalog.getSchemas();
 
         for (Schema sc : schemaList) {
-            List<Sequence> sequences = getSequences(conn, sc.getName());
+            List<Sequence> sequences = getSequences(conn, sc.getName().toLowerCase(Locale.US));
             sc.setSequenceList(sequences);
         }
     }
@@ -476,7 +477,7 @@ public class InformixSchemaFetcher extends AbstractJDBCSchemaFetcher {
         List<Schema> schemaList = catalog.getSchemas();
 
         for (Schema sc : schemaList) {
-            List<Trigger> triggers = getTriggers(conn, sc.getName());
+            List<Trigger> triggers = getTriggers(conn, sc.getName().toLowerCase(Locale.US));
             sc.setTriggers(triggers);
         }
     }
