@@ -75,7 +75,7 @@ public class UpdateStatisticsTask extends ImportTask {
         }
         List<String> objectsToBeUpdated = new ArrayList<String>();
 
-        if (config.isAddUserSchema()) {
+        if (config.getSourceDBType().isSupportMultiSchema()) {
             if (config.sourceIsCSV()) {
                 List<SourceCSVConfig> csvConfigs = config.getCSVConfigs();
                 for (SourceCSVConfig csvf : csvConfigs) {
@@ -209,6 +209,15 @@ public class UpdateStatisticsTask extends ImportTask {
      * @return repository exist true, no repository false boolean
      */
     private boolean checkDataFileRepository(String schemaName) {
+        if (config.isOneTableOneFile()) {
+            for (String file : config.getTargetTableDataFileName(schemaName)) {
+                if (new File(file).exists()) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
         String fileRepository = config.getTargetDataFileName(schemaName);
         return fileRepository != null ? new File(fileRepository).exists() : false;
     }
