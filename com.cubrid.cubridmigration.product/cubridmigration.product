@@ -7,13 +7,7 @@
 
    <launcherArgs>
       <programArgsMac>-vm ../Eclipse/jre/Contents/Home/bin/java</programArgsMac>
-      <vmArgs>-Xms400M
--Xmx800M
--XX:PermSize=64M
--XX:MaxPermSize=256M
--XX:+UnlockExperimentalVMOptions 
--XX:+UseG1GC
--XX:+IgnoreUnrecognizedVMOptions --add-modules=ALL-SYSTEM -Dosgi.requiredJavaVersion=1.8</vmArgs>
+      <vmArgs>-Xms1024M -Xmx4096M -Dosgi.requiredJavaVersion=1.8</vmArgs>
       <vmArgsMac>-XstartOnFirstThread </vmArgsMac>
    </launcherArgs>
 

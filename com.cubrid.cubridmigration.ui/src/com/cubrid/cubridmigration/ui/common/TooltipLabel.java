@@ -67,6 +67,7 @@ public class TooltipLabel extends Label {
                     public void widgetDisposed(DisposeEvent e) {
                         if (toolTip != null) {
                             toolTip.dispose();
+                            toolTip = null;
                         }
                     }
                 });
@@ -74,7 +75,9 @@ public class TooltipLabel extends Label {
 
     @Override
     public void setToolTipText(String text) {
-        toolTip = new ToolTip(parent.getShell(), SWT.BALLOON | SWT.ICON_INFORMATION);
+        if (toolTip == null || toolTip.isDisposed()) {
+            toolTip = new ToolTip(parent.getShell(), SWT.BALLOON | SWT.ICON_INFORMATION);
+        }
         toolTip.setAutoHide(false);
         toolTip.setVisible(false);
         toolTip.setMessage(text);

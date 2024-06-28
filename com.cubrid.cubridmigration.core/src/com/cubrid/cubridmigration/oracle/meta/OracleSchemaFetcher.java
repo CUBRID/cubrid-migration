@@ -1299,7 +1299,7 @@ public final class OracleSchemaFetcher extends AbstractJDBCSchemaFetcher {
                 comment = commentEditor(comment);
             }
 
-            return "\'" + comment + "\'";
+            return comment;
         } catch (Exception e) {
             e.printStackTrace();
             return null;

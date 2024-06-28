@@ -76,8 +76,6 @@ public class SelectSrcTarTypesView {
     private Button btnOnlineInformixSrc;
 
     private Button btnDumpSrc;
-    private Button btnSQLSrc;
-    private Button btnCSVSrc;
 
     private final List<Button> srcButtons = new ArrayList<Button>(4);
 
@@ -144,16 +142,6 @@ public class SelectSrcTarTypesView {
                         grpSrc, Messages.btnSrcMySQLDumpDB, Messages.btnSrcMySQLDumpDBDes);
         btnDumpSrc.setData(MigrationConfiguration.SOURCE_TYPE_XML_1);
         srcButtons.add(btnDumpSrc);
-
-        btnSQLSrc =
-                createSrcTarTypeBtn(grpSrc, Messages.btnSrcSQLFiles, Messages.btnSrcSQLFilesDes);
-        btnSQLSrc.setData(MigrationConfiguration.SOURCE_TYPE_SQL);
-        srcButtons.add(btnSQLSrc);
-
-        btnCSVSrc =
-                createSrcTarTypeBtn(grpSrc, Messages.btnSrcCSVFiles, Messages.btnSrcCSVFilesDes);
-        btnCSVSrc.setData(MigrationConfiguration.SOURCE_TYPE_CSV);
-        srcButtons.add(btnCSVSrc);
 
         Group grpTar = new Group(sectionClient, SWT.NONE);
         grpTar.setLayout(new GridLayout());
@@ -274,12 +262,6 @@ public class SelectSrcTarTypesView {
      * @return error message
      */
     public String save() {
-        if (btnSQLSrc.getSelection() && !btnOnlineTar.getSelection()) {
-            return Messages.errMsgErrorDestinationType1;
-        }
-        if (btnCSVSrc.getSelection() && !btnOnlineTar.getSelection()) {
-            return Messages.errMsgErrorDestinationType2;
-        }
         save2Default();
         return "";
     }
