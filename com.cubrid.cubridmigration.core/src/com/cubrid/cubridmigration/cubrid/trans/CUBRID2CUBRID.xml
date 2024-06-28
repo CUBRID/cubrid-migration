@@ -316,6 +316,11 @@
 			<scale></scale>
 		</SourceDataType>
 		<TargetDataType>
+			<type>bit varying</type>
+			<precision>1073741823</precision>
+			<scale></scale>
+		</TargetDataType>
+		<TargetDataType>
 			<type>blob</type>
 			<precision></precision>
 			<scale></scale>
@@ -323,11 +328,6 @@
 		<TargetDataType>
 			<type>glo</type>
 			<precision></precision>
-			<scale></scale>
-		</TargetDataType>
-		<TargetDataType>
-			<type>bit varying</type>
-			<precision>1073741823</precision>
 			<scale></scale>
 		</TargetDataType>
 	</DataTypeMapping>
