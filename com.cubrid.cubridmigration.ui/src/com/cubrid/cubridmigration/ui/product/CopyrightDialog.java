@@ -40,6 +40,7 @@ import org.eclipse.jface.dialogs.TrayDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
@@ -152,5 +153,9 @@ public class CopyrightDialog extends TrayDialog {
             LOGGER.error(LogUtil.getExceptionString(ex));
         }
         super.buttonPressed(buttonId);
+    }
+
+    protected Point getInitialSize() {
+        return new Point(650, 550);
     }
 }
