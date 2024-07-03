@@ -208,7 +208,8 @@ public class Oracle2CUBRIDTranformHelper extends DBTransformHelper {
         // if char is char , add '' to default value
         if (dataTypeHelper.isString(cubCol.getDataType())
                 && StringUtils.isNotEmpty(cubCol.getDefaultValue())
-                && !cubCol.getDefaultValue().startsWith("'")) {
+                && !cubCol.getDefaultValue().startsWith("'")
+                && !cubCol.getDefaultValue().startsWith("(")) {
             cubCol.setDefaultValue("'" + cubCol.getDefaultValue() + "'");
         }
         initPecisionScale(mapping, srcColumn, cubCol);
@@ -393,7 +394,7 @@ public class Oracle2CUBRIDTranformHelper extends DBTransformHelper {
         String lowerCaseDefaultValue = defaultValue.toLowerCase(Locale.US);
 
         // Function names should be lowerCases
-        String[] functions = {"to_char", "to_date", "cast"};
+        String[] functions = {"(", "to_char", "to_date", "cast"};
 
         for (String function : functions) {
             if (lowerCaseDefaultValue.startsWith(function)) {
