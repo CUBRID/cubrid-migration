@@ -334,6 +334,7 @@ public final class MigrationTemplateParser {
             view.setAttribute(TemplateTags.ATTR_OWNER, tt.getOwner());
             view.setAttribute(TemplateTags.ATTR_TARGET_OWNER, tt.getOwner());
             view.setAttribute(TemplateTags.ATTR_SOURCE_OWNER, tt.getSourceOwner());
+            view.setAttribute(TemplateTags.ATTR_COMMENT, tt.getComment());
             Element viewQuerySQL = createElement(document, view, TemplateTags.TAG_VIEWQUERYSQL);
             viewQuerySQL.setTextContent(tt.getQuerySpec());
             Element createViewSQL = createElement(document, view, TemplateTags.TAG_CREATEVIEWSQL);
@@ -973,6 +974,7 @@ public final class MigrationTemplateParser {
                 vwNode.setAttribute(TemplateTags.ATTR_OWNER, sc.getOwner());
                 vwNode.setAttribute(TemplateTags.ATTR_NAME, sc.getName());
                 vwNode.setAttribute(TemplateTags.ATTR_TARGET, sc.getTarget());
+                vwNode.setAttribute(TemplateTags.ATTR_TARGET_OWNER, sc.getTargetOwner());
                 vwNode.setAttribute(TemplateTags.ATTR_COMMENT, sc.getComment());
             }
         }

@@ -718,6 +718,7 @@ public final class MigrationTemplateHandler extends DefaultHandler {
                     attributes.getValue(TemplateTags.ATTR_OWNER),
                     attributes.getValue(TemplateTags.ATTR_NAME),
                     attributes.getValue(TemplateTags.ATTR_TARGET),
+                    attributes.getValue(TemplateTags.ATTR_TARGET_OWNER),
                     attributes.getValue(TemplateTags.ATTR_COMMENT));
         } else if (TemplateTags.TAG_GRANT.equals(qName)) {
             config.addExpGrantCfg(
