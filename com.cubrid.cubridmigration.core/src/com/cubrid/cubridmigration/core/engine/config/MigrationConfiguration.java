@@ -629,18 +629,21 @@ public class MigrationConfiguration {
                 prefix = sourceDBSchema.getName() + ".";
             }
             for (Function fun : sourceDBSchema.getFunctions()) {
-                if (expFunctions.indexOf(fun.getName()) < 0) {
-                    expFunctions.add(prefix + fun.getName());
+                String funName = prefix + fun.getName();
+                if (expFunctions.indexOf(funName) < 0) {
+                    expFunctions.add(funName);
                 }
             }
             for (Procedure pro : sourceDBSchema.getProcedures()) {
-                if (expProcedures.indexOf(pro.getName()) < 0) {
-                    expProcedures.add(prefix + pro.getName());
+                String proName = prefix + pro.getName();
+                if (expProcedures.indexOf(proName) < 0) {
+                    expProcedures.add(proName);
                 }
             }
             for (Trigger tri : sourceDBSchema.getTriggers()) {
-                if (expTriggers.indexOf(tri.getName()) < 0) {
-                    expTriggers.add(prefix + tri.getName());
+                String triName = prefix + tri.getName();
+                if (expTriggers.indexOf(triName) < 0) {
+                    expTriggers.add(triName);
                 }
             }
         }
