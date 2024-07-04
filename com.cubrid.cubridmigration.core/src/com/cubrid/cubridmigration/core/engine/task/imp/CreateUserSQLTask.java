@@ -60,7 +60,12 @@ public class CreateUserSQLTask extends ImportTask {
     @Override
     protected void executeImport() {
         File createUserSQLFile =
-                new File(config.getFileRepositroyPath() + File.separator + "create_user.sql");
+                new File(
+                        config.getFileRepositroyPath()
+                                + File.separator
+                                + config.getName()
+                                + File.separator
+                                + "create_user.sql");
         LOG.debug("Write to create user sql file");
 
         try {
