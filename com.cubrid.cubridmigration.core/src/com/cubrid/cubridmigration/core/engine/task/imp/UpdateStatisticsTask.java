@@ -146,7 +146,7 @@ public class UpdateStatisticsTask extends ImportTask {
             return;
         }
 
-        if (config.isAddUserSchema()) {
+        if (config.getSourceDBType().isSupportMultiSchema()) {
             List<Schema> schemaList = config.getTargetSchemaList();
             for (Schema schema : schemaList) {
                 writeFile(schema.getName(), schema.getTargetSchemaName());
