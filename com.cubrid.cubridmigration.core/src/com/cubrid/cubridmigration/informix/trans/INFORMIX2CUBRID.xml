@@ -496,7 +496,7 @@
 		</SourceDataType>
 		<TargetDataType>
 			<type>varchar</type>
-			<precision>n</precision>
+			<precision>1073741823</precision>
 			<scale></scale>
 		</TargetDataType>
 		<TargetDataType>
@@ -514,7 +514,7 @@
 		</SourceDataType>
 		<TargetDataType>
 			<type>bit varying</type>
-			<precision>n</precision>
+			<precision>1073741823</precision>
 			<scale></scale>
 		</TargetDataType>
 		<TargetDataType>
