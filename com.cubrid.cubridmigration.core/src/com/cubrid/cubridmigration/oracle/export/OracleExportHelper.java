@@ -177,7 +177,7 @@ public class OracleExportHelper extends DBExportHelper {
         return DatabaseType.ORACLE;
     }
 
-    private static final String SERIAL_CURRENT_VALUE_SQL =
+    private static final String SEQUENCE_LAST_NUMBER_SQL =
             "SELECT S.LAST_NUMBER,S.SEQUENCE_OWNER FROM ALL_SEQUENCES S "
                     + "WHERE S.SEQUENCE_NAME=? ORDER BY S.SEQUENCE_OWNER";
 
@@ -192,7 +192,7 @@ public class OracleExportHelper extends DBExportHelper {
         Connection conn = null;
         try {
             conn = sourceConParams.createConnection();
-            PreparedStatement stmt = conn.prepareStatement(SERIAL_CURRENT_VALUE_SQL);
+            PreparedStatement stmt = conn.prepareStatement(SEQUENCE_LAST_NUMBER_SQL);
             stmt.setString(1, sq.getName());
             ResultSet rs = stmt.executeQuery();
             while (rs.next()) {
@@ -204,7 +204,7 @@ public class OracleExportHelper extends DBExportHelper {
                 }
             }
         } catch (SQLException e) {
-            LOG.error("ORACLE_SERIAL_CURRENT_VALUE_SQL", e);
+            LOG.error("ORACLE_SEQUENCE_LAST_NUMBER_SQL", e);
         } finally {
             Closer.close(conn);
         }
