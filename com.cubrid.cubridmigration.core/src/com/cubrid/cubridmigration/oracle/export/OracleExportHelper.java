@@ -31,6 +31,7 @@
 package com.cubrid.cubridmigration.oracle.export;
 
 import com.cubrid.cubridmigration.core.common.Closer;
+import com.cubrid.cubridmigration.core.common.log.LogUtil;
 import com.cubrid.cubridmigration.core.connection.ConnParameters;
 import com.cubrid.cubridmigration.core.dbobject.Column;
 import com.cubrid.cubridmigration.core.dbobject.PK;
@@ -51,6 +52,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
+import org.apache.log4j.Logger;
 
 /**
  * a class help to export Oracle data and verify Oracle sql statement
@@ -58,7 +60,7 @@ import java.sql.Types;
  * @author moulinwang
  */
 public class OracleExportHelper extends DBExportHelper {
-    // private static final Logger LOG = LogUtil.getLogger(OracleExportHelper.class);
+    private static final Logger LOG = LogUtil.getLogger(OracleExportHelper.class);
 
     // private static final String ORACAL_ROW_NUMBER = "OracleRowNumber";
 
@@ -202,6 +204,8 @@ public class OracleExportHelper extends DBExportHelper {
                 }
             }
         } catch (SQLException e) {
+            LOG.error("ORACLE_SERIAL_CURRENT_VALUE_SQL", e);
+        } finally {
             Closer.close(conn);
         }
         return null;
