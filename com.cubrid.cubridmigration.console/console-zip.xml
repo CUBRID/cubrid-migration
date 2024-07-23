@@ -29,8 +29,8 @@
      </fileSet>
 
      <fileSet>
-      <directory>${basedir}/target/jre/win/jdk8u412-b08-jre</directory>
-      <outputDirectory>jre</outputDirectory>
+       <directory>${basedir}/target/jre/win/jdk8u412-b08-jre</directory>
+       <outputDirectory>jre</outputDirectory>
      </fileSet>
    </fileSets>
 
