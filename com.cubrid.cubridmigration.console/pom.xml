@@ -16,6 +16,31 @@
     <build>
         <plugins>
             <plugin>
+              <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <target>
+                                <property name="output.dir" value="${project.build.directory}/jre"/>
+                                <unzip src="../com.cubrid.common.configuration/target/win-jre.zip" dest="${project.build.directory}/jre/win"/>
+                                <mkdir dir="${output.dir}/linux" />
+                                <exec executable="tar">
+                                  <arg value="xzf"/>
+                                  <arg value="../com.cubrid.common.configuration/target/linux-jre.tar.gz"/>
+                                  <arg value="-C"/>
+                                  <arg value="${output.dir}/linux"/>
+                                </exec>
+                            </target>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
                 <artifactId>maven-assembly-plugin</artifactId>
                 <executions>
                     <execution>
