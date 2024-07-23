@@ -14,7 +14,7 @@
   <packaging>eclipse-plugin</packaging>
 
   <properties>
-    <jre.download.url>https://github.com/adoptium/temurin8-binaries/releases/download/jdk8u412-b08</jre.download.url>
+    <jre.download.url>https://github.com/adoptium/temurin8-binaries/releases/download/jdk8u422-b05</jre.download.url>
   </properties>
 
   <build>
@@ -31,9 +31,9 @@
             </goals>
             <configuration>
               <target>
-                <get src="${jre.download.url}/OpenJDK8U-jre_x64_windows_hotspot_8u412b08.zip" dest="${project.build.directory}/win-jre.zip"/>
-                <get src="${jre.download.url}/OpenJDK8U-jre_x64_linux_hotspot_8u412b08.tar.gz" dest="${project.build.directory}/linux-jre.tar.gz"/>
-                <get src="${jre.download.url}/OpenJDK8U-jre_x64_mac_hotspot_8u412b08.tar.gz" dest="${project.build.directory}/mac-jre.tar.gz"/>
+                <get src="${jre.download.url}/OpenJDK8U-jre_x64_windows_hotspot_8u422b05.zip" dest="${project.build.directory}/win-jre.zip"/>
+                <get src="${jre.download.url}/OpenJDK8U-jre_x64_linux_hotspot_8u422b05.tar.gz" dest="${project.build.directory}/linux-jre.tar.gz"/>
+                <get src="${jre.download.url}/OpenJDK8U-jre_x64_mac_hotspot_8u422b05.tar.gz" dest="${project.build.directory}/mac-jre.tar.gz"/>
               </target>
             </configuration>
           </execution>
