@@ -105,7 +105,7 @@ function copy_desktopcmt_to_directory ()
   CMT_SITE_ZIP=$PRODUCT_TARGET/$CMT_SITE_NAME-$RELEASE_VERSION.zip
   if [ -e $CMT_SITE_ZIP ]; then
     cp -vfp $CMT_SITE_ZIP $TARGET
-  if
+  fi
 }
 
 function copy_consolecmt_to_directory ()
