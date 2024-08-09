@@ -12,6 +12,7 @@ RELEASE_VERSION_FILE_PATH=$DIR/com.cubrid.cubridmigration.ui/version.properties
 RELEASE_VERSION=""
 CMT_PRODUCT_NAME="CUBRID-Migration-Toolkit"
 CMT_CONSOLE_NAME="$CMT_PRODUCT_NAME-console"
+CMT_SITE_NAME="$CMT_PRODUCT_NAME-site"
 
 function show_usage ()
 {
@@ -94,6 +95,16 @@ function copy_desktopcmt_to_directory ()
   CMT_WINDOWS=$PRODUCT_TARGET/$CMT_PRODUCT_NAME-$RELEASE_VERSION-windows.zip
   if [ -e $CMT_WINDOWS ]; then
     cp -vfp $CMT_WINDOWS $TARGET
+  fi
+
+  CMT_SITE_TAR_GZ=$PRODUCT_TARGET/$CMT_SITE_NAME-$RELEASE_VERSION.tar.gz
+  if [ -e $CMT_SITE_TAR_GZ ]; then
+    cp -vfp $CMT_SITE_TAR_GZ $TARGET
+  fi
+
+  CMT_SITE_ZIP=$PRODUCT_TARGET/$CMT_SITE_NAME-$RELEASE_VERSION.zip
+  if [ -e $CMT_SITE_ZIP ]; then
+    cp -vfp $CMT_SITE_ZIP $TARGET
   fi
 }
 
