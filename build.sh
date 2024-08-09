@@ -82,17 +82,17 @@ function update_build_version ()
 
 function copy_desktopcmt_to_directory ()
 {
-  CMT_LINUX=$PRODUCT_TARGET/$CMT_PRODUCT_NAME-$RELEASE_VERSION-linux.tar.gz
+  CMT_LINUX=$PRODUCT_TARGET/$CMT_PRODUCT_NAME-$RELEASE_VERSION-linux-x86_64.tar.gz
   if [ -e $CMT_LINUX ]; then
     cp -vfp $CMT_LINUX $TARGET
   fi
 
-  CMT_MAC=$PRODUCT_TARGET/$CMT_PRODUCT_NAME-$RELEASE_VERSION-mac.tar.gz
+  CMT_MAC=$PRODUCT_TARGET/$CMT_PRODUCT_NAME-$RELEASE_VERSION-macosx-cocoa-x86_64.tar.gz
   if [ -e $CMT_MAC ]; then
     cp -vfp $CMT_MAC $TARGET
   fi
 
-  CMT_WINDOWS=$PRODUCT_TARGET/$CMT_PRODUCT_NAME-$RELEASE_VERSION-windows.zip
+  CMT_WINDOWS=$PRODUCT_TARGET/$CMT_PRODUCT_NAME-$RELEASE_VERSION-windows-x64.zip
   if [ -e $CMT_WINDOWS ]; then
     cp -vfp $CMT_WINDOWS $TARGET
   fi
