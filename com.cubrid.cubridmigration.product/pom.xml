@@ -144,36 +144,20 @@
                     </execution>
                     
                     <execution>
-                        <id>site-tar_gz</id>
+                        <id>site</id>
                         <phase>package</phase>
                         <goals>
                             <goal>single</goal>
                         </goals>
                         <configuration>
                             <descriptors>
-                                <descriptor>${basedir}/site-tar_gz.xml</descriptor>
-                            </descriptors>
-                            <finalName>${cubridmigration-product}-site-${cubridmigration-version}</finalName>
-                            <appendAssemblyId>false</appendAssemblyId>
-                        </configuration>
-                    </execution>
-                    
-                    <execution>
-                        <id>site-zip</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>single</goal>
-                        </goals>
-                        <configuration>
-                            <descriptors>
-                                <descriptor>${basedir}/site-zip.xml</descriptor>
+                                <descriptor>${basedir}/site.xml</descriptor>
                             </descriptors>
                             <finalName>${cubridmigration-product}-site-${cubridmigration-version}</finalName>
                             <appendAssemblyId>false</appendAssemblyId>
                         </configuration>
                     </execution>
                 </executions>
-
                 <configuration>
                     <tarLongFileMode>posix</tarLongFileMode>
                 </configuration>
