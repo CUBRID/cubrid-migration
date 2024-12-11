@@ -53,6 +53,13 @@ Bundle-ClassPath: lib/commons-beanutils-1.8.0.jar,
  lib/jsch-0.1.51.jar,
  lib/jdbc-4.50.7.1.jar,
  lib/bson-4.8.0.jar,
+ lib/org.abego.treelayout.core_1.0.3.jar,
+ lib/antlr4-4.9.3.jar,
+ lib/antlr-runtime-3.5.2.jar,
+ lib/antlr4-runtime-4.9.3.jar,
+ lib/ST4-4.3.1.jar,
+ lib/javax.json-1.0.4.jar,
+ lib/com.ibm.icu_69.1.0.jar,
  .
 Export-Package: 
  com.ctc.wstx.api;
@@ -350,7 +357,8 @@ Export-Package:
    com.cubrid.cubridmigration.core.dbmetadata,
    com.cubrid.cubridmigration.core.connection,
    com.cubrid.cubridmigration.core.export",
- com.cubrid.cubridmigration.oracle.trans;
+   com.cubrid.cubridmigration.oracle.parser,
+   com.cubrid.cubridmigration.oracle.trans;
   uses:="com.cubrid.cubridmigration.core.engine.config,
    com.cubrid.cubridmigration.core.dbobject,
    com.cubrid.cubridmigration.core.mapping,
