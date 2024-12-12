@@ -1971,7 +1971,7 @@ public final class CUBRIDSchemaFetcher extends AbstractJDBCSchemaFetcher {
         for (Entry<String, String> entry : map.entrySet()) {
             Function func = factory.createFunction();
             func.setName(entry.getKey());
-            func.setFuncDDL(entry.getValue());
+            func.setFunctionDDL(entry.getValue());
             funcs.add(func);
         }
 

@@ -42,12 +42,12 @@ import com.cubrid.cubridmigration.core.dbobject.Catalog;
 import com.cubrid.cubridmigration.core.dbobject.Column;
 import com.cubrid.cubridmigration.core.dbobject.DBObjectFactory;
 import com.cubrid.cubridmigration.core.dbobject.FK;
-import com.cubrid.cubridmigration.core.dbobject.Function;
 import com.cubrid.cubridmigration.core.dbobject.Grant;
 import com.cubrid.cubridmigration.core.dbobject.Index;
 import com.cubrid.cubridmigration.core.dbobject.PartitionInfo;
 import com.cubrid.cubridmigration.core.dbobject.PartitionTable;
-import com.cubrid.cubridmigration.core.dbobject.Procedure;
+import com.cubrid.cubridmigration.core.dbobject.PlcsqlFunction;
+import com.cubrid.cubridmigration.core.dbobject.PlcsqlProcedure;
 import com.cubrid.cubridmigration.core.dbobject.Schema;
 import com.cubrid.cubridmigration.core.dbobject.Sequence;
 import com.cubrid.cubridmigration.core.dbobject.Synonym;
@@ -93,9 +93,6 @@ public final class OracleSchemaFetcher extends AbstractJDBCSchemaFetcher {
             CommonUtils.createListWithArray(new Object[] {"RAW", "LONG RAW"});
 
     private static final Logger LOG = LogUtil.getLogger(OracleSchemaFetcher.class);
-
-    private static final String OBJECT_TYPE_FUNCTION = "FUNCTION";
-    private static final String OBJECT_TYPE_PROCEDURE = "PROCEDURE";
 
     @SuppressWarnings("unused")
     private static final String OBJECT_TYPE_SEQUENCE = "SEQUENCE";
@@ -336,11 +333,20 @@ public final class OracleSchemaFetcher extends AbstractJDBCSchemaFetcher {
             LOG.debug("[IN]buildProcedures()");
         }
 
-        // get procedures
-        schema.setProcedures(getAllProcedures(conn, schema.getName(), schema.getName()));
+        List<PlcsqlProcedure> procedures = new ArrayList<>();
+        List<PlcsqlFunction> functions = new ArrayList<>();
+        List<OraclePlsqlProcedure> oracleProcedures = getAllProcedures(conn, schema.getName());
 
-        // get functions
-        schema.setFunctions(getAllFunctions(conn, schema.getName(), schema.getName()));
+        for (OraclePlsqlProcedure oraProc : oracleProcedures) {
+            if (oraProc.getProcedureType().equals(OracleConstants.PROCEDURE)) {
+                procedures.add(factory.createPlcsqlProcedure(oraProc));
+            } else {
+                functions.add(factory.createPlcsqlFunction(oraProc));
+            }
+        }
+
+        schema.setPlcsqlProcedures(procedures);
+        schema.setPlcsqlFunctions(functions);
     }
 
     /**
@@ -947,38 +953,6 @@ public final class OracleSchemaFetcher extends AbstractJDBCSchemaFetcher {
     }
 
     /**
-     * Get All Functions
-     *
-     * @param conn Connection
-     * @param dbName String
-     * @param ownerName String
-     * @return all Functions
-     * @throws SQLException e
-     */
-    private List<Function> getAllFunctions(
-            final Connection conn, final String dbName, final String ownerName)
-            throws SQLException {
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("[IN]getAllFunctions()");
-        }
-        final List<String> list = this.getRountines(conn, OBJECT_TYPE_FUNCTION, ownerName);
-        final List<Function> funcs = new ArrayList<Function>();
-
-        for (String name : list) {
-            final Function func = factory.createFunction();
-            func.setName(name);
-            final String funcDDL = getObjectDDL(conn, dbName, name, OBJECT_TYPE_FUNCTION);
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("[VAR]funcDDL=" + funcDDL);
-            }
-            func.setFuncDDL(funcDDL);
-            funcs.add(func);
-        }
-
-        return funcs;
-    }
-
-    /**
      * get All Procedures
      *
      * @param conn Connection
@@ -987,58 +961,68 @@ public final class OracleSchemaFetcher extends AbstractJDBCSchemaFetcher {
      * @return List<Procedure>
      * @throws SQLException e
      */
-    private List<Procedure> getAllProcedures(
-            final Connection conn, final String dbName, final String ownerName)
-            throws SQLException {
+    private List<OraclePlsqlProcedure> getAllProcedures(
+            final Connection conn, final String ownerName) throws SQLException {
         if (LOG.isDebugEnabled()) {
             LOG.debug("[IN]getAllProcedures()");
         }
-        final List<String> list = this.getRountines(conn, OBJECT_TYPE_PROCEDURE, ownerName);
-        final List<Procedure> procs = new ArrayList<Procedure>();
 
-        for (String name : list) {
-            final Procedure proc = factory.createProcedure();
-            proc.setName(name);
-            final String procDDL = getObjectDDL(conn, dbName, name, OBJECT_TYPE_PROCEDURE);
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("[VAR]procDDL=" + procDDL);
-            }
-            proc.setProcedureDDL(procDDL);
-            procs.add(proc);
-        }
+        List<OraclePlsqlProcedure> procedures = new ArrayList<>();
+        getPlcsqlProcedureMetaData(conn, ownerName, procedures);
+        getPlcsqlProcedureDDL(conn, procedures);
 
-        return procs;
+        return procedures;
     }
 
-    //	/**
-    //	 * get sequence current value
-    //	 *
-    //	 * @param conn Connection
-    //	 * @param sequenceName String
-    //	 * @return long
-    //	 * @throws SQLException e
-    //	 */
-    //	public long getSequenceCurrentVal(final Connection conn,
-    //			final String sequenceName) throws SQLException {
-    //		long maxVal = -1;
-    //		PreparedStatement stmt = null; // NOPMD
-    //		ResultSet rs = null; // NOPMD
-    //		try {
-    //			stmt = conn.prepareStatement(SHOW_SEQUENCE_MAXVAL);
-    //			stmt.setString(1, sequenceName);
-    //			rs = stmt.executeQuery();
-    //
-    //			if (rs.next()) {
-    //				maxVal = rs.getLong(1);
-    //			}
-    //
-    //			return maxVal;
-    //		} finally {
-    //			Closer.close(rs);
-    //			Closer.close(stmt);
-    //		}
-    //
-    //	}
+    private void getPlcsqlProcedureDDL(Connection conn, List<OraclePlsqlProcedure> procedures)
+            throws SQLException {
+        String SQL =
+                "SELECT TEXT FROM ALL_SOURCE WHERE OWNER = ? AND NAME = ? AND TYPE = ? ORDER BY LINE";
+
+        ResultSet rs = null;
+        try (PreparedStatement stmt = conn.prepareStatement(SQL)) {
+            for (OraclePlsqlProcedure proc : procedures) {
+                stmt.setString(1, proc.getOwner());
+                stmt.setString(2, proc.getName());
+                stmt.setString(3, proc.getProcedureType());
+
+                StringBuilder sb = new StringBuilder();
+                rs = stmt.executeQuery();
+                sb.append("CREATE ");
+                while (rs.next()) {
+                    sb.append(rs.getString("TEXT"));
+                }
+                proc.setDDL(sb.toString());
+            }
+        } finally {
+            Closer.close(rs);
+        }
+    }
+
+    private void getPlcsqlProcedureMetaData(
+            Connection conn, String ownerName, List<OraclePlsqlProcedure> procedures)
+            throws SQLException {
+        String SQL =
+                "SELECT owner, object_name, authid, object_type FROM ALL_PROCEDURES WHERE OBJECT_TYPE IN ('PROCEDURE', 'FUNCTION') AND OWNER=?";
+
+        ResultSet rs = null;
+        try (PreparedStatement stmt = conn.prepareStatement(SQL)) {
+            stmt.setString(1, ownerName);
+
+            rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                procedures.add(
+                        new OraclePlsqlProcedure(
+                                rs.getString("OWNER"),
+                                rs.getString("OBJECT_NAME"),
+                                rs.getString("AUTHID"),
+                                rs.getString("OBJECT_TYPE")));
+            }
+        } finally {
+            Closer.close(rs);
+        }
+    }
 
     /**
      * return a list of oracle table name.

@@ -54,7 +54,9 @@ public abstract class DBObject implements Serializable {
     public static final String OBJ_TYPE_SEQUENCE = "sequence";
     public static final String OBJ_TYPE_TRIGGER = "trigger";
     public static final String OBJ_TYPE_PROCEDURE = "procedure";
+    public static final String OBJ_TYPE_PLCSQL_PROCEDURE = "plcsql_procedure";
     public static final String OBJ_TYPE_FUNCTION = "function";
+    public static final String OBJ_TYPE_PLCSQL_FUNCTION = "plcsql_function";
     public static final String OBJ_TYPE_RECORD = "record";
     public static final String OBJ_TYPE_SYNONYM = "synonym";
     public static final String OBJ_TYPE_GRANT = "grant";

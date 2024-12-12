@@ -39,8 +39,31 @@ package com.cubrid.cubridmigration.core.dbobject;
 public class Procedure extends DBObject {
 
     private static final long serialVersionUID = -6451814170006574744L;
+    private String owner;
+    private String targetOwner;
     private String name;
+    private String targetName;
+    private String authid;
+    private boolean isAuthidChanged;
+
+    private String sourceDDL;
     private String procedureDDL;
+
+    public String getOwner() {
+        return owner;
+    }
+
+    public void setOwner(String owner) {
+        this.owner = owner;
+    }
+
+    public String getTargetOwner() {
+        return targetOwner;
+    }
+
+    public void setTargetOwner(String targetOwner) {
+        this.targetOwner = targetOwner;
+    }
 
     public String getName() {
         return name;
@@ -48,6 +71,38 @@ public class Procedure extends DBObject {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getTargetName() {
+        return targetName;
+    }
+
+    public void setTargetName(String targetName) {
+        this.targetName = targetName;
+    }
+
+    public String getAuthid() {
+        return authid;
+    }
+
+    public void setAuthid(String authid) {
+        this.authid = authid;
+    }
+
+    public boolean isAuthidChanged() {
+        return isAuthidChanged;
+    }
+
+    public void setAuthidChanged(boolean isAuthidChanged) {
+        this.isAuthidChanged = isAuthidChanged;
+    }
+
+    public String getSourceDDL() {
+        return sourceDDL;
+    }
+
+    public void setSourceDDL(String sourceDDL) {
+        this.sourceDDL = sourceDDL;
     }
 
     public String getDDL() {

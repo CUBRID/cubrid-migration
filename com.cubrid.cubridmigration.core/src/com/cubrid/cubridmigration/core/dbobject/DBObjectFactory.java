@@ -31,6 +31,9 @@
 package com.cubrid.cubridmigration.core.dbobject;
 
 import com.cubrid.cubridmigration.core.datatype.DataType;
+import com.cubrid.cubridmigration.cubrid.meta.CubridConstants;
+import com.cubrid.cubridmigration.oracle.meta.OracleConstants;
+import com.cubrid.cubridmigration.oracle.meta.OraclePlsqlProcedure;
 import java.math.BigInteger;
 
 /**
@@ -134,6 +137,18 @@ public class DBObjectFactory {
         return new Function();
     }
 
+    public PlcsqlFunction createPlcsqlFunction(OraclePlsqlProcedure oraProc) {
+        PlcsqlFunction func = new PlcsqlFunction();
+        func.setOwner(oraProc.getOwner());
+        func.setName(oraProc.getName());
+        func.setAuthid(CubridConstants.PROCEDURE_AUTHID_OWNER);
+        func.setAuthidChanged(
+                OracleConstants.PROCEDURE_AUTHID_CURRENT_USER.equals(oraProc.getAuthid()));
+        func.setSourceDDL(oraProc.getDDL());
+
+        return func;
+    }
+
     /**
      * return Procedure
      *
@@ -141,6 +156,18 @@ public class DBObjectFactory {
      */
     public Procedure createProcedure() {
         return new Procedure();
+    }
+
+    public PlcsqlProcedure createPlcsqlProcedure(OraclePlsqlProcedure oraProc) {
+        PlcsqlProcedure proc = new PlcsqlProcedure();
+        proc.setOwner(oraProc.getOwner());
+        proc.setName(oraProc.getName());
+        proc.setAuthid(CubridConstants.PROCEDURE_AUTHID_OWNER);
+        proc.setAuthidChanged(
+                OracleConstants.PROCEDURE_AUTHID_CURRENT_USER.equals(oraProc.getAuthid()));
+        proc.setSourceDDL(oraProc.getDDL());
+
+        return proc;
     }
 
     /**

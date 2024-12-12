@@ -670,7 +670,7 @@ public final class MariaDBSchemaFetcher extends AbstractJDBCSchemaFetcher {
             final Function func = factory.createFunction();
             func.setName(name);
             final String funcDDL = getFunctionDDL(conn, name);
-            func.setFuncDDL(funcDDL);
+            func.setFunctionDDL(funcDDL);
             funcs.add(func);
         }
 
