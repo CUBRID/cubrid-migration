@@ -45,6 +45,8 @@ import com.cubrid.cubridmigration.ui.common.navigator.node.ColumnsNode;
 import com.cubrid.cubridmigration.ui.common.navigator.node.DatabaseNode;
 import com.cubrid.cubridmigration.ui.common.navigator.node.FKNode;
 import com.cubrid.cubridmigration.ui.common.navigator.node.FKsNode;
+import com.cubrid.cubridmigration.ui.common.navigator.node.FunctionNode;
+import com.cubrid.cubridmigration.ui.common.navigator.node.FunctionsNode;
 import com.cubrid.cubridmigration.ui.common.navigator.node.GrantAuthNode;
 import com.cubrid.cubridmigration.ui.common.navigator.node.GrantGrantorNode;
 import com.cubrid.cubridmigration.ui.common.navigator.node.GrantsNode;
@@ -53,6 +55,8 @@ import com.cubrid.cubridmigration.ui.common.navigator.node.IndexesNode;
 import com.cubrid.cubridmigration.ui.common.navigator.node.PKNode;
 import com.cubrid.cubridmigration.ui.common.navigator.node.PartitionNode;
 import com.cubrid.cubridmigration.ui.common.navigator.node.PartitionsNode;
+import com.cubrid.cubridmigration.ui.common.navigator.node.ProcedureNode;
+import com.cubrid.cubridmigration.ui.common.navigator.node.ProceduresNode;
 import com.cubrid.cubridmigration.ui.common.navigator.node.SQLTableNode;
 import com.cubrid.cubridmigration.ui.common.navigator.node.SQLTablesNode;
 import com.cubrid.cubridmigration.ui.common.navigator.node.SchemaNode;
@@ -374,6 +378,20 @@ public class ObjectMappingPage extends MigrationWizardPage implements IRefreshab
                                     break;
                                 }
                             }
+                        } else if (AbstractMappingView.CT_PROCEDURE.equals(ct)) {
+                            for (ICUBRIDNode chn : cn.getChildren()) {
+                                if (chn instanceof ProceduresNode) {
+                                    selectionParent = chn;
+                                    break;
+                                }
+                            }
+                        } else if (AbstractMappingView.CT_FUNCTION.equals(ct)) {
+                            for (ICUBRIDNode chn : cn.getChildren()) {
+                                if (chn instanceof FunctionsNode) {
+                                    selectionParent = chn;
+                                    break;
+                                }
+                            }
                         }
                         for (ICUBRIDNode col : selectionParent.getChildren()) {
                             if (col.getName().equals((String) obj[1])) {
@@ -450,6 +468,8 @@ public class ObjectMappingPage extends MigrationWizardPage implements IRefreshab
         SequenceMappingView sequenceMappingView = new SequenceMappingView(detailContainer);
         ViewMappingView viewMappingView = new ViewMappingView(detailContainer);
         SynonymMappingView synonymMappingView = new SynonymMappingView(detailContainer);
+        ProcedureMappingView procedureMappingView = new ProcedureMappingView(detailContainer);
+        FunctionMappingView functionMappingView = new FunctionMappingView(detailContainer);
 
         generalObjMappingView.addSQLChangedListener(tvSourceDBObjects);
         // Building Tree node to Mapping view mapping
@@ -466,6 +486,10 @@ public class ObjectMappingPage extends MigrationWizardPage implements IRefreshab
         node2ViewMapping.put(GrantsNode.class.getName(), generalObjMappingView);
         node2ViewMapping.put(GrantGrantorNode.class.getName(), generalObjMappingView);
         node2ViewMapping.put(GrantAuthNode.class.getName(), generalObjMappingView);
+        node2ViewMapping.put(ProceduresNode.class.getName(), generalObjMappingView);
+        node2ViewMapping.put(ProcedureNode.class.getName(), procedureMappingView);
+        node2ViewMapping.put(FunctionsNode.class.getName(), generalObjMappingView);
+        node2ViewMapping.put(FunctionNode.class.getName(), functionMappingView);
         node2ViewMapping.put(PKNode.class.getName(), tableMappingView);
         // node2ViewMapping.put(ColumnsNode.class.getName(), tableMappingView);
         node2ViewMapping.put(FKsNode.class.getName(), tableMappingView);

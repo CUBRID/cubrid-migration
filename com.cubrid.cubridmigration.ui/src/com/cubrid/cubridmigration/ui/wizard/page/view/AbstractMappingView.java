@@ -67,6 +67,8 @@ public abstract class AbstractMappingView {
     public static final String CT_INDEX = "index";
     public static final String CT_SYNONYM = "synonym";
     public static final String CT_GRANT = "grant";
+    public static final String CT_PROCEDURE = "procedure";
+    public static final String CT_FUNCTION = "function";
 
     protected static final int PART_WIDTH = 250;
     // Initialize the config, just it doesn't need to throw null point error.

@@ -158,6 +158,8 @@ public class MigrationConfiguration {
     private final List<SourceEntryTableConfig> expTables = new ArrayList<SourceEntryTableConfig>();
     private final List<String> expTriggers = new ArrayList<String>();
     private final List<SourceViewConfig> expViews = new ArrayList<SourceViewConfig>();
+    private final List<SourcePlcsqlProcedureConfig> expPlcsqlProcedures = new ArrayList<>();
+    private final List<SourcePlcsqlFunctionConfig> expPlcsqlFunctions = new ArrayList<>();
     private String fileRepositroyPath;
     private final List<SourceCSVConfig> csvFiles = new ArrayList<SourceCSVConfig>();
 
@@ -2277,6 +2279,10 @@ public class MigrationConfiguration {
         return new ArrayList<String>(expFunctions);
     }
 
+    public List<SourcePlcsqlFunctionConfig> getExpPlcsqlFunctionCfg() {
+        return new ArrayList<SourcePlcsqlFunctionConfig>(expPlcsqlFunctions);
+    }
+
     /**
      * getExportFunction
      *
@@ -2349,6 +2355,10 @@ public class MigrationConfiguration {
      */
     public String getExpProcedureCfg(String name) {
         return expProcedures.indexOf(name) < 0 ? null : name;
+    }
+
+    public List<SourcePlcsqlProcedureConfig> getExpPlcsqlProcedureCfg() {
+        return new ArrayList<SourcePlcsqlProcedureConfig>(expPlcsqlProcedures);
     }
 
     /**
