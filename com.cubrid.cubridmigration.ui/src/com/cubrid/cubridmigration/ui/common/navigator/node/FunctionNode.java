@@ -57,7 +57,7 @@ public class FunctionNode extends DefaultCUBRIDNode {
      * @param label String
      */
     public FunctionNode(String id, String label) {
-        super(id, label, "");
+        super(id, label, "icon/db/procedure_func_item.png");
         setType(CubridNodeType.USER_FUNCTION);
         setContainer(false);
     }

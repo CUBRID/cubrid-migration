@@ -30,6 +30,12 @@
  */
 package com.cubrid.cubridmigration.ui.common.navigator.event;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import com.cubrid.common.ui.navigator.DefaultCUBRIDNode;
 import com.cubrid.common.ui.navigator.ICUBRIDNode;
 import com.cubrid.cubridmigration.core.dbobject.Catalog;
@@ -66,7 +72,6 @@ import com.cubrid.cubridmigration.ui.common.navigator.node.ProceduresNode;
 import com.cubrid.cubridmigration.ui.common.navigator.node.SchemaNode;
 import com.cubrid.cubridmigration.ui.common.navigator.node.SequenceNode;
 import com.cubrid.cubridmigration.ui.common.navigator.node.SequencesNode;
-import com.cubrid.cubridmigration.ui.common.navigator.node.StoredProceduresNode;
 import com.cubrid.cubridmigration.ui.common.navigator.node.SynonymNode;
 import com.cubrid.cubridmigration.ui.common.navigator.node.SynonymsNode;
 import com.cubrid.cubridmigration.ui.common.navigator.node.TableNode;
@@ -76,11 +81,6 @@ import com.cubrid.cubridmigration.ui.common.navigator.node.TriggersNode;
 import com.cubrid.cubridmigration.ui.common.navigator.node.ViewNode;
 import com.cubrid.cubridmigration.ui.common.navigator.node.ViewsNode;
 import com.cubrid.cubridmigration.ui.message.Messages;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * This class is for managing all CUBRID Node in navigator tree
@@ -99,6 +99,8 @@ public final class CubridNodeManager {
     private static final String PATH_TABLES = "/tables";
     private static final String PATH_SYNONYMS = "/synonyms";
     private static final String PATH_GRANTS = "/grants";
+    private static final String PATH_PROCEDURE = "/procedures";
+    private static final String PATH_FUNCTION = "/functions";
     private static final String XML_HOST_NODE_ID = "MySQL dump file";
 
     private static volatile CubridNodeManager instance = null;
@@ -235,48 +237,53 @@ public final class CubridNodeManager {
     }
 
     /**
-     * add store procedure and function nodes
+     * add procedure nodes
      *
-     * @param parentNode parentNode
-     * @param schema Schema
+     * @param parentNode
+     * @param schema
      */
-    private void addSPFuncNodes(DefaultCUBRIDNode parentNode, Schema schema) {
-
+    private void addProcedureNodes(DefaultCUBRIDNode parentNode, Schema schema) {
         String parentID = parentNode.getId();
 
-        String spID = parentID + PATH_STORED_PROCEDURE;
-        String spLabels = "Stored Procedure";
-        StoredProceduresNode spNode = new StoredProceduresNode(spID, spLabels);
-        parentNode.addChild(spNode);
-
-        // add Procedures
-        List<Procedure> procedures = schema.getProcedures();
-        String proceduresID = parentID + "/procedures";
-        String proceduresLabels = Messages.labelTreeObjProcedure + "(" + procedures.size() + ")";
-        ProceduresNode proceduresNode = new ProceduresNode(proceduresID, proceduresLabels);
-        spNode.addChild(proceduresNode);
-
-        for (Procedure procedure : procedures) {
-            // add a procedure
+        List<Procedure> procedureList = new ArrayList<>();
+        procedureList.addAll(schema.getPlcsqlProcedures());
+        String proceduresID = parentID + PATH_PROCEDURE;
+        String procedureLabels = Messages.labelTreeObjProcedure + "(" + procedureList.size() + ")";
+        ProceduresNode proceduresNode = new ProceduresNode(proceduresID, procedureLabels);
+        parentNode.addChild(proceduresNode);
+        if (procedureList.isEmpty()) {
+            proceduresNode.setContainer(false);
+        }
+        for (Procedure procedure : procedureList) {
             String procedureID = proceduresID + "/" + procedure.getName();
-            String procedureLabels = procedure.getName();
-            ProcedureNode procedureNode = new ProcedureNode(procedureID, procedureLabels);
+            String procedureLabel = procedure.getName();
+            ProcedureNode procedureNode = new ProcedureNode(procedureID, procedureLabel);
             procedureNode.setProcedure(procedure);
             proceduresNode.addChild(procedureNode);
         }
+    }
 
-        // add Functions
-        List<Function> functions = schema.getFunctions();
-        String functionsID = parentID + "/functions";
-        String functionsLabels = Messages.labelTreeObjFunction + "(" + functions.size() + ")";
+    /**
+     * add function nodes
+     *
+     * @param parentNode
+     * @param schema
+     */
+    private void addFunctionNodes(DefaultCUBRIDNode parentNode, Schema schema) {
+        String parentID = parentNode.getId();
+
+        List<Function> functionList = schema.getFunctions();
+        String functionsID = parentID + PATH_FUNCTION;
+        String functionsLabels = Messages.labelTreeObjFunction + "(" + functionList.size() + ")";
         FunctionsNode functionsNode = new FunctionsNode(functionsID, functionsLabels);
-        spNode.addChild(functionsNode);
-
-        for (Function function : functions) {
-            // add a function
+        parentNode.addChild(functionsNode);
+        if (functionList.isEmpty()) {
+            functionsNode.setContainer(false);
+        }
+        for (Function function : functionList) {
             String functionID = functionsID + "/" + function.getName();
-            String functionLabels = function.getName();
-            FunctionNode functionNode = new FunctionNode(functionID, functionLabels);
+            String functionLabel = function.getName();
+            FunctionNode functionNode = new FunctionNode(functionID, functionLabel);
             functionNode.setFunction(function);
             functionsNode.addChild(functionNode);
         }
@@ -478,7 +485,9 @@ public final class CubridNodeManager {
 
             addViewNodes(parentNode, schema);
 
-            addSPFuncNodes(parentNode, schema);
+            addProcedureNodes(parentNode, schema);
+
+            addFunctionNodes(parentNode, schema);
 
             addTriggerNodes(parentNode, schema);
 
