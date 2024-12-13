@@ -400,12 +400,16 @@ public abstract class DefaultMigrationReporter implements IMigrationReporter {
 
     private String buildProcedureDDL(
             PlcsqlProcedure procedure, CUBRIDSQLHelper sqlHelper, String endLine) {
-        return sqlHelper.getPlcsqlProcedureDDL(procedure, config.isAddUserSchema());
+        return sqlHelper.getPlcsqlProcedureDDL(procedure, config.isAddUserSchema())
+                + System.lineSeparator()
+                + System.lineSeparator();
     }
 
     private String buildFunctionDDL(
             PlcsqlFunction function, CUBRIDSQLHelper sqlHelper, String endLine) {
-        return sqlHelper.getPlcsqlFunctionDDL(function, config.isAddUserSchema());
+        return sqlHelper.getPlcsqlFunctionDDL(function, config.isAddUserSchema())
+                + System.lineSeparator()
+                + System.lineSeparator();
     }
 
     private String buildViewDDL(View view, String endLine) {
