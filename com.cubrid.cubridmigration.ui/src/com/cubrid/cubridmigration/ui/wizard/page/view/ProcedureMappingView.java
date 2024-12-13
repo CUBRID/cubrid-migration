@@ -33,6 +33,7 @@ import com.cubrid.cubridmigration.core.dbobject.PlcsqlProcedure;
 import com.cubrid.cubridmigration.core.dbobject.Procedure;
 import com.cubrid.cubridmigration.core.engine.config.SourcePlcsqlProcedureConfig;
 import com.cubrid.cubridmigration.cubrid.CUBRIDSQLHelper;
+import com.cubrid.cubridmigration.oracle.parser.PlConvOracleToCubrid;
 import com.cubrid.cubridmigration.oracle.parser.ProcedureDDL;
 import com.cubrid.cubridmigration.ui.common.CompositeUtils;
 import com.cubrid.cubridmigration.ui.common.navigator.node.ProcedureNode;
