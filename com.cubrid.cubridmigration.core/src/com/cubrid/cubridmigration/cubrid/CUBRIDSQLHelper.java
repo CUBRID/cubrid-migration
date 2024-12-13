@@ -39,6 +39,8 @@ import com.cubrid.cubridmigration.core.dbobject.Index;
 import com.cubrid.cubridmigration.core.dbobject.PK;
 import com.cubrid.cubridmigration.core.dbobject.PartitionInfo;
 import com.cubrid.cubridmigration.core.dbobject.PartitionTable;
+import com.cubrid.cubridmigration.core.dbobject.PlcsqlFunction;
+import com.cubrid.cubridmigration.core.dbobject.PlcsqlProcedure;
 import com.cubrid.cubridmigration.core.dbobject.Schema;
 import com.cubrid.cubridmigration.core.dbobject.Sequence;
 import com.cubrid.cubridmigration.core.dbobject.Synonym;
@@ -49,6 +51,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.apache.commons.lang.StringUtils;
@@ -817,11 +820,232 @@ public class CUBRIDSQLHelper extends SQLHelper {
         return bf.toString();
     }
 
+    /**
+     * create query CUBRID procedure Header DDL
+     *
+     * @return
+     */
+    public String getPlcsqlProcedureHeaderDDL(PlcsqlProcedure procedure, boolean addUserSchema) {
+        String owner =
+                Objects.nonNull(procedure.getTargetOwner())
+                        ? procedure.getTargetOwner()
+                        : procedure.getOwner();
+        String name =
+                Objects.nonNull(procedure.getTargetName())
+                        ? procedure.getTargetName()
+                        : procedure.getOwner();
+
+        StringBuffer sql = new StringBuffer();
+        sql.append("CREATE ")
+                .append(replaceHeader(procedure.getHeaderDDL(), "PROCEDURE", owner, name))
+                .append("AS LANGUAGE PLCSQL BEGIN RAISE_APPLICATION_ERROR(1000, '[")
+                .append(name.toLowerCase())
+                .append("]: incomplete during loaddb'); /* __CUBRID_NO_BODY__ */ ")
+                .append("END");
+
+        return sql.toString();
+    }
+
+    /**
+     * create query CUBRID procedure DDL
+     *
+     * @return
+     */
+    public String getPlcsqlProcedureDDL(PlcsqlProcedure procedure, boolean addUserSchema) {
+        String owner =
+                Objects.nonNull(procedure.getTargetOwner())
+                        ? procedure.getTargetOwner()
+                        : procedure.getOwner();
+        String name =
+                Objects.nonNull(procedure.getTargetName())
+                        ? procedure.getTargetName()
+                        : procedure.getName();
+
+        StringBuffer sql = new StringBuffer();
+        sql.append("CREATE OR REPLACE ")
+                .append(replaceHeader(procedure.getHeaderDDL(), "PROCEDURE", owner, name))
+                .append(replaceBody(procedure.getBodyDDL()));
+
+        return sql.toString();
+    }
+
+    /**
+     * create query CUBRID procedure DDL
+     *
+     * @return
+     */
+    public String getPlcsqlProcedureDropDDL(PlcsqlProcedure procedure, boolean addUserSchema) {
+        String owner =
+                Objects.nonNull(procedure.getTargetOwner())
+                        ? procedure.getTargetOwner()
+                        : procedure.getOwner();
+        String name =
+                Objects.nonNull(procedure.getTargetName())
+                        ? procedure.getTargetName()
+                        : procedure.getName();
+
+        StringBuffer sql = new StringBuffer();
+        sql.append("DROP PROCEDURE ")
+                .append(
+                        getOwnerNameWithDot(owner, Objects.nonNull(procedure.getOwner()))
+                                .toLowerCase())
+                .append("[" + name.toLowerCase())
+                .append("];");
+
+        return sql.toString();
+    }
+
+    /**
+     * create query CUBRID function Header DDL
+     *
+     * @return
+     */
+    public String getPlcsqlFunctionHeaderDDL(PlcsqlFunction function, boolean addUserSchema) {
+        String owner =
+                Objects.nonNull(function.getTargetOwner())
+                        ? function.getTargetOwner()
+                        : function.getOwner();
+        String name =
+                Objects.nonNull(function.getTargetName())
+                        ? function.getTargetName()
+                        : function.getName();
+
+        StringBuffer sql = new StringBuffer();
+        sql.append("CREATE ")
+                .append(replaceHeader(function.getHeaderDDL(), "FUNCTION", owner, name))
+                .append("AS LANGUAGE PLCSQL BEGIN RAISE_APPLICATION_ERROR(1000, '[")
+                .append(name.toLowerCase())
+                .append("]: incomplete during loaddb'); /* __CUBRID_NO_BODY__ */ ")
+                .append("END");
+
+        return sql.toString();
+    }
+
+    /**
+     * create query CUBRID function DDL
+     *
+     * @return
+     */
+    public String getPlcsqlFunctionDDL(PlcsqlFunction function, boolean addUserSchema) {
+        String owner =
+                Objects.nonNull(function.getTargetOwner())
+                        ? function.getTargetOwner()
+                        : function.getOwner();
+        String name =
+                Objects.nonNull(function.getTargetName())
+                        ? function.getTargetName()
+                        : function.getOwner();
+
+        StringBuffer sql = new StringBuffer();
+        sql.append("CREATE OR REPLACE ")
+                .append(replaceHeader(function.getHeaderDDL(), "FUNCTION", owner, name))
+                .append(replaceBody(function.getBodyDDL()));
+
+        return sql.toString();
+    }
+
+    /**
+     * create query CUBRID function Drop DDL
+     *
+     * @return
+     */
+    public String getPlcsqlFunctionDropDDL(PlcsqlFunction function, boolean addUserSchema) {
+        String owner =
+                Objects.nonNull(function.getTargetOwner())
+                        ? function.getTargetOwner()
+                        : function.getOwner();
+        String name =
+                Objects.nonNull(function.getTargetName())
+                        ? function.getTargetName()
+                        : function.getName();
+
+        StringBuffer sql = new StringBuffer();
+        sql.append("DROP FUNCTION ")
+                .append(
+                        getOwnerNameWithDot(owner, Objects.nonNull(function.getOwner()))
+                                .toLowerCase())
+                .append("[" + name.toLowerCase())
+                .append("];");
+
+        return sql.toString();
+    }
+
     public String getOwnerNameWithDot(String tableOwner, boolean addUserSchema) {
         if (addUserSchema) {
             return "[" + tableOwner + "].";
         }
 
         return "";
+    }
+
+    private String replaceHeader(String sql, String sourceType, String owner, String name) {
+        String header = removeCreateStatements(sql);
+        header = replaceAuthid(header);
+
+        Pattern insertOwnerPattern =
+                Pattern.compile(
+                        "^(" + sourceType + ")\\s+(\"?\\w+\"?)(?:\\.(\"?\\w+\"?))?",
+                        Pattern.CASE_INSENSITIVE);
+        Matcher matcher = insertOwnerPattern.matcher(header);
+
+        if (matcher.find()) {
+            String newOwner = owner != null ? "[" + owner.toLowerCase() + "]" : "";
+            String newName = "[" + name.toLowerCase() + "]";
+
+            if (owner != null) {
+                return matcher.group(1)
+                        + " "
+                        + newOwner
+                        + "."
+                        + newName
+                        + " "
+                        + header.substring(matcher.end());
+            } else {
+                return matcher.group(1) + newName + header.substring(matcher.end());
+            }
+        }
+        return header;
+    }
+
+    private String replaceBody(String sql) {
+        String body = replaceIsWithAs(sql);
+        body = removeEndName(body);
+        return body;
+    }
+
+    private String removeCreateStatements(String sql) {
+        String regex = "(?i)\\bCREATE(?:\\s+OR\\s+REPLACE)?\\b";
+        Pattern pattern = Pattern.compile(regex);
+        Matcher matcher = pattern.matcher(sql);
+        return matcher.replaceAll("").trim();
+    }
+
+    private String replaceAuthid(String sql) {
+        String regex = "(?i)AUTHID\\s+(DEFINER|CURRENT_USER)";
+        Pattern pattern = Pattern.compile(regex);
+        Matcher matcher = pattern.matcher(sql);
+
+        String replaceSql = matcher.replaceAll("AUTHID OWNER ");
+
+        if (!replaceSql.matches("(?i).*AUTHID\\s+CALLER.*")) {
+            replaceSql =
+                    replaceSql.replaceFirst(
+                            "(?i)(PROCEDURE\\s+[^;]+)\\)\\s*$", "$1) AUTHID OWNER ");
+        }
+
+        return replaceSql;
+    }
+
+    private String replaceIsWithAs(String sql) {
+        String regex = "(?i)^\\s*(AS|IS)\\b";
+        Pattern pattern = Pattern.compile(regex);
+        Matcher matcher = pattern.matcher(sql);
+
+        return matcher.replaceAll(" AS");
+    }
+
+    private String removeEndName(String sql) {
+        String regex = "(?i)(END)\\s+[a-zA-Z0-9_#]+;";
+        return sql.replaceAll(regex, "$1;");
     }
 }

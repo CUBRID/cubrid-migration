@@ -716,6 +716,24 @@ public final class CUBRIDIOUtils {
     }
 
     /**
+     * append Lines to file
+     *
+     * @param file the file to append to.
+     * @param lines the content to append
+     * @throws IOException when IO errors.
+     */
+    public static void writeLines(File file, String[] lines, boolean appendMode)
+            throws IOException {
+        FileOutputStream fos = null;
+        try {
+            fos = new FileOutputStream(file, appendMode);
+            writeLines(fos, lines);
+        } finally {
+            Closer.close(fos);
+        }
+    }
+
+    /**
      * write Lines
      *
      * @param os OutputStream
