@@ -35,6 +35,8 @@ import com.cubrid.cubridmigration.core.dbobject.Function;
 import com.cubrid.cubridmigration.core.dbobject.Grant;
 import com.cubrid.cubridmigration.core.dbobject.Index;
 import com.cubrid.cubridmigration.core.dbobject.PK;
+import com.cubrid.cubridmigration.core.dbobject.PlcsqlFunction;
+import com.cubrid.cubridmigration.core.dbobject.PlcsqlProcedure;
 import com.cubrid.cubridmigration.core.dbobject.Procedure;
 import com.cubrid.cubridmigration.core.dbobject.Record;
 import com.cubrid.cubridmigration.core.dbobject.Schema;
@@ -76,6 +78,20 @@ public interface IMigrationImporter {
     public void createFunction(Function function);
 
     /**
+     * Create plcsqlFunction header
+     *
+     * @param plcsqlFunction PlcsqlFunction
+     */
+    public void createPlcsqlFunctionHeader(PlcsqlFunction plcsqlFunction);
+
+    /**
+     * Create plcsqlFunction body
+     *
+     * @param plcsqlFunction PlcsqlFunction
+     */
+    public void createPlcsqlFunctionBody(PlcsqlFunction plcsqlFunction);
+
+    /**
      * Create index
      *
      * @param index Index
@@ -95,6 +111,20 @@ public interface IMigrationImporter {
      * @param procedure Procedure
      */
     public void createProcedure(Procedure procedure);
+
+    /**
+     * Create plcsqlProcedure header
+     *
+     * @param plcsqlProcedure PlcsqlProcedure
+     */
+    public void createPlcsqlProcedureHeader(PlcsqlProcedure plcsqlProcedure);
+
+    /**
+     * Create plcsqlProcedure body
+     *
+     * @param plcsqlProcedure PlcsqlProcedure
+     */
+    public void createPlcsqlProcedureBody(PlcsqlProcedure plcsqlProcedure);
 
     /**
      * Create sequence

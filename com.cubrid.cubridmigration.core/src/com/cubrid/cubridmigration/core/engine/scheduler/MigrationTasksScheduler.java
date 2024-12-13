@@ -40,6 +40,8 @@ import com.cubrid.cubridmigration.core.engine.config.SourceCSVConfig;
 import com.cubrid.cubridmigration.core.engine.config.SourceColumnConfig;
 import com.cubrid.cubridmigration.core.engine.config.SourceEntryTableConfig;
 import com.cubrid.cubridmigration.core.engine.config.SourceGrantConfig;
+import com.cubrid.cubridmigration.core.engine.config.SourcePlcsqlFunctionConfig;
+import com.cubrid.cubridmigration.core.engine.config.SourcePlcsqlProcedureConfig;
 import com.cubrid.cubridmigration.core.engine.config.SourceSQLTableConfig;
 import com.cubrid.cubridmigration.core.engine.config.SourceSequenceConfig;
 import com.cubrid.cubridmigration.core.engine.config.SourceSynonymConfig;
@@ -101,6 +103,12 @@ public class MigrationTasksScheduler {
         }
         createSerials();
 
+        // procedure, function header
+        if (config.getSourceDBType().getID() == MigrationConfiguration.SOURCE_TYPE_ORACLE) {
+            createProcedureHeaders();
+            createFunctionHeaders();
+        }
+
         executeUserSQLs();
         boolean constrainsCreated = false;
         // If HA mode, the constraints should be created firstly.
@@ -119,8 +127,6 @@ public class MigrationTasksScheduler {
         updateAutoIncColumnsCurrentValue();
         // Export functions/procedures/triggers to a txt file
         if (config.isExportNoSupportObjects()) {
-            createFunctions();
-            createProcedures();
             createTriggers();
         }
         if (config.targetIsOnline()
@@ -131,10 +137,28 @@ public class MigrationTasksScheduler {
         }
 
         alterViews();
+
+        // procedure, function body
+        if (config.getSourceDBType().getID() == MigrationConfiguration.SOURCE_TYPE_ORACLE) {
+            createProcedureBodies();
+            createFunctionBodies();
+        } else {
+            createProcedures();
+            createFunctions();
+        }
+
         updateIndexStatistics();
 
         if (!config.targetIsOnline()) {
             if (config.isSplitSchema()) {
+                if (config.getSourceDBType().getID() == MigrationConfiguration.SOURCE_TYPE_ORACLE) {
+                    createAllPlcsqlProcedureHeaderDDL();
+                    createAllPlcsqlProcedureDDL();
+                    createAllPlcsqlFunctionHeaderDDL();
+                    createAllPlcsqlFunctionDDL();
+                    createPlcsqlProcedureSourceAndDropDDL();
+                    createPlcsqlFunctionsSourceAndDropDDL();
+                }
                 createSchemaFileList();
             }
 
@@ -532,12 +556,52 @@ public class MigrationTasksScheduler {
         await();
     }
 
+    /** Schedule export function header tasks. */
+    protected void createFunctionHeaders() {
+        MigrationConfiguration config = context.getConfig();
+        List<SourcePlcsqlFunctionConfig> functions = config.getExpPlcsqlFunctionCfg();
+        for (SourcePlcsqlFunctionConfig sfc : functions) {
+            executeTask(taskFactory.createExportPlcsqlFunctionHeaderTask(sfc));
+        }
+        await();
+    }
+
+    /** Schedule export function body tasks. */
+    protected void createFunctionBodies() {
+        MigrationConfiguration config = context.getConfig();
+        List<SourcePlcsqlFunctionConfig> functions = config.getExpPlcsqlFunctionCfg();
+        for (SourcePlcsqlFunctionConfig sfc : functions) {
+            executeTask(taskFactory.createExportPlcsqlFunctionBodyTask(sfc));
+        }
+        await();
+    }
+
     /** Schedule export procedure tasks. */
     protected void createProcedures() {
         MigrationConfiguration config = context.getConfig();
         List<String> procedures = config.getExpProcedureCfg();
         for (String pd : procedures) {
             executeTask(taskFactory.createExportProcedureTask(pd));
+        }
+        await();
+    }
+
+    /** Schedule export procedure header tasks. */
+    protected void createProcedureHeaders() {
+        MigrationConfiguration config = context.getConfig();
+        List<SourcePlcsqlProcedureConfig> procedures = config.getExpPlcsqlProcedureCfg();
+        for (SourcePlcsqlProcedureConfig spc : procedures) {
+            executeTask(taskFactory.createExportPlcsqlProcedureHeaderTask(spc));
+        }
+        await();
+    }
+
+    /** Schedule export procedure body tasks. */
+    protected void createProcedureBodies() {
+        MigrationConfiguration config = context.getConfig();
+        List<SourcePlcsqlProcedureConfig> procedures = config.getExpPlcsqlProcedureCfg();
+        for (SourcePlcsqlProcedureConfig spc : procedures) {
+            executeTask(taskFactory.createExportPlcsqlProcedureBodyTask(spc));
         }
         await();
     }
@@ -583,6 +647,30 @@ public class MigrationTasksScheduler {
 
     private void createCreateUserSQL() {
         executeTask(taskFactory.createCreateUserSQLTask());
+    }
+
+    private void createAllPlcsqlProcedureDDL() {
+        executeTask(taskFactory.createAllPlcsqlProcedureDDL());
+    }
+
+    private void createAllPlcsqlProcedureHeaderDDL() {
+        executeTask(taskFactory.createAllPlcsqlProcedureHeaderDDL());
+    }
+
+    private void createPlcsqlProcedureSourceAndDropDDL() {
+        executeTask(taskFactory.createPlcsqlProcedureSourceAndDropDDL());
+    }
+
+    private void createAllPlcsqlFunctionDDL() {
+        executeTask(taskFactory.createAllPlcsqlFunctionDDL());
+    }
+
+    private void createAllPlcsqlFunctionHeaderDDL() {
+        executeTask(taskFactory.createAllPlcsqlFunctionHeaderDDL());
+    }
+
+    private void createPlcsqlFunctionsSourceAndDropDDL() {
+        executeTask(taskFactory.createPlcsqlFunctionSourceAndDropDDL());
     }
 
     public void setTaskFactory(MigrationTaskFactory taskFactory) {
