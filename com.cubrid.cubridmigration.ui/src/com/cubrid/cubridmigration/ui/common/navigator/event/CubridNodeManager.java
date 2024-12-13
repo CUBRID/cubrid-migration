@@ -485,10 +485,6 @@ public final class CubridNodeManager {
 
             addViewNodes(parentNode, schema);
 
-            addProcedureNodes(parentNode, schema);
-
-            addFunctionNodes(parentNode, schema);
-
             addTriggerNodes(parentNode, schema);
 
             addSerialNodes(parentNode, schema);
@@ -496,6 +492,10 @@ public final class CubridNodeManager {
             addSynonymNodes(parentNode, schema);
 
             addGrantNodes(parentNode, schema);
+
+            addProcedureNodes(parentNode, schema);
+
+            addFunctionNodes(parentNode, schema);
         }
 
         return databaseNode;
