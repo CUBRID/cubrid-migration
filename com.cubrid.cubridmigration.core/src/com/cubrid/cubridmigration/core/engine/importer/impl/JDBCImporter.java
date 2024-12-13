@@ -37,6 +37,8 @@ import com.cubrid.cubridmigration.core.dbobject.FK;
 import com.cubrid.cubridmigration.core.dbobject.Grant;
 import com.cubrid.cubridmigration.core.dbobject.Index;
 import com.cubrid.cubridmigration.core.dbobject.PK;
+import com.cubrid.cubridmigration.core.dbobject.PlcsqlFunction;
+import com.cubrid.cubridmigration.core.dbobject.PlcsqlProcedure;
 import com.cubrid.cubridmigration.core.dbobject.Record;
 import com.cubrid.cubridmigration.core.dbobject.Schema;
 import com.cubrid.cubridmigration.core.dbobject.Sequence;
@@ -274,6 +276,78 @@ public class JDBCImporter extends Importer {
             createObjectSuccess(gr);
         } catch (RuntimeException e) {
             createObjectFailed(gr, e);
+        }
+    }
+
+    /**
+     * Create plcsql procedure header
+     *
+     * @param pd procedure
+     */
+    @Override
+    public void createPlcsqlProcedureHeader(PlcsqlProcedure pd) {
+        String ddl =
+                CUBRIDSQLHelper.getInstance(null)
+                        .getPlcsqlProcedureHeaderDDL(pd, config.isAddUserSchema());
+        try {
+            executeDDL(ddl);
+            createObjectSuccess(pd);
+        } catch (RuntimeException e) {
+            createObjectFailed(pd, e);
+        }
+    }
+
+    /**
+     * Create plcsql procedure body
+     *
+     * @param pd procedure
+     */
+    @Override
+    public void createPlcsqlProcedureBody(PlcsqlProcedure pd) {
+        String ddl =
+                CUBRIDSQLHelper.getInstance(null)
+                        .getPlcsqlProcedureDDL(pd, config.isAddUserSchema());
+        try {
+            executeDDL(ddl);
+            createObjectSuccess(pd);
+        } catch (RuntimeException e) {
+            createObjectFailed(pd, e);
+        }
+    }
+
+    /**
+     * Create plcsql function header
+     *
+     * @param ft function
+     */
+    @Override
+    public void createPlcsqlFunctionHeader(PlcsqlFunction ft) {
+        String ddl =
+                CUBRIDSQLHelper.getInstance(null)
+                        .getPlcsqlFunctionHeaderDDL(ft, config.isAddUserSchema());
+        try {
+            executeDDL(ddl);
+            createObjectSuccess(ft);
+        } catch (RuntimeException e) {
+            createObjectFailed(ft, e);
+        }
+    }
+
+    /**
+     * Create plcsql function body
+     *
+     * @param ft function
+     */
+    @Override
+    public void createPlcsqlFunctionBody(PlcsqlFunction ft) {
+        String ddl =
+                CUBRIDSQLHelper.getInstance(null)
+                        .getPlcsqlFunctionDDL(ft, config.isAddUserSchema());
+        try {
+            executeDDL(ddl);
+            createObjectSuccess(ft);
+        } catch (RuntimeException e) {
+            createObjectFailed(ft, e);
         }
     }
 
