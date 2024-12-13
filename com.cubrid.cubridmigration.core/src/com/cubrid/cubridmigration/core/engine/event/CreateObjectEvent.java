@@ -115,8 +115,28 @@ public class CreateObjectEvent extends MigrationEvent implements IMigrationError
             sb.append("index[").append(dbObject.getName()).append("]");
         } else if (dbObject instanceof Procedure) {
             sb.append("procedure[").append(dbObject.getName()).append("]");
+            Procedure proc = (Procedure) dbObject;
+            if (proc.isAuthidChanged()) {
+                StringBuffer authidWarnig = new StringBuffer();
+                authidWarnig
+                        .append(System.lineSeparator())
+                        .append("[PROC_WARNING] procedure: ")
+                        .append(proc.getName())
+                        .append(" Change rights (CALLER RIGHTS -> OWNER RIGHTS)");
+                sb.append(authidWarnig);
+            }
         } else if (dbObject instanceof Function) {
             sb.append("function[").append(dbObject.getName()).append("]");
+            Function func = (Function) dbObject;
+            if (func.isAuthidChanged()) {
+                StringBuffer authidWarnig = new StringBuffer();
+                authidWarnig
+                        .append(System.lineSeparator())
+                        .append("[FUNC_WARNING] function: ")
+                        .append(func.getName())
+                        .append(" Change rights (CALLER RIGHTS -> OWNER RIGHTS)");
+                sb.append(authidWarnig);
+            }
         } else if (dbObject instanceof Trigger) {
             sb.append("trigger[").append(dbObject.getName()).append("]");
         } else if (dbObject instanceof View) {
