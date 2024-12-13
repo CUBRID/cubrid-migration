@@ -272,7 +272,8 @@ public final class CubridNodeManager {
     private void addFunctionNodes(DefaultCUBRIDNode parentNode, Schema schema) {
         String parentID = parentNode.getId();
 
-        List<Function> functionList = schema.getFunctions();
+        List<Function> functionList = new ArrayList<>();
+        functionList.addAll(schema.getPlcsqlFunctions());
         String functionsID = parentID + PATH_FUNCTION;
         String functionsLabels = Messages.labelTreeObjFunction + "(" + functionList.size() + ")";
         FunctionsNode functionsNode = new FunctionsNode(functionsID, functionsLabels);
