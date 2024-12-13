@@ -237,6 +237,7 @@ public class BaseConfirmationPage extends MigrationWizardPage {
     protected void prepare4SaveScript() {
         MigrationConfiguration cfg = getMigrationWizard().getMigrationConfig();
         cfg.cleanNoUsedConfigForStart();
+        cfg.parsingProcedureFunction(true);
     }
 
     /** Set DDL to text area. */

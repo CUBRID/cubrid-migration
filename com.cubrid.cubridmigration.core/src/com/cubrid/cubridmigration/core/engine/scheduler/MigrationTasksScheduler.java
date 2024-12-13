@@ -88,6 +88,7 @@ public class MigrationTasksScheduler {
         }
         // Clean all no used objects
         config.cleanNoUsedConfigForStart();
+        config.parsingProcedureFunction(true);
         initUserDefinedHandlers();
 
         PathUtils.changeLocalFilePath(config);
@@ -283,6 +284,16 @@ public class MigrationTasksScheduler {
                 while (keys.hasNext()) {
                     PathUtils.deleteFile(new File(grantFilePaths.get(keys.next())));
                 }
+            }
+
+            for (String procedureFile :
+                    config.getTargetPlcsqlProcedureFileName(schemaName).values()) {
+                PathUtils.deleteFile(new File(procedureFile));
+            }
+
+            for (String functionFile :
+                    config.getTargetPlcsqlFunctionFileName(schemaName).values()) {
+                PathUtils.deleteFile(new File(functionFile));
             }
         } else {
             PathUtils.deleteFile(new File(config.getTargetSchemaFileName(schemaName)));
