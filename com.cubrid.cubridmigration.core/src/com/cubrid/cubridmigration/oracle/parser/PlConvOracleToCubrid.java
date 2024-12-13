@@ -37,7 +37,7 @@ import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.tree.*;
 import org.apache.log4j.Logger;
 
-class PlConvOracleToCubrid {
+public class PlConvOracleToCubrid {
 
     private static final Logger log = LogUtil.getLogger(PlConvOracleToCubrid.class);
 
