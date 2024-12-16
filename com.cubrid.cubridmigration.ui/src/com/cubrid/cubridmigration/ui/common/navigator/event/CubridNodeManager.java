@@ -30,12 +30,6 @@
  */
 package com.cubrid.cubridmigration.ui.common.navigator.event;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import com.cubrid.common.ui.navigator.DefaultCUBRIDNode;
 import com.cubrid.common.ui.navigator.ICUBRIDNode;
 import com.cubrid.cubridmigration.core.dbobject.Catalog;
@@ -81,6 +75,11 @@ import com.cubrid.cubridmigration.ui.common.navigator.node.TriggersNode;
 import com.cubrid.cubridmigration.ui.common.navigator.node.ViewNode;
 import com.cubrid.cubridmigration.ui.common.navigator.node.ViewsNode;
 import com.cubrid.cubridmigration.ui.message.Messages;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * This class is for managing all CUBRID Node in navigator tree
