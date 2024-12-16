@@ -15,11 +15,44 @@
   
   <build>
     <sourceDirectory>src/</sourceDirectory>
+    <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.antlr</groupId>
+                    <artifactId>antlr4-maven-plugin</artifactId>
+                    <version>4.9.3</version>
+                    <configuration>
+                        <visitor>false</visitor>
+                        <listener>true</listener>
+                        <sourceDirectory>${project.basedir}/antlr4</sourceDirectory>
+                        <outputDirectory>${project.build.directory}/generated-sources/com/cubrid/cubridmigration/oracle/parser/antlr4gen</outputDirectory>
+                        <packageName>com.cubrid.cubridmigration.oracle.parser.antlr4gen</packageName>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <id>antlr</id>
+                            <phase>generate-sources</phase>
+                            <goals>
+                                <goal>antlr4</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+            </plugins>
+        </pluginManagement>
   </build>
 
   <profiles>
     <profile>
         <id>desktop</id>
+        <build>
+            <plugins>
+                <plugin>
+                    <groupId>org.antlr</groupId>
+                    <artifactId>antlr4-maven-plugin</artifactId>
+                </plugin>
+            </plugins>
+        </build>
     </profile>
     
     <profile>
@@ -44,6 +77,10 @@
 
             <plugins>
                 <plugin>
+                    <groupId>org.antlr</groupId>
+                    <artifactId>antlr4-maven-plugin</artifactId>
+                </plugin>
+                <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-jar-plugin</artifactId>
                     <version>2.3.2</version>
@@ -60,6 +97,12 @@
         </build>
         
         <dependencies>
+            <dependency>
+                <groupId>org.antlr</groupId>
+                <artifactId>antlr4</artifactId>
+                <version>4.9.3</version>
+                <scope>compile</scope>
+            </dependency>        
             <dependency>
                 <groupId>com.cubrid.cubridmigration</groupId>
                 <artifactId>com.cubrid.common.configuration</artifactId>
