@@ -121,6 +121,7 @@ public final class TemplateTags {
     public static final String ATTR_TARGET = "target";
     public static final String ATTR_TARGET_SCHEMA = "target_schema";
     public static final String ATTR_TARGET_OWNER = "target_owner";
+    public static final String ATTR_TARGET_NAME = "target_name";
     public static final String ATTR_TIMEZONE = "timezone";
     public static final String ATTR_TYPE = "type";
     public static final String ATTR_UNIQUE = "unique";

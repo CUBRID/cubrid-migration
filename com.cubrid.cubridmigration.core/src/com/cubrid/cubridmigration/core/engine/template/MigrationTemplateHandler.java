@@ -458,11 +458,13 @@ public final class MigrationTemplateHandler extends DefaultHandler {
         proc.setOwner(attributes.getValue(TemplateTags.ATTR_OWNER));
         proc.setTargetOwner(attributes.getValue(TemplateTags.ATTR_TARGET_OWNER));
         proc.setName(attributes.getValue(TemplateTags.ATTR_NAME));
+        proc.setTargetName(attributes.getValue(TemplateTags.ATTR_TARGET_NAME));
         proc.setAuthid(attributes.getValue(TemplateTags.ATTR_AUTH_ID));
         proc.setSourceDDL(attributes.getValue(TemplateTags.ATTR_SOURCE_DDL));
         proc.setHeaderDDL(attributes.getValue(TemplateTags.ATTR_HEADER_DDL));
         proc.setBodyDDL(attributes.getValue(TemplateTags.ATTR_BODY_DDL));
         proc.setProcedureDDL(attributes.getValue(TemplateTags.ATTR_PROCEDURE_DDL));
+        config.addTargetPlcsqlProcedureSchema(proc);
     }
 
     /** @param attributes of node */
@@ -471,11 +473,13 @@ public final class MigrationTemplateHandler extends DefaultHandler {
         func.setOwner(attributes.getValue(TemplateTags.ATTR_OWNER));
         func.setTargetOwner(attributes.getValue(TemplateTags.ATTR_TARGET_OWNER));
         func.setName(attributes.getValue(TemplateTags.ATTR_NAME));
+        func.setTargetName(attributes.getValue(TemplateTags.ATTR_TARGET_NAME));
         func.setAuthid(attributes.getValue(TemplateTags.ATTR_AUTH_ID));
         func.setSourceDDL(attributes.getValue(TemplateTags.ATTR_SOURCE_DDL));
         func.setHeaderDDL(attributes.getValue(TemplateTags.ATTR_HEADER_DDL));
         func.setBodyDDL(attributes.getValue(TemplateTags.ATTR_BODY_DDL));
         func.setFunctionDDL(attributes.getValue(TemplateTags.ATTR_FUNCTION_DDL));
+        config.addTargetPlcsqlFunctionSchema(func);
     }
 
     /** @param attributes of node */

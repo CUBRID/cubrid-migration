@@ -687,6 +687,20 @@ public class MigrationConfiguration {
         }
     }
 
+    public void addTargetPlcsqlProcedureSchema(PlcsqlProcedure proc) {
+        if (srcCatalog != null) {
+            throw new RuntimeException("Source database was specified.");
+        }
+        targetPlcsqlProcedures.add(proc);
+    }
+
+    public void addTargetPlcsqlFunctionSchema(PlcsqlFunction func) {
+        if (srcCatalog != null) {
+            throw new RuntimeException("Source database was specified.");
+        }
+        targetPlcsqlFunctions.add(func);
+    }
+
     /**
      * Clean up the settings, remove the configurations which are not in source schema.
      *
@@ -3904,9 +3918,9 @@ public class MigrationConfiguration {
     }
 
     public PlcsqlProcedure getTargetPlcsqlProcedureSchema(String name) {
-        for (PlcsqlProcedure func : this.targetPlcsqlProcedures) {
-            if (func.getName().equalsIgnoreCase(name)) {
-                return func;
+        for (PlcsqlProcedure proc : this.targetPlcsqlProcedures) {
+            if (proc.getName().equalsIgnoreCase(name)) {
+                return proc;
             }
         }
         return null;
@@ -3917,10 +3931,10 @@ public class MigrationConfiguration {
             return getTargetPlcsqlProcedureSchema(name);
         }
 
-        for (PlcsqlProcedure func : this.targetPlcsqlProcedures) {
-            if (func.getTargetName().equalsIgnoreCase(name)
-                    && func.getTargetOwner().equalsIgnoreCase(owner)) {
-                return func;
+        for (PlcsqlProcedure proc : this.targetPlcsqlProcedures) {
+            if (proc.getTargetName().equalsIgnoreCase(name)
+                    && proc.getTargetOwner().equalsIgnoreCase(owner)) {
+                return proc;
             }
         }
         return null;
@@ -4726,8 +4740,16 @@ public class MigrationConfiguration {
                                 PathUtils.mergePath(odir, prefix),
                                 schemaName + "_" + table.getName()));
             }
+            addTargetAllPlcsqlProcedureFileName(
+                    schemaName,
+                    PathUtils.mergePath(
+                            PathUtils.mergePath(odir, prefix), schemaName + "_procedure"));
+            addTargetAllPlcsqlFunctionFileName(
+                    schemaName,
+                    PathUtils.mergePath(
+                            PathUtils.mergePath(odir, prefix), schemaName + "_function"));
+            setTargetCharSet(charset);
         }
-        setTargetCharSet(charset);
     }
 
     public void setExportNoSupportObjects(boolean value) {

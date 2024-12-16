@@ -456,6 +456,8 @@ public final class MigrationTemplateParser {
             prNode.setAttribute(TemplateTags.ATTR_OWNER, proc.getOwner());
             prNode.setAttribute(TemplateTags.ATTR_TARGET_OWNER, proc.getTargetOwner());
             prNode.setAttribute(TemplateTags.ATTR_NAME, proc.getName());
+            prNode.setAttribute(TemplateTags.ATTR_TARGET_NAME, proc.getTargetName());
+
             prNode.setAttribute(TemplateTags.ATTR_AUTH_ID, proc.getAuthid());
             prNode.setAttribute(
                     TemplateTags.ATTR_AUTH_ID_CHANGED, getBooleanString(proc.isAuthidChanged()));
@@ -485,6 +487,7 @@ public final class MigrationTemplateParser {
             fuNode.setAttribute(TemplateTags.ATTR_OWNER, func.getOwner());
             fuNode.setAttribute(TemplateTags.ATTR_TARGET_OWNER, func.getTargetOwner());
             fuNode.setAttribute(TemplateTags.ATTR_NAME, func.getName());
+            fuNode.setAttribute(TemplateTags.ATTR_TARGET_NAME, func.getTargetName());
             fuNode.setAttribute(TemplateTags.ATTR_AUTH_ID, func.getAuthid());
             fuNode.setAttribute(
                     TemplateTags.ATTR_AUTH_ID_CHANGED, getBooleanString(func.isAuthidChanged()));
@@ -1094,6 +1097,7 @@ public final class MigrationTemplateParser {
                 fuNode.setAttribute(TemplateTags.ATTR_OWNER, sfc.getOwner());
                 fuNode.setAttribute(TemplateTags.ATTR_TARGET_OWNER, sfc.getTargetOwner());
                 fuNode.setAttribute(TemplateTags.ATTR_NAME, sfc.getName());
+                fuNode.setAttribute(TemplateTags.ATTR_TARGET, sfc.getTarget());
                 fuNode.setAttribute(TemplateTags.ATTR_AUTH_ID, sfc.getAuthid());
                 fuNode.setAttribute(
                         TemplateTags.ATTR_AUTH_ID_CHANGED, getBooleanString(sfc.isAuthidChanged()));
@@ -1104,11 +1108,9 @@ public final class MigrationTemplateParser {
         // source procedures
         List<String> exportProcedures = config.getExpProcedureCfg();
         if (!exportProcedures.isEmpty()) {
-            Element procedures =
-                    createElement(document, source, TemplateTags.TAG_PLCSQL_PROCEDURES);
+            Element procedures = createElement(document, source, TemplateTags.TAG_PROCEDURES);
             for (String sc : exportProcedures) {
-                Element pro =
-                        createElement(document, procedures, TemplateTags.TAG_PLCSQL_PROCEDURE);
+                Element pro = createElement(document, procedures, TemplateTags.TAG_PROCEDURE);
                 pro.setAttribute(TemplateTags.ATTR_NAME, sc);
             }
         }
@@ -1117,11 +1119,14 @@ public final class MigrationTemplateParser {
         List<SourcePlcsqlProcedureConfig> exportPlcsqlProcedures =
                 config.getExpPlcsqlProcedureCfg();
         if (!exportPlcsqlProcedures.isEmpty()) {
-            Element procedures = createElement(document, source, TemplateTags.TAG_PROCEDURES);
+            Element procedures =
+                    createElement(document, source, TemplateTags.TAG_PLCSQL_PROCEDURES);
             for (SourcePlcsqlProcedureConfig spc : exportPlcsqlProcedures) {
-                Element prNode = createElement(document, procedures, TemplateTags.TAG_PROCEDURE);
+                Element prNode =
+                        createElement(document, procedures, TemplateTags.TAG_PLCSQL_PROCEDURE);
                 prNode.setAttribute(TemplateTags.ATTR_OWNER, spc.getOwner());
                 prNode.setAttribute(TemplateTags.ATTR_TARGET_OWNER, spc.getTargetOwner());
+                prNode.setAttribute(TemplateTags.ATTR_TARGET, spc.getTarget());
                 prNode.setAttribute(TemplateTags.ATTR_NAME, spc.getName());
                 prNode.setAttribute(TemplateTags.ATTR_AUTH_ID, spc.getAuthid());
                 prNode.setAttribute(
