@@ -364,7 +364,7 @@ public class InformixSchemaFetcher extends AbstractJDBCSchemaFetcher {
         Function function = factory.createFunction();
         while (rs.next()) {
             function.setName(rs.getString("name"));
-            function.setFuncDDL(rs.getString("data"));
+            function.setFunctionDDL(rs.getString("data"));
             functions.add(function);
         }
 

@@ -62,6 +62,8 @@ public class Schema extends DBObject implements Serializable {
     private List<Sequence> sequenceList = new ArrayList<Sequence>();
     private List<Synonym> synonymList = new ArrayList<Synonym>();
     private List<Grant> grantList = new ArrayList<Grant>();
+    private List<PlcsqlProcedure> plcsqlProcedures = new ArrayList<>();
+    private List<PlcsqlFunction> plcsqlFunctions = new ArrayList<>();
 
     public Schema() {
         // do nothing
@@ -297,6 +299,22 @@ public class Schema extends DBObject implements Serializable {
         this.grantList = grantList;
     }
 
+    public List<PlcsqlProcedure> getPlcsqlProcedures() {
+        return plcsqlProcedures;
+    }
+
+    public void setPlcsqlProcedures(List<PlcsqlProcedure> plcsqlProcedures) {
+        this.plcsqlProcedures = plcsqlProcedures;
+    }
+
+    public List<PlcsqlFunction> getPlcsqlFunctions() {
+        return plcsqlFunctions;
+    }
+
+    public void setPlcsqlFunctions(List<PlcsqlFunction> plcsqlFunctions) {
+        this.plcsqlFunctions = plcsqlFunctions;
+    }
+
     /**
      * Add grant into schema object.
      *
@@ -352,6 +370,18 @@ public class Schema extends DBObject implements Serializable {
         if (!synonymList.contains(sn)) {
             synonymList.add(sn);
             sn.setOwner(getName());
+        }
+    }
+
+    public void addPlcsqlProcedure(PlcsqlProcedure proc) {
+        if (!plcsqlProcedures.contains(proc)) {
+            plcsqlProcedures.add(proc);
+        }
+    }
+
+    public void addPlcsqlfunction(PlcsqlFunction func) {
+        if (!plcsqlFunctions.contains(func)) {
+            plcsqlFunctions.add(func);
         }
     }
 

@@ -39,8 +39,31 @@ package com.cubrid.cubridmigration.core.dbobject;
 public class Function extends DBObject {
 
     private static final long serialVersionUID = -731781755064899326L;
+    private String owner;
+    private String targetOwner;
     private String name;
-    private String funcDDL;
+    private String targetName;
+    private String authid;
+    private boolean isAuthidChanged;
+
+    private String sourceDDL;
+    private String functionDDL;
+
+    public String getOwner() {
+        return owner;
+    }
+
+    public void setOwner(String owner) {
+        this.owner = owner;
+    }
+
+    public String getTargetOwner() {
+        return targetOwner;
+    }
+
+    public void setTargetOwner(String targetOwner) {
+        this.targetOwner = targetOwner;
+    }
 
     public String getName() {
         return name;
@@ -50,12 +73,44 @@ public class Function extends DBObject {
         this.name = name;
     }
 
-    public String getDDL() {
-        return funcDDL;
+    public String getTargetName() {
+        return targetName;
     }
 
-    public void setFuncDDL(String funcDDL) {
-        this.funcDDL = funcDDL;
+    public void setTargetName(String targetName) {
+        this.targetName = targetName;
+    }
+
+    public String getAuthid() {
+        return authid;
+    }
+
+    public void setAuthid(String authid) {
+        this.authid = authid;
+    }
+
+    public boolean isAuthidChanged() {
+        return isAuthidChanged;
+    }
+
+    public void setAuthidChanged(boolean isAuthidChanged) {
+        this.isAuthidChanged = isAuthidChanged;
+    }
+
+    public String getSourceDDL() {
+        return sourceDDL;
+    }
+
+    public void setSourceDDL(String sourceDDL) {
+        this.sourceDDL = sourceDDL;
+    }
+
+    public String getDDL() {
+        return functionDDL;
+    }
+
+    public void setFunctionDDL(String funcDDL) {
+        this.functionDDL = funcDDL;
     }
 
     /** @return column */

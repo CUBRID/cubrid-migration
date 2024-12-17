@@ -1,5 +1,4 @@
 /*
- * Copyright (C) 2008 Search Solution Corporation.
  * Copyright (C) 2016 CUBRID Corporation.
  *
  * Redistribution and use in source and binary forms, with or without modification,
@@ -28,93 +27,44 @@
  * OF SUCH DAMAGE.
  *
  */
-package com.cubrid.cubridmigration.core.dbobject;
+package com.cubrid.cubridmigration.oracle.meta;
 
-/**
- * Procedure
- *
- * @author JessieHuang
- * @version 1.0 - 2009-11-11
- */
-public class Procedure extends DBObject {
+public class OraclePlsqlProcedure {
 
-    private static final long serialVersionUID = -6451814170006574744L;
-    private String owner;
-    private String targetOwner;
-    private String name;
-    private String targetName;
-    private String authid;
-    private boolean isAuthidChanged;
+    private final String owner;
+    private final String name;
+    private final String authid;
+    private final String procedureType;
+    private String ddl;
 
-    private String sourceDDL;
-    private String procedureDDL;
+    public OraclePlsqlProcedure(String owner, String name, String authid, String procedureType) {
+        this.owner = owner;
+        this.name = name;
+        this.authid = authid;
+        this.procedureType = procedureType;
+    }
 
     public String getOwner() {
         return owner;
-    }
-
-    public void setOwner(String owner) {
-        this.owner = owner;
-    }
-
-    public String getTargetOwner() {
-        return targetOwner;
-    }
-
-    public void setTargetOwner(String targetOwner) {
-        this.targetOwner = targetOwner;
     }
 
     public String getName() {
         return name;
     }
 
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getTargetName() {
-        return targetName;
-    }
-
-    public void setTargetName(String targetName) {
-        this.targetName = targetName;
-    }
-
     public String getAuthid() {
         return authid;
     }
 
-    public void setAuthid(String authid) {
-        this.authid = authid;
+    public String getProcedureType() {
+        return procedureType;
     }
 
-    public boolean isAuthidChanged() {
-        return isAuthidChanged;
-    }
-
-    public void setAuthidChanged(boolean isAuthidChanged) {
-        this.isAuthidChanged = isAuthidChanged;
-    }
-
-    public String getSourceDDL() {
-        return sourceDDL;
-    }
-
-    public void setSourceDDL(String sourceDDL) {
-        this.sourceDDL = sourceDDL;
+    public void setDDL(String ddl) {
+        this.ddl = ddl;
     }
 
     public String getDDL() {
-        return procedureDDL;
-    }
-
-    public void setProcedureDDL(String procDDL) {
-        this.procedureDDL = procDDL;
-    }
-
-    /** @return object type */
-    public String getObjType() {
-        return OBJ_TYPE_PROCEDURE;
+        return ddl;
     }
 }
