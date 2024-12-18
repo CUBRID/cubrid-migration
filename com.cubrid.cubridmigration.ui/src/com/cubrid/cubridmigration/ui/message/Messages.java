@@ -696,7 +696,9 @@ public class Messages extends NLS {
     public static String objectMapPageTabFolderBtnVerify2;
     public static String objectMapPageTabFolderErrTableName;
     public static String objectMapPageTabFolderErrViewName;
+    public static String objectMapPageTabFolderFunctions;
     public static String objectMapPageTabFolderGrants;
+    public static String objectMapPageTabFolderProcedures;
     public static String objectMapPageTabFolderSequences;
     public static String objectMapPageTabFolderSqls;
     public static String objectMapPageTabFolderSynonyms;
@@ -735,6 +737,7 @@ public class Messages extends NLS {
     public static String sqlServer2CUBRID;
     public static String startButtonText;
     public static String tabCharColumns;
+    public static String tabTitleAuthId;
     public static String tabTitleColumn;
     public static String tabTitleCondition;
     public static String tabTitleConditionDes;
@@ -743,6 +746,7 @@ public class Messages extends NLS {
     public static String tabTitleDataSQLDes;
     public static String tabTitleDataType;
     public static String tabTitleFK;
+    public static String tabTitleFunction;
     public static String tabTitleGrantAuthType;
     public static String tabTitleGeneral;
     public static String tabTitleIndexes;
@@ -752,6 +756,7 @@ public class Messages extends NLS {
     public static String tabTitlePartitions;
     public static String tabTitlePK;
     public static String tabTitlePKDes;
+    public static String tabTitleProcedure;
     public static String tabTitleSourceColumn;
     public static String tabTitleSourceFK;
     public static String tabTitleSourceGrant;

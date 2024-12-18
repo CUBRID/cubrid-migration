@@ -46,7 +46,7 @@ public class ProceduresNode extends DefaultCUBRIDNode {
      * @param label String
      */
     public ProceduresNode(String id, String label) {
-        super(id, label, "");
+        super(id, label, "icon/db/procedure_sp_item.png");
         setType(CubridNodeType.PROCEDURE_FOLDER);
         setContainer(true);
     }

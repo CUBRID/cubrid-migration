@@ -44,15 +44,19 @@ import com.cubrid.cubridmigration.core.engine.config.MigrationConfiguration;
 import com.cubrid.cubridmigration.core.engine.config.SourceConfig;
 import com.cubrid.cubridmigration.core.engine.config.SourceEntryTableConfig;
 import com.cubrid.cubridmigration.core.engine.config.SourceGrantConfig;
+import com.cubrid.cubridmigration.core.engine.config.SourcePlcsqlFunctionConfig;
+import com.cubrid.cubridmigration.core.engine.config.SourcePlcsqlProcedureConfig;
 import com.cubrid.cubridmigration.core.engine.config.SourceSequenceConfig;
 import com.cubrid.cubridmigration.core.engine.config.SourceSynonymConfig;
 import com.cubrid.cubridmigration.core.engine.config.SourceViewConfig;
 import com.cubrid.cubridmigration.core.engine.listener.ISQLTableChangedListener;
 import com.cubrid.cubridmigration.ui.common.CompositeUtils;
 import com.cubrid.cubridmigration.ui.common.navigator.node.DatabaseNode;
+import com.cubrid.cubridmigration.ui.common.navigator.node.FunctionsNode;
 import com.cubrid.cubridmigration.ui.common.navigator.node.GrantAuthNode;
 import com.cubrid.cubridmigration.ui.common.navigator.node.GrantGrantorNode;
 import com.cubrid.cubridmigration.ui.common.navigator.node.GrantsNode;
+import com.cubrid.cubridmigration.ui.common.navigator.node.ProceduresNode;
 import com.cubrid.cubridmigration.ui.common.navigator.node.SQLTablesNode;
 import com.cubrid.cubridmigration.ui.common.navigator.node.SchemaNode;
 import com.cubrid.cubridmigration.ui.common.navigator.node.SequencesNode;
@@ -69,6 +73,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.TreeMap;
 import org.eclipse.jface.viewers.ICellEditorValidator;
 import org.eclipse.jface.viewers.IDoubleClickListener;
@@ -108,6 +113,8 @@ public class GeneralObjMappingView extends AbstractMappingView {
     private TableViewer tvSerials;
     private TableViewer tvSynonyms;
     private TableViewer tvGrants;
+    private TableViewer tvProcedures;
+    private TableViewer tvFunctions;
     private SQLTableManageView sqlMgrView;
 
     public GeneralObjMappingView(Composite parent) {
@@ -133,6 +140,8 @@ public class GeneralObjMappingView extends AbstractMappingView {
         createDetailOfSerials(tabSchemaDetailFolder);
         createDetailOfSynonym(tabSchemaDetailFolder);
         createDetailOfGrant(tabSchemaDetailFolder);
+        createDetailOfProcedure(tabSchemaDetailFolder);
+        createDetailOfFunction(tabSchemaDetailFolder);
         createSQLManager(tabSchemaDetailFolder);
     }
 
@@ -491,6 +500,157 @@ public class GeneralObjMappingView extends AbstractMappingView {
         CompositeUtils.setTableColumnSelectionListener(tvGrants, selectionListencers);
     }
 
+    /**
+     * Create procedure to list database procedure mappings.
+     *
+     * @param parent
+     */
+    private void createDetailOfProcedure(CTabFolder parent) {
+        TableViewerBuilder tvBuilder = new TableViewerBuilder();
+        tvBuilder.setTableCursorSupported(true);
+        tvBuilder.setColumnWidths(new int[] {200, 100, 80, 90});
+        Composite container =
+                CompositeUtils.createTabItem(
+                        parent,
+                        Messages.objectMapPageTabFolderProcedures,
+                        "icon/db/procedure_sp_item.png");
+
+        tvBuilder.setColumnNames(
+                new String[] {
+                    Messages.tabTitleProcedure,
+                    Messages.tabTitleAuthId,
+                    Messages.lblCreate,
+                    Messages.lblReplace
+                });
+
+        tvBuilder.setContentProvider(
+                new StructuredContentProviderAdaptor() {
+
+                    @SuppressWarnings("unchecked")
+                    public Object[] getElements(Object inputElement) {
+                        List<Object> data = new ArrayList<>();
+                        for (SourcePlcsqlProcedureConfig spc :
+                                (List<SourcePlcsqlProcedureConfig>) inputElement) {
+                            data.add(
+                                    new Object[] {
+                                        spc.getName(),
+                                        spc.getAuthid(),
+                                        spc.isCreate(),
+                                        spc.isReplace(),
+                                        spc
+                                    });
+                        }
+                        return super.getElements(data);
+                    }
+                });
+
+        tvBuilder.setCellEditorClasses(
+                new CellEditorFactory[] {
+                    null, null, new CheckboxCellEditorFactory(), new CheckboxCellEditorFactory()
+                });
+
+        tvBuilder.setCellModifier(
+                new ObjectArrayRowCellModifier() {
+                    protected void modify(
+                            TableItem ti, Object[] element, int columnIdx, Object value) {
+                        Object[] obj = (Object[]) ti.getData();
+                        if (value instanceof Boolean) {
+                            boolean bv = (Boolean) value;
+                            if (columnIdx == 2) {
+                                obj[3] = bv;
+                                ti.setImage(3, CompositeUtils.getCheckImage(bv));
+                                updateColumnImage(value, ti, columnIdx + 1);
+                            } else if (columnIdx == 3) {
+                                obj[2] = (Boolean) obj[2] || bv;
+                                ti.setImage(2, CompositeUtils.getCheckImage((Boolean) obj[2]));
+                                updateColumnImage(value, ti, columnIdx - 1);
+                            }
+                        }
+                        super.modify(ti, element, columnIdx, value);
+                    }
+                });
+        tvBuilder.setCellValidators(new ICellEditorValidator[] {null, null, null, null});
+        tvProcedures = tvBuilder.buildTableViewer(container, SWT.BORDER | SWT.FULL_SELECTION);
+
+        initSourceConfigTableViewer(tvProcedures);
+        tvProcedures.setData(CONTENT_TYPE, CT_PROCEDURE);
+    }
+
+    /**
+     * Create function to list database function mappings.
+     *
+     * @param parent
+     */
+    private void createDetailOfFunction(CTabFolder parent) {
+        TableViewerBuilder tvBuilder = new TableViewerBuilder();
+        tvBuilder.setTableCursorSupported(true);
+        tvBuilder.setColumnWidths(new int[] {200, 100, 80, 90});
+        Composite container =
+                CompositeUtils.createTabItem(
+                        parent,
+                        Messages.objectMapPageTabFolderFunctions,
+                        "icon/db/procedure_func_item.png");
+
+        tvBuilder.setColumnNames(
+                new String[] {
+                    Messages.tabTitleFunction,
+                    Messages.tabTitleAuthId,
+                    Messages.lblCreate,
+                    Messages.lblReplace
+                });
+
+        tvBuilder.setContentProvider(
+                new StructuredContentProviderAdaptor() {
+
+                    @SuppressWarnings("unchecked")
+                    public Object[] getElements(Object inputElement) {
+                        List<Object> data = new ArrayList<>();
+                        for (SourcePlcsqlFunctionConfig sfc :
+                                (List<SourcePlcsqlFunctionConfig>) inputElement) {
+                            data.add(
+                                    new Object[] {
+                                        sfc.getName(),
+                                        sfc.getAuthid(),
+                                        sfc.isCreate(),
+                                        sfc.isReplace(),
+                                        sfc
+                                    });
+                        }
+                        return super.getElements(data);
+                    }
+                });
+
+        tvBuilder.setCellEditorClasses(
+                new CellEditorFactory[] {
+                    null, null, new CheckboxCellEditorFactory(), new CheckboxCellEditorFactory()
+                });
+
+        tvBuilder.setCellModifier(
+                new ObjectArrayRowCellModifier() {
+                    protected void modify(
+                            TableItem ti, Object[] element, int columnIdx, Object value) {
+                        Object[] obj = (Object[]) ti.getData();
+                        if (value instanceof Boolean) {
+                            boolean bv = (Boolean) value;
+                            if (columnIdx == 2) {
+                                obj[3] = bv;
+                                ti.setImage(3, CompositeUtils.getCheckImage(bv));
+                                updateColumnImage(value, ti, columnIdx + 1);
+                            } else if (columnIdx == 3) {
+                                obj[2] = (Boolean) obj[2] || bv;
+                                ti.setImage(2, CompositeUtils.getCheckImage((Boolean) obj[2]));
+                                updateColumnImage(value, ti, columnIdx - 1);
+                            }
+                        }
+                        super.modify(ti, element, columnIdx, value);
+                    }
+                });
+        tvFunctions = tvBuilder.buildTableViewer(container, SWT.BORDER | SWT.FULL_SELECTION);
+
+        initSourceConfigTableViewer(tvFunctions);
+        tvFunctions.setData(CONTENT_TYPE, CT_FUNCTION);
+    }
+
     /** Hide this mapping view */
     public void hide() {
         CompositeUtils.hideOrShowComposite(tabSchemaDetailFolder, true);
@@ -507,6 +667,8 @@ public class GeneralObjMappingView extends AbstractMappingView {
         CompositeUtils.applyTableViewerEditing(tvViews);
         CompositeUtils.applyTableViewerEditing(tvSynonyms);
         CompositeUtils.applyTableViewerEditing(tvGrants);
+        CompositeUtils.applyTableViewerEditing(tvProcedures);
+        CompositeUtils.applyTableViewerEditing(tvFunctions);
         VerifyResultMessages result = validate();
         if (result.hasError()) {
             return result;
@@ -569,6 +731,20 @@ public class GeneralObjMappingView extends AbstractMappingView {
             Object[] obj = (Object[]) ti.getData();
             SourceConfig setc = (SourceConfig) obj[obj.length - 1];
             setc.setCreate((Boolean) obj[4]);
+        }
+        for (int i = 0; i < tvProcedures.getTable().getItemCount(); i++) {
+            TableItem ti = tvProcedures.getTable().getItem(i);
+            Object[] obj = (Object[]) ti.getData();
+            SourceConfig setc = (SourceConfig) obj[obj.length - 1];
+            setc.setCreate((Boolean) obj[2]);
+            setc.setReplace((Boolean) obj[3]);
+        }
+        for (int i = 0; i < tvFunctions.getTable().getItemCount(); i++) {
+            TableItem ti = tvFunctions.getTable().getItem(i);
+            Object[] obj = (Object[]) ti.getData();
+            SourceConfig setc = (SourceConfig) obj[obj.length - 1];
+            setc.setCreate((Boolean) obj[2]);
+            setc.setReplace((Boolean) obj[3]);
         }
         return super.save();
     }
@@ -634,14 +810,27 @@ public class GeneralObjMappingView extends AbstractMappingView {
                 schema = (SchemaNode) ((GrantAuthNode) obj).getParent().getParent().getParent();
             }
             tabSchemaDetailFolder.setSelection(4);
-        } else if (obj instanceof SQLTablesNode) {
+        } else if (obj instanceof ProceduresNode) {
+            if (((ProceduresNode) obj).getParent() instanceof SchemaNode) {
+                schema = (SchemaNode) ((ProceduresNode) obj).getParent();
+            }
             tabSchemaDetailFolder.setSelection(5);
+        } else if (obj instanceof FunctionsNode) {
+            if (((FunctionsNode) obj).getParent() instanceof SchemaNode) {
+                schema = (SchemaNode) ((FunctionsNode) obj).getParent();
+            }
+            tabSchemaDetailFolder.setSelection(6);
+        } else if (obj instanceof SQLTablesNode) {
+            tabSchemaDetailFolder.setSelection(7);
         }
         List<SourceEntryTableConfig> ipTables = config.getExpEntryTableCfg();
         List<SourceViewConfig> ipViews = config.getExpViewCfg();
         List<SourceSequenceConfig> ipSerials = config.getExpSerialCfg();
         List<SourceSynonymConfig> ipSynonyms = config.getExpSynonymCfg();
         List<SourceGrantConfig> ipGrants = config.getExpGrantCfg();
+        List<SourcePlcsqlProcedureConfig> ipProcedures = config.getExpPlcsqlProcedureCfg();
+        List<SourcePlcsqlFunctionConfig> ipFunctions = config.getExpPlcsqlFunctionCfg();
+
         if (schema != null) {
             Iterator<SourceEntryTableConfig> itTables = ipTables.iterator();
             while (itTables.hasNext()) {
@@ -700,12 +889,30 @@ public class GeneralObjMappingView extends AbstractMappingView {
 
                 itGrants.remove();
             }
+            Iterator<SourcePlcsqlProcedureConfig> itProcedures = ipProcedures.iterator();
+            while (itProcedures.hasNext()) {
+                String owner = itProcedures.next().getOwner();
+                if (Objects.isNull(owner) || schema.getName().equals(owner)) {
+                    continue;
+                }
+                itProcedures.remove();
+            }
+            Iterator<SourcePlcsqlFunctionConfig> itFunctions = ipFunctions.iterator();
+            while (itFunctions.hasNext()) {
+                String owner = itFunctions.next().getOwner();
+                if (Objects.isNull(owner) || schema.getName().equals(owner)) {
+                    continue;
+                }
+                itFunctions.remove();
+            }
         }
         tvTables.setInput(ipTables);
         tvViews.setInput(ipViews);
         tvSerials.setInput(ipSerials);
         tvSynonyms.setInput(ipSynonyms);
         tvGrants.setInput(ipGrants);
+        tvProcedures.setInput(ipProcedures);
+        tvFunctions.setInput(ipFunctions);
         sqlMgrView.showData(obj);
 
         CompositeUtils.initTableViewerCheckColumnImage(tvTables);
@@ -713,6 +920,8 @@ public class GeneralObjMappingView extends AbstractMappingView {
         CompositeUtils.initTableViewerCheckColumnImage(tvSerials);
         CompositeUtils.initTableViewerCheckColumnImage(tvSynonyms);
         CompositeUtils.initTableViewerCheckColumnImage(tvGrants);
+        CompositeUtils.initTableViewerCheckColumnImage(tvProcedures);
+        CompositeUtils.initTableViewerCheckColumnImage(tvFunctions);
     }
 
     /**
@@ -816,6 +1025,8 @@ public class GeneralObjMappingView extends AbstractMappingView {
         tvSerials.addDoubleClickListener(iDoubleClickListener);
         tvSynonyms.addDoubleClickListener(iDoubleClickListener);
         tvGrants.addDoubleClickListener(iDoubleClickListener);
+        tvProcedures.addDoubleClickListener(iDoubleClickListener);
+        tvFunctions.addDoubleClickListener(iDoubleClickListener);
     }
 
     /**
