@@ -166,7 +166,7 @@ public class FunctionMappingView extends AbstractMappingView {
             targetFunc.setHeaderDDL(functionDDL.getHeader());
             targetFunc.setBodyDDL(functionDDL.getBody());
         }
-        String funcDDL = ddlUtils.getFunctionDDL(targetFunc, config.isAddUserSchema());
+        String funcDDL = ddlUtils.getPlcsqlFunctionDDL(targetFunc, config.isAddUserSchema());
         txtTargetSQL.setText(funcDDL);
         // Set controls status
         btnCreate.setEnabled(true);
