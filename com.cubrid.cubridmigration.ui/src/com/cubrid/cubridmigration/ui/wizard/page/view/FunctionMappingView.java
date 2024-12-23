@@ -206,12 +206,12 @@ public class FunctionMappingView extends AbstractMappingView {
 
         // Get Function name
         String regex =
-                "(?i)CREATE OR REPLACE FUNCTION\\s+(?:\\[[a-zA-Z0-9_#]+\\]\\.)?\\[([a-zA-Z0-9_#]+)\\]";
+                "(?i)CREATE(?:\\s+OR\\s+REPLACE)?\\s+FUNCTION\\s+(?:\\[[a-zA-Z0-9_#]+\\]\\.|[a-zA-Z0-9_#]+\\.)?(\\[[a-zA-Z0-9_#]+\\]|[a-zA-Z0-9_#]+)";
         Pattern pattern = Pattern.compile(regex);
         Matcher matcher = pattern.matcher(targetSQL);
 
         if (matcher.find()) {
-            String extractedName = matcher.group(1);
+            String extractedName = removeBrackets(matcher.group(1));
             if (!targetFunc.getName().equalsIgnoreCase(extractedName)) {
                 targetFunc.setTargetName(extractedName.toLowerCase());
             }
@@ -221,5 +221,14 @@ public class FunctionMappingView extends AbstractMappingView {
         targetFunc.setHeaderDDL(functionDDL.getHeader());
         targetFunc.setBodyDDL(functionDDL.getBody());
         return super.save();
+    }
+
+    private String removeBrackets(String procName) {
+        Pattern pattern = Pattern.compile("^\\[(.+)]$");
+        Matcher matcher = pattern.matcher(procName);
+        if (matcher.matches()) {
+            return matcher.group(1);
+        }
+        return procName;
     }
 }

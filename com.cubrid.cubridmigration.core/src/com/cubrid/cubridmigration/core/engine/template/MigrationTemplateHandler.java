@@ -39,6 +39,8 @@ import com.cubrid.cubridmigration.core.dbobject.Index;
 import com.cubrid.cubridmigration.core.dbobject.PK;
 import com.cubrid.cubridmigration.core.dbobject.PartitionInfo;
 import com.cubrid.cubridmigration.core.dbobject.PartitionTable;
+import com.cubrid.cubridmigration.core.dbobject.PlcsqlFunction;
+import com.cubrid.cubridmigration.core.dbobject.PlcsqlProcedure;
 import com.cubrid.cubridmigration.core.dbobject.Schema;
 import com.cubrid.cubridmigration.core.dbobject.Sequence;
 import com.cubrid.cubridmigration.core.dbobject.Synonym;
@@ -451,6 +453,36 @@ public final class MigrationTemplateHandler extends DefaultHandler {
     }
 
     /** @param attributes of node */
+    private void parseTargetPlcsqlProcedure(Attributes attributes) {
+        PlcsqlProcedure proc = new PlcsqlProcedure();
+        proc.setOwner(attributes.getValue(TemplateTags.ATTR_OWNER));
+        proc.setTargetOwner(attributes.getValue(TemplateTags.ATTR_TARGET_OWNER));
+        proc.setName(attributes.getValue(TemplateTags.ATTR_NAME));
+        proc.setTargetName(attributes.getValue(TemplateTags.ATTR_TARGET_NAME));
+        proc.setAuthid(attributes.getValue(TemplateTags.ATTR_AUTH_ID));
+        proc.setSourceDDL(attributes.getValue(TemplateTags.ATTR_SOURCE_DDL));
+        proc.setHeaderDDL(attributes.getValue(TemplateTags.ATTR_HEADER_DDL));
+        proc.setBodyDDL(attributes.getValue(TemplateTags.ATTR_BODY_DDL));
+        proc.setProcedureDDL(attributes.getValue(TemplateTags.ATTR_PROCEDURE_DDL));
+        config.addTargetPlcsqlProcedureSchema(proc);
+    }
+
+    /** @param attributes of node */
+    private void parseTargetPlcsqlFunction(Attributes attributes) {
+        PlcsqlFunction func = new PlcsqlFunction();
+        func.setOwner(attributes.getValue(TemplateTags.ATTR_OWNER));
+        func.setTargetOwner(attributes.getValue(TemplateTags.ATTR_TARGET_OWNER));
+        func.setName(attributes.getValue(TemplateTags.ATTR_NAME));
+        func.setTargetName(attributes.getValue(TemplateTags.ATTR_TARGET_NAME));
+        func.setAuthid(attributes.getValue(TemplateTags.ATTR_AUTH_ID));
+        func.setSourceDDL(attributes.getValue(TemplateTags.ATTR_SOURCE_DDL));
+        func.setHeaderDDL(attributes.getValue(TemplateTags.ATTR_HEADER_DDL));
+        func.setBodyDDL(attributes.getValue(TemplateTags.ATTR_BODY_DDL));
+        func.setFunctionDDL(attributes.getValue(TemplateTags.ATTR_FUNCTION_DDL));
+        config.addTargetPlcsqlFunctionSchema(func);
+    }
+
+    /** @param attributes of node */
     private void parseTargetTable(Attributes attributes) {
         targetTable = new Table();
         targetTable.setName(attributes.getValue(TemplateTags.ATTR_NAME));
@@ -737,8 +769,32 @@ public final class MigrationTemplateHandler extends DefaultHandler {
             config.addExpTriggerCfg(attributes.getValue(TemplateTags.ATTR_NAME));
         } else if (TemplateTags.TAG_FUNCTION.equals(qName)) {
             config.addExpFunctionCfg(attributes.getValue(TemplateTags.ATTR_NAME));
+        } else if (TemplateTags.TAG_PLCSQL_FUNCTION.equals(qName)) {
+            config.addExpPlcsqlFunctionCfg(
+                    attributes.getValue(TemplateTags.ATTR_OWNER),
+                    attributes.getValue(TemplateTags.ATTR_TARGET_OWNER),
+                    attributes.getValue(TemplateTags.ATTR_NAME),
+                    attributes.getValue(TemplateTags.ATTR_TARGET),
+                    attributes.getValue(TemplateTags.ATTR_AUTH_ID),
+                    getBoolean(attributes.getValue(TemplateTags.ATTR_AUTH_ID_CHANGED), false),
+                    attributes.getValue(TemplateTags.ATTR_SOURCE_DDL),
+                    attributes.getValue(TemplateTags.ATTR_HEADER_DDL),
+                    attributes.getValue(TemplateTags.ATTR_BODY_DDL),
+                    attributes.getValue(TemplateTags.ATTR_FUNCTION_DDL));
         } else if (TemplateTags.TAG_PROCEDURE.equals(qName)) {
             config.addExpProcedureCfg(attributes.getValue(TemplateTags.ATTR_NAME));
+        } else if (TemplateTags.TAG_PLCSQL_PROCEDURE.equals(qName)) {
+            config.addExpPlcsqlProcedureCfg(
+                    attributes.getValue(TemplateTags.ATTR_OWNER),
+                    attributes.getValue(TemplateTags.ATTR_TARGET_OWNER),
+                    attributes.getValue(TemplateTags.ATTR_NAME),
+                    attributes.getValue(TemplateTags.ATTR_TARGET),
+                    attributes.getValue(TemplateTags.ATTR_AUTH_ID),
+                    getBoolean(attributes.getValue(TemplateTags.ATTR_AUTH_ID_CHANGED), false),
+                    attributes.getValue(TemplateTags.ATTR_SOURCE_DDL),
+                    attributes.getValue(TemplateTags.ATTR_HEADER_DDL),
+                    attributes.getValue(TemplateTags.ATTR_BODY_DDL),
+                    attributes.getValue(TemplateTags.ATTR_PROCEDURE_DDL));
         } else if (TemplateTags.TAG_SQL.equals(qName)) {
             config.setSourceFileEncoding(attributes.getValue(TemplateTags.ATTR_CHARSET));
         } else if (TemplateTags.TAG_SQL_FILE.equals(qName)) {
@@ -828,6 +884,10 @@ public final class MigrationTemplateHandler extends DefaultHandler {
             parseTargetSynonym(attr);
         } else if (TemplateTags.TAG_GRANT.equals(qName)) {
             parseTargetGrant(attr);
+        } else if (TemplateTags.TAG_PLCSQL_PROCEDURE.equals(qName)) {
+            parseTargetPlcsqlProcedure(attr);
+        } else if (TemplateTags.TAG_PLCSQL_FUNCTION.equals(qName)) {
+            parseTargetPlcsqlFunction(attr);
         } else if (TemplateTags.TAG_VIEW.equals(qName)) {
             parseTargetView(attr);
         } else if (TemplateTags.TAG_VIEWCOLUMN.equals(qName)) {

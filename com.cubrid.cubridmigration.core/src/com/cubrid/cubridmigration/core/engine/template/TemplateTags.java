@@ -44,6 +44,8 @@ public final class TemplateTags {
 
     public static final String ATTR_AUTO_INCREMENT = "auto_increment";
     public static final String ATTR_ADD_SCHEMA = "add_schema";
+    public static final String ATTR_AUTH_ID = "auth_id";
+    public static final String ATTR_AUTH_ID_CHANGED = "auth_id_changed";
     public static final String ATTR_AUTH_TYPE = "auth_type";
     public static final String ATTR_BASE_TYPE = "base_type";
     public static final String ATTR_CACHE = "cache";
@@ -67,6 +69,7 @@ public final class TemplateTags {
     public static final String ATTR_GRANTABLE = "grantable";
     public static final String ATTR_GRANTEE = "grantee";
     public static final String ATTR_GRANTOR = "grantor";
+    public static final String ATTR_HEADER_DDL = "header_ddl";
     public static final String ATTR_HOST = "host";
     public static final String ATTR_IMPORT_THREAD = "import_thread";
     public static final String ATTR_INCREMENT = "increment";
@@ -104,6 +107,7 @@ public final class TemplateTags {
     public static final String ATTR_REVERSE = "reverse";
     public static final String ATTR_SCHEMA_NAME = "schema_name";
     public static final String ATTR_SIZE = "size";
+    public static final String ATTR_SOURCE_DDL = "source_ddl";
     public static final String ATTR_SOURCE_OBJECT_OWNER = "source_object_owner";
     public static final String ATTR_SOURCE_GRANTOR_NAME = "source_grantor_name";
     public static final String ATTR_SOURCE_OWNER = "source_owner";
@@ -117,6 +121,7 @@ public final class TemplateTags {
     public static final String ATTR_TARGET = "target";
     public static final String ATTR_TARGET_SCHEMA = "target_schema";
     public static final String ATTR_TARGET_OWNER = "target_owner";
+    public static final String ATTR_TARGET_NAME = "target_name";
     public static final String ATTR_TIMEZONE = "timezone";
     public static final String ATTR_TYPE = "type";
     public static final String ATTR_UNIQUE = "unique";
@@ -144,6 +149,8 @@ public final class TemplateTags {
     public static final String TAG_CREATEVIEWSQL = "createViewSQL";
     public static final String TAG_EXISTDB = "existDB";
     public static final String TAG_FILE = "file";
+    public static final String TAG_PLCSQL_FUNCTION = "plcsql_function";
+    public static final String TAG_PLCSQL_FUNCTIONS = "plcsql_functions";
     public static final String TAG_FK = "fk";
     public static final String TAG_FUNCTION = "function";
     public static final String TAG_FUNCTIONS = "functions";
@@ -160,6 +167,8 @@ public final class TemplateTags {
     // public static final String TAG_NEWDBUSER = "newDBUser";
     public static final String TAG_PARAMS = "params";
     public static final String TAG_PARTITIONS = "partitions";
+    public static final String TAG_PLCSQL_PROCEDURE = "plcsql_procedure";
+    public static final String TAG_PLCSQL_PROCEDURES = "plcsql_procedures";
     public static final String TAG_PK = "pk";
     public static final String TAG_PROCEDURE = "procedure";
     public static final String TAG_PROCEDURES = "procedures";
@@ -213,6 +222,7 @@ public final class TemplateTags {
     public static final String ATTR_WRITE_ERROR_RECORDS = "write_error_records";
     public static final String ATTR_BEFORE_SQL = "sql_before";
     public static final String ATTR_AFTER_SQL = "sql_after";
+    public static final String ATTR_BODY_DDL = "body_ddl";
     public static final String ATTR_DEFAULT_EXPRESSION = "expression_default";
     public static final String ATTR_USER_JDBC_URL = "user_jdbc_url";
     public static final String ATTR_IMPLICIT_ESTIMATE_PROGRESS = "implicit_estimate_progress";
@@ -221,11 +231,13 @@ public final class TemplateTags {
     public static final String TAG_CSV = "csv";
     public static final String TAG_CSV_COLUMNS = "csv_columns";
     public static final String TAG_CSV_COLUMN = "csv_column";
+    public static final String ATTR_FUNCTION_DDL = "function_ddl";
     public static final String ATTR_IMPORT_FIRST_ROW = "import_first_row";
     public static final String ATTR_CSV_NULL_VALUE = "csv_null_value";
     public static final String ATTR_OUTPUT_FILE_PREFIX = "file_prefix";
     public static final String ATTR_USER_DATA_HANDLER = "data_handler";
     public static final String ATTR_PAGE_FETCH_COUNT = "page_fetch_count";
+    public static final String ATTR_PROCEDURE_DDL = "procedure_ddl";
     public static final String ATTR_LOB_ROOT_DIR = "lob_root_dir";
     public static final String ATTR_EXP_OPT_COL = "exp_opt_col";
     public static final String ATTR_START_TAR_MAX = "start_target_max";

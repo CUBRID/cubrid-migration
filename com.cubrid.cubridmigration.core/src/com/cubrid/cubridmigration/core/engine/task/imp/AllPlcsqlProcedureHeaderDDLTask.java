@@ -67,7 +67,7 @@ public class AllPlcsqlProcedureHeaderDDLTask extends ImportTask {
 
             String ddl =
                     sqlHelper.getPlcsqlProcedureHeaderDDL(procedure, config.isAddUserSchema())
-                            + "\n";
+                            + ";\n";
             File procedureFile = new File(procedureFiles.get(owner));
 
             try {

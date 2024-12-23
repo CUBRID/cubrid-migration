@@ -40,6 +40,8 @@ import com.cubrid.cubridmigration.core.dbobject.Index;
 import com.cubrid.cubridmigration.core.dbobject.PK;
 import com.cubrid.cubridmigration.core.dbobject.PartitionInfo;
 import com.cubrid.cubridmigration.core.dbobject.PartitionTable;
+import com.cubrid.cubridmigration.core.dbobject.PlcsqlFunction;
+import com.cubrid.cubridmigration.core.dbobject.PlcsqlProcedure;
 import com.cubrid.cubridmigration.core.dbobject.Schema;
 import com.cubrid.cubridmigration.core.dbobject.Sequence;
 import com.cubrid.cubridmigration.core.dbobject.Synonym;
@@ -54,6 +56,8 @@ import com.cubrid.cubridmigration.core.engine.config.SourceEntryTableConfig;
 import com.cubrid.cubridmigration.core.engine.config.SourceFKConfig;
 import com.cubrid.cubridmigration.core.engine.config.SourceGrantConfig;
 import com.cubrid.cubridmigration.core.engine.config.SourceIndexConfig;
+import com.cubrid.cubridmigration.core.engine.config.SourcePlcsqlFunctionConfig;
+import com.cubrid.cubridmigration.core.engine.config.SourcePlcsqlProcedureConfig;
 import com.cubrid.cubridmigration.core.engine.config.SourceSQLTableConfig;
 import com.cubrid.cubridmigration.core.engine.config.SourceSequenceConfig;
 import com.cubrid.cubridmigration.core.engine.config.SourceSynonymConfig;
@@ -292,6 +296,8 @@ public final class MigrationTemplateParser {
         createTargetSequenceNodes(config, document, target);
         createTargetViewNodes(config, document, target);
         createTargetSynonymNodes(config, document, target);
+        createTargetPlcsqlProcedureNodes(config, document, target);
+        createTargetPlcsqlFunctionNodes(config, document, target);
     }
 
     /**
@@ -428,6 +434,67 @@ public final class MigrationTemplateParser {
             synonym.setAttribute(TemplateTags.ATTR_SYNONYM_OBJECT_OWNER, sc.getObjectOwner());
             synonym.setAttribute(TemplateTags.ATTR_SYNONYM_OBJECT, sc.getObjectName());
             synonym.setAttribute(TemplateTags.ATTR_SOURCE_OWNER, sc.getSourceOwner());
+        }
+    }
+
+    /**
+     * createTargetProcedureNodes
+     *
+     * @param config MigrationConfiguration
+     * @param document Document
+     * @param target Element
+     */
+    private static void createTargetPlcsqlProcedureNodes(
+            MigrationConfiguration config, Document document, Element target) {
+        List<PlcsqlProcedure> targetProcedures = config.getTargetPlcsqlProcedureSchema();
+        if (targetProcedures.isEmpty()) {
+            return;
+        }
+        Element procedures = createElement(document, target, TemplateTags.TAG_PLCSQL_PROCEDURES);
+        for (PlcsqlProcedure proc : targetProcedures) {
+            Element prNode = createElement(document, procedures, TemplateTags.TAG_PLCSQL_PROCEDURE);
+            prNode.setAttribute(TemplateTags.ATTR_OWNER, proc.getOwner());
+            prNode.setAttribute(TemplateTags.ATTR_TARGET_OWNER, proc.getTargetOwner());
+            prNode.setAttribute(TemplateTags.ATTR_NAME, proc.getName());
+            prNode.setAttribute(TemplateTags.ATTR_TARGET_NAME, proc.getTargetName());
+
+            prNode.setAttribute(TemplateTags.ATTR_AUTH_ID, proc.getAuthid());
+            prNode.setAttribute(
+                    TemplateTags.ATTR_AUTH_ID_CHANGED, getBooleanString(proc.isAuthidChanged()));
+            prNode.setAttribute(TemplateTags.ATTR_SOURCE_DDL, proc.getSourceDDL());
+            prNode.setAttribute(TemplateTags.ATTR_HEADER_DDL, proc.getHeaderDDL());
+            prNode.setAttribute(TemplateTags.ATTR_BODY_DDL, proc.getBodyDDL());
+            prNode.setAttribute(TemplateTags.ATTR_PROCEDURE_DDL, proc.getDDL());
+        }
+    }
+
+    /**
+     * createTargetFunctionNodes
+     *
+     * @param config MigrationConfiguration
+     * @param document Document
+     * @param target Element
+     */
+    private static void createTargetPlcsqlFunctionNodes(
+            MigrationConfiguration config, Document document, Element target) {
+        List<PlcsqlFunction> targetFunctions = config.getTargetPlcsqlFunctionSchema();
+        if (targetFunctions.isEmpty()) {
+            return;
+        }
+        Element functions = createElement(document, target, TemplateTags.TAG_PLCSQL_FUNCTIONS);
+        for (PlcsqlFunction func : targetFunctions) {
+            Element fuNode = createElement(document, functions, TemplateTags.TAG_PLCSQL_FUNCTION);
+            fuNode.setAttribute(TemplateTags.ATTR_OWNER, func.getOwner());
+            fuNode.setAttribute(TemplateTags.ATTR_TARGET_OWNER, func.getTargetOwner());
+            fuNode.setAttribute(TemplateTags.ATTR_NAME, func.getName());
+            fuNode.setAttribute(TemplateTags.ATTR_TARGET_NAME, func.getTargetName());
+            fuNode.setAttribute(TemplateTags.ATTR_AUTH_ID, func.getAuthid());
+            fuNode.setAttribute(
+                    TemplateTags.ATTR_AUTH_ID_CHANGED, getBooleanString(func.isAuthidChanged()));
+            fuNode.setAttribute(TemplateTags.ATTR_SOURCE_DDL, func.getSourceDDL());
+            fuNode.setAttribute(TemplateTags.ATTR_HEADER_DDL, func.getHeaderDDL());
+            fuNode.setAttribute(TemplateTags.ATTR_BODY_DDL, func.getBodyDDL());
+            fuNode.setAttribute(TemplateTags.ATTR_FUNCTION_DDL, func.getDDL());
         }
     }
 
@@ -1019,6 +1086,25 @@ public final class MigrationTemplateParser {
                 fun.setAttribute(TemplateTags.ATTR_NAME, sc);
             }
         }
+
+        // source plcsql function
+        List<SourcePlcsqlFunctionConfig> exportPlcsqlFunctions = config.getExpPlcsqlFunctionCfg();
+        if (!exportPlcsqlFunctions.isEmpty()) {
+            Element functions = createElement(document, source, TemplateTags.TAG_PLCSQL_FUNCTIONS);
+            for (SourcePlcsqlFunctionConfig sfc : exportPlcsqlFunctions) {
+                Element fuNode =
+                        createElement(document, functions, TemplateTags.TAG_PLCSQL_FUNCTION);
+                fuNode.setAttribute(TemplateTags.ATTR_OWNER, sfc.getOwner());
+                fuNode.setAttribute(TemplateTags.ATTR_TARGET_OWNER, sfc.getTargetOwner());
+                fuNode.setAttribute(TemplateTags.ATTR_NAME, sfc.getName());
+                fuNode.setAttribute(TemplateTags.ATTR_TARGET, sfc.getTarget());
+                fuNode.setAttribute(TemplateTags.ATTR_AUTH_ID, sfc.getAuthid());
+                fuNode.setAttribute(
+                        TemplateTags.ATTR_AUTH_ID_CHANGED, getBooleanString(sfc.isAuthidChanged()));
+                fuNode.setAttribute(TemplateTags.ATTR_SOURCE_DDL, sfc.getSourceDDL());
+            }
+        }
+
         // source procedures
         List<String> exportProcedures = config.getExpProcedureCfg();
         if (!exportProcedures.isEmpty()) {
@@ -1026,6 +1112,26 @@ public final class MigrationTemplateParser {
             for (String sc : exportProcedures) {
                 Element pro = createElement(document, procedures, TemplateTags.TAG_PROCEDURE);
                 pro.setAttribute(TemplateTags.ATTR_NAME, sc);
+            }
+        }
+
+        // source plcsql porcedure
+        List<SourcePlcsqlProcedureConfig> exportPlcsqlProcedures =
+                config.getExpPlcsqlProcedureCfg();
+        if (!exportPlcsqlProcedures.isEmpty()) {
+            Element procedures =
+                    createElement(document, source, TemplateTags.TAG_PLCSQL_PROCEDURES);
+            for (SourcePlcsqlProcedureConfig spc : exportPlcsqlProcedures) {
+                Element prNode =
+                        createElement(document, procedures, TemplateTags.TAG_PLCSQL_PROCEDURE);
+                prNode.setAttribute(TemplateTags.ATTR_OWNER, spc.getOwner());
+                prNode.setAttribute(TemplateTags.ATTR_TARGET_OWNER, spc.getTargetOwner());
+                prNode.setAttribute(TemplateTags.ATTR_TARGET, spc.getTarget());
+                prNode.setAttribute(TemplateTags.ATTR_NAME, spc.getName());
+                prNode.setAttribute(TemplateTags.ATTR_AUTH_ID, spc.getAuthid());
+                prNode.setAttribute(
+                        TemplateTags.ATTR_AUTH_ID_CHANGED, getBooleanString(spc.isAuthidChagned()));
+                prNode.setAttribute(TemplateTags.ATTR_SOURCE_DDL, spc.getSourceDDL());
             }
         }
     }

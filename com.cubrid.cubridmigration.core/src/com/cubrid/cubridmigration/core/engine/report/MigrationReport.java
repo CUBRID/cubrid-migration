@@ -87,8 +87,8 @@ public class MigrationReport implements Serializable {
                 DBObject.OBJ_TYPE_SEQUENCE,
                 DBObject.OBJ_TYPE_SYNONYM,
                 DBObject.OBJ_TYPE_TRIGGER,
-                DBObject.OBJ_TYPE_FUNCTION,
-                DBObject.OBJ_TYPE_PROCEDURE,
+                DBObject.OBJ_TYPE_PLCSQL_FUNCTION,
+                DBObject.OBJ_TYPE_PLCSQL_PROCEDURE,
                 DBObject.OBJ_TYPE_GRANT,
                 DBObject.OBJ_TYPE_RECORD
             };

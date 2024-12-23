@@ -35,6 +35,8 @@ import com.cubrid.cubridmigration.core.common.Closer;
 import com.cubrid.cubridmigration.core.common.PathUtils;
 import com.cubrid.cubridmigration.core.common.log.LogUtil;
 import com.cubrid.cubridmigration.core.dbobject.DBObject;
+import com.cubrid.cubridmigration.core.dbobject.PlcsqlFunction;
+import com.cubrid.cubridmigration.core.dbobject.PlcsqlProcedure;
 import com.cubrid.cubridmigration.core.dbobject.View;
 import com.cubrid.cubridmigration.core.engine.config.MigrationConfiguration;
 import com.cubrid.cubridmigration.core.engine.event.CreateObjectEvent;
@@ -182,18 +184,12 @@ public abstract class DefaultMigrationReporter implements IMigrationReporter {
             if (ev.isSuccess()) {
                 DBObjMigrationResult dbor = report.getDBObjResult(ev.getDbObject());
                 dbor.setSucceed(true);
-                dbor.setDdl(ev.getDbObject().getDDL());
-                if (ev.getDbObject().getObjType() == DBObject.OBJ_TYPE_VIEW) {
-                    String viewAlterDDL = ((View) ev.getDbObject()).getAlterDDL();
-                    if (!viewAlterDDL.equals(CUBRIDSQLHelper.SQL_NULL)) {
-                        dbor.setDdl(dbor.getDdl() + "\n" + viewAlterDDL);
-                    }
-                }
+                dbor.setDdl(setDBObjectResultDDL(ev));
             } else {
                 DBObjMigrationResult dbor = report.getDBObjResult(ev.getDbObject());
                 dbor.setSucceed(false);
+                dbor.setDdl(setDBObjectResultDDL(ev));
                 dbor.setError(ev.getError().getMessage());
-                dbor.setDdl(ev.getDbObject().getDDL());
             }
         } else if (event instanceof StartExpTableEvent) {
             StartExpTableEvent ev = (StartExpTableEvent) event;
@@ -236,6 +232,25 @@ public abstract class DefaultMigrationReporter implements IMigrationReporter {
             report.addImportCSVEvent((ImportCSVEvent) event);
         } else if (event instanceof MigrationCanceledEvent) {
             report.getBrief().setStatus(MigrationBriefReport.MS_CANCELED);
+        }
+    }
+
+    private String setDBObjectResultDDL(CreateObjectEvent ev) {
+        String endLine = System.lineSeparator();
+        CUBRIDSQLHelper sqlHelper = CUBRIDSQLHelper.getInstance(null);
+
+        DBObject dbObject = ev.getDbObject();
+        String objectType = dbObject.getObjType();
+
+        switch (objectType) {
+            case DBObject.OBJ_TYPE_PLCSQL_PROCEDURE:
+                return buildProcedureDDL((PlcsqlProcedure) dbObject, sqlHelper, endLine);
+            case DBObject.OBJ_TYPE_PLCSQL_FUNCTION:
+                return buildFunctionDDL((PlcsqlFunction) dbObject, sqlHelper, endLine);
+            case DBObject.OBJ_TYPE_VIEW:
+                return buildViewDDL((View) dbObject, endLine);
+            default:
+                return dbObject.getDDL();
         }
     }
 
@@ -381,5 +396,32 @@ public abstract class DefaultMigrationReporter implements IMigrationReporter {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private String buildProcedureDDL(
+            PlcsqlProcedure procedure, CUBRIDSQLHelper sqlHelper, String endLine) {
+        return sqlHelper.getPlcsqlProcedureDDL(procedure, config.isAddUserSchema())
+                + System.lineSeparator()
+                + System.lineSeparator();
+    }
+
+    private String buildFunctionDDL(
+            PlcsqlFunction function, CUBRIDSQLHelper sqlHelper, String endLine) {
+        return sqlHelper.getPlcsqlFunctionDDL(function, config.isAddUserSchema())
+                + System.lineSeparator()
+                + System.lineSeparator();
+    }
+
+    private String buildViewDDL(View view, String endLine) {
+        String viewDDL = view.getDDL();
+        String viewAlterDDL = view.getAlterDDL();
+        if (!CUBRIDSQLHelper.SQL_NULL.equals(viewAlterDDL)) {
+            return joinDDLs(viewDDL, viewAlterDDL, endLine);
+        }
+        return viewDDL;
+    }
+
+    private String joinDDLs(String headerDDL, String bodyDDL, String endLine) {
+        return headerDDL + endLine + endLine + bodyDDL + endLine + endLine;
     }
 }
