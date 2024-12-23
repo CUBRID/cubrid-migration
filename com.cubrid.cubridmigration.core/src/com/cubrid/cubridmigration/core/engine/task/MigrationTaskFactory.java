@@ -34,6 +34,8 @@ import com.cubrid.cubridmigration.core.dbobject.FK;
 import com.cubrid.cubridmigration.core.dbobject.Function;
 import com.cubrid.cubridmigration.core.dbobject.Grant;
 import com.cubrid.cubridmigration.core.dbobject.PK;
+import com.cubrid.cubridmigration.core.dbobject.PlcsqlFunction;
+import com.cubrid.cubridmigration.core.dbobject.PlcsqlProcedure;
 import com.cubrid.cubridmigration.core.dbobject.Procedure;
 import com.cubrid.cubridmigration.core.dbobject.Record;
 import com.cubrid.cubridmigration.core.dbobject.Schema;
@@ -48,6 +50,8 @@ import com.cubrid.cubridmigration.core.engine.config.SourceCSVConfig;
 import com.cubrid.cubridmigration.core.engine.config.SourceConfig;
 import com.cubrid.cubridmigration.core.engine.config.SourceEntryTableConfig;
 import com.cubrid.cubridmigration.core.engine.config.SourceGrantConfig;
+import com.cubrid.cubridmigration.core.engine.config.SourcePlcsqlFunctionConfig;
+import com.cubrid.cubridmigration.core.engine.config.SourcePlcsqlProcedureConfig;
 import com.cubrid.cubridmigration.core.engine.config.SourceSequenceConfig;
 import com.cubrid.cubridmigration.core.engine.config.SourceSynonymConfig;
 import com.cubrid.cubridmigration.core.engine.config.SourceTableConfig;
@@ -61,6 +65,10 @@ import com.cubrid.cubridmigration.core.engine.task.exp.GrantExportTask;
 import com.cubrid.cubridmigration.core.engine.task.exp.GrantNoSupportExportTask;
 import com.cubrid.cubridmigration.core.engine.task.exp.IndexExportTask;
 import com.cubrid.cubridmigration.core.engine.task.exp.PKExportTask;
+import com.cubrid.cubridmigration.core.engine.task.exp.PlcsqlFunctionBodyExportTask;
+import com.cubrid.cubridmigration.core.engine.task.exp.PlcsqlFunctionHeaderExportTask;
+import com.cubrid.cubridmigration.core.engine.task.exp.PlcsqlProcedureBodyExportTask;
+import com.cubrid.cubridmigration.core.engine.task.exp.PlcsqlProcedureHeaderExportTask;
 import com.cubrid.cubridmigration.core.engine.task.exp.ProcedureExportTask;
 import com.cubrid.cubridmigration.core.engine.task.exp.SQLExportTask;
 import com.cubrid.cubridmigration.core.engine.task.exp.SequenceExportTask;
@@ -72,6 +80,10 @@ import com.cubrid.cubridmigration.core.engine.task.exp.TriggerExportTask;
 import com.cubrid.cubridmigration.core.engine.task.exp.ViewAlterExportTask;
 import com.cubrid.cubridmigration.core.engine.task.exp.ViewSchemaExportTask;
 import com.cubrid.cubridmigration.core.engine.task.exp.XMLRecordExportTask;
+import com.cubrid.cubridmigration.core.engine.task.imp.AllPlcsqlFunctionDDLTask;
+import com.cubrid.cubridmigration.core.engine.task.imp.AllPlcsqlFunctionHeaderDDLTask;
+import com.cubrid.cubridmigration.core.engine.task.imp.AllPlcsqlProcedureDDLTask;
+import com.cubrid.cubridmigration.core.engine.task.imp.AllPlcsqlProcedureHeaderDDLTask;
 import com.cubrid.cubridmigration.core.engine.task.imp.CSVImportTask;
 import com.cubrid.cubridmigration.core.engine.task.imp.CleanDBTask;
 import com.cubrid.cubridmigration.core.engine.task.imp.CreateUserSQLTask;
@@ -81,6 +93,12 @@ import com.cubrid.cubridmigration.core.engine.task.imp.FunctionImportTask;
 import com.cubrid.cubridmigration.core.engine.task.imp.GrantImportTask;
 import com.cubrid.cubridmigration.core.engine.task.imp.IndexImportTask;
 import com.cubrid.cubridmigration.core.engine.task.imp.PKImportTask;
+import com.cubrid.cubridmigration.core.engine.task.imp.PlcsqlFunctionBodyImportTask;
+import com.cubrid.cubridmigration.core.engine.task.imp.PlcsqlFunctionHeaderImportTask;
+import com.cubrid.cubridmigration.core.engine.task.imp.PlcsqlFunctionSourceAndDropDDLTask;
+import com.cubrid.cubridmigration.core.engine.task.imp.PlcsqlProcedureBodyImportTask;
+import com.cubrid.cubridmigration.core.engine.task.imp.PlcsqlProcedureHeaderImportTask;
+import com.cubrid.cubridmigration.core.engine.task.imp.PlcsqlProcedureSourceAndDropDDLTask;
 import com.cubrid.cubridmigration.core.engine.task.imp.ProcedureImportTask;
 import com.cubrid.cubridmigration.core.engine.task.imp.RecordImportTask;
 import com.cubrid.cubridmigration.core.engine.task.imp.SQLImportTask;
@@ -153,6 +171,34 @@ public class MigrationTaskFactory {
     }
 
     /**
+     * createExportFunctionHeaderTask
+     *
+     * @param sfc SourceFunctionConfig
+     * @return FunctionHeaderExportTask
+     */
+    public PlcsqlFunctionHeaderExportTask createExportPlcsqlFunctionHeaderTask(
+            SourcePlcsqlFunctionConfig sfc) {
+        PlcsqlFunctionHeaderExportTask task =
+                new PlcsqlFunctionHeaderExportTask(context.getConfig(), sfc);
+        initExportTask(task, false);
+        return task;
+    }
+
+    /**
+     * createExportFunctionBodyTask
+     *
+     * @param sfc SourceFunctionConfig
+     * @return FunctionBodyExportTask
+     */
+    public PlcsqlFunctionBodyExportTask createExportPlcsqlFunctionBodyTask(
+            SourcePlcsqlFunctionConfig sfc) {
+        PlcsqlFunctionBodyExportTask task =
+                new PlcsqlFunctionBodyExportTask(context.getConfig(), sfc);
+        initExportTask(task, false);
+        return task;
+    }
+
+    /**
      * createExportIndexTask
      *
      * @param tb SourceTable
@@ -184,6 +230,34 @@ public class MigrationTaskFactory {
      */
     public ProcedureExportTask createExportProcedureTask(String pd) {
         ProcedureExportTask task = new ProcedureExportTask(context.getConfig(), pd);
+        initExportTask(task, false);
+        return task;
+    }
+
+    /**
+     * createExportProcedureTask
+     *
+     * @param pd SourceProcedureConfig
+     * @return ProcedureExportTask
+     */
+    public PlcsqlProcedureHeaderExportTask createExportPlcsqlProcedureHeaderTask(
+            SourcePlcsqlProcedureConfig pd) {
+        PlcsqlProcedureHeaderExportTask task =
+                new PlcsqlProcedureHeaderExportTask(context.getConfig(), pd);
+        initExportTask(task, false);
+        return task;
+    }
+
+    /**
+     * createExportProcedureTask
+     *
+     * @param pd SourceProcedureConfig
+     * @return ProcedureExportTask
+     */
+    public PlcsqlProcedureBodyExportTask createExportPlcsqlProcedureBodyTask(
+            SourcePlcsqlProcedureConfig pd) {
+        PlcsqlProcedureBodyExportTask task =
+                new PlcsqlProcedureBodyExportTask(context.getConfig(), pd);
         initExportTask(task, false);
         return task;
     }
@@ -490,6 +564,30 @@ public class MigrationTaskFactory {
     }
 
     /**
+     * createImportPlcsqlFunctionHeaderTask
+     *
+     * @param ft PlcsqlFunction
+     * @return PlcsqlFunctionHeaderImportTask
+     */
+    public ImportTask createImportPlcsqlFunctionHeaderTask(PlcsqlFunction ft) {
+        PlcsqlFunctionHeaderImportTask task = new PlcsqlFunctionHeaderImportTask(ft);
+        initImportTask(task);
+        return task;
+    }
+
+    /**
+     * createImportPlcsqlFunctionBodyTask
+     *
+     * @param ft PlcsqlFunction
+     * @return PlcsqlFunctionBodyImportTask
+     */
+    public ImportTask createImportPlcsqlFunctionBodyTask(PlcsqlFunction ft) {
+        PlcsqlFunctionBodyImportTask task = new PlcsqlFunctionBodyImportTask(ft);
+        initImportTask(task);
+        return task;
+    }
+
+    /**
      * createImportProcedureTask
      *
      * @param pd Procedure
@@ -497,6 +595,30 @@ public class MigrationTaskFactory {
      */
     public ImportTask createImportProcedureTask(Procedure pd) {
         ProcedureImportTask task = new ProcedureImportTask(pd);
+        initImportTask(task);
+        return task;
+    }
+
+    /**
+     * createImportPlcsqlProcedureHeaderTask
+     *
+     * @param pd PlcsqlProcedure
+     * @return PlcsqlProcedureHeaderImportTask
+     */
+    public ImportTask createImportPlcsqlProcedureHeaderTask(PlcsqlProcedure pd) {
+        PlcsqlProcedureHeaderImportTask task = new PlcsqlProcedureHeaderImportTask(pd);
+        initImportTask(task);
+        return task;
+    }
+
+    /**
+     * createImportPlcsqlProcedureBodyTask
+     *
+     * @param pd PlcsqlProcedure
+     * @return PlcsqlProcedureBodyImportTask
+     */
+    public ImportTask createImportPlcsqlProcedureBodyTask(PlcsqlProcedure pd) {
+        PlcsqlProcedureBodyImportTask task = new PlcsqlProcedureBodyImportTask(pd);
         initImportTask(task);
         return task;
     }
@@ -647,5 +769,45 @@ public class MigrationTaskFactory {
         UpdateAutoIncColCurrentValueTask result = new UpdateAutoIncColCurrentValueTask(config);
         initImportTask(result);
         return result;
+    }
+
+    public AllPlcsqlProcedureHeaderDDLTask createAllPlcsqlProcedureHeaderDDL() {
+        AllPlcsqlProcedureHeaderDDLTask task =
+                new AllPlcsqlProcedureHeaderDDLTask(context.getConfig());
+        initImportTask(task);
+        return task;
+    }
+
+    public AllPlcsqlProcedureDDLTask createAllPlcsqlProcedureDDL() {
+        AllPlcsqlProcedureDDLTask task = new AllPlcsqlProcedureDDLTask(context.getConfig());
+        initImportTask(task);
+        return task;
+    }
+
+    public PlcsqlProcedureSourceAndDropDDLTask createPlcsqlProcedureSourceAndDropDDL() {
+        PlcsqlProcedureSourceAndDropDDLTask task =
+                new PlcsqlProcedureSourceAndDropDDLTask(context.getConfig());
+        initImportTask(task);
+        return task;
+    }
+
+    public AllPlcsqlFunctionHeaderDDLTask createAllPlcsqlFunctionHeaderDDL() {
+        AllPlcsqlFunctionHeaderDDLTask task =
+                new AllPlcsqlFunctionHeaderDDLTask(context.getConfig());
+        initImportTask(task);
+        return task;
+    }
+
+    public AllPlcsqlFunctionDDLTask createAllPlcsqlFunctionDDL() {
+        AllPlcsqlFunctionDDLTask task = new AllPlcsqlFunctionDDLTask(context.getConfig());
+        initImportTask(task);
+        return task;
+    }
+
+    public PlcsqlFunctionSourceAndDropDDLTask createPlcsqlFunctionSourceAndDropDDL() {
+        PlcsqlFunctionSourceAndDropDDLTask task =
+                new PlcsqlFunctionSourceAndDropDDLTask(context.getConfig());
+        initImportTask(task);
+        return task;
     }
 }

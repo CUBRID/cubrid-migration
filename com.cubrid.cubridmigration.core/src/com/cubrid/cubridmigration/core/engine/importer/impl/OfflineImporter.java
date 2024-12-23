@@ -40,6 +40,8 @@ import com.cubrid.cubridmigration.core.dbobject.FK;
 import com.cubrid.cubridmigration.core.dbobject.Grant;
 import com.cubrid.cubridmigration.core.dbobject.Index;
 import com.cubrid.cubridmigration.core.dbobject.PK;
+import com.cubrid.cubridmigration.core.dbobject.PlcsqlFunction;
+import com.cubrid.cubridmigration.core.dbobject.PlcsqlProcedure;
 import com.cubrid.cubridmigration.core.dbobject.Record;
 import com.cubrid.cubridmigration.core.dbobject.Record.ColumnValue;
 import com.cubrid.cubridmigration.core.dbobject.Schema;
@@ -441,7 +443,8 @@ public abstract class OfflineImporter extends Importer {
             RunnableResultHandler listener,
             String objectType,
             String owner,
-            String sourceObjectOwner);
+            String sourceObjectOwner,
+            String objectName);
 
     /**
      * Write content to file.
@@ -491,7 +494,7 @@ public abstract class OfflineImporter extends Importer {
      */
     public void executeDDL(
             String sql, String objectType, RunnableResultHandler listener, String owner) {
-        executeDDL(sql, objectType, listener, owner, null);
+        executeDDL(sql, objectType, listener, owner, null, null);
     }
 
     /**
@@ -517,7 +520,34 @@ public abstract class OfflineImporter extends Importer {
             LOG.debug("[VAR]fileName=" + fileName);
         }
         writeFile(fileName, sql);
-        sendSchemaFile(fileName, listener, objectType, owner, sourceObjectOwner);
+        sendSchemaFile(fileName, listener, objectType, owner, sourceObjectOwner, null);
+    }
+
+    /**
+     * Execute DDL SQLs.
+     *
+     * @param sql to be executed.
+     * @param isIndex true if the sql is DDL of index
+     * @param listener to be called back
+     * @param owner Grant owner
+     * @param sourceObjectOwner Grant owner in the source database
+     */
+    protected void executeDDL(
+            String sql,
+            String objectType,
+            RunnableResultHandler listener,
+            String owner,
+            String sourceObjectOwner,
+            String objectName) {
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("[IN]executeDDL().sql=" + sql);
+        }
+        String fileName = getRandomTempFileName();
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("[VAR]fileName=" + fileName);
+        }
+        writeFile(fileName, sql);
+        sendSchemaFile(fileName, listener, objectType, owner, sourceObjectOwner, objectName);
     }
 
     /**
@@ -854,6 +884,90 @@ public abstract class OfflineImporter extends Importer {
                         ? gr.getSourceOwner()
                         : config.getSrcConnOwner(),
                 gr.getSourceObjectOwner());
+    }
+
+    /**
+     * Create plcsql procedure header
+     *
+     * @param pd the plcsql procedure header to be created.
+     */
+    @Override
+    public void createPlcsqlProcedureHeader(PlcsqlProcedure pd) {
+        String ddl =
+                CUBRIDSQLHelper.getInstance(null)
+                        .getPlcsqlProcedureHeaderDDL(pd, config.isAddUserSchema());
+        executeDDL(
+                ddl + "; \n\n",
+                DBObject.OBJ_TYPE_PLCSQL_PROCEDURE,
+                createResultHandler(pd),
+                config.getSrcCatalog().getDatabaseType().isSupportMultiSchema()
+                        ? pd.getOwner()
+                        : config.getSrcConnOwner(),
+                null,
+                pd.getName());
+    }
+
+    /**
+     * Create plcsql procedure body
+     *
+     * @param pd the plcsql procedure body to be created.
+     */
+    @Override
+    public void createPlcsqlProcedureBody(PlcsqlProcedure pd) {
+        String ddl =
+                CUBRIDSQLHelper.getInstance(null)
+                        .getPlcsqlProcedureDDL(pd, config.isAddUserSchema());
+        executeDDL(
+                ddl + "\n\n",
+                DBObject.OBJ_TYPE_PLCSQL_PROCEDURE,
+                createResultHandler(pd),
+                config.getSrcCatalog().getDatabaseType().isSupportMultiSchema()
+                        ? pd.getOwner()
+                        : config.getSrcConnOwner(),
+                null,
+                pd.getName());
+    }
+
+    /**
+     * Create plcsql function header
+     *
+     * @param pd the plcsql function header to be created.
+     */
+    @Override
+    public void createPlcsqlFunctionHeader(PlcsqlFunction ft) {
+        String ddl =
+                CUBRIDSQLHelper.getInstance(null)
+                        .getPlcsqlFunctionHeaderDDL(ft, config.isAddUserSchema());
+        executeDDL(
+                ddl + "; \n\n",
+                DBObject.OBJ_TYPE_PLCSQL_FUNCTION,
+                createResultHandler(ft),
+                config.getSrcCatalog().getDatabaseType().isSupportMultiSchema()
+                        ? ft.getOwner()
+                        : config.getSrcConnOwner(),
+                null,
+                ft.getName());
+    }
+
+    /**
+     * Create plcsql function body
+     *
+     * @param pd the plcsql function body to be created.
+     */
+    @Override
+    public void createPlcsqlFunctionBody(PlcsqlFunction ft) {
+        String ddl =
+                CUBRIDSQLHelper.getInstance(null)
+                        .getPlcsqlFunctionDDL(ft, config.isAddUserSchema());
+        executeDDL(
+                ddl + "\n\n",
+                DBObject.OBJ_TYPE_PLCSQL_FUNCTION,
+                createResultHandler(ft),
+                config.getSrcCatalog().getDatabaseType().isSupportMultiSchema()
+                        ? ft.getOwner()
+                        : config.getSrcConnOwner(),
+                null,
+                ft.getName());
     }
 
     public void createSchema(Schema schema) {}

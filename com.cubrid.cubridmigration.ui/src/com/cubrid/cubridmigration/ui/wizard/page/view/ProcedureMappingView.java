@@ -166,7 +166,7 @@ public class ProcedureMappingView extends AbstractMappingView {
             targetProc.setHeaderDDL(procedureDDL.getHeader());
             targetProc.setBodyDDL(procedureDDL.getBody());
         }
-        String procDDL = ddlUtils.getProcedureDDL(targetProc, config.isAddUserSchema());
+        String procDDL = ddlUtils.getPlcsqlProcedureDDL(targetProc, config.isAddUserSchema());
         txtTargetSQL.setText(procDDL);
         // Set controls status
         btnCreate.setEnabled(true);

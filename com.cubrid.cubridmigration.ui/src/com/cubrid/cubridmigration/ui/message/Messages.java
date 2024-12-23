@@ -265,6 +265,8 @@ public class Messages extends NLS {
     public static String confrimGrant;
     public static String confrimSerial;
     public static String confrimSynonym;
+    public static String confrimProcedure;
+    public static String confrimFunction;
     public static String confrimUpdateStatistic;
     public static String confrimSQLTables;
     public static String cUBRID2CUBRID;
