@@ -56,7 +56,7 @@ public class PlcsqlFunctionBodyExportTask extends ExportTask {
     @Override
     protected void executeExportTask() {
         PlcsqlFunction targetProcedure =
-                config.getTargetPlcsqlFunctionSchema(sfc.getTargetOwner(), sfc.getName());
+                config.getTargetPlcsqlFunctionSchema(sfc.getOwner(), sfc.getName());
         importTaskExecutor.execute(
                 (Runnable) taskFactory.createImportPlcsqlFunctionBodyTask(targetProcedure));
     }

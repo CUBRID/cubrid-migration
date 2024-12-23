@@ -838,7 +838,7 @@ public class CUBRIDSQLHelper extends SQLHelper {
         StringBuffer sql = new StringBuffer();
         sql.append("CREATE ")
                 .append(replaceHeader(procedure.getHeaderDDL(), "PROCEDURE", owner, name))
-                .append("AS LANGUAGE PLCSQL BEGIN RAISE_APPLICATION_ERROR(1000, '[")
+                .append(" AS LANGUAGE PLCSQL BEGIN RAISE_APPLICATION_ERROR(1000, '[")
                 .append(name.toLowerCase())
                 .append("]: incomplete during loaddb'); /* __CUBRID_NO_BODY__ */ ")
                 .append("END");
@@ -913,7 +913,7 @@ public class CUBRIDSQLHelper extends SQLHelper {
         StringBuffer sql = new StringBuffer();
         sql.append("CREATE ")
                 .append(replaceHeader(function.getHeaderDDL(), "FUNCTION", owner, name))
-                .append("AS LANGUAGE PLCSQL BEGIN RAISE_APPLICATION_ERROR(1000, '[")
+                .append(" AS LANGUAGE PLCSQL BEGIN RAISE_APPLICATION_ERROR(1000, '[")
                 .append(name.toLowerCase())
                 .append("]: incomplete during loaddb'); /* __CUBRID_NO_BODY__ */ ")
                 .append("END");

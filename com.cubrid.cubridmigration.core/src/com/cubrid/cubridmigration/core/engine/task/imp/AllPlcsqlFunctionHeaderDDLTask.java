@@ -66,7 +66,8 @@ public class AllPlcsqlFunctionHeaderDDLTask extends ImportTask {
             CUBRIDSQLHelper sqlHelper = CUBRIDSQLHelper.getInstance(null);
 
             String ddl =
-                    sqlHelper.getPlcsqlFunctionHeaderDDL(function, config.isAddUserSchema()) + "\n";
+                    sqlHelper.getPlcsqlFunctionHeaderDDL(function, config.isAddUserSchema())
+                            + ";\n";
             File functionFile = new File(functionFiles.get(owner));
 
             try {

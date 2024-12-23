@@ -2292,7 +2292,7 @@ public class MigrationConfiguration {
         List<SourcePlcsqlProcedureConfig> spcs = getExpPlcsqlProcedureCfg();
         for (SourcePlcsqlProcedureConfig spc : spcs) {
             PlcsqlProcedure targetProc =
-                    getTargetPlcsqlProcedureSchema(spc.getTargetOwner(), spc.getName());
+                    getTargetPlcsqlProcedureSchema(spc.getOwner(), spc.getName());
             if (Objects.isNull(targetProc.getHeaderDDL())
                     && Objects.isNull(targetProc.getBodyDDL())) {
                 ProcedureDDL procedureDDL =
@@ -2305,7 +2305,7 @@ public class MigrationConfiguration {
         List<SourcePlcsqlFunctionConfig> fpcs = getExpPlcsqlFunctionCfg();
         for (SourcePlcsqlFunctionConfig fpc : fpcs) {
             PlcsqlFunction targetFunc =
-                    getTargetPlcsqlFunctionSchema(fpc.getTargetOwner(), fpc.getName());
+                    getTargetPlcsqlFunctionSchema(fpc.getOwner(), fpc.getName());
             if (Objects.isNull(targetFunc.getHeaderDDL())
                     && Objects.isNull(targetFunc.getBodyDDL())) {
                 ProcedureDDL procedureDDL =
@@ -3932,8 +3932,7 @@ public class MigrationConfiguration {
         }
 
         for (PlcsqlProcedure proc : this.targetPlcsqlProcedures) {
-            if (proc.getTargetName().equalsIgnoreCase(name)
-                    && proc.getTargetOwner().equalsIgnoreCase(owner)) {
+            if (proc.getName().equalsIgnoreCase(name) && proc.getOwner().equalsIgnoreCase(owner)) {
                 return proc;
             }
         }
@@ -3959,8 +3958,7 @@ public class MigrationConfiguration {
         }
 
         for (PlcsqlFunction func : this.targetPlcsqlFunctions) {
-            if (func.getTargetName().equalsIgnoreCase(name)
-                    && func.getTargetOwner().equalsIgnoreCase(owner)) {
+            if (func.getName().equalsIgnoreCase(name) && func.getOwner().equalsIgnoreCase(owner)) {
                 return func;
             }
         }
