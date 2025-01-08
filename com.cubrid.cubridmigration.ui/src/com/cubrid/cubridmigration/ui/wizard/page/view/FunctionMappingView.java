@@ -206,12 +206,20 @@ public class FunctionMappingView extends AbstractMappingView {
 
         // Get Function name
         String regex =
-                "(?i)CREATE(?:\\s+OR\\s+REPLACE)?\\s+FUNCTION\\s+(?:\\[[a-zA-Z0-9_#]+\\]\\.|[a-zA-Z0-9_#]+\\.)?(\\[[a-zA-Z0-9_#]+\\]|[a-zA-Z0-9_#]+)";
+                "(?i)CREATE(?:\\s+OR\\s+REPLACE)?\\s+FUNCTION\\s+(?:(\\[[a-zA-Z0-9_#]+\\]|[a-zA-Z0-9_#]+)\\.)?(\\[[a-zA-Z0-9_#]+\\]|[a-zA-Z0-9_#]+)";
         Pattern pattern = Pattern.compile(regex);
         Matcher matcher = pattern.matcher(targetSQL);
 
         if (matcher.find()) {
-            String extractedName = removeBrackets(matcher.group(1));
+            String extractedOwner = matcher.group(1);
+            if (extractedOwner != null) {
+                extractedOwner = removeBrackets(extractedOwner);
+                if (!targetFunc.getOwner().equalsIgnoreCase(extractedOwner)) {
+                    targetFunc.setTargetOwner(extractedOwner);
+                }
+            }
+
+            String extractedName = removeBrackets(matcher.group(2));
             if (!targetFunc.getName().equalsIgnoreCase(extractedName)) {
                 targetFunc.setTargetName(extractedName.toLowerCase());
             }

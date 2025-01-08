@@ -934,7 +934,7 @@ public class CUBRIDSQLHelper extends SQLHelper {
         String name =
                 Objects.nonNull(function.getTargetName())
                         ? function.getTargetName()
-                        : function.getOwner();
+                        : function.getName();
 
         StringBuffer sql = new StringBuffer();
         sql.append("CREATE OR REPLACE ")
@@ -984,7 +984,9 @@ public class CUBRIDSQLHelper extends SQLHelper {
 
         Pattern insertOwnerPattern =
                 Pattern.compile(
-                        "^(" + sourceType + ")\\s+(\"?\\w+\"?)(?:\\.(\"?\\w+\"?))?",
+                        "^("
+                                + sourceType
+                                + ")\\s+(\\\"?[\\w\\[\\]]+\\\"?)(?:\\.(\\\"?[\\w\\[\\]]+\\\"?))?",
                         Pattern.CASE_INSENSITIVE);
         Matcher matcher = insertOwnerPattern.matcher(header);
 

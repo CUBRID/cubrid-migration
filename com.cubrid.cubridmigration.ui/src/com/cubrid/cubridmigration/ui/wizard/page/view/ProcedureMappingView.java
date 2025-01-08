@@ -206,11 +206,19 @@ public class ProcedureMappingView extends AbstractMappingView {
 
         // Get procedure name
         String regex =
-                "(?i)CREATE(?:\\s+OR\\s+REPLACE)?\\s+PROCEDURE\\s+(?:\\[[a-zA-Z0-9_#]+\\]\\.|[a-zA-Z0-9_#]+\\.)?(\\[[a-zA-Z0-9_#]+\\]|[a-zA-Z0-9_#]+)";
+                "(?i)CREATE(?:\\s+OR\\s+REPLACE)?\\s+PROCEDURE\\s+(?:(\\[[a-zA-Z0-9_#]+\\]|[a-zA-Z0-9_#]+)\\.)?(\\[[a-zA-Z0-9_#]+\\]|[a-zA-Z0-9_#]+)";
         Pattern pattern = Pattern.compile(regex);
         Matcher matcher = pattern.matcher(targetSQL);
 
         if (matcher.find()) {
+            String extractedOwner = matcher.group(1);
+            if (extractedOwner != null) {
+                extractedOwner = removeBrackets(extractedOwner);
+                if (!targetProc.getOwner().equalsIgnoreCase(extractedOwner)) {
+                    targetProc.setTargetOwner(extractedOwner);
+                }
+            }
+
             String extractedName = removeBrackets(matcher.group(1));
             if (!targetProc.getName().equalsIgnoreCase(extractedName)) {
                 targetProc.setTargetName(extractedName.toLowerCase());
