@@ -97,6 +97,7 @@ public final class CUBRIDSchemaFetcher extends AbstractJDBCSchemaFetcher {
 
     private final int COMMENT_SUPPORT_VERSION = 100;
     private final int USERSCHEMA_VERSION = 112;
+    private final int DB_SERIAL_ATTR_NAME = 114;
 
     /**
      * Retrieves the lower case of type, and some type may be changed into stand format.
@@ -558,10 +559,13 @@ public final class CUBRIDSchemaFetcher extends AbstractJDBCSchemaFetcher {
         Statement stmt = null;
         // SERIAL
         try {
+            String attrNameCol =
+                    getDBVersion(conn) >= DB_SERIAL_ATTR_NAME ? "attr_name" : "att_name";
             String sql =
                     "SELECT class_name, name, owner,"
                             + " current_val, increment_val, max_val,"
-                            + " min_val, cyclic, started, att_name"
+                            + " min_val, cyclic, started, "
+                            + attrNameCol
                             + " FROM db_serial"
                             + " WHERE class_name IS NOT NULL"
                             + " ORDER BY class_name";
@@ -576,7 +580,7 @@ public final class CUBRIDSchemaFetcher extends AbstractJDBCSchemaFetcher {
                 }
 
                 String currentVal = rs.getString("current_val");
-                String attrName = rs.getString("att_name");
+                String attrName = rs.getString(attrNameCol);
 
                 Table table = tables.get(tableName);
                 if (table == null) {
@@ -1019,10 +1023,13 @@ public final class CUBRIDSchemaFetcher extends AbstractJDBCSchemaFetcher {
         Statement stmt = null;
         // SERIAL
         try {
+            String attrNameCol =
+                    getDBVersion(conn) >= DB_SERIAL_ATTR_NAME ? "attr_name" : "att_name";
             String sql =
                     "SELECT class_name,name,owner.name,current_val,increment_val,"
-                            + "max_val,min_val,cyclic,started,att_name "
-                            + "FROM db_serial "
+                            + "max_val,min_val,cyclic,started,"
+                            + attrNameCol
+                            + " FROM db_serial "
                             + "WHERE class_name IS NOT NULL "
                             + "ORDER BY class_name";
 
@@ -1037,7 +1044,7 @@ public final class CUBRIDSchemaFetcher extends AbstractJDBCSchemaFetcher {
                 }
 
                 String currentVal = rs.getString("current_val");
-                String attrName = rs.getString("att_name");
+                String attrName = rs.getString(attrNameCol);
 
                 Table table = tables.get(ownerName + "." + tableName);
                 if (table == null) {
@@ -1263,13 +1270,15 @@ public final class CUBRIDSchemaFetcher extends AbstractJDBCSchemaFetcher {
 
         try {
             int dbVersion = getDBVersion(conn);
+            String attrNameCol = dbVersion >= DB_SERIAL_ATTR_NAME ? ", attr_name" : ", att_name";
             String sqlComment = dbVersion >= COMMENT_SUPPORT_VERSION ? ", comment" : "";
             String getUserSchema = dbVersion >= USERSCHEMA_VERSION ? " and owner.name = ?" : "";
             // owner.name?
             String sql =
                     "SELECT name, owner.name, current_val,"
                             + " increment_val, max_val, min_val, cyclic,"
-                            + " started, class_name, att_name, cached_num"
+                            + " started, class_name, cached_num"
+                            + attrNameCol
                             + sqlComment
                             + " FROM db_serial"
                             + " WHERE class_name IS NULL"
@@ -1583,10 +1592,13 @@ public final class CUBRIDSchemaFetcher extends AbstractJDBCSchemaFetcher {
         }
 
         try {
+            String attrNameCol =
+                    getDBVersion(conn) >= DB_SERIAL_ATTR_NAME ? "attr_name" : "att_name";
             String sql =
                     "SELECT name, owner, current_val,"
                             + " increment_val, max_val, min_val,"
-                            + " cyclic, started, class_name, att_name"
+                            + " cyclic, started, class_name, "
+                            + attrNameCol
                             + " FROM db_serial"
                             + " WHERE class_name=?";
 
@@ -1598,7 +1610,7 @@ public final class CUBRIDSchemaFetcher extends AbstractJDBCSchemaFetcher {
 
                 String currentVal = rs.getString("current_val");
 
-                String attrName = rs.getString("att_name");
+                String attrName = rs.getString(attrNameCol);
 
                 final Column column = table.getColumnByName(attrName);
                 if (column == null) {
