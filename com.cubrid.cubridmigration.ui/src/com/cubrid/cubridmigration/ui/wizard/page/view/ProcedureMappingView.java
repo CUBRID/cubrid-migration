@@ -219,7 +219,7 @@ public class ProcedureMappingView extends AbstractMappingView {
                 }
             }
 
-            String extractedName = removeBrackets(matcher.group(1));
+            String extractedName = removeBrackets(matcher.group(2));
             if (!targetProc.getName().equalsIgnoreCase(extractedName)) {
                 targetProc.setTargetName(extractedName.toLowerCase());
             }
