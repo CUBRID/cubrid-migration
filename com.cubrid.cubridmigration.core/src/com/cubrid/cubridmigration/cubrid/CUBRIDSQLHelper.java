@@ -1011,7 +1011,6 @@ public class CUBRIDSQLHelper extends SQLHelper {
 
     private String replaceBody(String sql) {
         String body = replaceIsWithAs(sql);
-        body = removeEndName(body);
         return body;
     }
 
@@ -1044,10 +1043,5 @@ public class CUBRIDSQLHelper extends SQLHelper {
         Matcher matcher = pattern.matcher(sql);
 
         return matcher.replaceAll(" AS");
-    }
-
-    private String removeEndName(String sql) {
-        String regex = "(?i)(END)\\s+[a-zA-Z0-9_#]+;";
-        return sql.replaceAll(regex, "$1;");
     }
 }
