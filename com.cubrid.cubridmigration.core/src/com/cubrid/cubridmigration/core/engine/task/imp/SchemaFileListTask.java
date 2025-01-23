@@ -89,6 +89,24 @@ public class SchemaFileListTask extends ImportTask {
         boolean isCreateSchemaListFile = false;
         File schemaFileListFile = new File(config.getTargetSchemaFileListName(schemaName));
         try {
+            // plcsql procedure header
+            String procedureHeaderFileRepository =
+                    config.getTargetAllPlcsqlProcedureHeaderFileName(schemaName);
+            if (checkFileRepository(procedureHeaderFileRepository)) {
+                isCreateSchemaListFile = true;
+                sb.append(getFileName(procedureHeaderFileRepository));
+                sb.append(lineSeparator);
+            }
+
+            // plcsql function header
+            String functionHeaderFileRepository =
+                    config.getTargetAllPlcsqlFunctionHeaderFileName(schemaName);
+            if (checkFileRepository(functionHeaderFileRepository)) {
+                isCreateSchemaListFile = true;
+                sb.append(getFileName(functionHeaderFileRepository));
+                sb.append(lineSeparator);
+            }
+
             // table
             String tableFileRepository = config.getTargetTableFileName(schemaName);
             if (checkFileRepository(tableFileRepository)) {
@@ -121,21 +139,19 @@ public class SchemaFileListTask extends ImportTask {
                 sb.append(lineSeparator);
             }
 
-            // plcsql procedure header
-            String procedureHeaderFileRepository =
-                    config.getTargetAllPlcsqlProcedureHeaderFileName(schemaName);
-            if (checkFileRepository(procedureHeaderFileRepository)) {
+            // plcsql procedure ddl
+            String procedureFileRepository = config.getTargetAllPlcsqlProcedureFileName(schemaName);
+            if (checkFileRepository(procedureFileRepository)) {
                 isCreateSchemaListFile = true;
-                sb.append(getFileName(procedureHeaderFileRepository));
+                sb.append(getFileName(procedureFileRepository));
                 sb.append(lineSeparator);
             }
 
-            // plcsql function header
-            String functionHeaderFileRepository =
-                    config.getTargetAllPlcsqlFunctionHeaderFileName(schemaName);
-            if (checkFileRepository(functionHeaderFileRepository)) {
+            // plcsql function ddl
+            String functionFileRepository = config.getTargetAllPlcsqlFunctionFileName(schemaName);
+            if (checkFileRepository(functionFileRepository)) {
                 isCreateSchemaListFile = true;
-                sb.append(getFileName(functionHeaderFileRepository));
+                sb.append(getFileName(functionFileRepository));
                 sb.append(lineSeparator);
             }
 
@@ -174,22 +190,6 @@ public class SchemaFileListTask extends ImportTask {
             if (checkFileRepository(viewQuerySpecFileRepository)) {
                 isCreateSchemaListFile = true;
                 sb.append(getFileName(viewQuerySpecFileRepository));
-                sb.append(lineSeparator);
-            }
-
-            // plcsql procedure ddl
-            String procedureFileRepository = config.getTargetAllPlcsqlProcedureFileName(schemaName);
-            if (checkFileRepository(procedureFileRepository)) {
-                isCreateSchemaListFile = true;
-                sb.append(getFileName(procedureFileRepository));
-                sb.append(lineSeparator);
-            }
-
-            // plcsql function ddl
-            String functionFileRepository = config.getTargetAllPlcsqlFunctionFileName(schemaName);
-            if (checkFileRepository(functionFileRepository)) {
-                isCreateSchemaListFile = true;
-                sb.append(getFileName(functionFileRepository));
                 sb.append(lineSeparator);
             }
 
