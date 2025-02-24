@@ -1179,6 +1179,7 @@ public class TableMappingView extends AbstractMappingView {
         }
         for (int i = 0; i < tvTableIndexes.getTable().getItemCount(); i++) {
             Object[] obj = (Object[]) tvTableIndexes.getElementAt(i);
+            if (!(boolean) obj[2]) continue;
             String name = obj[1].toString().toLowerCase(Locale.US);
             if (names.indexOf(name) >= 0) {
                 return new VerifyResultMessages(
