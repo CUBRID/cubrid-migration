@@ -74,7 +74,7 @@ public class PlcsqlProcedureSourceAndDropDDLTask extends ImportTask {
             File procedureFile = new File(procedureFiles.get(owner).get(name));
 
             try {
-                CUBRIDIOUtils.writeLines(procedureFile, sourceCreateAndDropSQL, true);
+                CUBRIDIOUtils.writeLines(procedureFile, sourceCreateAndDropSQL, "UTF-8", true);
             } catch (IOException e) {
                 LOG.error("PlcsqlProcedureSourceAndDropDDLTask");
             }

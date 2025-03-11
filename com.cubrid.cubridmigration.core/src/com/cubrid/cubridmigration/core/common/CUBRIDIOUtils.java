@@ -722,12 +722,12 @@ public final class CUBRIDIOUtils {
      * @param lines the content to append
      * @throws IOException when IO errors.
      */
-    public static void writeLines(File file, String[] lines, boolean appendMode)
+    public static void writeLines(File file, String[] lines, String fileCharset, boolean appendMode)
             throws IOException {
         FileOutputStream fos = null;
         try {
             fos = new FileOutputStream(file, appendMode);
-            writeLines(fos, lines);
+            writeLines(fos, lines, fileCharset);
         } finally {
             Closer.close(fos);
         }
@@ -764,7 +764,6 @@ public final class CUBRIDIOUtils {
     public static void writeLines(Writer writer, String[] lines) throws IOException {
         BufferedWriter bw = new BufferedWriter(writer, BUFFER_SIZE);
         try {
-
             for (String line : lines) {
                 bw.write(line);
                 bw.newLine();

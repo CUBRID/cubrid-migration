@@ -71,7 +71,7 @@ public class AllPlcsqlProcedureHeaderDDLTask extends ImportTask {
             File procedureFile = new File(procedureFiles.get(owner));
 
             try {
-                CUBRIDIOUtils.writeLines(procedureFile, new String[] {ddl}, true);
+                CUBRIDIOUtils.writeLines(procedureFile, new String[] {ddl}, "UTF-8", true);
             } catch (IOException e) {
                 LOG.error("AllPlcsqlProcedureHeaderDDLTask");
             }

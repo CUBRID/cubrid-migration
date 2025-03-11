@@ -74,7 +74,7 @@ public class PlcsqlFunctionSourceAndDropDDLTask extends ImportTask {
             File functionFile = new File(functionFiles.get(owner).get(name));
 
             try {
-                CUBRIDIOUtils.writeLines(functionFile, sourceCreateAndDropSQL, true);
+                CUBRIDIOUtils.writeLines(functionFile, sourceCreateAndDropSQL, "UTF-8", true);
             } catch (IOException e) {
                 LOG.error("PlcsqlFunctionSourceAndDropDDLTask");
             }

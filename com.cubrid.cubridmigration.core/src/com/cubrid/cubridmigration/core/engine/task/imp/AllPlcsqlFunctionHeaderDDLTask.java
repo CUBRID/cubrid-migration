@@ -71,7 +71,7 @@ public class AllPlcsqlFunctionHeaderDDLTask extends ImportTask {
             File functionFile = new File(functionFiles.get(owner));
 
             try {
-                CUBRIDIOUtils.writeLines(functionFile, new String[] {ddl}, true);
+                CUBRIDIOUtils.writeLines(functionFile, new String[] {ddl}, "UTF-8", true);
             } catch (IOException e) {
                 LOG.error("AllPlcsqlFunctionHeaderDDLTask");
             }
