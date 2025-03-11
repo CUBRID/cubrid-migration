@@ -763,8 +763,8 @@ public final class CUBRIDIOUtils {
      */
     public static void writeLines(Writer writer, String[] lines) throws IOException {
         BufferedWriter bw = new BufferedWriter(writer, BUFFER_SIZE);
-
         try {
+
             for (String line : lines) {
                 bw.write(line);
                 bw.newLine();
