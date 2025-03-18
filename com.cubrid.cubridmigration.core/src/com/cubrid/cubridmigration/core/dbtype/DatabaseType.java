@@ -229,14 +229,6 @@ public abstract class DatabaseType {
             for (JDBCData jdbcData : jdbcDatas) {
                 if (jdbcData.getJdbcDriverPath().indexOf(fullName) >= 0) {
                     return jdbcData;
-                } else if (fullName.endsWith(jdbcData.getJdbcDriverName())) {
-                    return jdbcData;
-                }
-            }
-            // If file exists and did not find the JDBC data in the list, search it by file name
-            for (JDBCData jdbcData : jdbcDatas) {
-                if (jdbcData.getJdbcDriverPath().indexOf(file.getName()) >= 0) {
-                    return jdbcData;
                 }
             }
         } catch (IOException e) {
