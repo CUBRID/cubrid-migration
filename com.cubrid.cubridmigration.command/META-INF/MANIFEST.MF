@@ -7,11 +7,7 @@ Bundle-Vendor: CUBRID
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-Localization: plugin
 Bundle-ActivationPolicy: lazy
-Require-Bundle: org.eclipse.ui,
- org.eclipse.core.runtime,
- com.cubrid.cubridmigration.core,
- com.cubrid.cubridmigration.ui,
- org.eclipse.equinox.p2.ui
-Bundle-ClassPath: .,
- lib/commons-io-2.1.0.jar
+Require-Bundle: org.eclipse.core.runtime,
+ com.cubrid.cubridmigration.core
+Bundle-ClassPath: .
 
