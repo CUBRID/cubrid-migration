@@ -421,7 +421,8 @@ public final class CUBRIDIOUtils {
                     for (int j = 0; j < row.getLastCellNum(); j++) {
                         Cell cell = row.getCell(j);
                         data[j] =
-                                (cell.getCellType() != CellType.STRING || cell.getStringCellValue() == null)
+                                (cell.getCellType() != CellType.STRING
+                                                || cell.getStringCellValue() == null)
                                         ? ""
                                         : cell.getStringCellValue();
                     }
