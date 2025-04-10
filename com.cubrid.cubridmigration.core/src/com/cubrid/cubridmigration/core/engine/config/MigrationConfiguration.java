@@ -178,6 +178,7 @@ public class MigrationConfiguration {
     private Map<String, String> targetPkFileName = new HashMap<String, String>();
     private Map<String, String> targetFkFileName = new HashMap<String, String>();
     private Map<String, String> targetIndexFileName = new HashMap<String, String>();
+    private Map<String, String> targetUniqueIndexFileName = new HashMap<String, String>();
     private Map<String, String> targetSerialFileName = new HashMap<String, String>();
     private Map<String, String> targetDataFileName = new HashMap<String, String>();
     private Map<String, String> targetUpdateStatisticFileName = new HashMap<String, String>();
@@ -1121,6 +1122,8 @@ public class MigrationConfiguration {
                     schemaName, buildLocalFileFullPath(schemaName, "vclass_query_spec", null));
             this.addTargetPkFileName(schemaName, buildLocalFileFullPath(schemaName, "pk", null));
             this.addTargetFkFileName(schemaName, buildLocalFileFullPath(schemaName, "fk", null));
+            this.addTargetUniqueIndexFileName(
+                    schemaName, buildLocalFileFullPath(schemaName, "uk", null));
             this.addTargetSerialFileName(
                     schemaName, buildLocalFileFullPath(schemaName, "serial", null));
             this.addTargetSynonymFileName(
@@ -1581,6 +1584,7 @@ public class MigrationConfiguration {
                 sic = new SourceIndexConfig();
                 sic.setName(idx.getName());
                 sic.setCreate(isReset);
+                sic.setUnique(idx.isUnique());
                 sic.setReplace(isReset);
                 sic.setParent(setc);
                 sic.setTarget(StringUtils.lowerCase(idx.getName()));
@@ -1944,6 +1948,14 @@ public class MigrationConfiguration {
                 addTargetFkFileName(
                         schemaName,
                         path2 + targetFkFileName.get(schemaName).substring(tempPath.length()));
+            }
+            if (targetUniqueIndexFileName.get(schemaName) != null) {
+                addTargetUniqueIndexFileName(
+                        schemaName,
+                        path2
+                                + targetUniqueIndexFileName
+                                        .get(schemaName)
+                                        .substring(tempPath.length()));
             }
             if (targetSerialFileName.get(schemaName) != null) {
                 addTargetSerialFileName(
@@ -3604,6 +3616,14 @@ public class MigrationConfiguration {
         return this.targetIndexFileName.get(schemaName);
     }
 
+    public Map<String, String> getTargetUniqueIndexFileName() {
+        return new HashMap<String, String>(this.targetUniqueIndexFileName);
+    }
+
+    public String getTargetUniqueIndexFileName(String schemaName) {
+        return this.targetUniqueIndexFileName.get(schemaName);
+    }
+
     public Map<String, String> getTargetSerialFileName() {
         return new HashMap<String, String>(this.targetSerialFileName);
     }
@@ -4691,6 +4711,9 @@ public class MigrationConfiguration {
             addTargetFkFileName(
                     schemaName,
                     PathUtils.mergePath(PathUtils.mergePath(odir, prefix), schemaName + "_fk"));
+            addTargetUniqueIndexFileName(
+                    schemaName,
+                    PathUtils.mergePath(PathUtils.mergePath(odir, prefix), schemaName + "_uk"));
             addTargetIndexFileName(
                     schemaName,
                     PathUtils.mergePath(
@@ -5018,6 +5041,14 @@ public class MigrationConfiguration {
 
     public void addTargetIndexFileName(String schemaName, String filePath) {
         this.targetIndexFileName.put(schemaName, filePath);
+    }
+
+    public void setTargetUniqueIndexFileName(Map<String, String> targetUniqueIndexFileName) {
+        this.targetUniqueIndexFileName.putAll(targetUniqueIndexFileName);
+    }
+
+    public void addTargetUniqueIndexFileName(String schemaName, String filePath) {
+        this.targetUniqueIndexFileName.put(schemaName, filePath);
     }
 
     public void setTargetSerialFileName(Map<String, String> targetSerialFileName) {

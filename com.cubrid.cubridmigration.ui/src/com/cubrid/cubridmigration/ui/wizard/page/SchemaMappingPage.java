@@ -119,6 +119,7 @@ public class SchemaMappingPage extends MigrationWizardPage {
     Map<String, String> fkFullName;
     Map<String, String> dataFullName;
     Map<String, String> indexFullName;
+    Map<String, String> uniqueIndexFullName;
     Map<String, String> serialFullName;
     Map<String, String> updateStatisticFullName;
     Map<String, String> schemaFileListFullName;
@@ -771,6 +772,7 @@ public class SchemaMappingPage extends MigrationWizardPage {
         fkFullName = new HashMap<String, String>();
         dataFullName = new HashMap<String, String>();
         indexFullName = new HashMap<String, String>();
+        uniqueIndexFullName = new HashMap<String, String>();
         serialFullName = new HashMap<String, String>();
         updateStatisticFullName = new HashMap<String, String>();
         schemaFileListFullName = new HashMap<String, String>();
@@ -821,6 +823,8 @@ public class SchemaMappingPage extends MigrationWizardPage {
                         config.buildLocalFileFullPath(schemaName, "vclass_query_spec", null));
                 pkFullName.put(schemaName, config.buildLocalFileFullPath(schemaName, "pk", null));
                 fkFullName.put(schemaName, config.buildLocalFileFullPath(schemaName, "fk", null));
+                uniqueIndexFullName.put(
+                        schemaName, config.buildLocalFileFullPath(schemaName, "uk", null));
                 serialFullName.put(
                         schemaName, config.buildLocalFileFullPath(schemaName, "serial", null));
                 schemaFileListFullName.put(
@@ -911,6 +915,7 @@ public class SchemaMappingPage extends MigrationWizardPage {
         config.setTargetIndexFileName(indexFullName);
         config.setTargetPkFileName(pkFullName);
         config.setTargetFkFileName(fkFullName);
+        config.setTargetUniqueIndexFileName(uniqueIndexFullName);
         config.setTargetSerialFileName(serialFullName);
         config.setTargetUpdateStatisticFileName(updateStatisticFullName);
         config.setTargetSchemaFileListName(schemaFileListFullName);
@@ -971,6 +976,7 @@ public class SchemaMappingPage extends MigrationWizardPage {
                 File viewQuerySpecFile = new File(viewQuerySpecFullName.get(schemaName));
                 File pkFile = new File(pkFullName.get(schemaName));
                 File fkFile = new File(fkFullName.get(schemaName));
+                File uniqueIndexFile = new File(uniqueIndexFullName.get(schemaName));
                 File serialFile = new File(serialFullName.get(schemaName));
                 File infoFile = new File(schemaFileListFullName.get(schemaName));
                 File synonymFile = new File(synonymFileListFullName.get(schemaName));
@@ -994,6 +1000,9 @@ public class SchemaMappingPage extends MigrationWizardPage {
                 }
                 if (fkFile.exists()) {
                     buffer.append(fkFile.getCanonicalPath()).append(lineSeparator);
+                }
+                if (uniqueIndexFile.exists()) {
+                    buffer.append(uniqueIndexFile.getCanonicalPath()).append(lineSeparator);
                 }
                 if (serialFile.exists()) {
                     buffer.append(serialFile.getCanonicalPath()).append(lineSeparator);

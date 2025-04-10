@@ -827,7 +827,7 @@ public abstract class OfflineImporter extends Importer {
 
         executeDDL(
                 ddl + ";\n",
-                DBObject.OBJ_TYPE_INDEX,
+                index.isUnique() ? DBObject.OBJ_TYPE_UNIQUE_INDEX : DBObject.OBJ_TYPE_INDEX,
                 createResultHandler(index),
                 config.getSrcCatalog().getDatabaseType().isSupportMultiSchema()
                         ? index.getTable().getSourceOwner()

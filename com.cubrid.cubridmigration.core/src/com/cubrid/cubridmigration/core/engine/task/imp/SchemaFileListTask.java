@@ -171,6 +171,14 @@ public class SchemaFileListTask extends ImportTask {
                 sb.append(lineSeparator);
             }
 
+            // unique index
+            String uniqueIndexFileRepository = config.getTargetUniqueIndexFileName(schemaName);
+            if (checkFileRepository(uniqueIndexFileRepository)) {
+                isCreateSchemaListFile = true;
+                sb.append(getFileName(uniqueIndexFileRepository));
+                sb.append(lineSeparator);
+            }
+
             // grant
             Map<String, String> grantFilePaths = config.getTargetGrantFileName(schemaName);
             if (grantFilePaths != null) {

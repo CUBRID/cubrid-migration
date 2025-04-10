@@ -51,6 +51,7 @@ public abstract class DBObject implements Serializable {
     public static final String OBJ_TYPE_PK = "primary key";
     public static final String OBJ_TYPE_FK = "foreign key";
     public static final String OBJ_TYPE_INDEX = "index";
+    public static final String OBJ_TYPE_UNIQUE_INDEX = "unique index";
     public static final String OBJ_TYPE_SEQUENCE = "sequence";
     public static final String OBJ_TYPE_TRIGGER = "trigger";
     public static final String OBJ_TYPE_PROCEDURE = "procedure";

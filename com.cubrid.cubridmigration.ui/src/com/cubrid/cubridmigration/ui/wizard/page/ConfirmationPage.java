@@ -575,6 +575,44 @@ public class ConfirmationPage extends BaseConfirmationPage {
                     text.append(lineSeparator);
                 }
 
+                // unique index
+                text.append(tabSeparator).append(Messages.confrimUniqueIndex).append(lineSeparator);
+                oldLength = text.length();
+                Set<String> expUniqueIndex = new HashSet<>();
+                for (SourceEntryTableConfig expTable : migration.getExpEntryTableCfg()) {
+                    if (!expTable.isCreateNewTable() || expTable.getIndexConfigList().size() == 0) {
+                        continue;
+                    }
+
+                    String owner = isSupportMultiSchema ? expTable.getOwner() : conUser;
+                    if (expUniqueIndex.contains(owner)) {
+                        continue;
+                    }
+
+                    for (SourceIndexConfig sic : expTable.getIndexConfigList()) {
+                        if (sic.isUnique()) {
+                            expUniqueIndex.add(owner);
+                            text.append(tabSeparator).append(tabSeparator);
+                            text.append(migration.getTargetUniqueIndexFileName(owner));
+                            text.append(lineSeparator);
+                            break;
+                        }
+                    }
+                }
+                if (styleRanges != null) {
+                    styleRanges.add(
+                            new StyleRange(
+                                    oldLength,
+                                    text.length() - oldLength,
+                                    SWTResourceConstents.COLOR_BLUE,
+                                    null));
+                }
+                if (text.length() == oldLength) {
+                    text.append(tabSeparator).append(tabSeparator);
+                    text.append("-");
+                    text.append(lineSeparator);
+                }
+
                 // index
                 text.append(tabSeparator).append(Messages.confrimIndex).append(lineSeparator);
                 oldLength = text.length();
@@ -589,10 +627,15 @@ public class ConfirmationPage extends BaseConfirmationPage {
                         continue;
                     }
 
-                    expIndexes.add(owner);
-                    text.append(tabSeparator).append(tabSeparator);
-                    text.append(migration.getTargetIndexFileName(owner));
-                    text.append(lineSeparator);
+                    for (SourceIndexConfig sic : expTable.getIndexConfigList()) {
+                        if (!sic.isUnique()) {
+                            expIndexes.add(owner);
+                            text.append(tabSeparator).append(tabSeparator);
+                            text.append(migration.getTargetIndexFileName(owner));
+                            text.append(lineSeparator);
+                            break;
+                        }
+                    }
                 }
                 if (styleRanges != null) {
                     styleRanges.add(
