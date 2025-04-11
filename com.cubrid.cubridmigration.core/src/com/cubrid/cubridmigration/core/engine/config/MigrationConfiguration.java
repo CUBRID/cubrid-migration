@@ -1347,6 +1347,7 @@ public class MigrationConfiguration {
                                     setc.isChangeTableName(),
                                     srcTable.getOwner(),
                                     srcTable.getName()));
+                    setc.setHasPK(srcTable.hasPK());
 
                     setc.setCreateNewTable(isReset);
                     setc.setCreatePartition(isReset);

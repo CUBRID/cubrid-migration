@@ -317,7 +317,7 @@ public class ConfirmationPage extends BaseConfirmationPage {
 
                 Set<String> expPKs = new HashSet<>();
                 for (SourceEntryTableConfig expTable : migration.getExpEntryTableCfg()) {
-                    if (!expTable.isCreatePK()) {
+                    if (!expTable.isCreateNewTable() || !expTable.isHasPK()) {
                         continue;
                     }
 
