@@ -24,7 +24,7 @@ on:
 jobs:
   license:
     name: license
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v2
       - uses: jitterbit/get-changed-files@v1
@@ -66,14 +66,14 @@ jobs:
           test $result = "PASS"
   pr-style:
     name: pr-style
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: deepakputhraya/action-pr-title@master
         with:
           regex: '^\[[A-Z]+-\d+\]\s.+'
   code-style:
     name: code-style
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v2
       - id: files
