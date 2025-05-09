@@ -986,11 +986,7 @@ public class MigrationConfiguration {
                 SourcePlcsqlProcedureConfig sc =
                         getExpPlcsqlProcedureCfg(procedure.getOwner(), procedure.getName());
 
-                if (isNull(sc)
-                        || (nonNull(sourceDBSchema.getTargetSchemaName())
-                                && !sourceDBSchema
-                                        .getTargetSchemaName()
-                                        .equals(sc.getTargetOwner()))) {
+                if (isNull(sc)) {
                     sc =
                             new SourcePlcsqlProcedureConfig(
                                     procedure.getOwner(),
@@ -1005,6 +1001,22 @@ public class MigrationConfiguration {
                                     procedure.getDDL());
                     sc.setCreate(isReset);
                     sc.setReplace(isReset);
+                } else if (nonNull(sourceDBSchema.getTargetSchemaName())
+                        && !sourceDBSchema.getTargetSchemaName().equals(sc.getTargetOwner())) {
+                    sc =
+                            new SourcePlcsqlProcedureConfig(
+                                    sc.getOwner(),
+                                    sourceDBSchema.getTargetSchemaName(),
+                                    sc.getName(),
+                                    sc.getTarget(),
+                                    sc.getAuthid(),
+                                    sc.isAuthidChagned(),
+                                    sc.getSourceDDL(),
+                                    sc.getHeaderDDL(),
+                                    sc.getBodyDDL(),
+                                    sc.getProcedureDDL());
+                    sc.setCreate(sc.isCreate());
+                    sc.setReplace(sc.isReplace());
                 }
                 tempList.add(sc);
 
@@ -1047,11 +1059,7 @@ public class MigrationConfiguration {
                 SourcePlcsqlFunctionConfig sc =
                         getExpPlcsqlFunctionCfg(function.getOwner(), function.getName());
 
-                if (isNull(sc)
-                        || (nonNull(sourceDBSchema.getTargetSchemaName())
-                                && !sourceDBSchema
-                                        .getTargetSchemaName()
-                                        .equals(sc.getTargetOwner()))) {
+                if (isNull(sc)) {
                     sc =
                             new SourcePlcsqlFunctionConfig(
                                     function.getOwner(),
@@ -1066,8 +1074,23 @@ public class MigrationConfiguration {
                                     function.getDDL());
                     sc.setCreate(isReset);
                     sc.setReplace(isReset);
+                } else if (nonNull(sourceDBSchema.getTargetSchemaName())
+                        && !sourceDBSchema.getTargetSchemaName().equals(sc.getTargetOwner())) {
+                    sc =
+                            new SourcePlcsqlFunctionConfig(
+                                    sc.getOwner(),
+                                    sourceDBSchema.getTargetSchemaName(),
+                                    sc.getName(),
+                                    sc.getTarget(),
+                                    sc.getAuthid(),
+                                    sc.isAuthidChanged(),
+                                    sc.getSourceDDL(),
+                                    sc.getHeaderDDL(),
+                                    sc.getBodyDDL(),
+                                    sc.getFunctionDDL());
+                    sc.setCreate(sc.isCreate());
+                    sc.setReplace(sc.isReplace());
                 }
-
                 tempList.add(sc);
 
                 PlcsqlFunction tfunction = null;
