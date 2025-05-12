@@ -39,6 +39,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import org.apache.commons.lang.StringUtils;
 
 /**
@@ -578,6 +579,68 @@ public final class PathUtils {
             }
         }
         config.setTargetGrantFileName(newGrantFilePathMap);
+
+        // plcsql_procedure
+        Map<String, Map<String, String>> newPlcsqlProcedureFiles =
+                config.getTargetPlcsqlProcedureFileName().entrySet().stream()
+                        .filter(entry -> entry.getValue() != null)
+                        .collect(
+                                Collectors.toMap(
+                                        Map.Entry::getKey,
+                                        entry ->
+                                                changeOldNameToNewName(
+                                                        entry.getValue(),
+                                                        fileRootPath,
+                                                        oldName,
+                                                        newName)));
+        config.setTargetPlcsqlProcedureFileName(newPlcsqlProcedureFiles);
+
+        // plcsql_function
+        Map<String, Map<String, String>> newPlcsqlFunctionFiles =
+                config.getTargetPlcsqlFunctionFileName().entrySet().stream()
+                        .filter(entry -> entry.getValue() != null)
+                        .collect(
+                                Collectors.toMap(
+                                        Map.Entry::getKey,
+                                        entry ->
+                                                changeOldNameToNewName(
+                                                        entry.getValue(),
+                                                        fileRootPath,
+                                                        oldName,
+                                                        newName)));
+        config.setTargetPlcsqlFunctionFileName(newPlcsqlFunctionFiles);
+
+        // plcsql_procedure_header
+        config.setTargetAllPlcsqlProcedureHeaderFileName(
+                changeOldNameToNewName(
+                        config.getTargetAllPlcsqlProcedureHeaderFileName(),
+                        fileRootPath,
+                        oldName,
+                        newName));
+
+        // plcsql_procedure_all
+        config.setTargetAllPlcsqlProcedureFileName(
+                changeOldNameToNewName(
+                        config.getTargetAllPlcsqlProcedureFileName(),
+                        fileRootPath,
+                        oldName,
+                        newName));
+
+        // plcsql_function_header
+        config.setTargetAllPlcsqlFunctionHeaderFileName(
+                changeOldNameToNewName(
+                        config.getTargetAllPlcsqlFunctionHeaderFileName(),
+                        fileRootPath,
+                        oldName,
+                        newName));
+
+        // plcsql_function_all
+        config.setTargetAllPlcsqlFunctionFileName(
+                changeOldNameToNewName(
+                        config.getTargetAllPlcsqlFunctionFileName(),
+                        fileRootPath,
+                        oldName,
+                        newName));
 
         // updatestatistic
         config.setTargetUpdateStatisticFileName(
