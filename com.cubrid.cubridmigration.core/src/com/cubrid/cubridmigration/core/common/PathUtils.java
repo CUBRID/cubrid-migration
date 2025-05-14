@@ -550,6 +550,14 @@ public final class PathUtils {
                 changeOldNameToNewName(
                         config.getTargetIndexFileName(), fileRootPath, oldName, newName));
 
+        // unique index
+        replaceMap(
+                config::getTargetUniqueIndexFileName,
+                config::setTargetUniqueIndexFileName,
+                fileRootPath,
+                oldName,
+                newName);
+
         // pk
         config.setTargetPkFileName(
                 changeOldNameToNewName(
