@@ -607,7 +607,6 @@ public class ConfirmationPage extends BaseConfirmationPage {
                         }
                     }
                 }
-
                 if (styleRanges != null) {
                     styleRanges.add(
                             new StyleRange(
