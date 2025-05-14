@@ -585,7 +585,6 @@ public final class PathUtils {
 
         // plcsql_procedure
         replaceNestedMap(
-                config,
                 config::getTargetPlcsqlProcedureFileName,
                 config::setTargetPlcsqlProcedureFileName,
                 fileRootPath,
@@ -594,7 +593,6 @@ public final class PathUtils {
 
         // plcsql_function
         replaceNestedMap(
-                config,
                 config::getTargetPlcsqlFunctionFileName,
                 config::setTargetPlcsqlFunctionFileName,
                 fileRootPath,
@@ -603,7 +601,6 @@ public final class PathUtils {
 
         // plcsql_procedure_header
         replaceMap(
-                config,
                 config::getTargetAllPlcsqlProcedureHeaderFileName,
                 config::setTargetAllPlcsqlProcedureHeaderFileName,
                 fileRootPath,
@@ -612,7 +609,6 @@ public final class PathUtils {
 
         // plcsql_procedure_all
         replaceMap(
-                config,
                 config::getTargetAllPlcsqlProcedureFileName,
                 config::setTargetAllPlcsqlProcedureFileName,
                 fileRootPath,
@@ -621,7 +617,6 @@ public final class PathUtils {
 
         // plcsql_function_header
         replaceMap(
-                config,
                 config::getTargetAllPlcsqlFunctionHeaderFileName,
                 config::setTargetAllPlcsqlFunctionHeaderFileName,
                 fileRootPath,
@@ -630,7 +625,6 @@ public final class PathUtils {
 
         // plcsql_function_all
         replaceMap(
-                config,
                 config::getTargetAllPlcsqlFunctionFileName,
                 config::setTargetAllPlcsqlFunctionFileName,
                 fileRootPath,
@@ -662,7 +656,6 @@ public final class PathUtils {
 
     /** Replace all paths in Map<String, String> with new object names and store the result */
     private static void replaceMap(
-            MigrationConfiguration config,
             Supplier<Map<String, String>> getter,
             Consumer<Map<String, String>> setter,
             String fileRootPath,
@@ -673,7 +666,6 @@ public final class PathUtils {
 
     /** Replace every path inside a nested Map and store the result */
     private static void replaceNestedMap(
-            MigrationConfiguration config,
             Supplier<Map<String, Map<String, String>>> getter,
             Consumer<Map<String, Map<String, String>>> setter,
             String fileRootPath,
