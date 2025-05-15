@@ -30,10 +30,14 @@
  */
 package com.cubrid.cubridmigration.ui.wizard.page;
 
+import static com.cubrid.cubridmigration.core.common.DBUtils.isAdditionalUniqueIndex;
 import static com.cubrid.cubridmigration.core.dbtype.DatabaseType.getDatabaseTypeByID;
 
 import com.cubrid.cubridmigration.core.common.log.LogUtil;
 import com.cubrid.cubridmigration.core.connection.ConnParameters;
+import com.cubrid.cubridmigration.core.dbobject.Index;
+import com.cubrid.cubridmigration.core.dbobject.PK;
+import com.cubrid.cubridmigration.core.dbobject.Table;
 import com.cubrid.cubridmigration.core.dbtype.DatabaseType;
 import com.cubrid.cubridmigration.core.engine.config.MigrationConfiguration;
 import com.cubrid.cubridmigration.core.engine.config.SourceConfig;
@@ -590,7 +594,11 @@ public class ConfirmationPage extends BaseConfirmationPage {
                     }
 
                     for (SourceIndexConfig sic : expTable.getIndexConfigList()) {
-                        if (sic.isUnique()) {
+                        Table table = migration.getSrcTableSchema(owner, expTable.getName());
+                        PK pk = table.getPk();
+                        Index index = table.getIndexByName(sic.getName());
+
+                        if (isAdditionalUniqueIndex(pk, index)) {
                             expUniqueIndex.add(owner);
                             text.append(tabSeparator).append(tabSeparator);
                             text.append(migration.getTargetUniqueIndexFileName(owner));

@@ -31,6 +31,8 @@
 package com.cubrid.cubridmigration.core.common;
 
 import com.cubrid.cubridmigration.core.dbobject.Column;
+import com.cubrid.cubridmigration.core.dbobject.Index;
+import com.cubrid.cubridmigration.core.dbobject.PK;
 import com.cubrid.cubridmigration.core.dbobject.PartitionInfo;
 import com.cubrid.cubridmigration.core.dbobject.Table;
 import java.io.IOException;
@@ -233,6 +235,28 @@ public final class DBUtils {
         } else {
             return null;
         }
+    }
+
+    /**
+     * Determines whether the given index is an additional unique index (i.e., a unique index that
+     * is not the primary key index).
+     *
+     * @param pk
+     * @param index
+     * @return {@code true} if the index is unique and does not exactly match the primary key
+     *     columns; {@code false} if the index is not unique or exactly matches the primary key
+     *     columns
+     */
+    public static boolean isAdditionalUniqueIndex(PK pk, Index index) {
+        if (!index.isUnique()) {
+            return false;
+        }
+
+        if (pk == null) {
+            return true;
+        }
+
+        return !pk.getPkColumns().equals(index.getColumnNames());
     }
 
     /**
