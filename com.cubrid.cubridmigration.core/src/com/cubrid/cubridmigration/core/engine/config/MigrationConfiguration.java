@@ -5497,6 +5497,7 @@ public class MigrationConfiguration {
             case "vclass_query_spec":
             case "pk":
             case "fk":
+            case "uk":
             case "serial":
             case "synonym":
             case "info":
