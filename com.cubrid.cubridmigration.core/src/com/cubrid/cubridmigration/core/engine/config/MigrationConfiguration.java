@@ -5523,6 +5523,10 @@ public class MigrationConfiguration {
             case "uk":
             case "serial":
             case "synonym":
+            case "function":
+            case "function_header":
+            case "procedure":
+            case "procedure_header":
             case "info":
             case "updatestatistic":
                 return getDefaultTargetSchemaFileExtName();
