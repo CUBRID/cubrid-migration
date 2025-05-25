@@ -10,7 +10,7 @@ Param(
 
 $ErrorActionPreference = "Stop"
 
-function show_usage {
+function Show-Usage {
 @"
  OPTIONS
   -p [all(a)/desktop(d)/console(c)]       select profile
@@ -31,96 +31,97 @@ $SelectedProfile = switch ($ProfileArg.ToLower()) {
 }
 
 if ($SelectedProfile -notin @('all','desktop','console')) {
-    show_usage
+    Show-Usage
     exit 1
 }
 
-$DIR                       = (Get-Location).Path
-$TARGET                    = Join-Path $DIR "target"
-$PRODUCT_TARGET            = Join-Path $DIR "com.cubrid.cubridmigration.product/target"
-$CONSOLE_TARGET            = Join-Path $DIR "com.cubrid.cubridmigration.console/target"
-$VERSION_FILE_PATH         = Join-Path $DIR "VERSION"
-$RELEASE_VERSION_FILE_PATH = Join-Path $DIR "com.cubrid.cubridmigration.ui/version.properties"
-$RELEASE_VERSION           = ""
-$CMT_PRODUCT_NAME          = "CUBRID-Migration-Toolkit"
-$CMT_CONSOLE_NAME          = "$CMT_PRODUCT_NAME-console"
-$CMT_SITE_NAME             = "$CMT_PRODUCT_NAME-site"
+$Dir                      = (Get-Location).Path
+$Target                   = Join-Path $Dir "target"
+$ProductTarget            = Join-Path $Dir "com.cubrid.cubridmigration.product/target"
+$ConsoleTarget            = Join-Path $Dir "com.cubrid.cubridmigration.console/target"
+$VersionFilePath          = Join-Path $Dir "VERSION"
+$RelaseVersionFilePath    = Join-Path $Dir "com.cubrid.cubridmigration.ui/version.properties"
+$ReleaseVersion           = ""
 
-function resolve_maven {
-    $cmd = Get-Command mvn -ErrorAction SilentlyContinue
-    if ($cmd) { return $cmd.Source }
+$CmtProductName           = "CUBRID-Migration-Toolkit"
+$CmtConsoleName           = "$CmtProductName-console"
+$CmtSiteName              = "$CmtProductName-site"
+
+function Resolve-Maven {
+    $Cmd = Get-Command mvn -ErrorAction SilentlyContinue
+    if ($Cmd) { return $Cmd.Source }
 
     if ($env:MAVEN_HOME) {
-        $path = Join-Path $env:MAVEN_HOME "bin" "mvn"
-        if (Test-Path $path) { return $path }
+        $Path = Join-Path $env:MAVEN_HOME "bin" "mvn"
+        if (Test-Path $Path) { return $Path }
     }
 
     Write-Error "Maven not found in PATH or MAVEN_HOME"
 }
 
-function print_env {
+function Print-Env {
     if ($env:JAVA_HOME) { Write-Output "JAVA_HOME: $($env:JAVA_HOME)" }
     if ($env:MAVEN_HOME) { Write-Output "MAVEN_HOME: $($env:MAVEN_HOME)" }
 }
 
-function update_build_version {
+function Update-BuildVersion {
     Write-Output "Version File Update....  (com.cubrid.cubridmigration.ui/version.properties)"
 
-    $COMMIT_NUMBER = if (Test-Path ".git") {
+    $CommitNumber = if (Test-Path ".git") {
         "{0:D4}" -f [int](& git rev-list --count HEAD).Trim()
     } else { "0000" }
 
-    $VERSION = ((Get-Content $VERSION_FILE_PATH | Select-String "^version=").ToString().Split('=')[1]).Trim()
+    $Version = ((Get-Content $VersionFilePath | Select-String "^version=").ToString().Split('=')[1]).Trim()
 
-    (Get-Content $RELEASE_VERSION_FILE_PATH |
+    (Get-Content $RelaseVersionFilePath |
         Where-Object { $_ -notmatch "^(releaseVersion|buildVersionId)=" }) |
-        Set-Content $RELEASE_VERSION_FILE_PATH
+        Set-Content $RelaseVersionFilePath
 
-    Add-Content $RELEASE_VERSION_FILE_PATH "releaseVersion=$VERSION"
+    Add-Content $RelaseVersionFilePath "releaseVersion=$Version"
 
-    $script:RELEASE_VERSION = "$VERSION.$COMMIT_NUMBER"
-    Add-Content $RELEASE_VERSION_FILE_PATH "buildVersionId=$RELEASE_VERSION"
+    $ReleaseVersion = "$Version.$CommitNumber"
+    Add-Content $RelaseVersionFilePath "buildVersionId=$ReleaseVersion"
 
-    Write-Output "VERSION= $VERSION"
-    Write-Output "COMMIT_NUMBER= $COMMIT_NUMBER"
-    Write-Output "RELEASE_VERSION= $RELEASE_VERSION"
+    Write-Output "VERSION= $Version"
+    Write-Output "COMMIT_NUMBER= $CommitNumber"
+    Write-Output "RELEASE_VERSION= $ReleaseVersion"
 }
 
-function copy_desktopcmt_to_directory {
-    $CMT_LINUX = Join-Path $PRODUCT_TARGET "$CMT_PRODUCT_NAME-$RELEASE_VERSION-linux-x86_64.tar.gz"
-    if (Test-Path $CMT_LINUX) { Copy-Item $CMT_LINUX -Destination $TARGET -Force -Verbose }
+function Copy-DesktopCMTToDirectory {
+    $CmtLinux = Join-Path $ProductTarget "$CmtProductName-$ReleaseVersion-linux-x86_64.tar.gz"
+    if (Test-Path $CmtLinux) { Copy-Item $CmtLinux -Destination $Target -Force -Verbose }
 
-    $CMT_MAC = Join-Path $PRODUCT_TARGET "$CMT_PRODUCT_NAME-$RELEASE_VERSION-macosx-cocoa-x86_64.tar.gz"
-    if (Test-Path $CMT_MAC) { Copy-Item $CMT_MAC -Destination $TARGET -Force -Verbose }
+    $CmtMac = Join-Path $ProductTarget "$CmtProductName-$ReleaseVersion-macosx-cocoa-x86_64.tar.gz"
+    if (Test-Path $CmtMac) { Copy-Item $CmtMac -Destination $Target -Force -Verbose }
 
-    $CMT_WINDOWS = Join-Path $PRODUCT_TARGET "$CMT_PRODUCT_NAME-$RELEASE_VERSION-windows-x64.zip"
-    if (Test-Path $CMT_WINDOWS) { Copy-Item $CMT_WINDOWS -Destination $TARGET -Force -Verbose }
+    $CmtWindows = Join-Path $ProductTarget "$CmtProductName-$ReleaseVersion-windows-x64.zip"
+    if (Test-Path $CmtWindows) { Copy-Item $CmtWindows -Destination $Target -Force -Verbose }
 
-    $CMT_SITE_TAR_GZ = Join-Path $PRODUCT_TARGET "$CMT_SITE_NAME-$RELEASE_VERSION.tar.gz"
-    if (Test-Path $CMT_SITE_TAR_GZ) { Copy-Item $CMT_SITE_TAR_GZ -Destination $TARGET -Force -Verbose }
+    $CmtSiteTargz = Join-Path $ProductTarget "$CmtSiteName-$ReleaseVersion.tar.gz"
+    if (Test-Path $CmtSiteTargz) { Copy-Item $CmtSiteTargz -Destination $Target -Force -Verbose }
 
-    $CMT_SITE_ZIP = Join-Path $PRODUCT_TARGET "$CMT_SITE_NAME-$RELEASE_VERSION.zip"
-    if (Test-Path $CMT_SITE_ZIP) { Copy-Item $CMT_SITE_ZIP -Destination $TARGET -Force -Verbose }
+    $CmtSiteZip = Join-Path $ProductTarget "$CmtSiteName-$ReleaseVersion.zip"
+    if (Test-Path $CmtSiteZip) { Copy-Item $CmtSiteZip -Destination $Target -Force -Verbose }
 }
 
-function copy_consolecmt_to_directory {
-    $CONSOLE_LINUX = Join-Path $CONSOLE_TARGET "$CMT_CONSOLE_NAME-$RELEASE_VERSION-linux.tar.gz"
-    if (Test-Path $CONSOLE_LINUX) { Copy-Item $CONSOLE_LINUX -Destination $TARGET -Force -Verbose }
+function Copy-ConsoleCMTToDirectory {
+    $ConsoleLinux = Join-Path $ConsoleTarget "$CmtConsoleName-$ReleaseVersion-linux.tar.gz"
+    if (Test-Path $ConsoleLinux) { Copy-Item $ConsoleLinux -Destination $Target -Force -Verbose }
 
-    $CONSOLE_WINDOWS = Join-Path $CONSOLE_TARGET "$CMT_CONSOLE_NAME-$RELEASE_VERSION-windows.zip"
-    if (Test-Path $CONSOLE_WINDOWS) { Copy-Item $CONSOLE_WINDOWS -Destination $TARGET -Force -Verbose }
+    $ConsoleWindows = Join-Path $ConsoleTarget "$CmtConsoleName-$ReleaseVersion-windows.zip"
+    if (Test-Path $ConsoleWindows) { Copy-Item $ConsoleWindows -Destination $Target -Force -Verbose }
 }
 
-function copy_cmt_to_directory {
-    if (-not (Test-Path $TARGET)) { New-Item -ItemType Directory -Path $TARGET | Out-Null }
+function Copy-CMTToDirectory {
+    if (-not (Test-Path $Target)) { New-Item -ItemType Directory -Path $Target | Out-Null }
     switch ($SelectedProfile) {
-        "all" { copy_desktopcmt_to_directory; copy_consolecmt_to_directory }
-        "desktop" { copy_desktopcmt_to_directory }
-        "console" { copy_consolecmt_to_directory }
+        "all" { Copy-DesktopCMTToDirectory; Copy-ConsoleCMTToDirectory }
+        "desktop" { Copy-DesktopCMTToDirectory }
+        "console" { Copy-ConsoleCMTToDirectory }
     }
 }
 
-function cmt_banner {
+function Show-CMTBanner {
 @'
 
  ____                   ______
@@ -136,23 +137,23 @@ function cmt_banner {
 }
 
 # ----------------------------- MAIN ----------------------------- #
-cmt_banner
-$MVN = resolve_maven
-$MVN_DEBUG = if ($Debug) { @("-Dtycho.debug.resolver=true", "-X") } else { @() }
-print_env
-update_build_version
+Show-CMTBanner
+$Mvn = Resolve-Maven
+$MvnDebug = if ($Debug) { @("-Dtycho.debug.resolver=true", "-X") } else { @() }
+Print-Env
+Update-BuildVersion
 
 switch ($SelectedProfile) {
     "all" {
-        & $MVN clean package "-Dcubridmigration-version=$RELEASE_VERSION" -Pdesktop $MVN_DEBUG
-        & $MVN clean package "-Dcubridmigration-version=$RELEASE_VERSION" -Pconsole $MVN_DEBUG
+        & $Mvn clean package "-Dcubridmigration-version=$ReleaseVersion" -Pdesktop $MvnDebug
+        & $Mvn clean package "-Dcubridmigration-version=$ReleaseVersion" -Pconsole $MvnDebug
     }
     "desktop" {
-        & $MVN clean package "-Dcubridmigration-version=$RELEASE_VERSION" -Pdesktop $MVN_DEBUG
+        & $Mvn clean package "-Dcubridmigration-version=$ReleaseVersion" -Pdesktop $MvnDebug
     }
     "console" {
-        & $MVN clean package "-Dcubridmigration-version=$RELEASE_VERSION" -Pconsole $MVN_DEBUG
+        & $Mvn clean package "-Dcubridmigration-version=$ReleaseVersion" -Pconsole $MvnDebug
     }
 }
 
-copy_cmt_to_directory
+Copy-CMTToDirectory
