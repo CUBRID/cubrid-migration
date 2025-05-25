@@ -55,7 +55,6 @@ function Resolve-Maven {
         $Path = Join-Path $env:MAVEN_HOME "bin" "mvn"
         if (Test-Path $Path) { return $Path }
     }
-
     Write-Error "Maven not found in PATH or MAVEN_HOME"
 }
 
@@ -67,7 +66,6 @@ function Show-Env {
 function Update-BuildVersion {
     [CmdletBinding(SupportsShouldProcess=$true)]
     param()
-
     if (-not $PSCmdlet.ShouldProcess("version.properties", "update build version")) { return }
 
     Write-Output "Version File Update....  (com.cubrid.cubridmigration.ui/version.properties)"
@@ -75,16 +73,13 @@ function Update-BuildVersion {
     $CommitNumber = if (Test-Path ".git") {
         "{0:D4}" -f [int](& git rev-list --count HEAD).Trim()
     } else { "0000" }
-
     $Version = ((Get-Content $VersionFilePath | Select-String "^version=").ToString().Split('=')[1]).Trim()
+    $ReleaseVersion = "$Version.$CommitNumber"
 
     (Get-Content $ReleaseVersionFilePath |
         Where-Object { $_ -notmatch "^(releaseVersion|buildVersionId)=" }) |
         Set-Content $ReleaseVersionFilePath
-
     Add-Content $ReleaseVersionFilePath "releaseVersion=$Version"
-
-    $ReleaseVersion = "$Version.$CommitNumber"
     Add-Content $ReleaseVersionFilePath "buildVersionId=$ReleaseVersion"
 
     Write-Output "VERSION= $Version"
