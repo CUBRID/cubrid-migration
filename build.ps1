@@ -23,14 +23,14 @@ function show_usage {
 "@ | Write-Output
 }
 
-$Profile = switch ($ProfileArg.ToLower()) {
+$SelectedProfile = switch ($ProfileArg.ToLower()) {
     'a' { 'all' }
     'd' { 'desktop' }
     'c' { 'console' }
     Default { $_ }
 }
 
-if ($Profile -notin @('all','desktop','console')) {
+if ($SelectedProfile -notin @('all','desktop','console')) {
     show_usage
     exit 1
 }
@@ -113,7 +113,7 @@ function copy_consolecmt_to_directory {
 
 function copy_cmt_to_directory {
     if (-not (Test-Path $TARGET)) { New-Item -ItemType Directory -Path $TARGET | Out-Null }
-    switch ($Profile) {
+    switch ($SelectedProfile) {
         "all" { copy_desktopcmt_to_directory; copy_consolecmt_to_directory }
         "desktop" { copy_desktopcmt_to_directory }
         "console" { copy_consolecmt_to_directory }
@@ -142,7 +142,7 @@ $MVN_DEBUG = if ($Debug) { @("-Dtycho.debug.resolver=true", "-X") } else { @() }
 print_env
 update_build_version
 
-switch ($Profile) {
+switch ($SelectedProfile) {
     "all" {
         & $MVN clean package "-Dcubridmigration-version=$RELEASE_VERSION" -Pdesktop $MVN_DEBUG
         & $MVN clean package "-Dcubridmigration-version=$RELEASE_VERSION" -Pconsole $MVN_DEBUG
