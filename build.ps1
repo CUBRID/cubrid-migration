@@ -40,7 +40,7 @@ $Target                   = Join-Path $Dir "target"
 $ProductTarget            = Join-Path $Dir "com.cubrid.cubridmigration.product/target"
 $ConsoleTarget            = Join-Path $Dir "com.cubrid.cubridmigration.console/target"
 $VersionFilePath          = Join-Path $Dir "VERSION"
-$RelaseVersionFilePath    = Join-Path $Dir "com.cubrid.cubridmigration.ui/version.properties"
+$ReleaseVersionFilePath   = Join-Path $Dir "com.cubrid.cubridmigration.ui/version.properties"
 $ReleaseVersion           = ""
 
 $CmtProductName           = "CUBRID-Migration-Toolkit"
@@ -73,14 +73,14 @@ function Update-BuildVersion {
 
     $Version = ((Get-Content $VersionFilePath | Select-String "^version=").ToString().Split('=')[1]).Trim()
 
-    (Get-Content $RelaseVersionFilePath |
+    (Get-Content $ReleaseVersionFilePath |
         Where-Object { $_ -notmatch "^(releaseVersion|buildVersionId)=" }) |
-        Set-Content $RelaseVersionFilePath
+        Set-Content $ReleaseVersionFilePath
 
-    Add-Content $RelaseVersionFilePath "releaseVersion=$Version"
+    Add-Content $ReleaseVersionFilePath "releaseVersion=$Version"
 
     $ReleaseVersion = "$Version.$CommitNumber"
-    Add-Content $RelaseVersionFilePath "buildVersionId=$ReleaseVersion"
+    Add-Content $ReleaseVersionFilePath "buildVersionId=$ReleaseVersion"
 
     Write-Output "VERSION= $Version"
     Write-Output "COMMIT_NUMBER= $CommitNumber"
