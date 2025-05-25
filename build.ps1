@@ -20,7 +20,7 @@ function show_usage {
   build.ps1 -p desktop -X
   build.ps1 -p c -X
   build.ps1
-"@ | Write-Host
+"@ | Write-Output
 }
 
 $Profile = switch ($ProfileArg.ToLower()) {
@@ -59,12 +59,12 @@ function resolve_maven {
 }
 
 function print_env {
-    if ($env:JAVA_HOME) { Write-Host "JAVA_HOME: $($env:JAVA_HOME)" }
-    if ($env:MAVEN_HOME) { Write-Host "MAVEN_HOME: $($env:MAVEN_HOME)" }
+    if ($env:JAVA_HOME) { Write-Output "JAVA_HOME: $($env:JAVA_HOME)" }
+    if ($env:MAVEN_HOME) { Write-Output "MAVEN_HOME: $($env:MAVEN_HOME)" }
 }
 
 function update_build_version {
-    Write-Host "Version File Update....  (com.cubrid.cubridmigration.ui/version.properties)"
+    Write-Output "Version File Update....  (com.cubrid.cubridmigration.ui/version.properties)"
 
     $COMMIT_NUMBER = if (Test-Path ".git") {
         "{0:D4}" -f [int](& git rev-list --count HEAD).Trim()
@@ -81,9 +81,9 @@ function update_build_version {
     $script:RELEASE_VERSION = "$VERSION.$COMMIT_NUMBER"
     Add-Content $RELEASE_VERSION_FILE_PATH "buildVersionId=$RELEASE_VERSION"
 
-    Write-Host "VERSION= $VERSION"
-    Write-Host "COMMIT_NUMBER= $COMMIT_NUMBER"
-    Write-Host "RELEASE_VERSION= $RELEASE_VERSION"
+    Write-Output "VERSION= $VERSION"
+    Write-Output "COMMIT_NUMBER= $COMMIT_NUMBER"
+    Write-Output "RELEASE_VERSION= $RELEASE_VERSION"
 }
 
 function copy_desktopcmt_to_directory {
@@ -132,7 +132,7 @@ function cmt_banner {
     \/___/    \/_/ \/_/      \/_/
 
 
-'@ | Write-Host
+'@ | Write-Output
 }
 
 # ----------------------------- MAIN ----------------------------- #
