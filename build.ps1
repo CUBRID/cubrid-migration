@@ -65,6 +65,11 @@ function Show-Env {
 }
 
 function Update-BuildVersion {
+    [CmdletBinding(SupportsShouldProcess=$true)]
+    param()
+
+    if (-not $PSCmdlet.ShouldProcess("version.properties", "update build version")) { return }
+
     Write-Output "Version File Update....  (com.cubrid.cubridmigration.ui/version.properties)"
 
     $CommitNumber = if (Test-Path ".git") {
