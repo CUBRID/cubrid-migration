@@ -59,7 +59,7 @@ function Resolve-Maven {
     Write-Error "Maven not found in PATH or MAVEN_HOME"
 }
 
-function Print-Env {
+function Show-Env {
     if ($env:JAVA_HOME) { Write-Output "JAVA_HOME: $($env:JAVA_HOME)" }
     if ($env:MAVEN_HOME) { Write-Output "MAVEN_HOME: $($env:MAVEN_HOME)" }
 }
@@ -140,7 +140,7 @@ function Show-CMTBanner {
 Show-CMTBanner
 $Mvn = Resolve-Maven
 $MvnDebug = if ($Debug) { @("-Dtycho.debug.resolver=true", "-X") } else { @() }
-Print-Env
+Show-Env
 Update-BuildVersion
 
 switch ($SelectedProfile) {
