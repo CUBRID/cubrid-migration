@@ -559,6 +559,11 @@ public class MigrationConfiguration {
         }
         // Build target schema
         Table tt = getDBTransformHelper().createCUBRIDTable(sstc, sqlSchema, this);
+        
+        if (tt.getSourceOwner() == null) {
+        	tt.setSourceOwner(getSrcConnOwner().toUpperCase());
+        }
+        
         srcSQLSchemas.add(sqlSchema);
         targetTables.add(tt);
         expSQLTables.add(sstc);
