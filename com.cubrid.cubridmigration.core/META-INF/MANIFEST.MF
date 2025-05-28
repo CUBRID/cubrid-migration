@@ -20,7 +20,8 @@ Require-Bundle: org.eclipse.core.runtime,
  net.sourceforge.jexcelapi.jxl,
  woodstox-core-lgpl,
  stax2-api,
- org.apache.xmlbeans
+ org.apache.xmlbeans,
+ org.apache.xerces
 Bundle-ActivationPolicy: lazy
 Bundle-ClassPath: .
 Export-Package: 
