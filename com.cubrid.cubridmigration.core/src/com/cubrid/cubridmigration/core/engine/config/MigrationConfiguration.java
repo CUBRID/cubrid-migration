@@ -1325,6 +1325,8 @@ public class MigrationConfiguration {
         if (sqlList != null) {
             for (SourceSQLTableConfig sqlCfg : sqlList) {
                 sqlCfg.setCreateNewTable(false);
+                String schemaName = sqlCfg.getOwner() == null ? defSchemaName : sqlCfg.getOwner();
+                sqlCfg.setOwner(schemaName);
             }
         }
 
@@ -4989,14 +4991,11 @@ public class MigrationConfiguration {
     }
 
     /**
-     * set target catalog.
+     * set target catalog. target catalog can be null
      *
      * @param tarCatalog
      */
     public void setTarCatalog(Catalog tarCatalog) {
-        if (tarCatalog == null) {
-            throw new IllegalArgumentException("Target Catalog cannot be null");
-        }
         this.tarCatalog = tarCatalog;
     }
 
