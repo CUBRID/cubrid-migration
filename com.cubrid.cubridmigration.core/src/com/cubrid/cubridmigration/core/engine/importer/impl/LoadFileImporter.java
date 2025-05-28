@@ -117,6 +117,7 @@ public class LoadFileImporter extends OfflineImporter {
     private final Map<String, String> pkFiles = new HashMap<String, String>();
     private final Map<String, String> fkFiles = new HashMap<String, String>();
     private final Map<String, String> indexFiles = new HashMap<String, String>();
+    private final Map<String, String> uniqueIndexFiles = new HashMap<String, String>();
     private final Map<String, String> sequenceFiles = new HashMap<String, String>();
     private final Map<String, String> synonymFiles = new HashMap<String, String>();
     private final Map<String, Map<String, String>> grantFiles =
@@ -339,6 +340,19 @@ public class LoadFileImporter extends OfflineImporter {
     }
 
     /**
+     * Send Unique Index file to server loadDB command.
+     *
+     * @param owner
+     * @return unique index file full path
+     */
+    protected String handleUniqueIndexFile(String owner) {
+        if (!uniqueIndexFiles.containsKey(owner)) {
+            uniqueIndexFiles.put(owner, config.getTargetUniqueIndexFileName(owner));
+        }
+        return uniqueIndexFiles.get(owner);
+    }
+
+    /**
      * Send Sequence file to server loadDB command.
      *
      * @param owner
@@ -455,6 +469,8 @@ public class LoadFileImporter extends OfflineImporter {
                 return handleFkFile(owner);
             } else if (objectType.equals(DBObject.OBJ_TYPE_INDEX)) {
                 return handleIndexFile(owner);
+            } else if (objectType.equals(DBObject.OBJ_TYPE_UNIQUE_INDEX)) {
+                return handleUniqueIndexFile(owner);
             } else if (objectType.equals(DBObject.OBJ_TYPE_SEQUENCE)) {
                 return handleSequenceFile(owner);
             } else if (objectType.equals(DBObject.OBJ_TYPE_SYNONYM)) {

@@ -39,6 +39,7 @@ package com.cubrid.cubridmigration.core.engine.config;
 public class SourceIndexConfig extends SourceConfig {
     private SourceEntryTableConfig parent;
 
+    private boolean isUnique;
     private String comment;
 
     /**
@@ -53,6 +54,14 @@ public class SourceIndexConfig extends SourceConfig {
     /** @param parent the parent to set */
     public void setParent(SourceEntryTableConfig parent) {
         this.parent = parent;
+    }
+
+    public boolean isUnique() {
+        return isUnique;
+    }
+
+    public void setUnique(boolean isUnique) {
+        this.isUnique = isUnique;
     }
 
     public String getComment() {

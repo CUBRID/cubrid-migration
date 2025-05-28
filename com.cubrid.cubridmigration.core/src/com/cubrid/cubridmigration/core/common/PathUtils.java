@@ -30,6 +30,8 @@
  */
 package com.cubrid.cubridmigration.core.common;
 
+import static java.util.stream.Collectors.toMap;
+
 import com.cubrid.cubridmigration.core.engine.config.MigrationConfiguration;
 import java.io.File;
 import java.io.IOException;
@@ -39,6 +41,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 import org.apache.commons.lang.StringUtils;
 
 /**
@@ -546,6 +550,14 @@ public final class PathUtils {
                 changeOldNameToNewName(
                         config.getTargetIndexFileName(), fileRootPath, oldName, newName));
 
+        // unique index
+        replaceMap(
+                config::getTargetUniqueIndexFileName,
+                config::setTargetUniqueIndexFileName,
+                fileRootPath,
+                oldName,
+                newName);
+
         // pk
         config.setTargetPkFileName(
                 changeOldNameToNewName(
@@ -579,6 +591,54 @@ public final class PathUtils {
         }
         config.setTargetGrantFileName(newGrantFilePathMap);
 
+        // plcsql_procedure
+        replaceNestedMap(
+                config::getTargetPlcsqlProcedureFileName,
+                config::setTargetPlcsqlProcedureFileName,
+                fileRootPath,
+                oldName,
+                newName);
+
+        // plcsql_function
+        replaceNestedMap(
+                config::getTargetPlcsqlFunctionFileName,
+                config::setTargetPlcsqlFunctionFileName,
+                fileRootPath,
+                oldName,
+                newName);
+
+        // plcsql_procedure_header
+        replaceMap(
+                config::getTargetAllPlcsqlProcedureHeaderFileName,
+                config::setTargetAllPlcsqlProcedureHeaderFileName,
+                fileRootPath,
+                oldName,
+                newName);
+
+        // plcsql_procedure_all
+        replaceMap(
+                config::getTargetAllPlcsqlProcedureFileName,
+                config::setTargetAllPlcsqlProcedureFileName,
+                fileRootPath,
+                oldName,
+                newName);
+
+        // plcsql_function_header
+        replaceMap(
+                config::getTargetAllPlcsqlFunctionHeaderFileName,
+                config::setTargetAllPlcsqlFunctionHeaderFileName,
+                fileRootPath,
+                oldName,
+                newName);
+
+        // plcsql_function_all
+        replaceMap(
+                config::getTargetAllPlcsqlFunctionFileName,
+                config::setTargetAllPlcsqlFunctionFileName,
+                fileRootPath,
+                oldName,
+                newName);
+
         // updatestatistic
         config.setTargetUpdateStatisticFileName(
                 changeOldNameToNewName(
@@ -600,6 +660,38 @@ public final class PathUtils {
                                             tableDataFilePathList, fileRootPath, oldName, newName));
                         });
         config.setTargetTableDataFileName(newTableDataFilePath);
+    }
+
+    /** Replace all paths in Map<String, String> with new object names and store the result */
+    private static void replaceMap(
+            Supplier<Map<String, String>> getter,
+            Consumer<Map<String, String>> setter,
+            String fileRootPath,
+            String oldName,
+            String newName) {
+        setter.accept(changeOldNameToNewName(getter.get(), fileRootPath, oldName, newName));
+    }
+
+    /** Replace every path inside a nested Map and store the result */
+    private static void replaceNestedMap(
+            Supplier<Map<String, Map<String, String>>> getter,
+            Consumer<Map<String, Map<String, String>>> setter,
+            String fileRootPath,
+            String oldName,
+            String newName) {
+        Map<String, Map<String, String>> replaced =
+                getter.get().entrySet().stream()
+                        .filter(e -> e.getValue() != null)
+                        .collect(
+                                toMap(
+                                        Map.Entry::getKey,
+                                        e ->
+                                                changeOldNameToNewName(
+                                                        e.getValue(),
+                                                        fileRootPath,
+                                                        oldName,
+                                                        newName)));
+        setter.accept(replaced);
     }
 
     /** change directory path */

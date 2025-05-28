@@ -205,6 +205,9 @@ public class Oracle2CUBRIDTranformHelper extends DBTransformHelper {
         Integer elementDataTypeID =
                 elemDataType == null ? null : dataTypeHelper.getCUBRIDDataTypeID(elemDataType);
         cubCol.setJdbcIDOfSubDataType(elementDataTypeID);
+
+        cubCol.setDefaultValue(removeCommentsFromDefaultValue(cubCol.getDefaultValue()));
+
         // if char is char , add '' to default value
         if (dataTypeHelper.isString(cubCol.getDataType())
                 && StringUtils.isNotEmpty(cubCol.getDefaultValue())
@@ -421,6 +424,40 @@ public class Oracle2CUBRIDTranformHelper extends DBTransformHelper {
         }
 
         return false;
+    }
+
+    /**
+     * Remove comments from default value
+     *
+     * @param defaultValue default value
+     * @return default value without comments
+     */
+    private String removeCommentsFromDefaultValue(String defaultValue) {
+        if (defaultValue == null) {
+            return null;
+        }
+        return removeLineComment(removeBlockComment(defaultValue));
+    }
+
+    /**
+     * Block comment removal
+     *
+     * @param defaultValue default value
+     * @return block comment removed string
+     */
+    private String removeBlockComment(String defaultValue) {
+        String result = defaultValue.replaceAll("/\\*[\\s\\S]*?\\*/", " ");
+        return result.trim().replaceAll("\\s+", " ");
+    }
+
+    /**
+     * Line comment removal
+     *
+     * @param defaultValue default value
+     * @return line comment removed string
+     */
+    private String removeLineComment(String defaultValue) {
+        return defaultValue.replaceAll("\\s*--.*$", "");
     }
 
     /**

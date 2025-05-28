@@ -42,10 +42,15 @@ import org.apache.commons.collections.CollectionUtils;
  */
 public class SourceEntryTableConfig extends SourceTableConfig {
 
+    /** Whether to create a Primary Key based on user config */
     private boolean createPK;
+
     private boolean createPartition;
     private boolean isEnableExpOpt;
     private boolean startFromTargetMax;
+
+    /** Whether the source table has a Primary Key */
+    private boolean hasPK;
 
     private final List<SourceFKConfig> fks = new ArrayList<SourceFKConfig>();
     private final List<SourceIndexConfig> indexes = new ArrayList<SourceIndexConfig>();
@@ -267,5 +272,13 @@ public class SourceEntryTableConfig extends SourceTableConfig {
 
     public void setEnableExpOpt(boolean isEnableExpOpt) {
         this.isEnableExpOpt = isEnableExpOpt;
+    }
+
+    public boolean isHasPK() {
+        return hasPK;
+    }
+
+    public void setHasPK(boolean hasPK) {
+        this.hasPK = hasPK;
     }
 }

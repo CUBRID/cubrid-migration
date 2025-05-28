@@ -162,10 +162,10 @@ check_configuration
 update_build_version
 
 if [ $PROFILE = "all" ] || [ $PROFILE = "a" ]; then
-  $MVN clean package -Dcubridmigration-version=$RELEASE_VERSION $MVN_DEBUG
+  $MVN clean package -Dcubridmigration-version=$RELEASE_VERSION -Pdesktop $MVN_DEBUG
   $MVN clean package -Dcubridmigration-version=$RELEASE_VERSION -Pconsole $MVN_DEBUG
 elif [ $PROFILE = "desktop" ] || [ $PROFILE = "d" ]; then
-  $MVN clean package -Dcubridmigration-version=$RELEASE_VERSION $MVN_DEBUG
+  $MVN clean package -Dcubridmigration-version=$RELEASE_VERSION -Pdesktop $MVN_DEBUG
 elif [ $PROFILE = "console" ] || [ $PROFILE = "c" ]; then
   $MVN clean package -Dcubridmigration-version=$RELEASE_VERSION -Pconsole $MVN_DEBUG
 else

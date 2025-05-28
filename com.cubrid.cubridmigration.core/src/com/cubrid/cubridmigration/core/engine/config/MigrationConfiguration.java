@@ -178,6 +178,7 @@ public class MigrationConfiguration {
     private Map<String, String> targetPkFileName = new HashMap<String, String>();
     private Map<String, String> targetFkFileName = new HashMap<String, String>();
     private Map<String, String> targetIndexFileName = new HashMap<String, String>();
+    private Map<String, String> targetUniqueIndexFileName = new HashMap<String, String>();
     private Map<String, String> targetSerialFileName = new HashMap<String, String>();
     private Map<String, String> targetDataFileName = new HashMap<String, String>();
     private Map<String, String> targetUpdateStatisticFileName = new HashMap<String, String>();
@@ -985,11 +986,7 @@ public class MigrationConfiguration {
                 SourcePlcsqlProcedureConfig sc =
                         getExpPlcsqlProcedureCfg(procedure.getOwner(), procedure.getName());
 
-                if (isNull(sc)
-                        || (nonNull(sourceDBSchema.getTargetSchemaName())
-                                && !sourceDBSchema
-                                        .getTargetSchemaName()
-                                        .equals(sc.getTargetOwner()))) {
+                if (isNull(sc)) {
                     sc =
                             new SourcePlcsqlProcedureConfig(
                                     procedure.getOwner(),
@@ -1004,6 +1001,22 @@ public class MigrationConfiguration {
                                     procedure.getDDL());
                     sc.setCreate(isReset);
                     sc.setReplace(isReset);
+                } else if (nonNull(sourceDBSchema.getTargetSchemaName())
+                        && !sourceDBSchema.getTargetSchemaName().equals(sc.getTargetOwner())) {
+                    sc =
+                            new SourcePlcsqlProcedureConfig(
+                                    sc.getOwner(),
+                                    sourceDBSchema.getTargetSchemaName(),
+                                    sc.getName(),
+                                    sc.getTarget(),
+                                    sc.getAuthid(),
+                                    sc.isAuthidChagned(),
+                                    sc.getSourceDDL(),
+                                    sc.getHeaderDDL(),
+                                    sc.getBodyDDL(),
+                                    sc.getProcedureDDL());
+                    sc.setCreate(sc.isCreate());
+                    sc.setReplace(sc.isReplace());
                 }
                 tempList.add(sc);
 
@@ -1046,11 +1059,7 @@ public class MigrationConfiguration {
                 SourcePlcsqlFunctionConfig sc =
                         getExpPlcsqlFunctionCfg(function.getOwner(), function.getName());
 
-                if (isNull(sc)
-                        || (nonNull(sourceDBSchema.getTargetSchemaName())
-                                && !sourceDBSchema
-                                        .getTargetSchemaName()
-                                        .equals(sc.getTargetOwner()))) {
+                if (isNull(sc)) {
                     sc =
                             new SourcePlcsqlFunctionConfig(
                                     function.getOwner(),
@@ -1065,8 +1074,23 @@ public class MigrationConfiguration {
                                     function.getDDL());
                     sc.setCreate(isReset);
                     sc.setReplace(isReset);
+                } else if (nonNull(sourceDBSchema.getTargetSchemaName())
+                        && !sourceDBSchema.getTargetSchemaName().equals(sc.getTargetOwner())) {
+                    sc =
+                            new SourcePlcsqlFunctionConfig(
+                                    sc.getOwner(),
+                                    sourceDBSchema.getTargetSchemaName(),
+                                    sc.getName(),
+                                    sc.getTarget(),
+                                    sc.getAuthid(),
+                                    sc.isAuthidChanged(),
+                                    sc.getSourceDDL(),
+                                    sc.getHeaderDDL(),
+                                    sc.getBodyDDL(),
+                                    sc.getFunctionDDL());
+                    sc.setCreate(sc.isCreate());
+                    sc.setReplace(sc.isReplace());
                 }
-
                 tempList.add(sc);
 
                 PlcsqlFunction tfunction = null;
@@ -1121,6 +1145,8 @@ public class MigrationConfiguration {
                     schemaName, buildLocalFileFullPath(schemaName, "vclass_query_spec", null));
             this.addTargetPkFileName(schemaName, buildLocalFileFullPath(schemaName, "pk", null));
             this.addTargetFkFileName(schemaName, buildLocalFileFullPath(schemaName, "fk", null));
+            this.addTargetUniqueIndexFileName(
+                    schemaName, buildLocalFileFullPath(schemaName, "uk", null));
             this.addTargetSerialFileName(
                     schemaName, buildLocalFileFullPath(schemaName, "serial", null));
             this.addTargetSynonymFileName(
@@ -1344,6 +1370,7 @@ public class MigrationConfiguration {
                                     setc.isChangeTableName(),
                                     srcTable.getOwner(),
                                     srcTable.getName()));
+                    setc.setHasPK(srcTable.hasPK());
 
                     setc.setCreateNewTable(isReset);
                     setc.setCreatePartition(isReset);
@@ -1581,6 +1608,7 @@ public class MigrationConfiguration {
                 sic = new SourceIndexConfig();
                 sic.setName(idx.getName());
                 sic.setCreate(isReset);
+                sic.setUnique(idx.isUnique());
                 sic.setReplace(isReset);
                 sic.setParent(setc);
                 sic.setTarget(StringUtils.lowerCase(idx.getName()));
@@ -1944,6 +1972,14 @@ public class MigrationConfiguration {
                 addTargetFkFileName(
                         schemaName,
                         path2 + targetFkFileName.get(schemaName).substring(tempPath.length()));
+            }
+            if (targetUniqueIndexFileName.get(schemaName) != null) {
+                addTargetUniqueIndexFileName(
+                        schemaName,
+                        path2
+                                + targetUniqueIndexFileName
+                                        .get(schemaName)
+                                        .substring(tempPath.length()));
             }
             if (targetSerialFileName.get(schemaName) != null) {
                 addTargetSerialFileName(
@@ -3604,6 +3640,14 @@ public class MigrationConfiguration {
         return this.targetIndexFileName.get(schemaName);
     }
 
+    public Map<String, String> getTargetUniqueIndexFileName() {
+        return new HashMap<String, String>(this.targetUniqueIndexFileName);
+    }
+
+    public String getTargetUniqueIndexFileName(String schemaName) {
+        return this.targetUniqueIndexFileName.get(schemaName);
+    }
+
     public Map<String, String> getTargetSerialFileName() {
         return new HashMap<String, String>(this.targetSerialFileName);
     }
@@ -4691,6 +4735,9 @@ public class MigrationConfiguration {
             addTargetFkFileName(
                     schemaName,
                     PathUtils.mergePath(PathUtils.mergePath(odir, prefix), schemaName + "_fk"));
+            addTargetUniqueIndexFileName(
+                    schemaName,
+                    PathUtils.mergePath(PathUtils.mergePath(odir, prefix), schemaName + "_uk"));
             addTargetIndexFileName(
                     schemaName,
                     PathUtils.mergePath(
@@ -5018,6 +5065,14 @@ public class MigrationConfiguration {
 
     public void addTargetIndexFileName(String schemaName, String filePath) {
         this.targetIndexFileName.put(schemaName, filePath);
+    }
+
+    public void setTargetUniqueIndexFileName(Map<String, String> targetUniqueIndexFileName) {
+        this.targetUniqueIndexFileName.putAll(targetUniqueIndexFileName);
+    }
+
+    public void addTargetUniqueIndexFileName(String schemaName, String filePath) {
+        this.targetUniqueIndexFileName.put(schemaName, filePath);
     }
 
     public void setTargetSerialFileName(Map<String, String> targetSerialFileName) {
@@ -5465,8 +5520,13 @@ public class MigrationConfiguration {
             case "vclass_query_spec":
             case "pk":
             case "fk":
+            case "uk":
             case "serial":
             case "synonym":
+            case "function":
+            case "function_header":
+            case "procedure":
+            case "procedure_header":
             case "info":
             case "updatestatistic":
                 return getDefaultTargetSchemaFileExtName();

@@ -30,10 +30,14 @@
  */
 package com.cubrid.cubridmigration.ui.wizard.page;
 
+import static com.cubrid.cubridmigration.core.common.DBUtils.isAdditionalUniqueIndex;
 import static com.cubrid.cubridmigration.core.dbtype.DatabaseType.getDatabaseTypeByID;
 
 import com.cubrid.cubridmigration.core.common.log.LogUtil;
 import com.cubrid.cubridmigration.core.connection.ConnParameters;
+import com.cubrid.cubridmigration.core.dbobject.Index;
+import com.cubrid.cubridmigration.core.dbobject.PK;
+import com.cubrid.cubridmigration.core.dbobject.Table;
 import com.cubrid.cubridmigration.core.dbtype.DatabaseType;
 import com.cubrid.cubridmigration.core.engine.config.MigrationConfiguration;
 import com.cubrid.cubridmigration.core.engine.config.SourceConfig;
@@ -317,7 +321,7 @@ public class ConfirmationPage extends BaseConfirmationPage {
 
                 Set<String> expPKs = new HashSet<>();
                 for (SourceEntryTableConfig expTable : migration.getExpEntryTableCfg()) {
-                    if (!expTable.isCreatePK()) {
+                    if (!expTable.isCreateNewTable() || !expTable.isHasPK()) {
                         continue;
                     }
 
@@ -575,6 +579,48 @@ public class ConfirmationPage extends BaseConfirmationPage {
                     text.append(lineSeparator);
                 }
 
+                // unique index
+                text.append(tabSeparator).append(Messages.confrimUniqueIndex).append(lineSeparator);
+                oldLength = text.length();
+                Set<String> expUniqueIndex = new HashSet<>();
+                for (SourceEntryTableConfig expTable : migration.getExpEntryTableCfg()) {
+                    if (!expTable.isCreateNewTable() || expTable.getIndexConfigList().size() == 0) {
+                        continue;
+                    }
+
+                    String owner = isSupportMultiSchema ? expTable.getOwner() : conUser;
+                    if (expUniqueIndex.contains(owner)) {
+                        continue;
+                    }
+
+                    for (SourceIndexConfig sic : expTable.getIndexConfigList()) {
+                        Table table = migration.getSrcTableSchema(owner, expTable.getName());
+                        PK pk = table.getPk();
+                        Index index = table.getIndexByName(sic.getName());
+
+                        if (isAdditionalUniqueIndex(pk, index)) {
+                            expUniqueIndex.add(owner);
+                            text.append(tabSeparator).append(tabSeparator);
+                            text.append(migration.getTargetUniqueIndexFileName(owner));
+                            text.append(lineSeparator);
+                            break;
+                        }
+                    }
+                }
+                if (styleRanges != null) {
+                    styleRanges.add(
+                            new StyleRange(
+                                    oldLength,
+                                    text.length() - oldLength,
+                                    SWTResourceConstents.COLOR_BLUE,
+                                    null));
+                }
+                if (text.length() == oldLength) {
+                    text.append(tabSeparator).append(tabSeparator);
+                    text.append("-");
+                    text.append(lineSeparator);
+                }
+
                 // index
                 text.append(tabSeparator).append(Messages.confrimIndex).append(lineSeparator);
                 oldLength = text.length();
@@ -589,10 +635,15 @@ public class ConfirmationPage extends BaseConfirmationPage {
                         continue;
                     }
 
-                    expIndexes.add(owner);
-                    text.append(tabSeparator).append(tabSeparator);
-                    text.append(migration.getTargetIndexFileName(owner));
-                    text.append(lineSeparator);
+                    for (SourceIndexConfig sic : expTable.getIndexConfigList()) {
+                        if (!sic.isUnique()) {
+                            expIndexes.add(owner);
+                            text.append(tabSeparator).append(tabSeparator);
+                            text.append(migration.getTargetIndexFileName(owner));
+                            text.append(lineSeparator);
+                            break;
+                        }
+                    }
                 }
                 if (styleRanges != null) {
                     styleRanges.add(
