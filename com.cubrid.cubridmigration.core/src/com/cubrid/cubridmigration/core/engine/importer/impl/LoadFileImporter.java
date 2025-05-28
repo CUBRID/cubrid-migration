@@ -175,7 +175,8 @@ public class LoadFileImporter extends OfflineImporter {
         synchronized (lockObj) {
             MigrationDirAndFilesManager mdfm = mrManager.getDirAndFilesMgr();
             String schemaName =
-                    config.getSrcCatalog().getDatabaseType().isSupportMultiSchema() && !(stc.getOwner() == null)
+                    config.getSrcCatalog().getDatabaseType().isSupportMultiSchema()
+                                    && !(stc.getOwner() == null)
                             ? stc.getOwner()
                             : config.getSrcConnOwner();
 
@@ -183,7 +184,6 @@ public class LoadFileImporter extends OfflineImporter {
                 tableFiles.put(
                         schemaName + stc.getName(),
                         new CurrentDataFileInfo(
-                        		// TODO: toUpperCase()
                                 config.getTargetDataFileName(schemaName.toUpperCase()),
                                 mdfm.getMergeFilesDir(),
                                 config.getTargetFilePrefix(),
