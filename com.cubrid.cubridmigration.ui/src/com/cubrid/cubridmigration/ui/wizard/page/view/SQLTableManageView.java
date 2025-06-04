@@ -105,8 +105,6 @@ public class SQLTableManageView extends AbstractMappingView {
 
     private String[] tarSchemaList = {""};
     
-    private final String NO_USER_SCHEMA = "(unable to set user schema)"; 
-
     private final IAction actNew =
             new Action() {
 
@@ -617,9 +615,7 @@ public class SQLTableManageView extends AbstractMappingView {
     	String[] schemaNameArr = {""};
     	
     	if (config.getTarCatalog() != null) {
-    		if (config.isAddUserSchema() == false) {
-    			this.tarSchemaList = new String[] {NO_USER_SCHEMA};
-    		} else {
+    		if (config.isAddUserSchema() != false) {
         		schemaNameArr =
         				config.getTarCatalog().getSchemas().stream()
         				.map(Schema::getName)
@@ -627,18 +623,17 @@ public class SQLTableManageView extends AbstractMappingView {
         		this.tarSchemaList = schemaNameArr;
     		}
     	} else {
-    		if (config.isAddUserSchema() == false) {
-    			this.tarSchemaList = new String[] {NO_USER_SCHEMA};
+    		if (config.isAddUserSchema() != false) {
+        		schemaNameArr =
+        				config.getSrcCatalog().getSchemas().stream()
+        				.map(Schema::getName)
+        				.toArray(String[]::new);
+           		this.tarSchemaList = schemaNameArr;
     		}
-    		schemaNameArr =
-    				config.getSrcCatalog().getSchemas().stream()
-    				.map(Schema::getName)
-    				.toArray(String[]::new);
-       		this.tarSchemaList = schemaNameArr;
     	}
     	
    		CellEditor[] cellEditorArray = tvSQL.getCellEditors();
-		((ComboBoxCellEditor) cellEditorArray[2]).setItems(schemaNameArr);
+		((ComboBoxCellEditor) cellEditorArray[2]).setItems(tarSchemaList);
     }
 
     protected int getValueIndex(String targetOwner) {
@@ -678,11 +673,9 @@ public class SQLTableManageView extends AbstractMappingView {
             Object[] obj = (Object[]) ti.getData();
             SourceSQLTableConfig sstc = (SourceSQLTableConfig) obj[obj.length - 1];
             config.replaceSQL(sstc, (String) obj[0], sstc.getSql());
-            if (tarSchemaList[(int) obj[2]].equals(NO_USER_SCHEMA) || !config.isAddUserSchema()) {
-//            	config.changeSQLOwner(sstc, config.getSrcConnOwner().toUpperCase());
-            	config.changeSQLOwner(sstc, null);
-//            	sstc.setTargetOwner(config.getSrcConnOwner().toUpperCase());
-            	sstc.setTargetOwner(null);
+            if (tarSchemaList[(int) obj[2]].isEmpty() || !config.isAddUserSchema()) {
+            	config.changeSQLOwner(sstc, config.getSrcConnOwner().toUpperCase());
+            	sstc.setTargetOwner(config.getSrcConnOwner().toUpperCase());
             } else {
             	config.changeSQLOwner(sstc, this.tarSchemaList[(int) obj[2]]);
                 sstc.setTargetOwner(this.tarSchemaList[(int) obj[2]]);
