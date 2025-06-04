@@ -39,6 +39,7 @@ import com.cubrid.common.ui.swt.table.celleditor.ComboBoxCellEditorFactory;
 import com.cubrid.common.ui.swt.table.celleditor.TextCellEditorFactory;
 import com.cubrid.common.ui.swt.table.listener.CheckBoxColumnSelectionListener;
 import com.cubrid.cubridmigration.core.common.CUBRIDIOUtils;
+import com.cubrid.cubridmigration.core.dbobject.Catalog;
 import com.cubrid.cubridmigration.core.dbobject.Schema;
 import com.cubrid.cubridmigration.core.engine.config.SourceSQLTableConfig;
 import com.cubrid.cubridmigration.core.engine.listener.ISQLTableChangedListener;
@@ -317,7 +318,7 @@ public class SQLTableManageView extends AbstractMappingView {
                 new String[] {
                     Messages.tabTitleName,
                     Messages.tabTitleSQL,
-                    Messages.tabTitleSchema,
+                    Messages.targetSchema,
                     Messages.tabTitleTargetTable,
                     Messages.tabTitleData,
                     Messages.lblCreate,
@@ -612,19 +613,15 @@ public class SQLTableManageView extends AbstractMappingView {
 
     /** setup combo box value(target schema name list) */
     protected void setupCombobox() {
-        if (config.getTarCatalog() != null) {
-            if (config.isAddUserSchema() != false) {
-            	this.tarSchemaList =
-                        config.getTarCatalog().getSchemas().stream()
-                                .map(Schema::getName)
-                                .toArray(String[]::new);
-            }
-        } else {
-            if (config.isAddUserSchema() != false) {
-                this.tarSchemaList =
-                        config.getSrcCatalog().getSchemas().stream()
-                                .map(Schema::getName)
-                                .toArray(String[]::new);
+        if (config.isAddUserSchema()) {
+            Catalog catalog = (config.getTarCatalog() != null)
+                ? config.getTarCatalog()
+                : config.getSrcCatalog();
+
+            if (catalog != null && catalog.getSchemas() != null) {
+                tarSchemaList = catalog.getSchemas().stream()
+                    .map(Schema::getName)
+                    .toArray(String[]::new);
             }
         }
 
