@@ -760,6 +760,8 @@ public class Messages extends NLS {
     public static String tabTitlePK;
     public static String tabTitlePKDes;
     public static String tabTitleProcedure;
+    public static String tabTitleSchema;
+    public static String tabTitleSchemaDes;
     public static String tabTitleSourceColumn;
     public static String tabTitleSourceFK;
     public static String tabTitleSourceGrant;

@@ -307,6 +307,8 @@ public final class MigrationTemplateHandler extends DefaultHandler {
                 getBoolean(attributes.getValue(TemplateTags.ATTR_CREATE_CONSTRAINT_NOW), false));
         config.setWriteErrorRecords(
                 getBoolean(attributes.getValue(TemplateTags.ATTR_WRITE_ERROR_RECORDS), false));
+        config.setAddUserSchema(
+                getBoolean(attributes.getValue(TemplateTags.ATTR_ADD_SCHEMA), false));
     }
 
     /** @param attributes of node */
@@ -722,6 +724,7 @@ public final class MigrationTemplateHandler extends DefaultHandler {
             srcTableCfg.setReplace(
                     getBoolean(attributes.getValue(TemplateTags.ATTR_REPLACE), false));
             srcTableCfg.setTarget(attributes.getValue(TemplateTags.ATTR_TARGET));
+            srcTableCfg.setTargetOwner(attributes.getValue(TemplateTags.ATTR_TARGET_SCHEMA));
             config.addExpSQLTableCfg((SourceSQLTableConfig) srcTableCfg);
         } else if (TemplateTags.TAG_STATEMENT.equals(qName)) {
             sqlStatement = new StringBuffer();

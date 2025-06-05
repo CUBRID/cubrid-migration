@@ -74,7 +74,7 @@ function Update-BuildVersion {
         "{0:D4}" -f [int](& git rev-list --count HEAD).Trim()
     } else { "0000" }
     $Version = ((Get-Content $VersionFilePath | Select-String "^version=").ToString().Split('=')[1]).Trim()
-    $ReleaseVersion = "$Version.$CommitNumber"
+    $script:ReleaseVersion = "$Version.$CommitNumber"
 
     (Get-Content $ReleaseVersionFilePath |
         Where-Object { $_ -notmatch "^(releaseVersion|buildVersionId)=" }) |

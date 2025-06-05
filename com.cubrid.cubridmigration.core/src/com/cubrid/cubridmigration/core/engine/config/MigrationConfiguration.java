@@ -208,6 +208,7 @@ public class MigrationConfiguration {
 
     private int sourceType = SOURCE_TYPE_CUBRID;
     private Catalog srcCatalog;
+    private Catalog tarCatalog;
     private int tarSchemaSize;
     private Catalog offlineSrcCatalog;
 
@@ -4481,6 +4482,23 @@ public class MigrationConfiguration {
             }
         }
     }
+    /**
+     * change SQL query's target table owner used in user schema db
+     *
+     * @param oldsstc
+     * @param newOwner
+     */
+    public void changeSQLOwner(SourceSQLTableConfig oldsstc, String newOwner) {
+        for (int i = 0; i < targetTables.size(); i++) {
+            Table t = targetTables.get(i);
+            if (t.getName().equals(oldsstc.getTarget())) {
+                t.setOwner(newOwner);
+
+                targetTables.remove(i);
+                targetTables.add(t);
+            }
+        }
+    }
 
     /**
      * If source is CUBRID or MySQL, the owner will be set to NULL.
@@ -4968,6 +4986,22 @@ public class MigrationConfiguration {
             clearAll();
         }
         this.buildConfigAndTargetSchema(reset);
+    }
+
+    /**
+     * set target catalog.
+     *
+     * @param tarCatalog
+     */
+    public void setTarCatalog(Catalog tarCatalog) {
+        if (tarCatalog == null) {
+            throw new IllegalArgumentException("Target Catalog cannot be null");
+        }
+        this.tarCatalog = tarCatalog;
+    }
+
+    public Catalog getTarCatalog() {
+        return tarCatalog;
     }
 
     /**

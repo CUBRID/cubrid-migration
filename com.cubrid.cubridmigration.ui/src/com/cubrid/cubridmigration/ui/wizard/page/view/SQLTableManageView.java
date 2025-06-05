@@ -35,9 +35,11 @@ import com.cubrid.common.ui.swt.table.CellEditorFactory;
 import com.cubrid.common.ui.swt.table.ObjectArrayRowCellModifier;
 import com.cubrid.common.ui.swt.table.TableViewerBuilder;
 import com.cubrid.common.ui.swt.table.celleditor.CheckboxCellEditorFactory;
+import com.cubrid.common.ui.swt.table.celleditor.ComboBoxCellEditorFactory;
 import com.cubrid.common.ui.swt.table.celleditor.TextCellEditorFactory;
 import com.cubrid.common.ui.swt.table.listener.CheckBoxColumnSelectionListener;
 import com.cubrid.cubridmigration.core.common.CUBRIDIOUtils;
+import com.cubrid.cubridmigration.core.dbobject.Schema;
 import com.cubrid.cubridmigration.core.engine.config.SourceSQLTableConfig;
 import com.cubrid.cubridmigration.core.engine.listener.ISQLTableChangedListener;
 import com.cubrid.cubridmigration.core.io.SQLParser;
@@ -52,6 +54,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.stream.IntStream;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -66,6 +69,8 @@ import org.eclipse.jface.dialogs.IInputValidator;
 import org.eclipse.jface.dialogs.InputDialog;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
+import org.eclipse.jface.viewers.CellEditor;
+import org.eclipse.jface.viewers.ComboBoxCellEditor;
 import org.eclipse.jface.viewers.DoubleClickEvent;
 import org.eclipse.jface.viewers.ICellEditorValidator;
 import org.eclipse.jface.viewers.IDoubleClickListener;
@@ -97,6 +102,8 @@ public class SQLTableManageView extends AbstractMappingView {
     private Button btnAddSQL;
     private Button btnEditSQL;
     private Button btnRemoveSQL;
+
+    private String[] tarSchemaList = {""};
 
     private final IAction actNew =
             new Action() {
@@ -310,27 +317,38 @@ public class SQLTableManageView extends AbstractMappingView {
                 new String[] {
                     Messages.tabTitleName,
                     Messages.tabTitleSQL,
+                    Messages.tabTitleSchema,
                     Messages.tabTitleTargetTable,
                     Messages.tabTitleData,
                     Messages.lblCreate,
                     Messages.lblReplace
                 });
-        tvBuilder.setColumnWidths(new int[] {130, 400, 140, 70, 80, 90});
+        tvBuilder.setColumnWidths(new int[] {130, 400, 140, 140, 70, 80, 90});
         // tvBuilder.setColumnStyles(columnStyles);
         // tvBuilder.setColumnImages(columnImageFiles);
         tvBuilder.setColumnTooltips(
                 new String[] {
                     Messages.tabTitleName,
                     Messages.tabTitleSQL,
+                    Messages.tabTitleSchemaDes,
                     Messages.tabTitleTargetTableDes,
                     Messages.tabTitleDataSQLDes,
                     Messages.lblCreateDes,
                     Messages.lblReplaceDes
                 });
+
+        // combobox instance need value set when it declare. so insert temp value
+        // and change this value in setupCombobox method
+        ComboBoxCellEditorFactory comboFactory = new ComboBoxCellEditorFactory();
+        comboFactory.setReadOnly(false);
+        String[] tempArr = {""};
+        comboFactory.setItems(tempArr);
+
         tvBuilder.setCellEditorClasses(
                 new CellEditorFactory[] {
                     new TextCellEditorFactory(),
                     null,
+                    comboFactory,
                     new TextCellEditorFactory(),
                     new CheckboxCellEditorFactory(),
                     new CheckboxCellEditorFactory(),
@@ -352,6 +370,7 @@ public class SQLTableManageView extends AbstractMappingView {
                                     new Object[] {
                                         sstc.getName(),
                                         sstc.getSql(),
+                                        getValueIndex(sstc.getTargetOwner()),
                                         sstc.getTarget(),
                                         sstc.isMigrateData(),
                                         sstc.isCreateNewTable(),
@@ -377,6 +396,8 @@ public class SQLTableManageView extends AbstractMappingView {
                                 super.modify(ti, element, columnIdx - 1, value);
                                 updateColumnImage(value, ti, columnIdx - 1);
                             }
+                        } else if (columnIdx == 2) {
+                            super.modify(ti, element, columnIdx, value);
                         }
                         super.modify(ti, element, columnIdx, value);
                     }
@@ -387,6 +408,7 @@ public class SQLTableManageView extends AbstractMappingView {
 
         final SelectionListener[] selectionListeners =
                 new SelectionListener[] {
+                    null,
                     null,
                     null,
                     null,
@@ -588,6 +610,28 @@ public class SQLTableManageView extends AbstractMappingView {
         }
     }
 
+    /** setup real combo box value(target schema name list) */
+    protected void setupCombobox() {
+        String[] schemaNameArr =
+                config.getTarCatalog().getSchemas().stream()
+                        .map(Schema::getName)
+                        .toArray(String[]::new);
+        this.tarSchemaList = schemaNameArr;
+        CellEditor[] cellEditorArray = tvSQL.getCellEditors();
+        ((ComboBoxCellEditor) cellEditorArray[2]).setItems(schemaNameArr);
+    }
+
+    protected int getValueIndex(String targetOwner) {
+        if ((targetOwner == null || targetOwner.isEmpty()) || (tarSchemaList == null)) {
+            return 0;
+        }
+
+        return IntStream.range(0, tarSchemaList.length)
+                .filter(i -> targetOwner.equals(tarSchemaList[i]))
+                .findFirst()
+                .orElse(0);
+    }
+
     /**
      * Save
      *
@@ -614,10 +658,12 @@ public class SQLTableManageView extends AbstractMappingView {
             Object[] obj = (Object[]) ti.getData();
             SourceSQLTableConfig sstc = (SourceSQLTableConfig) obj[obj.length - 1];
             config.replaceSQL(sstc, (String) obj[0], sstc.getSql());
-            config.changeTarget(sstc, (String) obj[2]);
-            sstc.setMigrateData((Boolean) obj[3]);
-            sstc.setCreateNewTable((Boolean) obj[4]);
-            sstc.setReplace((Boolean) obj[5]);
+            config.changeSQLOwner(sstc, this.tarSchemaList[(int) obj[2]]);
+            sstc.setTargetOwner(this.tarSchemaList[(int) obj[2]]);
+            config.changeTarget(sstc, (String) obj[3]);
+            sstc.setMigrateData((Boolean) obj[4]);
+            sstc.setCreateNewTable((Boolean) obj[5]);
+            sstc.setReplace((Boolean) obj[6]);
             if (listener != null) {
                 listener.onEditSQL(sstc);
             }
@@ -637,6 +683,7 @@ public class SQLTableManageView extends AbstractMappingView {
      */
     public void showData(Object obj) {
         boolean flag = config.sourceIsOnline() && !wizardStatus.isSourceOfflineMode();
+        setupCombobox();
         btnAddSQL.setEnabled(flag);
         btnEditSQL.setEnabled(flag);
         btnRemoveSQL.setEnabled(config.sourceIsOnline());

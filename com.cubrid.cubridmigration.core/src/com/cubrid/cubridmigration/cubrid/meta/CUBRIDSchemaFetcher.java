@@ -98,6 +98,7 @@ public final class CUBRIDSchemaFetcher extends AbstractJDBCSchemaFetcher {
     private final int COMMENT_SUPPORT_VERSION = 100;
     private final int USERSCHEMA_VERSION = 112;
     private final int DB_SERIAL_ATTR_NAME = 114;
+    private final int DB_AUTH_CLASS_NAME = 114;
 
     /**
      * Retrieves the lower case of type, and some type may be changed into stand format.
@@ -2186,13 +2187,17 @@ public final class CUBRIDSchemaFetcher extends AbstractJDBCSchemaFetcher {
         ResultSet rs = null; // NOPMD
 
         boolean isUserSchema = getDBVersion(conn) >= USERSCHEMA_VERSION;
+        String classNameCol =
+                getDBVersion(conn) >= DB_AUTH_CLASS_NAME ? "object_name" : "class_name";
 
         StringBuffer sql = new StringBuffer();
         sql.append(
-                        "SELECT a.grantor_name, a.grantee_name, a.class_name, a.auth_type, a.is_grantable")
+                        "SELECT a.grantor_name, a.grantee_name, a."
+                                + classNameCol
+                                + ", a.auth_type, a.is_grantable")
                 .append(isUserSchema ? ", a.owner_name" : "")
                 .append(" FROM db_auth a, db_class c")
-                .append(" WHERE a.class_name=c.class_name")
+                .append(" WHERE a." + classNameCol + "=c.class_name")
                 .append(isUserSchema ? " AND a.owner_name=c.owner_name" : "")
                 .append(" AND c.is_system_class='NO'")
                 .append(" AND a.grantee_name=?");
@@ -2208,7 +2213,7 @@ public final class CUBRIDSchemaFetcher extends AbstractJDBCSchemaFetcher {
                 grant.setOwner(schema.getName());
                 grant.setGrantorName(rs.getString("grantor_name"));
                 grant.setGranteeName(rs.getString("grantee_name"));
-                grant.setClassName(rs.getString("class_name"));
+                grant.setClassName(rs.getString(classNameCol));
                 grant.setAuthType(rs.getString("auth_type"));
                 grant.setGrantable(rs.getString("is_grantable").equals("NO") ? false : true);
                 grant.setClassOwner(isUserSchema ? rs.getString("owner_name") : null);

@@ -660,6 +660,8 @@ public final class MigrationTemplateParser {
                     TemplateTags.ATTR_WRITE_ERROR_RECORDS,
                     getBooleanString(config.isWriteErrorRecords()));
             jdbc.setAttribute(TemplateTags.ATTR_USER_JDBC_URL, tcp.getUserJDBCURL());
+            jdbc.setAttribute(
+                    TemplateTags.ATTR_ADD_SCHEMA, getBooleanString(config.isAddUserSchema()));
             // jdbc.setAttribute(TemplateTags.ATTR_SCHEMA, tcp.getSchema());
             return;
         }
@@ -978,6 +980,7 @@ public final class MigrationTemplateParser {
             Element sqltables = createElement(document, source, TemplateTags.TAG_SQLTABLES);
             for (SourceSQLTableConfig setc : exportSQLTables) {
                 Element tbe = createElement(document, sqltables, TemplateTags.TAG_SQLTABLE);
+                tbe.setAttribute(TemplateTags.ATTR_TARGET_SCHEMA, setc.getTargetOwner());
                 tbe.setAttribute(TemplateTags.ATTR_NAME, setc.getName());
                 tbe.setAttribute(
                         TemplateTags.ATTR_CREATE, getBooleanString(setc.isCreateNewTable()));
