@@ -176,7 +176,7 @@ public class LoadFileImporter extends OfflineImporter {
             MigrationDirAndFilesManager mdfm = mrManager.getDirAndFilesMgr();
             String schemaName =
                     config.getSrcCatalog().getDatabaseType().isSupportMultiSchema()
-                                    && !(stc.getOwner() == null)
+                                    && stc.getOwner() != null
                             ? stc.getOwner()
                             : config.getSrcConnOwner();
 

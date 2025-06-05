@@ -5003,9 +5003,15 @@ public class MigrationConfiguration {
     public void setTarCatalog(Catalog tarCatalog) {
         this.tarCatalog = tarCatalog;
     }
-
-    public Catalog getTarCatalog() {
-        return tarCatalog;
+    
+    
+    /**
+     * Get target catalog. target catalog can be null
+     *
+     * @return Optional<Catalog> tarCatalog
+     */
+    public Optional<Catalog> getTarCatalog() {
+        return Optional.ofNullable(tarCatalog);
     }
 
     /**
