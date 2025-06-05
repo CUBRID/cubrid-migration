@@ -16,6 +16,7 @@
         <eclipse-version>2020-06</eclipse-version>
         <eclipse-repo-url>https://download.eclipse.org/releases</eclipse-repo-url>
         <eclipse-p2-repo.url>${eclipse-repo-url}/${eclipse-version}/</eclipse-p2-repo.url>
+        <cmt-p2-site>https://ftp.cubrid.org/CUBRID_Tools/Dev/p2-site</cmt-p2-site>
         
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
@@ -29,9 +30,9 @@
         </repository>
         
         <repository>
-            <id>CMT-repo-org</id>
-            <name>CMT-repo-org</name>
-            <url>https://ftp.cubrid.org/CUBRID_Tools/Dev/lib</url>
+            <id>CMT-p2-site</id>
+            <url>${cmt-p2-site}</url>
+            <layout>p2</layout>
         </repository>
     </repositories>
      

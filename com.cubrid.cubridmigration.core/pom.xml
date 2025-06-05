@@ -2,20 +2,22 @@
 <project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" 
          xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-  <modelVersion>4.0.0</modelVersion>
-  <parent>
-    <groupId>com.cubrid.cubridmigration</groupId>
-    <artifactId>cubridmigration</artifactId>
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.cubrid.cubridmigration</groupId>
+        <artifactId>cubridmigration</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+        <relativePath>../</relativePath>
+    </parent>
+
+    <artifactId>com.cubrid.cubridmigration.core</artifactId>
     <version>1.0.0-SNAPSHOT</version>
-    <relativePath>../</relativePath>
-  </parent>
-  <artifactId>com.cubrid.cubridmigration.core</artifactId>
-  <version>1.0.0-SNAPSHOT</version>
-  <packaging>eclipse-plugin</packaging>
-  
-  <build>
-    <sourceDirectory>src/</sourceDirectory>
-    <pluginManagement>
+    <packaging>eclipse-plugin</packaging>
+
+    <build>
+        <sourceDirectory>src/</sourceDirectory>
+        <pluginManagement>
             <plugins>
                 <plugin>
                     <groupId>org.antlr</groupId>
@@ -40,147 +42,152 @@
                 </plugin>
             </plugins>
         </pluginManagement>
-  </build>
+    </build>
 
-  <profiles>
-    <profile>
-        <id>desktop</id>
-        <build>
-            <plugins>
-                <plugin>
-                    <groupId>org.antlr</groupId>
-                    <artifactId>antlr4-maven-plugin</artifactId>
-                </plugin>
-            </plugins>
-        </build>
-    </profile>
-    
-    <profile>
-        <id>console</id>
-        <activation>
-            <property>
-                <name>consoleBuild</name>
-                <value>true</value>
-            </property>
-        </activation>
+    <dependencies>
+        <dependency>
+            <groupId>com.cubrid.cubridmigration</groupId>
+            <artifactId>com.cubrid.common.configuration</artifactId>
+            <version>1.0.0-SNAPSHOT</version>
+        </dependency>
 
-        <build>
-            <resources>
-              <resource>
-                <directory>src/</directory>
-                <includes>
-                  <include>**/*.properties</include>
-                  <include>**/*.xml</include>
-                </includes>
-              </resource>
-            </resources>
+        <dependency>
+            <groupId>org.antlr</groupId>
+            <artifactId>antlr4</artifactId>
+            <version>4.9.3</version>
+            <scope>compile</scope>
+        </dependency>
 
-            <plugins>
-                <plugin>
-                    <groupId>org.antlr</groupId>
-                    <artifactId>antlr4-maven-plugin</artifactId>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-jar-plugin</artifactId>
-                    <version>2.3.2</version>
-                    <configuration>
-                        <archive>
-                            <manifest>
-                                <addClasspath>true</addClasspath>
-                                <classpathPrefix>lib</classpathPrefix>
-                            </manifest>
-                        </archive>
-                    </configuration>
-                </plugin>
-            </plugins>
-        </build>
-        
-        <dependencies>
-            <dependency>
-                <groupId>org.antlr</groupId>
-                <artifactId>antlr4</artifactId>
-                <version>4.9.3</version>
-                <scope>compile</scope>
-            </dependency>        
-            <dependency>
-                <groupId>com.cubrid.cubridmigration</groupId>
-                <artifactId>com.cubrid.common.configuration</artifactId>
-                <version>1.0.0-SNAPSHOT</version>
-            </dependency>
-            
-            <dependency>
-                <groupId>log4j</groupId>
-                <artifactId>log4j</artifactId>
-                <version>1.2.13</version>
-            </dependency>
-            
-            <dependency>
-                <groupId>commons-collections</groupId>
-                <artifactId>commons-collections</artifactId>
-                <version>3.2.1</version>
-            </dependency>
-            
-            <dependency>
-                <groupId>com.jcraft</groupId>
-                <artifactId>jsch</artifactId>
-                <version>0.1.51</version>
-            </dependency>
-            
-            <dependency>
-                <groupId>org.apache.hadoop</groupId>
-                <artifactId>hadoop-core</artifactId>
-                <version>1.1.2</version>
-            </dependency>
-            
-            <dependency>
-                <groupId>org.eclipse.platform</groupId>
-                <artifactId>org.eclipse.core.runtime</artifactId>
-                <version>3.17.100</version>
-            </dependency>
-            
-            <dependency>
-                <groupId>org.apache.xmlbeans</groupId>
-                <artifactId>xmlbeans</artifactId>
-                <version>2.3.0</version>
-            </dependency>
-            
-            <dependency>
-                <groupId>jexcelapi</groupId>
-                <artifactId>jxl</artifactId>
-                <version>2.4.2</version>
-            </dependency>
-            
-            <dependency>
-                <groupId>org.apache.poi</groupId>
-                <artifactId>poi</artifactId>
-                <version>3.8</version>
-            </dependency>
+        <dependency>
+            <groupId>log4j</groupId>
+            <artifactId>log4j</artifactId>
+            <version>1.2.13</version>
+        </dependency>
 
-            <dependency>
-                <groupId>org.apache.poi</groupId>
-                <artifactId>poi-ooxml</artifactId>
-                <version>3.8</version>
-            </dependency>
-            
-            <dependency>
-                <groupId>org.codehaus.woodstox</groupId>
-                <artifactId>stax2-api</artifactId>
-                <version>3.1.1</version>
-            </dependency>
-            
-            <dependency>
-                <groupId>org.codehaus.woodstox</groupId>
-                <artifactId>woodstox-core-lgpl</artifactId>
-                <version>4.1.2</version>
-            </dependency>
-            
-            <dependency>
-                <groupId>net.sf.opencsv</groupId>
-                <artifactId>opencsv</artifactId>
-                <version>2.3</version>
-            </dependency>
-          </dependencies>
-    </profile>
-  </profiles>
+        <dependency>
+            <groupId>commons-collections</groupId>
+            <artifactId>commons-collections</artifactId>
+            <version>3.2.1</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.jcraft</groupId>
+            <artifactId>jsch</artifactId>
+            <version>0.1.51</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-core</artifactId>
+            <version>1.1.2</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.eclipse.platform</groupId>
+            <artifactId>org.eclipse.core.runtime</artifactId>
+            <version>3.17.100</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.xmlbeans</groupId>
+            <artifactId>xmlbeans</artifactId>
+            <version>2.3.0</version>
+        </dependency>
+        <dependency>
+            <groupId>jexcelapi</groupId>
+            <artifactId>jxl</artifactId>
+            <version>2.4.2</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.poi</groupId>
+            <artifactId>poi</artifactId>
+            <version>3.8</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.poi</groupId>
+            <artifactId>poi-ooxml</artifactId>
+            <version>3.8</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.codehaus.woodstox</groupId>
+            <artifactId>stax2-api</artifactId>
+            <version>3.1.1</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.codehaus.woodstox</groupId>
+            <artifactId>woodstox-core-lgpl</artifactId>
+            <version>4.1.2</version>
+        </dependency>
+
+        <dependency>
+            <groupId>net.sf.opencsv</groupId>
+            <artifactId>opencsv</artifactId>
+            <version>2.3</version>
+        </dependency>
+
+        <dependency>
+            <groupId>xerces</groupId>
+            <artifactId>xercesImpl</artifactId>
+            <version>2.12.2</version>
+        </dependency>
+    </dependencies>
+
+    <profiles>
+        <profile>
+            <id>desktop</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.antlr</groupId>
+                        <artifactId>antlr4-maven-plugin</artifactId>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <profile>
+            <id>console</id>
+            <activation>
+                <property>
+                    <name>consoleBuild</name>
+                    <value>true</value>
+                </property>
+            </activation>
+            <build>
+                <resources>
+                    <resource>
+                        <directory>src/</directory>
+                        <includes>
+                            <include>**/*.properties</include>
+                            <include>**/*.xml</include>
+                        </includes>
+                    </resource>
+                </resources>
+                <plugins>
+                    <plugin>
+                        <groupId>org.antlr</groupId>
+                        <artifactId>antlr4-maven-plugin</artifactId>
+                    </plugin>
+
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-jar-plugin</artifactId>
+                        <version>2.3.2</version>
+                        <configuration>
+                            <archive>
+                                <manifest>
+                                    <addClasspath>true</addClasspath>
+                                    <classpathPrefix>lib</classpathPrefix>
+                                </manifest>
+                            </archive>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>

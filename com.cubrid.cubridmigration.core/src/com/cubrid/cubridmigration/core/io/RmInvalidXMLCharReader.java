@@ -37,6 +37,7 @@ import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
 import java.util.List;
+import org.apache.xerces.util.XMLChar;
 
 import org.apache.xmlbeans.impl.common.XMLChar;
 
