@@ -12,6 +12,8 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.equinox.p2.ui,
  com.cubrid.cubridmigration.core,
  com.cubrid.cubridmigration.ui,
- com.cubrid.common.update
+ com.cubrid.common.update,
+ org.apache.commons.lang,
+ org.apache.log4j
 Bundle-ClassPath: .
 

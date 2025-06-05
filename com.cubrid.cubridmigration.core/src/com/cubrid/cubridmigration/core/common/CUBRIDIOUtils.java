@@ -66,8 +66,9 @@ import org.apache.poi.hssf.usermodel.HSSFCellStyle;
 import org.apache.poi.hssf.usermodel.HSSFRow;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
-import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellType;
+import org.apache.poi.ss.usermodel.HorizontalAlignment;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -420,7 +421,8 @@ public final class CUBRIDIOUtils {
                     for (int j = 0; j < row.getLastCellNum(); j++) {
                         Cell cell = row.getCell(j);
                         data[j] =
-                                (cell.getCellType() != 1 || cell.getStringCellValue() == null)
+                                (cell.getCellType() != CellType.STRING
+                                                || cell.getStringCellValue() == null)
                                         ? ""
                                         : cell.getStringCellValue();
                     }
@@ -432,8 +434,6 @@ public final class CUBRIDIOUtils {
                     fs.close();
                 }
             }
-        } catch (InvalidFormatException ex) {
-            throw new RuntimeException(ex);
         } catch (IOException ex) {
             throw new RuntimeException(ex);
         }
@@ -510,7 +510,7 @@ public final class CUBRIDIOUtils {
         HSSFSheet sheet = workbook.createSheet();
 
         HSSFCellStyle cellStyle = workbook.createCellStyle();
-        cellStyle.setAlignment(HSSFCellStyle.ALIGN_LEFT);
+        cellStyle.setAlignment(HorizontalAlignment.LEFT);
 
         // set header
         HSSFRow row = sheet.createRow(0);
