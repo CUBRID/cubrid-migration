@@ -47,6 +47,7 @@ import com.cubrid.cubridmigration.cubrid.Data2StrTranslator;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import org.apache.log4j.Logger;
 
@@ -184,7 +185,7 @@ public class LoadFileImporter extends OfflineImporter {
                 tableFiles.put(
                         schemaName + stc.getName(),
                         new CurrentDataFileInfo(
-                                config.getTargetDataFileName(schemaName.toUpperCase()),
+                                config.getTargetDataFileName(schemaName.toUpperCase(Locale.US)),
                                 mdfm.getMergeFilesDir(),
                                 config.getTargetFilePrefix(),
                                 schemaName,

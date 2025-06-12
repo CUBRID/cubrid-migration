@@ -561,7 +561,7 @@ public class MigrationConfiguration {
         Table tt = getDBTransformHelper().createCUBRIDTable(sstc, sqlSchema, this);
 
         if (tt.getSourceOwner() == null) {
-            tt.setSourceOwner(getSrcConnOwner().toUpperCase());
+            tt.setSourceOwner(getSrcConnOwner().toUpperCase(Locale.US));
         }
 
         srcSQLSchemas.add(sqlSchema);

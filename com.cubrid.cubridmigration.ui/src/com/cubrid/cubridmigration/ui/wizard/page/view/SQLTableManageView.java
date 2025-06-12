@@ -668,8 +668,8 @@ public class SQLTableManageView extends AbstractMappingView {
             SourceSQLTableConfig sstc = (SourceSQLTableConfig) obj[obj.length - 1];
             config.replaceSQL(sstc, (String) obj[0], sstc.getSql());
             if (tarSchemaList[(int) obj[2]].isEmpty() || !config.isAddUserSchema()) {
-                config.changeSQLOwner(sstc, config.getSrcConnOwner().toUpperCase());
-                sstc.setTargetOwner(config.getSrcConnOwner().toUpperCase());
+                config.changeSQLOwner(sstc, config.getSrcConnOwner().toUpperCase(Locale.US));
+                sstc.setTargetOwner(config.getSrcConnOwner().toUpperCase(Locale.US));
             } else {
                 config.changeSQLOwner(sstc, this.tarSchemaList[(int) obj[2]]);
                 sstc.setTargetOwner(this.tarSchemaList[(int) obj[2]]);
