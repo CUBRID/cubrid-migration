@@ -5003,8 +5003,7 @@ public class MigrationConfiguration {
     public void setTarCatalog(Catalog tarCatalog) {
         this.tarCatalog = tarCatalog;
     }
-    
-    
+
     /**
      * Get target catalog. target catalog can be null
      *

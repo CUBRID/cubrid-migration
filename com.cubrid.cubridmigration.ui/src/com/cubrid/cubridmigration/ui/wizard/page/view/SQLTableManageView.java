@@ -55,7 +55,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import java.util.Optional;
 import java.util.stream.IntStream;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
@@ -615,14 +614,11 @@ public class SQLTableManageView extends AbstractMappingView {
     /** setup combo box value(target schema name list) */
     protected void setupCombobox() {
         if (config.isAddUserSchema()) {
-            Catalog catalog = config.getTarCatalog()
-                .orElse(config.getSrcCatalog());
+            Catalog catalog = config.getTarCatalog().orElse(config.getSrcCatalog());
 
             if (catalog != null && catalog.getSchemas() != null) {
-                tarSchemaList = 
-                	catalog.getSchemas().stream()
-                    	.map(Schema::getName)
-                    	.toArray(String[]::new);
+                tarSchemaList =
+                        catalog.getSchemas().stream().map(Schema::getName).toArray(String[]::new);
             }
         }
 
