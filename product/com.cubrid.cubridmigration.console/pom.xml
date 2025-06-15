@@ -9,7 +9,6 @@
         <version>1.0.0-SNAPSHOT</version>
         <relativePath>../</relativePath>
     </parent>
-    <version>1.0.0-SNAPSHOT</version>
     <artifactId>com.cubrid.cubridmigration.console</artifactId>
     <packaging>pom</packaging>
 
