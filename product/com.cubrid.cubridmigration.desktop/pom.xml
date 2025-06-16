@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+         xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.cubrid.cubridmigration</groupId>
+        <artifactId>product</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+        <relativePath>../</relativePath>
+    </parent>
+    <artifactId>com.cubrid.cubridmigration.desktop</artifactId>
+    <packaging>eclipse-repository</packaging>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.eclipse.tycho</groupId>
+                <artifactId>tycho-p2-director-plugin</artifactId>
+                <version>${tycho-version}</version>
+                <configuration>
+                    <formats>
+                        <win32>zip</win32>
+                        <linux>tar.gz</linux>
+                        <macosx>tar.gz</macosx>
+                        <solaris>tar.gz</solaris>
+                    </formats>
+                    <products>
+                        <product>
+                            <id>com.cubrid.cubridmigration.desktop</id>
+                            <archiveFileName>CUBRIDMigration-${cubridmigration-version}</archiveFileName>
+                            <rootFolders>
+                                <!-- for MacOSX, make sure you use a folder ending with .app , see bug 463670 -->
+                                <macosx>Cubridmigration.app</macosx>
+                                <win32>cubridmigration</win32>
+                                <linux>cubridmigration</linux>
+                                <solaris>cubridmigration</solaris>
+                            </rootFolders>
+                        </product>
+                    </products>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>materialize-products</id>
+                        <goals>
+                            <goal>materialize-products</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            
+            <plugin>
+                <groupId>org.eclipse.tycho</groupId>
+                <artifactId>tycho-p2-repository-plugin</artifactId>
+                <version>${tycho-version}</version>
+                <executions>
+                    <execution>
+                        <id>default-repository</id>
+                            <goals>
+                                <goal>assemble-repository</goal>
+                            </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <target>
+                                <property name="output.dir" value="${project.build.directory}/jre"/>
+                                <unzip src="../../plugins/com.cubrid.common.configuration/target/win-jre.zip" dest="${output.dir}/win"/>
+                                <mkdir dir="${output.dir}/linux"/>
+                                <exec executable="tar">
+                                    <arg value="xzf"/>
+                                    <arg value="../../plugins/com.cubrid.common.configuration/target/linux-jre.tar.gz"/>
+                                    <arg value="-C"/>
+                                    <arg value="${output.dir}/linux"/>
+                                </exec>
+                                <mkdir dir="${output.dir}/mac"/>
+                                <exec executable="tar">
+                                    <arg value="xzf"/>
+                                    <arg value="../../plugins/com.cubrid.common.configuration/target/mac-jre.tar.gz"/>
+                                    <arg value="-C"/>
+                                    <arg value="${output.dir}/mac"/>
+                                </exec>
+                            </target>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            
+            <plugin>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>migration-windows</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                        <configuration>
+                            <descriptors>
+                                <descriptor>${basedir}/windows.xml</descriptor>
+                            </descriptors>
+                            <finalName>${cubridmigration-desktop}-${cubridmigration-version}</finalName>
+                        </configuration>
+                    </execution>
+                    
+                    <execution>
+                        <id>migration-linux</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                        <configuration>
+                            <descriptors>
+                                <descriptor>${basedir}/linux.xml</descriptor>
+                            </descriptors>
+                            <finalName>${cubridmigration-desktop}-${cubridmigration-version}</finalName>
+                        </configuration>
+                    </execution>
+                    
+                    <execution>
+                        <id>migration-mac</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                        <configuration>
+                            <descriptors>
+                                <descriptor>${basedir}/mac.xml</descriptor>
+                            </descriptors>
+                            <finalName>${cubridmigration-desktop}-${cubridmigration-version}</finalName>
+                        </configuration>
+                    </execution>
+                    
+                    <execution>
+                        <id>site</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                        <configuration>
+                            <descriptors>
+                                <descriptor>${basedir}/site.xml</descriptor>
+                            </descriptors>
+                            <finalName>${cubridmigration-desktop}-site-${cubridmigration-version}</finalName>
+                            <appendAssemblyId>false</appendAssemblyId>
+                        </configuration>
+                    </execution>
+                </executions>
+                <configuration>
+                    <tarLongFileMode>posix</tarLongFileMode>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>
