@@ -10,7 +10,7 @@
 
     <properties>
         <cubridmigration-version>0.0.0</cubridmigration-version>
-        <cubridmigration-product>CUBRID-Migration-Toolkit</cubridmigration-product>
+        <cubridmigration-desktop>CUBRID-Migration-Toolkit</cubridmigration-desktop>
         <cubridmigration-console>CUBRID-Migration-Toolkit-console</cubridmigration-console>
         <tycho-version>1.7.0</tycho-version>
         <eclipse-version>2020-06</eclipse-version>
@@ -114,36 +114,18 @@
                 <activeByDefault>true</activeByDefault>
             </activation>
             <modules>
-                <!-- plugins -->
-                <module>com.cubrid.common.configuration</module>
-                <module>com.cubrid.common.update</module>
-                <module>com.cubrid.cubridmigration.core</module>
-                <module>com.cubrid.cubridmigration.app</module>
-                <module>com.cubrid.cubridmigration.plugin</module>
-                <module>com.cubrid.cubridmigration.ui</module>
-                
-                <!-- features -->
-                <module>com.cubrid.cubridmigration.app.feature</module>
-                <module>com.cubrid.cubridmigration.plugin.feature</module>
-                <module>com.cubrid.common.update.feature</module>
-                
-                <!--site -->
-                <module>com.cubrid.cubridmigration.plugin.update.site</module>
-                <module>com.cubrid.cubridmigration.app.update.site</module>
-                
-                <!-- Products -->
-                <module>com.cubrid.cubridmigration.product</module>
+                <module>plugins</module>
+                <module>features</module>
+				<module>site</module>
+                <module>product</module>
             </modules>
         </profile>
         
         <profile>
             <id>console</id>
-    
             <modules>
-                <module>com.cubrid.common.configuration</module>
-                <module>com.cubrid.cubridmigration.core</module>
-                <module>com.cubrid.cubridmigration.command</module>
-                <module>com.cubrid.cubridmigration.console</module>
+                <module>plugins</module>
+                <module>product</module>
             </modules>
         </profile>
     </profiles>
