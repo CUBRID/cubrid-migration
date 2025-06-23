@@ -1,11 +1,11 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Name: CUBRID Tools Common Update Plug-in
+Bundle-Name: CUBRID Migration Toolkit Common Update
 Bundle-SymbolicName: com.cubrid.common.update;singleton:=true
 Bundle-Version: 1.0.0.qualifier
 Bundle-Vendor: CUBRID
 Bundle-Activator: com.cubrid.common.update.p2.UpdatePlugin
-Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Bundle-RequiredExecutionEnvironment: JavaSE-21
 Bundle-Localization: plugin
 Bundle-ActivationPolicy: lazy
 Require-Bundle: org.eclipse.ui,

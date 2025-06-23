@@ -4,7 +4,7 @@ Bundle-SymbolicName: com.cubrid.cubridmigration.plugin.update.site;singleton:=tr
 Bundle-Version: 1.0.0.qualifier
 Bundle-Activator: com.cubrid.cubridmigration.plugin.update.site
 Bundle-Vendor: CUBRID
-Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Bundle-RequiredExecutionEnvironment: JavaSE-21
 Bundle-Localization: plugin
 Bundle-ActivationPolicy: lazy
 Bundle-ClassPath: .
