@@ -75,7 +75,7 @@ public class MYSQLDumpXMLExporter extends MigrationExporter {
                             config.getSourceFileEncoding(),
                             invalidateChars);
             try {
-                XMLInputFactory factory = WstxInputFactory.newInstance();
+                XMLInputFactory factory = new WstxInputFactory();
                 factory.setProperty(WstxInputProperties.P_NORMALIZE_LFS, false);
                 XMLStreamReader reader = factory.createXMLStreamReader(is);
                 handler.setOneNewRecord(oneNewRecord);
