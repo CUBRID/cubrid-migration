@@ -30,7 +30,7 @@
  */
 package com.cubrid.cubridmigration.ui.wizard.utils;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * VerifyResultMessages is used to store the verify result messages.

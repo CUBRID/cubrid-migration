@@ -36,7 +36,7 @@ import com.cubrid.cubridmigration.core.common.log.LogUtil;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.equinox.app.IApplication;
 import org.eclipse.equinox.app.IApplicationContext;

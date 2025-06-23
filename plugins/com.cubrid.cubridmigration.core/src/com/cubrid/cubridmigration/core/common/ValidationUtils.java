@@ -30,7 +30,7 @@
  */
 package com.cubrid.cubridmigration.core.common;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * This class include common validation method and check data validation
