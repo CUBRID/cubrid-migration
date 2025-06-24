@@ -174,16 +174,4 @@ public class CmdMigrationMonitor implements IMigrationMonitor {
             outPrinter.print("Progress:" + progress + "%");
         }
     }
-
-    /**
-     * Print chars on screen.
-     *
-     * @param ch char to be printed
-     * @param count repeat count
-     */
-    private void print(char ch, int count) {
-        for (int i = 0; i < count; i++) {
-            outPrinter.print(ch);
-        }
-    }
 }
