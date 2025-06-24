@@ -54,8 +54,8 @@ import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang.math.RandomUtils;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.RandomUtils;
 
 /**
  * Records2SQLFileWriter Description
@@ -87,7 +87,7 @@ public class ErrorRecords2SQLFileWriter {
      */
     public String writeSQLRecords(SourceTableConfig stc, List<Record> records) {
 
-        ThreadUtils.threadSleep(RandomUtils.nextInt(100), null);
+        ThreadUtils.threadSleep(RandomUtils.insecure().randomInt(0, 100), null);
         final MigrationDirAndFilesManager dirAndFilesMgr = mrManager.getDirAndFilesMgr();
         String newTempFile = dirAndFilesMgr.getNewTempFile();
         File file = new File(newTempFile);

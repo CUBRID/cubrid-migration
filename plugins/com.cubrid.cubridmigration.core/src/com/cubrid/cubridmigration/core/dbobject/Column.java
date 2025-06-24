@@ -32,7 +32,7 @@ package com.cubrid.cubridmigration.core.dbobject;
 
 import com.cubrid.cubridmigration.core.datatype.DataTypeInstance;
 import com.cubrid.cubridmigration.core.dbtype.DBConstant;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * to store information of a column in the table

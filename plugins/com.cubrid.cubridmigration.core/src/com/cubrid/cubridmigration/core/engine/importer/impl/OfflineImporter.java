@@ -30,7 +30,6 @@
  */
 package com.cubrid.cubridmigration.core.engine.importer.impl;
 
-import au.com.bytecode.opencsv.CSVWriter;
 import com.cubrid.cubridmigration.core.common.CUBRIDIOUtils;
 import com.cubrid.cubridmigration.core.common.PathUtils;
 import com.cubrid.cubridmigration.core.common.log.LogUtil;
@@ -65,6 +64,7 @@ import com.cubrid.cubridmigration.core.engine.task.RunnableResultHandler;
 import com.cubrid.cubridmigration.core.trans.DBTransformHelper;
 import com.cubrid.cubridmigration.cubrid.CUBRIDSQLHelper;
 import com.cubrid.cubridmigration.cubrid.Data2StrTranslator;
+import com.opencsv.CSVWriter;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -81,8 +81,8 @@ import jxl.Workbook;
 import jxl.WorkbookSettings;
 import jxl.write.WritableSheet;
 import jxl.write.WritableWorkbook;
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
 /**
@@ -223,7 +223,8 @@ public abstract class OfflineImporter extends Importer {
                                     new FileOutputStream(file), config.getTargetCharSet()),
                             config.getCsvSettings().getSeparateChar(),
                             config.getCsvSettings().getQuoteChar(),
-                            config.getCsvSettings().getEscapeChar());
+                            config.getCsvSettings().getEscapeChar(),
+                            config.getCsvSettings().getLineSeparator());
             try {
                 List<String> lobFiles = new ArrayList<String>();
                 int total = 0;

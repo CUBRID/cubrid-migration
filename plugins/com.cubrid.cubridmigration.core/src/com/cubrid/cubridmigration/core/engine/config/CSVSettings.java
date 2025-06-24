@@ -33,8 +33,8 @@ package com.cubrid.cubridmigration.core.engine.config;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * CSVSettings Description
@@ -49,6 +49,7 @@ public class CSVSettings implements Serializable, Cloneable {
     private char separateChar = ',';
     private char quoteChar = '\"';
     private char escapeChar = MigrationConfiguration.CSV_NO_CHAR;
+    private String lineSeparator = System.lineSeparator();
 
     private final List<String> nullStrings = new ArrayList<String>(4);
 
@@ -131,6 +132,10 @@ public class CSVSettings implements Serializable, Cloneable {
 
     public char getEscapeChar() {
         return escapeChar;
+    }
+
+    public String getLineSeparator() {
+        return lineSeparator;
     }
 
     /**

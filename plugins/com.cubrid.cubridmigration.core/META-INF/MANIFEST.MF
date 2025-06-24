@@ -1,27 +1,16 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Name: Core Plug-in
+Bundle-Name: CUBRID Migration Toolkit Core
 Bundle-SymbolicName: com.cubrid.cubridmigration.core
 Bundle-Version: 1.0.0.qualifier
 Bundle-Activator: com.cubrid.cubridmigration.core.CubridMigrationCorePlugin
 Bundle-Vendor: CUBRID
-Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Bundle-RequiredExecutionEnvironment: JavaSE-21
 Require-Bundle: org.eclipse.core.runtime,
  com.cubrid.common.configuration,
- org.apache.commons.lang,
- org.apache.commons.collections,
- org.apache.log4j,
- org.apache.poi,
- org.apache.poi.ooxml,
- net.sf.opencsv,
- com.jcraft.jsch,
- org.antlr.antlr4-runtime,
- org.apache.hadoop.core,
- net.sourceforge.jexcelapi.jxl,
- woodstox-core-lgpl,
- stax2-api,
- org.apache.xmlbeans,
- org.apache.xerces
+ com.cubrid.bundle.core,
+ com.cubrid.bundle.antlr4,
+ com.cubrid.bundle.apache.poi-ooxml
 Bundle-ActivationPolicy: lazy
 Bundle-ClassPath: .
 Export-Package: 

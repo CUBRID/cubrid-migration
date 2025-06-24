@@ -34,7 +34,7 @@ import com.cubrid.cubridmigration.core.dbobject.Record.ColumnValue;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Types;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * DefaultHandler Description

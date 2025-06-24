@@ -1,13 +1,6 @@
-Bundle-ManifestVersion: 2
-Bundle-Name: CUBRID Migration Toolkit Plugin Feature
-Bundle-SymbolicName: com.cubrid.cubridmigration.command
+Bundle-Name: CUBRID Migration Toolkit Command
 Bundle-Version: 1.0.0.qualifier
-Bundle-Activator: com.cubrid.cubridmigration.command
 Bundle-Vendor: CUBRID
-Bundle-RequiredExecutionEnvironment: JavaSE-1.8
-Bundle-Localization: plugin
-Bundle-ActivationPolicy: lazy
-Require-Bundle: org.eclipse.core.runtime,
- com.cubrid.cubridmigration.core
+Bundle-RequiredExecutionEnvironment: JavaSE-21
 Bundle-ClassPath: .
-
+Main-Class: com.cubrid.cubridmigration.command.DoMigration
