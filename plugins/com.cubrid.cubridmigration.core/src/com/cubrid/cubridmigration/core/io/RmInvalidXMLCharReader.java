@@ -141,7 +141,7 @@ public class RmInvalidXMLCharReader extends InputStreamReader {
 
     private boolean isValid(int ch) {
         return (ch < 0x10000 && (CHAR_FLAGS[ch] & MASK_VALID) != 0)
-        || (ch >= 0x10000 && ch <= 0x10FFFF);
+                || (ch >= 0x10000 && ch <= 0x10FFFF);
     }
 
     private boolean isInvalid(int ch) {
