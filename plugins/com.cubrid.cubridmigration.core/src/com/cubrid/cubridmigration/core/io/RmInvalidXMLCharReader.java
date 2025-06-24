@@ -36,8 +36,8 @@ import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
+import java.util.Arrays;
 import java.util.List;
-import org.apache.xerces.util.XMLChar;
 
 /**
  * a reader to read characters from a xml file but remove invalid characters
@@ -46,6 +46,17 @@ import org.apache.xerces.util.XMLChar;
  */
 @SuppressWarnings("restriction")
 public class RmInvalidXMLCharReader extends InputStreamReader {
+
+    private static final byte MASK_VALID = 0x01;
+    private static final byte[] CHAR_FLAGS = new byte[0x10000];
+
+    static {
+        CHAR_FLAGS[0x9] = MASK_VALID;
+        CHAR_FLAGS[0xA] = MASK_VALID;
+        CHAR_FLAGS[0xD] = MASK_VALID;
+        Arrays.fill(CHAR_FLAGS, 0x20, 0xD7FF, MASK_VALID);
+        Arrays.fill(CHAR_FLAGS, 0xE000, 0xFFFD, MASK_VALID);
+    }
 
     private IReaderEvent readerEvent;
 
@@ -85,7 +96,7 @@ public class RmInvalidXMLCharReader extends InputStreamReader {
         int c = super.read();
         if (c == -1) {
             return c;
-        } else if (XMLChar.isInvalid(c)) {
+        } else if (isInvalid(c)) {
             return ' ';
         } else {
             return c;
@@ -109,11 +120,11 @@ public class RmInvalidXMLCharReader extends InputStreamReader {
         for (int i = 0; i < length; i++) {
             char c = cbuf[offset + i];
             if (null == invalidateChars) {
-                if (XMLChar.isInvalid(c)) {
+                if (isInvalid(c)) {
                     cbuf[offset + i] = ' ';
                     continue;
                 }
-            } else if (XMLChar.isInvalid(c) || c == 0xfffd) {
+            } else if (isInvalid(c) || c == 0xfffd) {
                 invalidateChars.add(c);
                 cbuf[offset + i] = 0xfffd;
             }
@@ -126,5 +137,14 @@ public class RmInvalidXMLCharReader extends InputStreamReader {
 
     public void setReaderEvent(IReaderEvent readerEvent) {
         this.readerEvent = readerEvent;
+    }
+
+    private boolean isValid(int ch) {
+        return (ch < 0x10000 && (CHAR_FLAGS[ch] & MASK_VALID) != 0)
+                || (ch >= 0x10000 && ch <= 0x10FFFF);
+    }
+
+    private boolean isInvalid(int ch) {
+        return !isValid(ch);
     }
 }

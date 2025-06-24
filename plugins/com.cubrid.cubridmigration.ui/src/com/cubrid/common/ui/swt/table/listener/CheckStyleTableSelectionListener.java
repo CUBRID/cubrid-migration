@@ -35,12 +35,9 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.internal.SWTEventListener;
-import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
-import org.eclipse.swt.widgets.TypedListener;
 
 /**
  * If the table's style has CHECK option, add this listener to the column 0's selection listener
@@ -87,18 +84,8 @@ public class CheckStyleTableSelectionListener extends SelectionAdapter {
                         ? MigrationUIPlugin.getImage("icon/checked.gif")
                         : MigrationUIPlugin.getImage("icon/unchecked.gif");
         column.setImage(image);
-        Listener[] listeners = column.getListeners(SWT.Selection);
-        if (listeners == null) {
-            return;
-        }
-        for (Listener listener : listeners) {
-            if (listener instanceof TypedListener) {
-                SWTEventListener eventListener = ((TypedListener) listener).getEventListener();
-                if (eventListener instanceof CheckStyleTableSelectionListener) {
-                    ((CheckStyleTableSelectionListener) eventListener).selectAll = selectAll;
-                }
-            }
-        }
+        column.getTypedListeners(SWT.Selection, CheckStyleTableSelectionListener.class)
+                .forEach(listener -> listener.selectAll = selectAll);
         for (TableItem ti : table.getItems()) {
             ti.setChecked(selectAll);
         }

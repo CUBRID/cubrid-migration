@@ -33,7 +33,7 @@ package com.cubrid.cubridmigration.core.common;
 import com.cubrid.cubridmigration.core.common.log.LogUtil;
 import java.security.SecureRandom;
 import java.util.Random;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
 /**

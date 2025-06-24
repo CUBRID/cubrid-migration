@@ -36,7 +36,7 @@ import com.cubrid.cubridmigration.core.dbtype.IDependOnDatabaseType;
 import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * DBDataTypeHelper Description

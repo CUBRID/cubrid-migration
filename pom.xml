@@ -12,14 +12,27 @@
         <cubridmigration-version>0.0.0</cubridmigration-version>
         <cubridmigration-desktop>CUBRID-Migration-Toolkit</cubridmigration-desktop>
         <cubridmigration-console>CUBRID-Migration-Toolkit-console</cubridmigration-console>
-        <tycho-version>1.7.0</tycho-version>
-        <eclipse-version>2020-06</eclipse-version>
+
+        <eclipse-version>2025-03</eclipse-version>
+        <java.version>21</java.version>
+        <tycho-version>4.0.13</tycho-version>
+
+        <maven-resources-plugin.version>3.3.1</maven-resources-plugin.version>
+        <antlr4-maven-plugin.version>4.13.2</antlr4-maven-plugin.version>
+        <maven-antrun-plugin.version>3.1.0</maven-antrun-plugin.version>
+
+        <maven.compiler.source>${java.version}</maven.compiler.source>
+        <maven.compiler.target>${java.version}</maven.compiler.target>
+
+        <com.cubrid.bundle.configuration.version>1.0.0</com.cubrid.bundle.configuration.version>
+        <com.cubrid.bundle.core.version>1.0.0</com.cubrid.bundle.core.version>
+        <com.cubrid.bundle.ui.version>1.0.0</com.cubrid.bundle.ui.version>
+        <com.cubrid.bundle.apache.poi-ooxmlversion>5.4.1</com.cubrid.bundle.apache.poi-ooxmlversion>
+        <com.cubrid.bundle.antlr4.version>4.13.2</com.cubrid.bundle.antlr4.version>
+
         <eclipse-repo-url>https://download.eclipse.org/releases</eclipse-repo-url>
         <eclipse-p2-repo.url>${eclipse-repo-url}/${eclipse-version}/</eclipse-p2-repo.url>
         <cmt-p2-site>https://ftp.cubrid.org/CUBRID_Tools/Dev/p2-site</cmt-p2-site>
-        
-        <maven.compiler.source>1.8</maven.compiler.source>
-        <maven.compiler.target>1.8</maven.compiler.target>
     </properties>
 
     <repositories>
@@ -38,6 +51,12 @@
      
     <build>
         <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <version>${maven-resources-plugin.version}</version>
+            </plugin>
+
             <plugin>
                 <groupId>org.eclipse.tycho</groupId>
                 <artifactId>target-platform-configuration</artifactId>
@@ -63,13 +82,7 @@
                     </environments>
                 </configuration>
             </plugin>
-        
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-resources-plugin</artifactId>
-                <version>2.6</version>
-            </plugin>
-        
+
             <plugin>
                 <groupId>org.eclipse.tycho</groupId>
                 <artifactId>tycho-maven-plugin</artifactId>
@@ -83,9 +96,9 @@
                 <version>${tycho-version}</version>
                 <configuration>
                     <useProjectSettings>false</useProjectSettings>
-                    <source>1.8</source>
-                    <target>1.8</target>
-                    <compilerVersion>1.8</compilerVersion>
+                    <source>${java.version}</source>
+                    <target>${java.version}</target>
+                    <compilerVersion>${java.version}</compilerVersion>
                 </configuration>
             </plugin>
              

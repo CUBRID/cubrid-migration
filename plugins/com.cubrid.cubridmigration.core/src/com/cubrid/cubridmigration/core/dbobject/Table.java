@@ -32,7 +32,7 @@ package com.cubrid.cubridmigration.core.dbobject;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections4.CollectionUtils;
 
 /**
  * to store a table information
