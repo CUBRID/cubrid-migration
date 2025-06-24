@@ -7,6 +7,7 @@ Bundle-Activator: com.cubrid.cubridmigration.core.CubridMigrationCorePlugin
 Bundle-Vendor: CUBRID
 Bundle-RequiredExecutionEnvironment: JavaSE-21
 Require-Bundle: org.eclipse.core.runtime,
+ com.cubrid.common.log,
  com.cubrid.common.configuration,
  com.cubrid.bundle.core,
  com.cubrid.bundle.antlr4,
@@ -15,8 +16,7 @@ Bundle-ActivationPolicy: lazy
 Bundle-ClassPath: .
 Export-Package: 
  com.cubrid.cubridmigration.core;uses:="org.eclipse.core.runtime,org.osgi.framework",
- com.cubrid.cubridmigration.core.common;uses:="com.cubrid.cubridmigration.core.dbobject,org.apache.log4j",
- com.cubrid.cubridmigration.core.common.log;uses:="org.apache.log4j",
+ com.cubrid.cubridmigration.core.common;uses:="com.cubrid.cubridmigration.core.dbobject",
  com.cubrid.cubridmigration.core.common.xml,
  com.cubrid.cubridmigration.core.connection;uses:="com.cubrid.cubridmigration.core.dbobject,com.cubrid.cubridmigration.core.dbmetadata,com.cubrid.cubridmigration.core.dbtype",
  com.cubrid.cubridmigration.core.datatype,
@@ -42,8 +42,7 @@ Export-Package:
  com.cubrid.cubridmigration.core.engine.exception,
  com.cubrid.cubridmigration.core.engine.exporter;uses:="com.cubrid.cubridmigration.core.dbobject,com.cubrid.cubridmigration.core.engine.config,com.cubrid.cubridmigration.core.engine",
  com.cubrid.cubridmigration.core.engine.exporter.impl;
-  uses:="org.apache.log4j,
-   com.cubrid.cubridmigration.core.export,
+  uses:="com.cubrid.cubridmigration.core.export,
    com.cubrid.cubridmigration.core.engine.executors,
    org.xml.sax,
    com.cubrid.cubridmigration.core.engine.config,
@@ -56,7 +55,6 @@ Export-Package:
   uses:="com.cubrid.cubridmigration.core.dbobject,
    com.cubrid.cubridmigration.core.engine.config,
    com.cubrid.cubridmigration.core.engine.task,
-   org.apache.log4j,
    com.cubrid.cubridmigration.core.engine.executors,
    com.cubrid.cubridmigration.core.engine.importer,
    com.cubrid.cubridmigration.core.engine,
@@ -65,7 +63,6 @@ Export-Package:
  com.cubrid.cubridmigration.core.engine.report;
   uses:="com.cubrid.cubridmigration.core.engine.config,
    com.cubrid.cubridmigration.core.dbobject,
-   org.apache.log4j,
    com.cubrid.cubridmigration.core.engine.event",
  com.cubrid.cubridmigration.core.engine.scheduler;uses:="com.cubrid.cubridmigration.core.engine.task,com.cubrid.cubridmigration.core.engine",
  com.cubrid.cubridmigration.core.engine.task;
@@ -87,8 +84,7 @@ Export-Package:
  com.cubrid.cubridmigration.core.export;
   uses:="com.cubrid.cubridmigration.core.engine.config,
    com.cubrid.cubridmigration.core.dbobject,
-   com.cubrid.cubridmigration.core.dbtype,
-   org.apache.log4j",
+   com.cubrid.cubridmigration.core.dbtype",
  com.cubrid.cubridmigration.core.hadoop;uses:="org.apache.hadoop.fs",
  com.cubrid.cubridmigration.core.io,
  com.cubrid.cubridmigration.core.mapping;uses:="com.cubrid.cubridmigration.core.mapping.model",

@@ -16,6 +16,7 @@
 	    <profile>
 		    <id>desktop</id>
 			<modules>
+			    <module>com.cubrid.common.log</module>
 			    <module>com.cubrid.common.configuration</module>
 				<module>com.cubrid.common.update</module>
 				<module>com.cubrid.cubridmigration.app</module>
@@ -27,6 +28,7 @@
 		<profile>
 		    <id>console</id>
 			<modules>
+			    <module>com.cubrid.common.log</module>
 			    <module>com.cubrid.common.configuration</module>
 				<module>com.cubrid.cubridmigration.core</module>
 				<module>com.cubrid.cubridmigration.command</module>

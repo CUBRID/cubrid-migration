@@ -12,6 +12,7 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
  org.eclipse.ui.forms,
  com.cubrid.bundle.ui,
+ com.cubrid.common.log,
  com.cubrid.common.configuration,
  com.cubrid.cubridmigration.core
 Bundle-ClassPath: .
