@@ -33,7 +33,7 @@ package com.cubrid.cubridmigration.ui.wizard.page;
 import static com.cubrid.cubridmigration.core.common.DBUtils.isAdditionalUniqueIndex;
 import static com.cubrid.cubridmigration.core.dbtype.DatabaseType.getDatabaseTypeByID;
 
-import com.cubrid.cubridmigration.core.common.log.LogUtil;
+import com.cubrid.common.log.LogUtil;
 import com.cubrid.cubridmigration.core.connection.ConnParameters;
 import com.cubrid.cubridmigration.core.dbobject.Index;
 import com.cubrid.cubridmigration.core.dbobject.PK;
@@ -63,7 +63,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import org.apache.log4j.Logger;
 import org.eclipse.jface.dialogs.PageChangedEvent;
 import org.eclipse.jface.dialogs.PageChangingEvent;
 import org.eclipse.swt.SWT;
@@ -73,6 +72,7 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.ToolItem;
+import org.slf4j.Logger;
 
 /**
  * new wizard step 5. Confirm Migration Settings

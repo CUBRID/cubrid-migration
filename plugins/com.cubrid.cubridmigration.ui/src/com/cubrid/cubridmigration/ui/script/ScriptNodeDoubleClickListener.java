@@ -30,17 +30,17 @@
  */
 package com.cubrid.cubridmigration.ui.script;
 
-import com.cubrid.cubridmigration.core.common.log.LogUtil;
+import com.cubrid.common.log.LogUtil;
 import com.cubrid.cubridmigration.ui.common.UICommonTool;
 import com.cubrid.cubridmigration.ui.common.navigator.node.MigrationScriptNode;
 import com.cubrid.cubridmigration.ui.message.Messages;
 import com.cubrid.cubridmigration.ui.wizard.MigrationWizardFactory;
-import org.apache.log4j.Logger;
 import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeItem;
+import org.slf4j.Logger;
 
 /**
  * ScriptNodeDoubleClick

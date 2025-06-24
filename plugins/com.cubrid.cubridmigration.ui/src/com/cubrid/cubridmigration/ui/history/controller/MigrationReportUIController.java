@@ -30,8 +30,8 @@
  */
 package com.cubrid.cubridmigration.ui.history.controller;
 
+import com.cubrid.common.log.LogUtil;
 import com.cubrid.cubridmigration.core.common.CUBRIDIOUtils;
-import com.cubrid.cubridmigration.core.common.log.LogUtil;
 import com.cubrid.cubridmigration.core.engine.report.DBObjMigrationResult;
 import com.cubrid.cubridmigration.core.engine.report.MigrationBriefReport;
 import com.cubrid.cubridmigration.core.engine.report.MigrationOverviewResult;
@@ -56,10 +56,10 @@ import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
+import org.slf4j.Logger;
 
 /**
  * MigrationReportUIController.

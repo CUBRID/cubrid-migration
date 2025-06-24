@@ -30,8 +30,8 @@
  */
 package com.cubrid.cubridmigration.cubrid.export;
 
+import com.cubrid.common.log.LogUtil;
 import com.cubrid.cubridmigration.core.common.Closer;
-import com.cubrid.cubridmigration.core.common.log.LogUtil;
 import com.cubrid.cubridmigration.core.connection.ConnParameters;
 import com.cubrid.cubridmigration.core.datatype.DataTypeConstant;
 import com.cubrid.cubridmigration.core.dbobject.PK;
@@ -55,7 +55,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
 
 /**
  * a class help to export CUBRID data and verify CUBRID sql statement

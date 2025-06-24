@@ -30,8 +30,8 @@
  */
 package com.cubrid.cubridmigration.cubrid;
 
+import com.cubrid.common.log.LogUtil;
 import com.cubrid.cubridmigration.core.common.DBUtils;
-import com.cubrid.cubridmigration.core.common.log.LogUtil;
 import com.cubrid.cubridmigration.core.dbobject.Column;
 import com.cubrid.cubridmigration.core.dbobject.FK;
 import com.cubrid.cubridmigration.core.dbobject.Grant;
@@ -55,7 +55,7 @@ import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
 
 /**
  * CUBRIDSQLHelper

@@ -30,10 +30,10 @@
  */
 package com.cubrid.cubridmigration.core.engine.report;
 
+import com.cubrid.common.log.LogUtil;
 import com.cubrid.cubridmigration.core.common.CUBRIDIOUtils;
 import com.cubrid.cubridmigration.core.common.Closer;
 import com.cubrid.cubridmigration.core.common.PathUtils;
-import com.cubrid.cubridmigration.core.common.log.LogUtil;
 import com.cubrid.cubridmigration.core.dbobject.DBObject;
 import com.cubrid.cubridmigration.core.dbobject.PlcsqlFunction;
 import com.cubrid.cubridmigration.core.dbobject.PlcsqlProcedure;
@@ -65,7 +65,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
 
 /**
  * Default Migration Reporter

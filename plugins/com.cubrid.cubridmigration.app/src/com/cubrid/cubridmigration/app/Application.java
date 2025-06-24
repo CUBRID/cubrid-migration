@@ -30,9 +30,9 @@
  */
 package com.cubrid.cubridmigration.app;
 
+import com.cubrid.common.log.LogInitializer;
 import com.cubrid.cubridmigration.core.common.CUBRIDIOUtils;
 import com.cubrid.cubridmigration.core.common.PathUtils;
-import com.cubrid.cubridmigration.core.common.log.LogUtil;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -88,7 +88,7 @@ public class Application implements IApplication {
         PathUtils.initPaths(
                 PathUtils.getURLFilePath(Platform.getInstallLocation().getURL()), null, null);
         try {
-            LogUtil.initLog(PathUtils.getLogDir());
+            LogInitializer.initLog(PathUtils.getLogDir());
             // Move old to here for MAC OS
         } catch (Exception err) {
             err.printStackTrace();

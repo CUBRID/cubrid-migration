@@ -30,8 +30,8 @@
  */
 package com.cubrid.cubridmigration.ui.common;
 
+import com.cubrid.common.log.LogUtil;
 import com.cubrid.cubridmigration.core.common.Closer;
-import com.cubrid.cubridmigration.core.common.log.LogUtil;
 import com.cubrid.cubridmigration.core.common.xml.IXMLMemento;
 import com.cubrid.cubridmigration.core.common.xml.XMLMemento;
 import java.io.BufferedReader;
@@ -42,7 +42,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Locale;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
 
 /**
  * This util class is responsible to connect some urls

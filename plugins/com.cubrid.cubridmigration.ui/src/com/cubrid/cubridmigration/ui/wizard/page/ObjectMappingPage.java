@@ -30,8 +30,8 @@
  */
 package com.cubrid.cubridmigration.ui.wizard.page;
 
+import com.cubrid.common.log.LogUtil;
 import com.cubrid.common.ui.navigator.ICUBRIDNode;
-import com.cubrid.cubridmigration.core.common.log.LogUtil;
 import com.cubrid.cubridmigration.core.dbobject.Catalog;
 import com.cubrid.cubridmigration.core.dbobject.DBObject;
 import com.cubrid.cubridmigration.core.dbobject.Table;
@@ -93,7 +93,6 @@ import java.util.List;
 import java.util.Map;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -117,6 +116,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.ToolItem;
+import org.slf4j.Logger;
 
 /**
  * Page to set up mapping from source DB objects to target DB objects

@@ -30,8 +30,8 @@
 
 package com.cubrid.cubridmigration.informix.meta;
 
+import com.cubrid.common.log.LogUtil;
 import com.cubrid.cubridmigration.core.common.Closer;
-import com.cubrid.cubridmigration.core.common.log.LogUtil;
 import com.cubrid.cubridmigration.core.connection.ConnParameters;
 import com.cubrid.cubridmigration.core.dbmetadata.AbstractJDBCSchemaFetcher;
 import com.cubrid.cubridmigration.core.dbmetadata.IBuildSchemaFilter;
@@ -60,7 +60,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
 
 /**
  * InformixSchemaFetcher Description

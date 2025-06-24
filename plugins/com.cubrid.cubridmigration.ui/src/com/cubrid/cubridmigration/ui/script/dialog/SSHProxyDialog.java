@@ -30,16 +30,15 @@
  */
 package com.cubrid.cubridmigration.ui.script.dialog;
 
+import com.cubrid.common.log.LogUtil;
 import com.cubrid.cubridmigration.core.common.CipherUtils;
 import com.cubrid.cubridmigration.core.common.PathUtils;
 import com.cubrid.cubridmigration.core.common.SSHHostBaseInfo;
-import com.cubrid.cubridmigration.core.common.log.LogUtil;
 import com.cubrid.cubridmigration.ui.MigrationUIPlugin;
 import com.cubrid.cubridmigration.ui.common.CompositeUtils;
 import com.cubrid.cubridmigration.ui.common.dialog.DetailMessageDialog;
 import com.cubrid.cubridmigration.ui.message.Messages;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.core.runtime.preferences.InstanceScope;
 import org.eclipse.jface.dialogs.Dialog;
@@ -61,6 +60,7 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Spinner;
 import org.eclipse.swt.widgets.Text;
+import org.slf4j.Logger;
 
 /**
  * Export migration script dialog, supports exporting to local file system and remote file system by

@@ -30,7 +30,7 @@
  */
 package com.cubrid.cubridmigration.ui.script;
 
-import com.cubrid.cubridmigration.core.common.log.LogUtil;
+import com.cubrid.common.log.LogUtil;
 import com.cubrid.cubridmigration.core.dbobject.Catalog;
 import com.cubrid.cubridmigration.core.engine.config.MigrationConfiguration;
 import com.cubrid.cubridmigration.core.engine.report.MigrationBriefReport;
@@ -42,11 +42,11 @@ import it.sauronsoftware.cron4j.Task;
 import it.sauronsoftware.cron4j.TaskExecutionContext;
 import java.util.ArrayList;
 import java.util.List;
-import org.apache.log4j.Logger;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PlatformUI;
+import org.slf4j.Logger;
 
 /**
  * Migration Reservation Manager

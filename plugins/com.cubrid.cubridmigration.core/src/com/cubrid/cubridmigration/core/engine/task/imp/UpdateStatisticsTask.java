@@ -30,8 +30,8 @@
  */
 package com.cubrid.cubridmigration.core.engine.task.imp;
 
+import com.cubrid.common.log.LogUtil;
 import com.cubrid.cubridmigration.core.common.Closer;
-import com.cubrid.cubridmigration.core.common.log.LogUtil;
 import com.cubrid.cubridmigration.core.dbobject.Schema;
 import com.cubrid.cubridmigration.core.engine.config.MigrationConfiguration;
 import com.cubrid.cubridmigration.core.engine.config.SourceCSVConfig;
@@ -44,7 +44,7 @@ import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
 
 /**
  * CleanDBTask is to clear the database objects which were set to be replaced in target database

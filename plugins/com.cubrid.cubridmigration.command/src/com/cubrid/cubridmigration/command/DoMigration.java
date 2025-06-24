@@ -30,12 +30,12 @@
  */
 package com.cubrid.cubridmigration.command;
 
+import com.cubrid.common.log.LogInitializer;
 import com.cubrid.cubridmigration.command.handler.LogCommandHandler;
 import com.cubrid.cubridmigration.command.handler.ReportCommandHandler;
 import com.cubrid.cubridmigration.command.handler.ScriptCommandHandler;
 import com.cubrid.cubridmigration.command.handler.StartCommandHandler;
 import com.cubrid.cubridmigration.core.common.PathUtils;
-import com.cubrid.cubridmigration.core.common.log.LogUtil;
 import com.cubrid.cubridmigration.core.connection.JDBCUtil;
 import java.util.ArrayList;
 import java.util.List;
@@ -57,7 +57,7 @@ public class DoMigration {
     public static void main(String[] args) throws Exception {
         System.out.println("Thank you for using CUBRID Migration Toolkit(CMT) Console.");
         PathUtils.initPaths();
-        LogUtil.initLog(PathUtils.getLogDir());
+        LogInitializer.initLog(PathUtils.getLogDir());
         List<String> argList = new ArrayList<String>();
         for (String arg : args) {
             argList.add(arg);

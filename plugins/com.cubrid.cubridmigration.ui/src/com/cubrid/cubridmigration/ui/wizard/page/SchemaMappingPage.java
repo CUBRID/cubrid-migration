@@ -30,10 +30,10 @@
  */
 package com.cubrid.cubridmigration.ui.wizard.page;
 
+import com.cubrid.common.log.LogUtil;
 import com.cubrid.common.ui.swt.table.celleditor.CheckboxCellEditorFactory;
 import com.cubrid.common.ui.swt.table.celleditor.EditableComboBoxCellEditor;
 import com.cubrid.common.ui.swt.table.listener.CheckBoxColumnSelectionListener;
-import com.cubrid.cubridmigration.core.common.log.LogUtil;
 import com.cubrid.cubridmigration.core.dbobject.Catalog;
 import com.cubrid.cubridmigration.core.dbobject.Grant;
 import com.cubrid.cubridmigration.core.dbobject.Schema;
@@ -51,7 +51,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.dialogs.PageChangedEvent;
 import org.eclipse.jface.dialogs.PageChangingEvent;
@@ -75,6 +74,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
+import org.slf4j.Logger;
 
 public class SchemaMappingPage extends MigrationWizardPage {
 
