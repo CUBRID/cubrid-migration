@@ -36,6 +36,7 @@ import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -45,6 +46,17 @@ import java.util.List;
  */
 @SuppressWarnings("restriction")
 public class RmInvalidXMLCharReader extends InputStreamReader {
+
+    private static final byte MASK_VALID = 0x01;
+    private static final byte[] CHAR_FLAGS = new byte[0x10000];
+
+    static {
+        CHAR_FLAGS[0x9] = MASK_VALID;
+        CHAR_FLAGS[0xA] = MASK_VALID;
+        CHAR_FLAGS[0xD] = MASK_VALID;
+        Arrays.fill(CHAR_FLAGS, 0x20, 0xD7FF, MASK_VALID);
+        Arrays.fill(CHAR_FLAGS, 0xE000, 0xFFFD, MASK_VALID);
+    }
 
     private IReaderEvent readerEvent;
 
@@ -127,20 +139,12 @@ public class RmInvalidXMLCharReader extends InputStreamReader {
         this.readerEvent = readerEvent;
     }
 
-    /**
-     * Minimal utility for validating XML characters.
-     *
-     * <p>This utility implements character validity checks based on Appendix B of the W3C XML 1.0
-     * Fifth Edition specification. Extracted and simplified version of the {@code isValid(int)}
-     * logic from {@code org.apache.xerces.util.XMLChar} in Apache Xerces 2.12.2, under the terms of
-     * the Apache License 2.0.
-     */
+    private boolean isValid(int ch) {
+        return (ch < 0x10000 && (CHAR_FLAGS[ch] & MASK_VALID) != 0)
+        || (ch >= 0x10000 && ch <= 0x10FFFF);
+    }
+
     private boolean isInvalid(int ch) {
-        return !(ch == 0x9
-                || ch == 0xA
-                || ch == 0xD
-                || (ch >= 0x20 && ch <= 0xD7FF)
-                || (ch >= 0xE000 && ch <= 0xFFFD)
-                || (ch >= 0x10000 && ch <= 0x10FFFF));
+        return !isValid(ch);
     }
 }
