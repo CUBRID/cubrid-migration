@@ -122,7 +122,11 @@ public class MigrationReportUIController {
                 return ("\r\n") + (noSupportedFile);
             }
         } catch (IOException e) {
-            LOG.error(e);
+            LOG.error(
+                    "Failed to extract non-supported report from {} to {}.",
+                    reporter.getFileName(),
+                    noSupportedFile,
+                    e);
         }
         return "";
     }
@@ -141,7 +145,11 @@ public class MigrationReportUIController {
                 return ("\r\n") + (renameObjectFile);
             }
         } catch (IOException e) {
-            LOG.error(e);
+            LOG.error(
+                    "Failed to extract renamed-object report from {} to {}.",
+                    reporter.getFileName(),
+                    renameObjectFile,
+                    e);
         }
         return "";
     }
@@ -159,7 +167,11 @@ public class MigrationReportUIController {
                 return ("\r\n") + (logFile);
             }
         } catch (IOException e) {
-            LOG.error(e);
+            LOG.error(
+                    "Failed to extract log file from {} to {}.",
+                    reporter.getFileName(),
+                    logFile,
+                    e);
         }
         return "";
     }
@@ -361,7 +373,7 @@ public class MigrationReportUIController {
             CUBRIDIOUtils.saveTable2Excel(TAB_NAME, columns, data, xlsFile);
             return xlsFile;
         } catch (Exception ex) {
-            LOG.error(ex);
+            LOG.error("Failed to save migration report to Excel file: {}", xlsFile, ex);
         }
         return "";
     }

@@ -299,7 +299,8 @@ public class SSHProxyDialog extends Dialog {
             epf.flush();
 
         } catch (Exception e) {
-            LOG.error(e);
+            LOG.error(
+                    "Failed to save SSH proxy settings for host {}.", txtHost.getText().trim(), e);
             DetailMessageDialog.openError(
                     getShell(),
                     Messages.msgError,

@@ -72,7 +72,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.TimeZone;
-import org.apache.commons.lang.SystemUtils;
+import org.apache.commons.lang3.SystemUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 
@@ -453,7 +453,7 @@ public class StartCommandHandler implements ConsoleCommandHandler {
             dbProperties.load(new FileInputStream(dbProFile));
         } catch (Exception ex) {
             outPrinter.println("Load db.conf error.");
-            LOG.error(ex);
+            LOG.error("Failed to load db.conf from {}.", dbProFile.getAbsolutePath(), ex);
         }
     }
 
@@ -707,7 +707,7 @@ public class StartCommandHandler implements ConsoleCommandHandler {
                             null);
             return cp;
         } catch (Exception ex) {
-            LOG.error(ex);
+            LOG.error("[{}] Failed to load connection information", cpname, ex);
             return null;
         }
     }

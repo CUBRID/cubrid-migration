@@ -54,7 +54,7 @@ public class PlConvOracleToCubrid {
 
         ParseTree tree = parser.sql_script();
         if (sei.hasError) {
-            log.error(new SyntaxError(sei.line, sei.column, sei.msg));
+            log.error("PL/CSQL syntax error", new SyntaxError(sei.line, sei.column, sei.msg));
         }
 
         OffsetCollector oc = new OffsetCollector();

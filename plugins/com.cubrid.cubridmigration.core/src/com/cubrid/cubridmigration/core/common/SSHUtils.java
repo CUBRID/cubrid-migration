@@ -177,7 +177,7 @@ public class SSHUtils {
                 CUBRIDIOUtils.writeLines(gssFile, new String[] {content});
             }
         } catch (Exception ex) {
-            LOG.error(ex);
+            LOG.error("Failed to initialize Kerberos environment for host: {}", host.getHost(), ex);
         }
     }
 

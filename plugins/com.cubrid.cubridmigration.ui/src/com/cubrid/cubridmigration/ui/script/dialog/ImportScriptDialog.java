@@ -145,7 +145,10 @@ public class ImportScriptDialog extends TransFileBySSHDialog {
                     return;
                 }
             } catch (Exception ex) {
-                LOG.error(ex);
+                LOG.error(
+                        "Failed to import migration script from local file {}.",
+                        txtLocal.getText().trim(),
+                        ex);
                 DetailMessageDialog.openError(
                         getShell(),
                         Messages.msgError,
@@ -190,7 +193,11 @@ public class ImportScriptDialog extends TransFileBySSHDialog {
                         ex.getMessage());
                 return;
             } catch (Exception ex) {
-                LOG.error(ex);
+                LOG.error(
+                        "Failed to import migration script from remote host {} at {}.",
+                        host.getHost(),
+                        txtRemoteFile.getText().trim(),
+                        ex);
                 DetailMessageDialog.openError(
                         getShell(),
                         Messages.msgError,
@@ -204,7 +211,7 @@ public class ImportScriptDialog extends TransFileBySSHDialog {
             prefers.putBoolean(IMPORT_REMOTE, btnEnableRemote.getSelection());
             prefers.flush();
         } catch (BackingStoreException ex) {
-            LOG.error(ex);
+            LOG.error("Failed to persist import-script preferences.", ex);
         }
         MessageDialog.openInformation(
                 getShell(), Messages.msgInformation, Messages.infoImportScriptSuccess);

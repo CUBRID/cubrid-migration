@@ -250,7 +250,10 @@ public class ExportScriptDialog extends TransFileBySSHDialog {
                 createTempXml(fName);
                 CUBRIDIOUtils.copyFile(new File(tmpFile), dest);
             } catch (Exception ex) {
-                LOG.error(ex);
+                LOG.error(
+                        "Failed to export migration script locally to {}.",
+                        txtLocal.getText().trim(),
+                        ex);
                 DetailMessageDialog.openError(
                         getShell(),
                         Messages.msgError,
@@ -289,7 +292,11 @@ public class ExportScriptDialog extends TransFileBySSHDialog {
                         ex.getMessage());
                 return;
             } catch (Exception ex) {
-                LOG.error(ex);
+                LOG.error(
+                        "Failed to export migration script to remote host {} at {}.",
+                        host.getHost(),
+                        txtRemoteFile.getText().trim(),
+                        ex);
                 DetailMessageDialog.openError(
                         getShell(),
                         Messages.msgError,
@@ -303,7 +310,7 @@ public class ExportScriptDialog extends TransFileBySSHDialog {
             prefers.putBoolean(EXPORT_REMOTE, btnEnableRemote.getSelection());
             prefers.flush();
         } catch (BackingStoreException ex) {
-            LOG.error(ex);
+            LOG.error("Failed to persist export-script preferences.", ex);
         }
         MessageDialog.openInformation(
                 getShell(), Messages.msgInformation, Messages.msgExportScriptSuccess);

@@ -130,9 +130,13 @@ public final class MysqlXmlDumpParsingHistoryManager { // NOPMD
                 CUBRIDIOUtils.writeLines(file, new String[] {xmlString}, "UTF-8");
             }
         } catch (ParserConfigurationException ex) {
-            LOG.error(ex);
+            LOG.error("Failed to create XML memento while saving migration history.", ex);
         } catch (IOException ex) {
-            LOG.error(ex);
+            LOG.error(
+                    "I/O error while writing migration history file ({}).",
+                    new File(PathUtils.getMonitorHistoryDir(), XML_CATALOG_HISTORY_FILE_NAME)
+                            .getAbsolutePath(),
+                    ex);
         }
     }
 

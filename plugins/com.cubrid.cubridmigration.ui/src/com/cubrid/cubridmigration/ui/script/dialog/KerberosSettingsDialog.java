@@ -170,7 +170,11 @@ public class KerberosSettingsDialog extends Dialog {
             host.setKrbTicket(txtTicketFile.getText());
             super.okPressed();
         } catch (Exception e) {
-            LOG.error(e);
+            LOG.error(
+                    "Failed to apply Kerberos settings (conf: {}, ticket: {}).",
+                    txtKrbConfFile.getText().trim(),
+                    txtTicketFile.getText().trim(),
+                    e);
         }
     }
 

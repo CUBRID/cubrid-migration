@@ -299,7 +299,7 @@ public class MigrationConfigPage extends PreferencePage implements IWorkbenchPre
             NODE.flush();
             PathUtils.setBaseTempDir(edtTempFilePath.getText());
         } catch (BackingStoreException e) {
-            LOG.error(e);
+            LOG.error("Failed to persist migration preferences.", e);
         }
         return true;
     }

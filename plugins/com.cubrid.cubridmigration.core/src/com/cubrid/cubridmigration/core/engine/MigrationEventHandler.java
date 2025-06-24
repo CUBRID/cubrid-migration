@@ -109,7 +109,7 @@ public class MigrationEventHandler implements IMigrationEventHandler {
             try {
                 // After finished event, new event will not be accepted.
                 if (mfe != null) {
-                    LOG.info(event);
+                    LOG.info("Migration already finished; ignoring further event: {}", event);
                     return;
                 }
                 if (event instanceof MigrationCanceledEvent) {

@@ -77,7 +77,10 @@ public final class CommonUtils {
                 InetAddress localHost = InetAddress.getLocalHost();
                 return localHost.getHostAddress();
             } catch (UnknownHostException e) {
-                LOG.error(e);
+                LOG.error(
+                        "Unable to resolve local host address; falling back to original hostIP={}",
+                        hostIP,
+                        e);
             }
         }
 
