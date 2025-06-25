@@ -33,8 +33,8 @@ package com.cubrid.cubridmigration.core.connection;
 import com.cubrid.common.configuration.jdbc.IJDBCConnectionChangedObserver;
 import com.cubrid.common.configuration.jdbc.IJDBCInfoChangedSubject;
 import com.cubrid.common.configuration.jdbc.JDBCChangingManager;
+import com.cubrid.common.log.LogUtil;
 import com.cubrid.cubridmigration.core.common.CipherUtils;
-import com.cubrid.cubridmigration.core.common.log.LogUtil;
 import com.cubrid.cubridmigration.core.common.xml.IXMLMemento;
 import com.cubrid.cubridmigration.core.common.xml.XMLMemento;
 import com.cubrid.cubridmigration.core.dbobject.Catalog;
@@ -49,7 +49,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.xml.parsers.ParserConfigurationException;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
 
 /**
  * JDBCConnectionManager is response for managing local JDBC connection information. The connection

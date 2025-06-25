@@ -30,12 +30,12 @@
  */
 package com.cubrid.cubridmigration.oracle.parser;
 
-import com.cubrid.cubridmigration.core.common.log.LogUtil;
+import com.cubrid.common.log.LogUtil;
 import com.cubrid.cubridmigration.oracle.parser.antlr4gen.*;
 import java.util.List;
 import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.tree.*;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
 
 public class PlConvOracleToCubrid {
 
@@ -54,7 +54,7 @@ public class PlConvOracleToCubrid {
 
         ParseTree tree = parser.sql_script();
         if (sei.hasError) {
-            log.error(new SyntaxError(sei.line, sei.column, sei.msg));
+            log.error("PL/CSQL syntax error", new SyntaxError(sei.line, sei.column, sei.msg));
         }
 
         OffsetCollector oc = new OffsetCollector();

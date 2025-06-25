@@ -30,10 +30,10 @@
  */
 package com.cubrid.cubridmigration.command.handler;
 
+import com.cubrid.common.log.LogUtil;
 import com.cubrid.cubridmigration.command.ConsoleCommandHandler;
 import com.cubrid.cubridmigration.command.ConsoleUtils;
 import com.cubrid.cubridmigration.core.common.PathUtils;
-import com.cubrid.cubridmigration.core.common.log.LogUtil;
 import com.cubrid.cubridmigration.core.connection.ConnParameters;
 import com.cubrid.cubridmigration.core.dbmetadata.DBSchemaInfoFetcherFactory;
 import com.cubrid.cubridmigration.core.dbmetadata.IDBSchemaInfoFetcher;
@@ -54,7 +54,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
 
 /**
  * LogCommandHandler Description
@@ -140,7 +140,7 @@ public class ScriptCommandHandler implements ConsoleCommandHandler {
                             null);
             return cp;
         } catch (Exception ex) {
-            LOG.error(ex);
+            LOG.error("Failed to build connection parameters for [{}].", cpname, ex);
             return null;
         }
     }
@@ -229,7 +229,7 @@ public class ScriptCommandHandler implements ConsoleCommandHandler {
             outPrinter.println(outputFileName + " was created successfully.");
         } catch (Exception ex) {
             outPrinter.println("Unexpected error. Please check the log for more information.");
-            LOG.error(ex);
+            LOG.error("Unexpected error while processing CLI arguments: {}.", args, ex);
         }
     }
 
@@ -274,7 +274,7 @@ public class ScriptCommandHandler implements ConsoleCommandHandler {
             dbProperties.load(new FileInputStream(dbProFile));
         } catch (Exception ex) {
             outPrinter.println("Load db.conf error.");
-            LOG.error(ex);
+            LOG.error("Failed to load db.conf from {}.", ex);
         }
     }
 
@@ -343,7 +343,7 @@ public class ScriptCommandHandler implements ConsoleCommandHandler {
                 con.close();
             } catch (Exception e) {
                 outPrinter.println("Can't connect database:" + svalue);
-                LOG.error(e);
+                LOG.error("Failed to connect to source database [{}].", svalue, e);
                 return false;
             }
             config.setSourceConParams(scp);
@@ -405,7 +405,7 @@ public class ScriptCommandHandler implements ConsoleCommandHandler {
                 con.close();
             } catch (Exception e) {
                 outPrinter.println("Can't connect database:" + tvalue);
-                LOG.error(e);
+                LOG.error("Failed to connect to target database [{}].", tvalue, e);
                 return false;
             }
             config.setTargetConParams(tcp);

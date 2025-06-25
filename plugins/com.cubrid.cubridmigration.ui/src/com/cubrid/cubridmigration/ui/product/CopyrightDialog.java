@@ -30,10 +30,9 @@
  */
 package com.cubrid.cubridmigration.ui.product;
 
-import com.cubrid.cubridmigration.core.common.log.LogUtil;
+import com.cubrid.common.log.LogUtil;
 import com.cubrid.cubridmigration.ui.MigrationUIPlugin;
 import com.cubrid.cubridmigration.ui.message.Messages;
-import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.preferences.InstanceScope;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.TrayDialog;
@@ -48,6 +47,7 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.osgi.service.prefs.Preferences;
+import org.slf4j.Logger;
 
 /**
  * CopyrightDialog

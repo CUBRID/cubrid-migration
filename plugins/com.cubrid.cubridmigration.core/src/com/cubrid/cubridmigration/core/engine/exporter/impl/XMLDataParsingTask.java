@@ -30,7 +30,7 @@
  */
 package com.cubrid.cubridmigration.core.engine.exporter.impl;
 
-import com.cubrid.cubridmigration.core.common.log.LogUtil;
+import com.cubrid.common.log.LogUtil;
 import com.cubrid.cubridmigration.core.dbobject.Column;
 import com.cubrid.cubridmigration.core.dbobject.Record;
 import com.cubrid.cubridmigration.core.dbobject.Table;
@@ -46,7 +46,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.TimeZone;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
 
 /**
  * ImportTask responses to parse data to record and import to target database.

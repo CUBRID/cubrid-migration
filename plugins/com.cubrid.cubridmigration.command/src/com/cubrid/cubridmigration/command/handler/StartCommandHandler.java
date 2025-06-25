@@ -30,6 +30,7 @@
  */
 package com.cubrid.cubridmigration.command.handler;
 
+import com.cubrid.common.log.LogUtil;
 import com.cubrid.cubridmigration.command.CmdMigrationMonitor;
 import com.cubrid.cubridmigration.command.ConsoleCommandHandler;
 import com.cubrid.cubridmigration.command.ConsoleMigrationReporter;
@@ -37,7 +38,6 @@ import com.cubrid.cubridmigration.command.ConsoleUtils;
 import com.cubrid.cubridmigration.command.DoMigration;
 import com.cubrid.cubridmigration.core.common.PathUtils;
 import com.cubrid.cubridmigration.core.common.TimeZoneUtils;
-import com.cubrid.cubridmigration.core.common.log.LogUtil;
 import com.cubrid.cubridmigration.core.connection.ConnParameters;
 import com.cubrid.cubridmigration.core.connection.JDBCDriverManager;
 import com.cubrid.cubridmigration.core.dbmetadata.DBSchemaInfoFetcherFactory;
@@ -72,9 +72,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.TimeZone;
-import org.apache.commons.lang.SystemUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
+import org.apache.commons.lang3.SystemUtils;
+import org.slf4j.Logger;
 
 /**
  * StartCommandHandler Description
@@ -453,7 +453,7 @@ public class StartCommandHandler implements ConsoleCommandHandler {
             dbProperties.load(new FileInputStream(dbProFile));
         } catch (Exception ex) {
             outPrinter.println("Load db.conf error.");
-            LOG.error(ex);
+            LOG.error("Failed to load db.conf from {}.", dbProFile.getAbsolutePath(), ex);
         }
     }
 
@@ -707,7 +707,7 @@ public class StartCommandHandler implements ConsoleCommandHandler {
                             null);
             return cp;
         } catch (Exception ex) {
-            LOG.error(ex);
+            LOG.error("[{}] Failed to load connection information", cpname, ex);
             return null;
         }
     }

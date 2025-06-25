@@ -29,8 +29,8 @@
  */
 package com.cubrid.cubridmigration.core.engine.task.imp;
 
+import com.cubrid.common.log.LogUtil;
 import com.cubrid.cubridmigration.core.common.CUBRIDIOUtils;
-import com.cubrid.cubridmigration.core.common.log.LogUtil;
 import com.cubrid.cubridmigration.core.dbobject.PlcsqlFunction;
 import com.cubrid.cubridmigration.core.engine.config.MigrationConfiguration;
 import com.cubrid.cubridmigration.core.engine.task.ImportTask;
@@ -39,7 +39,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
 
 /**
  * Output original and drop SQL for function

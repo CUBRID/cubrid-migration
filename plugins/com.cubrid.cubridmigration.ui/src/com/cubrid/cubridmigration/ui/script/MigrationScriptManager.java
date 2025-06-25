@@ -30,10 +30,10 @@
  */
 package com.cubrid.cubridmigration.ui.script;
 
+import com.cubrid.common.log.LogUtil;
 import com.cubrid.common.ui.navigator.IItemModelOfGroupProvider;
 import com.cubrid.cubridmigration.core.common.CUBRIDIOUtils;
 import com.cubrid.cubridmigration.core.common.PathUtils;
-import com.cubrid.cubridmigration.core.common.log.LogUtil;
 import com.cubrid.cubridmigration.core.engine.config.MigrationConfiguration;
 import com.cubrid.cubridmigration.core.engine.template.MigrationTemplateParser;
 import com.cubrid.cubridmigration.ui.message.Messages;
@@ -49,8 +49,8 @@ import java.util.ArrayList;
 import java.util.List;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
 import org.eclipse.swt.widgets.Display;
+import org.slf4j.Logger;
 
 /**
  * MigrationScriptManager with Singleton, it responses to manage migration scripts.

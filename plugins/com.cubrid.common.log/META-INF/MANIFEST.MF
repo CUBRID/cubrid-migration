@@ -1,0 +1,11 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: CUBRID Migration Toolkit Common Log
+Bundle-SymbolicName: com.cubrid.common.log;singleton:=true
+Bundle-Version: 1.0.0.qualifier
+Bundle-Vendor: CUBRID
+Automatic-Module-Name: com.cubrid.common.log
+Bundle-RequiredExecutionEnvironment: JavaSE-21
+Bundle-ActivationPolicy: lazy
+Require-Bundle: com.cubrid.bundle.log;visibility:=reexport
+Export-Package: com.cubrid.common.log

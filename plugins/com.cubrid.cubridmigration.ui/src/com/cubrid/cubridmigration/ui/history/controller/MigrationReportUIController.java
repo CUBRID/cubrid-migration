@@ -30,8 +30,8 @@
  */
 package com.cubrid.cubridmigration.ui.history.controller;
 
+import com.cubrid.common.log.LogUtil;
 import com.cubrid.cubridmigration.core.common.CUBRIDIOUtils;
-import com.cubrid.cubridmigration.core.common.log.LogUtil;
 import com.cubrid.cubridmigration.core.engine.report.DBObjMigrationResult;
 import com.cubrid.cubridmigration.core.engine.report.MigrationBriefReport;
 import com.cubrid.cubridmigration.core.engine.report.MigrationOverviewResult;
@@ -56,10 +56,10 @@ import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
+import org.slf4j.Logger;
 
 /**
  * MigrationReportUIController.
@@ -122,7 +122,11 @@ public class MigrationReportUIController {
                 return ("\r\n") + (noSupportedFile);
             }
         } catch (IOException e) {
-            LOG.error(e);
+            LOG.error(
+                    "Failed to extract non-supported report from {} to {}.",
+                    reporter.getFileName(),
+                    noSupportedFile,
+                    e);
         }
         return "";
     }
@@ -141,7 +145,11 @@ public class MigrationReportUIController {
                 return ("\r\n") + (renameObjectFile);
             }
         } catch (IOException e) {
-            LOG.error(e);
+            LOG.error(
+                    "Failed to extract renamed-object report from {} to {}.",
+                    reporter.getFileName(),
+                    renameObjectFile,
+                    e);
         }
         return "";
     }
@@ -159,7 +167,11 @@ public class MigrationReportUIController {
                 return ("\r\n") + (logFile);
             }
         } catch (IOException e) {
-            LOG.error(e);
+            LOG.error(
+                    "Failed to extract log file from {} to {}.",
+                    reporter.getFileName(),
+                    logFile,
+                    e);
         }
         return "";
     }
@@ -361,7 +373,7 @@ public class MigrationReportUIController {
             CUBRIDIOUtils.saveTable2Excel(TAB_NAME, columns, data, xlsFile);
             return xlsFile;
         } catch (Exception ex) {
-            LOG.error(ex);
+            LOG.error("Failed to save migration report to Excel file: {}", xlsFile, ex);
         }
         return "";
     }

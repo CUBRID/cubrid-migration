@@ -30,7 +30,7 @@
  */
 package com.cubrid.cubridmigration.cubrid;
 
-import com.cubrid.cubridmigration.core.common.log.LogUtil;
+import com.cubrid.common.log.LogUtil;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.ParsePosition;
@@ -38,7 +38,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 import java.util.TimeZone;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
 
 /**
  * CUBRID time util

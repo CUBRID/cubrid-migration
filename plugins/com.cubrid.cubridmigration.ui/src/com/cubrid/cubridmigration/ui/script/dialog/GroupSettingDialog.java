@@ -30,13 +30,12 @@
  */
 package com.cubrid.cubridmigration.ui.script.dialog;
 
+import com.cubrid.common.log.LogUtil;
 import com.cubrid.common.ui.navigator.ICUBRIDGroupNodeManager;
 import com.cubrid.common.ui.navigator.ICUBRIDNode;
 import com.cubrid.common.ui.navigator.node.AbstractGroupNode;
-import com.cubrid.cubridmigration.core.common.log.LogUtil;
 import com.cubrid.cubridmigration.ui.message.Messages;
 import java.util.ArrayList;
-import org.apache.log4j.Logger;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.TrayDialog;
@@ -51,6 +50,7 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.List;
 import org.eclipse.swt.widgets.Shell;
+import org.slf4j.Logger;
 
 /**
  * Filter setting dialog

@@ -30,14 +30,14 @@
  */
 package com.cubrid.cubridmigration.oracle.export.handler;
 
-import com.cubrid.cubridmigration.core.common.log.LogUtil;
+import com.cubrid.common.log.LogUtil;
 import com.cubrid.cubridmigration.core.dbobject.Column;
 import com.cubrid.cubridmigration.core.export.handler.BlobTypeHandler;
 import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
 
 /**
  * OracleBFileTypeHandler Description

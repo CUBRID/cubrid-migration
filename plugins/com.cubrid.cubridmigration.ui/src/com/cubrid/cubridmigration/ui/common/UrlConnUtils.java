@@ -30,8 +30,8 @@
  */
 package com.cubrid.cubridmigration.ui.common;
 
+import com.cubrid.common.log.LogUtil;
 import com.cubrid.cubridmigration.core.common.Closer;
-import com.cubrid.cubridmigration.core.common.log.LogUtil;
 import com.cubrid.cubridmigration.core.common.xml.IXMLMemento;
 import com.cubrid.cubridmigration.core.common.xml.XMLMemento;
 import java.io.BufferedReader;
@@ -42,7 +42,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Locale;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
 
 /**
  * This util class is responsible to connect some urls
@@ -78,7 +78,7 @@ public final class UrlConnUtils {
             conn.setReadTimeout(TIME_OUT_MILL);
             return conn.getResponseCode() == HttpURLConnection.HTTP_OK;
         } catch (Exception ignored) {
-            LOGGER.error(ignored);
+            LOGGER.error("Failed to check URL availability: {}", url, ignored);
         } finally {
             if (conn != null) {
                 conn.disconnect();
@@ -156,7 +156,8 @@ public final class UrlConnUtils {
                 conn.disconnect();
             }
         } catch (Exception ignored) {
-            LOGGER.error(ignored);
+            LOGGER.error(
+                    "Failed to read content from {} (User-Agent: {})", urlStr, userAgent, ignored);
         }
         return "";
     }
@@ -193,7 +194,10 @@ public final class UrlConnUtils {
             }
             return compareVersion(content, localVersion);
         } catch (UnsupportedEncodingException e) {
-            LOGGER.error(e);
+            LOGGER.error(
+                    "Unsupported encoding (UTF-8) while parsing version info from {}.",
+                    CHECK_NEW_VERSION_URL,
+                    e);
             return false;
         }
     }

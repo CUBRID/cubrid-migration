@@ -30,9 +30,9 @@
  */
 package com.cubrid.common.ui.navigator;
 
+import com.cubrid.common.log.LogUtil;
 import com.cubrid.common.ui.navigator.node.AbstractGroupNode;
 import com.cubrid.cubridmigration.core.common.CUBRIDIOUtils;
-import com.cubrid.cubridmigration.core.common.log.LogUtil;
 import com.cubrid.cubridmigration.core.common.xml.IXMLMemento;
 import com.cubrid.cubridmigration.core.common.xml.XMLMemento;
 import java.io.File;
@@ -42,7 +42,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
 
 /**
  * Group node persist manager

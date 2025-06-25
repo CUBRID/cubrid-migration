@@ -30,11 +30,11 @@
  */
 package com.cubrid.cubridmigration.ui.wizard.page;
 
+import com.cubrid.common.log.LogUtil;
 import com.cubrid.common.ui.StructuredContentProviderAdaptor;
 import com.cubrid.common.ui.swt.table.TableLabelProviderAdapter;
 import com.cubrid.common.ui.swt.table.TableViewerBuilder;
 import com.cubrid.cubridmigration.core.common.CharsetUtils;
-import com.cubrid.cubridmigration.core.common.log.LogUtil;
 import com.cubrid.cubridmigration.core.engine.config.MigrationConfiguration;
 import com.cubrid.cubridmigration.ui.message.Messages;
 import java.io.File;
@@ -43,7 +43,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
-import org.apache.log4j.Logger;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
@@ -68,6 +67,7 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableItem;
+import org.slf4j.Logger;
 
 /**
  * new wizard step 1. choose SQL files to be executed.

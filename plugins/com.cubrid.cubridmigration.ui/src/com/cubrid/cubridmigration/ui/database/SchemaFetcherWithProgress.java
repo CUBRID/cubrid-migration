@@ -30,7 +30,7 @@
  */
 package com.cubrid.cubridmigration.ui.database;
 
-import com.cubrid.cubridmigration.core.common.log.LogUtil;
+import com.cubrid.common.log.LogUtil;
 import com.cubrid.cubridmigration.core.connection.ConnParameters;
 import com.cubrid.cubridmigration.core.dbmetadata.DBSchemaInfoFetcherFactory;
 import com.cubrid.cubridmigration.core.dbmetadata.IDBSchemaInfoFetcher;
@@ -42,11 +42,11 @@ import com.cubrid.cubridmigration.ui.common.dialog.DetailMessageDialog;
 import com.cubrid.cubridmigration.ui.message.Messages;
 import java.lang.reflect.InvocationTargetException;
 import java.sql.SQLException;
-import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
+import org.slf4j.Logger;
 
 /**
  * Running fetching schema of database by JDBC driver, a progress dialog is shown for users

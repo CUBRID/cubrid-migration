@@ -30,9 +30,9 @@
  */
 package com.cubrid.cubridmigration.ui.database;
 
+import com.cubrid.common.log.LogUtil;
 import com.cubrid.cubridmigration.core.common.DBUtils;
 import com.cubrid.cubridmigration.core.common.PathUtils;
-import com.cubrid.cubridmigration.core.common.log.LogUtil;
 import com.cubrid.cubridmigration.core.dbmetadata.DBSchemaInfoFetcherFactory;
 import com.cubrid.cubridmigration.core.dbmetadata.IBuildSchemaFilter;
 import com.cubrid.cubridmigration.core.dbmetadata.IDBSchemaInfoFetcher;
@@ -48,7 +48,7 @@ import java.beans.XMLEncoder;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
 
 /**
  * catalog generator from database dump file

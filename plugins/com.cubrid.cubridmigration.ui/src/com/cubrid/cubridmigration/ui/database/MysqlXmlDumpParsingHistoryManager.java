@@ -30,9 +30,9 @@
  */
 package com.cubrid.cubridmigration.ui.database;
 
+import com.cubrid.common.log.LogUtil;
 import com.cubrid.cubridmigration.core.common.CUBRIDIOUtils;
 import com.cubrid.cubridmigration.core.common.PathUtils;
-import com.cubrid.cubridmigration.core.common.log.LogUtil;
 import com.cubrid.cubridmigration.core.common.xml.IXMLMemento;
 import com.cubrid.cubridmigration.core.common.xml.XMLMemento;
 import java.io.File;
@@ -40,7 +40,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.xml.parsers.ParserConfigurationException;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
 
 /**
  * Record XML dump file's parsing history into local machine.
@@ -130,9 +130,13 @@ public final class MysqlXmlDumpParsingHistoryManager { // NOPMD
                 CUBRIDIOUtils.writeLines(file, new String[] {xmlString}, "UTF-8");
             }
         } catch (ParserConfigurationException ex) {
-            LOG.error(ex);
+            LOG.error("Failed to create XML memento while saving migration history.", ex);
         } catch (IOException ex) {
-            LOG.error(ex);
+            LOG.error(
+                    "I/O error while writing migration history file ({}).",
+                    new File(PathUtils.getMonitorHistoryDir(), XML_CATALOG_HISTORY_FILE_NAME)
+                            .getAbsolutePath(),
+                    ex);
         }
     }
 

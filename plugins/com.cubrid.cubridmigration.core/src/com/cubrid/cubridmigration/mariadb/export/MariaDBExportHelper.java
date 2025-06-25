@@ -29,7 +29,7 @@
  */
 package com.cubrid.cubridmigration.mariadb.export;
 
-import com.cubrid.cubridmigration.core.common.log.LogUtil;
+import com.cubrid.common.log.LogUtil;
 import com.cubrid.cubridmigration.core.dbobject.Column;
 import com.cubrid.cubridmigration.core.dbobject.PK;
 import com.cubrid.cubridmigration.core.dbtype.DatabaseType;
@@ -46,7 +46,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
 
 /**
  * a class help to export MariaDB data and verify MariaDB sql statement

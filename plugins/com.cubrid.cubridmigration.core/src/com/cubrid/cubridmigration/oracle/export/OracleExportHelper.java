@@ -30,8 +30,8 @@
  */
 package com.cubrid.cubridmigration.oracle.export;
 
+import com.cubrid.common.log.LogUtil;
 import com.cubrid.cubridmigration.core.common.Closer;
-import com.cubrid.cubridmigration.core.common.log.LogUtil;
 import com.cubrid.cubridmigration.core.connection.ConnParameters;
 import com.cubrid.cubridmigration.core.dbobject.Column;
 import com.cubrid.cubridmigration.core.dbobject.PK;
@@ -52,7 +52,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
 
 /**
  * a class help to export Oracle data and verify Oracle sql statement

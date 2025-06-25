@@ -30,7 +30,7 @@
  */
 package com.cubrid.cubridmigration.core.common;
 
-import com.cubrid.cubridmigration.core.common.log.LogUtil;
+import com.cubrid.common.log.LogUtil;
 import com.jcraft.jsch.Channel;
 import com.jcraft.jsch.ChannelExec;
 import com.jcraft.jsch.JSch;
@@ -42,7 +42,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
 
 /**
  * SSH utilities
@@ -177,7 +177,7 @@ public class SSHUtils {
                 CUBRIDIOUtils.writeLines(gssFile, new String[] {content});
             }
         } catch (Exception ex) {
-            LOG.error(ex);
+            LOG.error("Failed to initialize Kerberos environment for host: {}", host.getHost(), ex);
         }
     }
 

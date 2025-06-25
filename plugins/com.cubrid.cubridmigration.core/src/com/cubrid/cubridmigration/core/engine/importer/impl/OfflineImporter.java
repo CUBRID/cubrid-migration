@@ -30,9 +30,9 @@
  */
 package com.cubrid.cubridmigration.core.engine.importer.impl;
 
+import com.cubrid.common.log.LogUtil;
 import com.cubrid.cubridmigration.core.common.CUBRIDIOUtils;
 import com.cubrid.cubridmigration.core.common.PathUtils;
-import com.cubrid.cubridmigration.core.common.log.LogUtil;
 import com.cubrid.cubridmigration.core.dbobject.Column;
 import com.cubrid.cubridmigration.core.dbobject.DBObject;
 import com.cubrid.cubridmigration.core.dbobject.FK;
@@ -83,7 +83,7 @@ import jxl.write.WritableSheet;
 import jxl.write.WritableWorkbook;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
 
 /**
  * LoadDBImporter : Use LoadDB and CSQL commands to import database objects.

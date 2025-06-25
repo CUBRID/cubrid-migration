@@ -30,6 +30,7 @@
  */
 package com.cubrid.cubridmigration.ui.wizard.page;
 
+import com.cubrid.common.log.LogUtil;
 import com.cubrid.common.ui.StructuredContentProviderAdaptor;
 import com.cubrid.common.ui.swt.Resources;
 import com.cubrid.common.ui.swt.table.CellEditorFactory;
@@ -40,7 +41,6 @@ import com.cubrid.common.ui.swt.table.celleditor.CheckboxCellEditorFactory;
 import com.cubrid.common.ui.swt.table.celleditor.TextCellEditorFactory;
 import com.cubrid.common.ui.swt.table.listener.CheckBoxColumnSelectionListener;
 import com.cubrid.cubridmigration.core.common.TextFileUtils;
-import com.cubrid.cubridmigration.core.common.log.LogUtil;
 import com.cubrid.cubridmigration.core.dbobject.Column;
 import com.cubrid.cubridmigration.core.dbobject.Schema;
 import com.cubrid.cubridmigration.core.dbobject.Table;
@@ -62,7 +62,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.MenuManager;
@@ -93,6 +92,7 @@ import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Text;
+import org.slf4j.Logger;
 
 /**
  * New wizard step 2. choose CSV files to be executed.

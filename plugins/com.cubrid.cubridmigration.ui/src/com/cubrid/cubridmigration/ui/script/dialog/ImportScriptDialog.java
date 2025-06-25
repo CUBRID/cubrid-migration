@@ -30,17 +30,16 @@
  */
 package com.cubrid.cubridmigration.ui.script.dialog;
 
+import com.cubrid.common.log.LogUtil;
 import com.cubrid.cubridmigration.core.common.PathUtils;
 import com.cubrid.cubridmigration.core.common.SSHConnectFailedException;
 import com.cubrid.cubridmigration.core.common.SSHUtils;
-import com.cubrid.cubridmigration.core.common.log.LogUtil;
 import com.cubrid.cubridmigration.ui.common.dialog.DetailMessageDialog;
 import com.cubrid.cubridmigration.ui.message.Messages;
 import com.cubrid.cubridmigration.ui.script.MigrationScriptManager;
 import com.jcraft.jsch.Session;
 import java.io.File;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -49,6 +48,7 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Shell;
 import org.osgi.service.prefs.BackingStoreException;
+import org.slf4j.Logger;
 
 /**
  * Import migration script dialog, supports exporting to local file system and remote file system by
@@ -145,7 +145,10 @@ public class ImportScriptDialog extends TransFileBySSHDialog {
                     return;
                 }
             } catch (Exception ex) {
-                LOG.error(ex);
+                LOG.error(
+                        "Failed to import migration script from local file {}.",
+                        txtLocal.getText().trim(),
+                        ex);
                 DetailMessageDialog.openError(
                         getShell(),
                         Messages.msgError,
@@ -190,7 +193,11 @@ public class ImportScriptDialog extends TransFileBySSHDialog {
                         ex.getMessage());
                 return;
             } catch (Exception ex) {
-                LOG.error(ex);
+                LOG.error(
+                        "Failed to import migration script from remote host {} at {}.",
+                        host.getHost(),
+                        txtRemoteFile.getText().trim(),
+                        ex);
                 DetailMessageDialog.openError(
                         getShell(),
                         Messages.msgError,
@@ -204,7 +211,7 @@ public class ImportScriptDialog extends TransFileBySSHDialog {
             prefers.putBoolean(IMPORT_REMOTE, btnEnableRemote.getSelection());
             prefers.flush();
         } catch (BackingStoreException ex) {
-            LOG.error(ex);
+            LOG.error("Failed to persist import-script preferences.", ex);
         }
         MessageDialog.openInformation(
                 getShell(), Messages.msgInformation, Messages.infoImportScriptSuccess);

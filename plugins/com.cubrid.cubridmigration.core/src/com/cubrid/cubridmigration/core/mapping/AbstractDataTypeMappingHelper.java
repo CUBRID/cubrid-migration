@@ -30,7 +30,7 @@
  */
 package com.cubrid.cubridmigration.core.mapping;
 
-import com.cubrid.cubridmigration.core.common.log.LogUtil;
+import com.cubrid.common.log.LogUtil;
 import com.cubrid.cubridmigration.core.common.xml.IXMLMemento;
 import com.cubrid.cubridmigration.core.common.xml.XMLMemento;
 import com.cubrid.cubridmigration.core.mapping.model.MapItem;
@@ -42,7 +42,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
 
 /**
  * AbstractDataTypeMappingHelper Description

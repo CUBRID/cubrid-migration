@@ -30,12 +30,11 @@
  */
 package com.cubrid.cubridmigration.ui.common;
 
+import com.cubrid.common.log.LogUtil;
 import com.cubrid.common.ui.swt.table.listener.CheckBoxColumnSelectionListener;
 import com.cubrid.common.ui.swt.table.listener.TextCellEditorUpDownKeyListener;
-import com.cubrid.cubridmigration.core.common.log.LogUtil;
 import com.cubrid.cubridmigration.ui.MigrationUIPlugin;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
 import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.viewers.CellEditor;
@@ -57,6 +56,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
+import org.slf4j.Logger;
 
 /**
  * CompositeUtils provide several methods to create or modify composites
