@@ -30,9 +30,9 @@
  */
 package com.cubrid.cubridmigration.core.engine.importer.impl;
 
+import com.cubrid.common.log.LogUtil;
 import com.cubrid.cubridmigration.core.common.CUBRIDIOUtils;
 import com.cubrid.cubridmigration.core.common.PathUtils;
-import com.cubrid.cubridmigration.core.common.log.LogUtil;
 import com.cubrid.cubridmigration.core.dbobject.DBObject;
 import com.cubrid.cubridmigration.core.dbobject.Table;
 import com.cubrid.cubridmigration.core.engine.MigrationContext;
@@ -49,7 +49,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
 
 /**
  * LoadDBImporter : Use LoadDB and CSQL commands to import database objects.

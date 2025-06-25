@@ -30,7 +30,7 @@
  */
 package com.cubrid.cubridmigration.core.engine;
 
-import com.cubrid.cubridmigration.core.common.log.LogUtil;
+import com.cubrid.common.log.LogUtil;
 import com.cubrid.cubridmigration.core.engine.event.IMigrationErrorEvent;
 import com.cubrid.cubridmigration.core.engine.event.MigrationCanceledEvent;
 import com.cubrid.cubridmigration.core.engine.event.MigrationErrorEvent;
@@ -41,7 +41,7 @@ import com.cubrid.cubridmigration.core.engine.event.SingleRecordErrorEvent;
 import com.cubrid.cubridmigration.core.engine.executors.IRunnableExecutor;
 import com.cubrid.cubridmigration.core.engine.executors.SingleQueueExecutor;
 import com.cubrid.cubridmigration.core.engine.report.IMigrationReporter;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
 
 /**
  * MigrationEventHandler responses to handle the events and errors of migration process.
@@ -109,7 +109,7 @@ public class MigrationEventHandler implements IMigrationEventHandler {
             try {
                 // After finished event, new event will not be accepted.
                 if (mfe != null) {
-                    LOG.info(event);
+                    LOG.info("Migration already finished; ignoring further event: {}", event);
                     return;
                 }
                 if (event instanceof MigrationCanceledEvent) {

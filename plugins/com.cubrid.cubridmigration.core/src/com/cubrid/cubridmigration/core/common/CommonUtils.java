@@ -30,7 +30,7 @@
  */
 package com.cubrid.cubridmigration.core.common;
 
-import com.cubrid.cubridmigration.core.common.log.LogUtil;
+import com.cubrid.common.log.LogUtil;
 import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.net.InetAddress;
@@ -40,7 +40,7 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
 
 /**
  * CommonTool
@@ -77,7 +77,10 @@ public final class CommonUtils {
                 InetAddress localHost = InetAddress.getLocalHost();
                 return localHost.getHostAddress();
             } catch (UnknownHostException e) {
-                LOG.error(e);
+                LOG.error(
+                        "Unable to resolve local host address; falling back to original hostIP={}",
+                        hostIP,
+                        e);
             }
         }
 

@@ -30,11 +30,11 @@
  */
 package com.cubrid.cubridmigration.oracle.trans;
 
-import com.cubrid.cubridmigration.core.common.log.LogUtil;
+import com.cubrid.common.log.LogUtil;
 import com.cubrid.cubridmigration.core.mapping.AbstractDataTypeMappingHelper;
 import com.cubrid.cubridmigration.oracle.OracleDataTypeHelper;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
 
 /**
  * OracleDataTypeMapping

@@ -30,7 +30,7 @@
  */
 package com.cubrid.cubridmigration.mssql.trans;
 
-import com.cubrid.cubridmigration.core.common.log.LogUtil;
+import com.cubrid.common.log.LogUtil;
 import com.cubrid.cubridmigration.core.datatype.DataType;
 import com.cubrid.cubridmigration.core.datatype.DataTypeConstant;
 import com.cubrid.cubridmigration.core.datatype.DataTypeInstance;
@@ -51,7 +51,7 @@ import java.text.ParseException;
 import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
 
 /**
  * A transform class which helps to data transform in migration of Oracle to CUBRID

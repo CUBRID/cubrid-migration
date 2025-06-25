@@ -30,12 +30,12 @@
  */
 package com.cubrid.cubridmigration.ui.history.controller;
 
+import com.cubrid.common.log.LogUtil;
 import com.cubrid.common.ui.swt.EditorPartProvider;
 import com.cubrid.common.ui.swt.IEditorInputInitializer;
 import com.cubrid.common.ui.swt.ProgressMonitorDialogRunner;
 import com.cubrid.cubridmigration.core.common.CUBRIDIOUtils;
 import com.cubrid.cubridmigration.core.common.PathUtils;
-import com.cubrid.cubridmigration.core.common.log.LogUtil;
 import com.cubrid.cubridmigration.core.engine.ThreadUtils;
 import com.cubrid.cubridmigration.core.engine.report.MigrationBriefReport;
 import com.cubrid.cubridmigration.core.engine.report.MigrationReport;
@@ -49,7 +49,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
-import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
@@ -59,6 +58,7 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorInput;
+import org.slf4j.Logger;
 
 /**
  * MigrationHistoryUIController responses to store all logic of the migration history management.

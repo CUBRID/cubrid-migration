@@ -30,7 +30,7 @@
  */
 package com.cubrid.cubridmigration.core.trans;
 
-import com.cubrid.cubridmigration.core.common.log.LogUtil;
+import com.cubrid.common.log.LogUtil;
 import com.cubrid.cubridmigration.core.datatype.DataType;
 import com.cubrid.cubridmigration.core.datatype.DataTypeConstant;
 import com.cubrid.cubridmigration.core.datatype.DataTypeInstance;
@@ -62,7 +62,7 @@ import java.util.Locale;
 import java.util.Map;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
 
 /**
  * a class help to transform database data

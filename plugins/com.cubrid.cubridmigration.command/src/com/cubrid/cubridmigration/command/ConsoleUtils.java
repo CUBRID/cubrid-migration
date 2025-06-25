@@ -32,6 +32,7 @@ package com.cubrid.cubridmigration.command;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import org.apache.commons.io.IOUtils;
@@ -65,13 +66,9 @@ public class ConsoleUtils {
     /** Print help information */
     public static void printHelp(String src) {
         final InputStream in = ConsoleUtils.class.getResourceAsStream(src);
-        try {
-            final List<String> readLines = IOUtils.readLines(in);
-            for (String ss : readLines) {
-                System.out.println(ss);
-            }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+        final List<String> readLines = IOUtils.readLines(in, StandardCharsets.UTF_8);
+        for (String ss : readLines) {
+            System.out.println(ss);
         }
     }
 

@@ -30,11 +30,10 @@
  */
 package com.cubrid.cubridmigration.ui.preference;
 
+import com.cubrid.common.log.LogUtil;
 import com.cubrid.cubridmigration.core.common.PathUtils;
-import com.cubrid.cubridmigration.core.common.log.LogUtil;
 import com.cubrid.cubridmigration.ui.MigrationUIPlugin;
 import com.cubrid.cubridmigration.ui.message.Messages;
-import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.core.runtime.preferences.InstanceScope;
 import org.eclipse.jface.preference.PreferencePage;
@@ -54,6 +53,7 @@ import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.osgi.service.prefs.BackingStoreException;
+import org.slf4j.Logger;
 
 /**
  * Migration Configuration Page
@@ -299,7 +299,7 @@ public class MigrationConfigPage extends PreferencePage implements IWorkbenchPre
             NODE.flush();
             PathUtils.setBaseTempDir(edtTempFilePath.getText());
         } catch (BackingStoreException e) {
-            LOG.error(e);
+            LOG.error("Failed to persist migration preferences.", e);
         }
         return true;
     }

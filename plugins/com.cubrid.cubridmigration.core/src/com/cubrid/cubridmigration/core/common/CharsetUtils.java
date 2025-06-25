@@ -30,7 +30,7 @@
  */
 package com.cubrid.cubridmigration.core.common;
 
-import com.cubrid.cubridmigration.core.common.log.LogUtil;
+import com.cubrid.common.log.LogUtil;
 import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
@@ -41,7 +41,7 @@ import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
 
 /**
  * charset util
@@ -96,7 +96,7 @@ public class CharsetUtils { // NOPMD
             CHARSET_SIZE_MAP.put("gb2312", 2);
             CHARSET_SIZE_MAP.put("gbk", 2);
             CHARSET_SIZE_MAP.put("zhs16gbk", 2);
-            LOG.error(e);
+            LOG.error("Faild to load charset size map; using build-in default.", e);
         }
     }
 

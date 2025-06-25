@@ -30,7 +30,7 @@
  */
 package com.cubrid.cubridmigration.cubrid.trans;
 
-import com.cubrid.cubridmigration.core.common.log.LogUtil;
+import com.cubrid.common.log.LogUtil;
 import com.cubrid.cubridmigration.core.dbobject.Column;
 import com.cubrid.cubridmigration.core.engine.config.MigrationConfiguration;
 import com.cubrid.cubridmigration.core.mapping.AbstractDataTypeMappingHelper;
@@ -38,7 +38,7 @@ import com.cubrid.cubridmigration.core.mapping.model.VerifyInfo;
 import com.cubrid.cubridmigration.core.trans.DBTransformHelper;
 import com.cubrid.cubridmigration.cubrid.CUBRIDDataTypeHelper;
 import java.util.Locale;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
 
 /**
  * a transform class which helps to data transform in migration of CUBRID to CUBRID

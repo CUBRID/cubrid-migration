@@ -10,6 +10,7 @@ Bundle-ActivationPolicy: lazy
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
  org.eclipse.equinox.p2.ui,
+ com.cubrid.common.log,
  com.cubrid.common.configuration,
  com.cubrid.cubridmigration.core,
  com.cubrid.cubridmigration.ui,

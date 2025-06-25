@@ -30,8 +30,8 @@
  */
 package com.cubrid.cubridmigration.ui.wizard.editor.controller;
 
+import com.cubrid.common.log.LogUtil;
 import com.cubrid.common.ui.swt.ProgressMonitorDialogRunner;
-import com.cubrid.cubridmigration.core.common.log.LogUtil;
 import com.cubrid.cubridmigration.core.dbobject.Catalog;
 import com.cubrid.cubridmigration.core.dbobject.Table;
 import com.cubrid.cubridmigration.core.engine.IMigrationMonitor;
@@ -57,7 +57,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
@@ -70,6 +69,7 @@ import org.eclipse.ui.ISaveablePart2;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.EditorPart;
+import org.slf4j.Logger;
 
 /** @author Kevin Cao */
 public class MigrationProgressUIController {

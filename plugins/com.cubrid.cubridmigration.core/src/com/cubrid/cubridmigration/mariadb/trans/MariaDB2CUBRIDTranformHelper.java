@@ -29,7 +29,7 @@
  */
 package com.cubrid.cubridmigration.mariadb.trans;
 
-import com.cubrid.cubridmigration.core.common.log.LogUtil;
+import com.cubrid.common.log.LogUtil;
 import com.cubrid.cubridmigration.core.datatype.DataType;
 import com.cubrid.cubridmigration.core.datatype.DataTypeConstant;
 import com.cubrid.cubridmigration.core.dbobject.Column;
@@ -47,7 +47,7 @@ import java.sql.Timestamp;
 import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
 
 /**
  * a transform class which helps to data transform in migration of MariaDB to CUBRID

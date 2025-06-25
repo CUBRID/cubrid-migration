@@ -33,8 +33,8 @@ package com.cubrid.cubridmigration.ui;
 import com.cubrid.common.configuration.jdbc.IJDBCConnecInfo;
 import com.cubrid.common.configuration.jdbc.JDBCChangingManager;
 import com.cubrid.common.configuration.jdbc.JDBCDriverChangingManager;
+import com.cubrid.common.log.LogUtil;
 import com.cubrid.cubridmigration.core.common.PathUtils;
-import com.cubrid.cubridmigration.core.common.log.LogUtil;
 import com.cubrid.cubridmigration.core.connection.CMTConParamManager;
 import com.cubrid.cubridmigration.core.connection.ConnParameters;
 import com.cubrid.cubridmigration.ui.database.CMTDriverChangingObserver;
@@ -46,13 +46,13 @@ import com.cubrid.cubridmigration.ui.script.MigrationScriptManager;
 import java.io.File;
 import java.util.List;
 import org.apache.hadoop.fs.FileSystem;
-import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.osgi.service.datalocation.Location;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
+import org.slf4j.Logger;
 
 /**
  * The activator class controls the plug-in life cycle

@@ -30,8 +30,8 @@
  */
 package com.cubrid.cubridmigration.core.dbmetadata;
 
+import com.cubrid.common.log.LogUtil;
 import com.cubrid.cubridmigration.core.common.Closer;
-import com.cubrid.cubridmigration.core.common.log.LogUtil;
 import com.cubrid.cubridmigration.core.connection.ConnParameters;
 import com.cubrid.cubridmigration.core.datatype.DataType;
 import com.cubrid.cubridmigration.core.dbobject.Catalog;
@@ -62,7 +62,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
 
 /**
  * AbstractJDBCSchemaFetcher
