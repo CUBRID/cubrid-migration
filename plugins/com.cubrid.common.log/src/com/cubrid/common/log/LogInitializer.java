@@ -32,6 +32,9 @@ package com.cubrid.common.log;
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.joran.JoranConfigurator;
 import ch.qos.logback.core.joran.spi.JoranException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -65,8 +68,13 @@ public final class LogInitializer {
             JoranConfigurator configurator = new JoranConfigurator();
             configurator.setContext(context);
             context.reset();
-            configurator.doConfigure(
-                    LogInitializer.class.getClassLoader().getResourceAsStream("logback.xml"));
+            Path external = Paths.get("logback.xml");
+            if (Files.isReadable(external)) {
+                configurator.doConfigure(external.toFile());
+            } else {
+                configurator.doConfigure(
+                        LogInitializer.class.getClassLoader().getResourceAsStream("logback.xml"));
+            }
         } catch (JoranException e) {
             System.err.println("Failed to configure Logback: " + e.getMessage());
             e.printStackTrace();

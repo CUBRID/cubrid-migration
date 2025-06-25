@@ -54,5 +54,12 @@
             <directory>${basedir}/target/jre/linux/jdk8u422-b05-jre</directory>
             <outputDirectory>jre</outputDirectory>
         </fileSet>
+        <fileSet>
+            <directory>${basedir}/../../plugins/com.cubrid.common.log/</directory>
+            <outputDirectory>/</outputDirectory>
+            <includes>
+                <include>logback.xml</include>
+            </includes>
+        </fileSet>
     </fileSets>
 </assembly>

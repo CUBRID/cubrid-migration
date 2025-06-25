@@ -26,11 +26,11 @@
     </appender>
 
     <statusListener class="ch.qos.logback.core.status.OnFileStatusListener">
-        <filename>${log.dir}/logback-status.txt</filename>
+        <filename>${log.dir}/logback-status.log</filename>
     </statusListener>
 
-    <root level="DEBUG">
-        <appender-ref ref="CONSOLE"/>
+    <root level="INFO">
+        <!-- <appender-ref ref="CONSOLE"/> -->
         <appender-ref ref="ASYNC_FILE"/>
     </root>
 </configuration>
