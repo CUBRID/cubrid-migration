@@ -31,6 +31,7 @@
 package com.cubrid.common.update.p2.handler;
 
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.equinox.internal.p2.ui.dialogs.UpdateSingleIUWizard;
 import org.eclipse.equinox.p2.operations.RepositoryTracker;
 import org.eclipse.equinox.p2.operations.UpdateOperation;
@@ -64,7 +65,7 @@ public class UpdateHandler extends PreloadingRepositoryHandler {
         UpdateOperation operation = getProvisioningUI().getUpdateOperation(null, null);
 
         // check for updates
-        IStatus status = operation.resolveModal(null);
+        IStatus status = operation.resolveModal(new NullProgressMonitor());
 
         // AUTO check update and there is not update
         if (isAutoCheckUpdate) {
