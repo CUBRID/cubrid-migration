@@ -32,7 +32,7 @@ function get_options ()
 {
   while getopts ":p:X" opt; do
     case $opt in
-	  p ) PROFILE="${OPTARG,,}" ;;
+	  p ) PROFILE=$(printf %s "$OPTARG" | tr '[:upper:]' '[:lower:]') ;;
           X ) MVN_DEBUG="-Dtycho.debug.resolver=true -X" ;;
           * ) show_usage 
               exit ;;
