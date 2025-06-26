@@ -39,8 +39,6 @@ import java.nio.charset.CharsetDecoder;
 import java.util.Arrays;
 import java.util.List;
 
-import org.apache.xmlbeans.impl.common.XMLChar;
-
 /**
  * a reader to read characters from a xml file but remove invalid characters
  *
