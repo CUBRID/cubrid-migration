@@ -7,7 +7,7 @@
 
    <launcherArgs>
       <programArgsMac>-vm ../Eclipse/jre/Contents/Home/bin/java</programArgsMac>
-      <vmArgs>-Xms1024M -Xmx4096M -Dosgi.requiredJavaVersion=1.8</vmArgs>
+      <vmArgs>-Xms1024M -Xmx4096M -Dosgi.requiredJavaVersion=21</vmArgs>
       <vmArgsMac>-XstartOnFirstThread </vmArgsMac>
    </launcherArgs>
 
