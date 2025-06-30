@@ -38,7 +38,7 @@
             </includes>
         </fileSet>
         <fileSet>
-            <directory>${basedir}/target/jre/win/jdk8u422-b05-jre</directory>
+            <directory>${basedir}/target/jre/win/win-jre</directory>
             <outputDirectory>jre</outputDirectory>
         </fileSet>
         <fileSet>

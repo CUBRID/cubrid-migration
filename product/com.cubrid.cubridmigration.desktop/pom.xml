@@ -68,28 +68,43 @@
                 <artifactId>maven-antrun-plugin</artifactId>
                 <executions>
                     <execution>
+                        <id>download-jre</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <target>
+                                <get src="${jre.download.url}/OpenJDK21U-jre_x64_windows_hotspot_21.0.7_6.zip" dest="${project.build.directory}/win-jre.zip" />
+                                <get src="${jre.download.url}/OpenJDK21U-jre_x64_linux_hotspot_21.0.7_6.tar.gz" dest="${project.build.directory}/linux-jre.tar.gz" />
+                                <get src="${jre.download.url}/OpenJDK21U-jre_x64_mac_hotspot_21.0.7_6.tar.gz" dest="${project.build.directory}/mac-jre.tar.gz" />
+                            </target>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>unpack-jre</id>
                         <phase>package</phase>
                         <goals>
                             <goal>run</goal>
                         </goals>
                         <configuration>
                             <target>
-                                <property name="output.dir" value="${project.build.directory}/jre"/>
-                                <unzip src="../../plugins/com.cubrid.common.configuration/target/win-jre.zip" dest="${output.dir}/win"/>
-                                <mkdir dir="${output.dir}/linux"/>
-                                <exec executable="tar">
-                                    <arg value="xzf"/>
-                                    <arg value="../../plugins/com.cubrid.common.configuration/target/linux-jre.tar.gz"/>
-                                    <arg value="-C"/>
-                                    <arg value="${output.dir}/linux"/>
-                                </exec>
-                                <mkdir dir="${output.dir}/mac"/>
-                                <exec executable="tar">
-                                    <arg value="xzf"/>
-                                    <arg value="../../plugins/com.cubrid.common.configuration/target/mac-jre.tar.gz"/>
-                                    <arg value="-C"/>
-                                    <arg value="${output.dir}/mac"/>
-                                </exec>
+                                <property name="jre.dir" value="${project.build.directory}/jre"/>
+                                <unzip src="${project.build.directory}/win-jre.zip" dest="${jre.dir}/win">
+                                    <mapper type="regexp" from="^[^/]+/(.*)$" to="win-jre/\1"/>
+                                </unzip>
+                                <untar src="${project.build.directory}/linux-jre.tar.gz" dest="${jre.dir}/linux" compression="gzip">
+                                    <mapper type="regexp" from="^[^/]+/(.*)$" to="linux-jre/\1"/>
+                                </untar>
+                                <chmod perm="755">
+                                    <fileset dir="${jre.dir}/linux/linux-jre/bin" includes="**/*"/>
+                                </chmod>
+                                <untar src="${project.build.directory}/mac-jre.tar.gz" dest="${jre.dir}/mac" compression="gzip">
+                                    <mapper type="regexp" from="^[^/]+/(.*)$" to="mac-jre/\1"/>
+                                </untar>
+                                <chmod perm="755">
+                                    <fileset dir="${jre.dir}/mac/mac-jre/Contents/Home/bin" includes="**/*"/>
+                                </chmod>
                             </target>
                         </configuration>
                     </execution>
