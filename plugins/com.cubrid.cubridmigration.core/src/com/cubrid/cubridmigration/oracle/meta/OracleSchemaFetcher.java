@@ -44,6 +44,7 @@ import com.cubrid.cubridmigration.core.dbobject.DBObjectFactory;
 import com.cubrid.cubridmigration.core.dbobject.FK;
 import com.cubrid.cubridmigration.core.dbobject.Grant;
 import com.cubrid.cubridmigration.core.dbobject.Index;
+import com.cubrid.cubridmigration.core.dbobject.PK;
 import com.cubrid.cubridmigration.core.dbobject.PartitionInfo;
 import com.cubrid.cubridmigration.core.dbobject.PartitionTable;
 import com.cubrid.cubridmigration.core.dbobject.PlcsqlFunction;
@@ -182,7 +183,12 @@ public final class OracleSchemaFetcher extends AbstractJDBCSchemaFetcher {
                     + " AND P.OWNER=V.OWNER"
                     + " AND P.GRANTEE=?";
 
-    // private static final String SHOW_SEQUENCE_MAXVAL = "SELECT ?.CURRVAL  FROM DUAL";
+    private static final String SQL_GET_ENABLED_PK =
+            "SELECT acc.COLUMN_NAME, ac.CONSTRAINT_NAME AS PK_NAME "
+                    + "FROM ALL_CONSTRAINTS ac JOIN ALL_CONS_COLUMNS acc "
+                    + "ON ac.OWNER = acc.OWNER AND ac.CONSTRAINT_NAME = acc.CONSTRAINT_NAME "
+                    + "WHERE ac.CONSTRAINT_TYPE = 'P' AND ac.STATUS = 'ENABLED' AND ac.OWNER = ? AND ac.TABLE_NAME = ? "
+                    + "ORDER BY acc.POSITION";
 
     public OracleSchemaFetcher() {
         factory = new DBObjectFactory() {};
@@ -593,33 +599,54 @@ public final class OracleSchemaFetcher extends AbstractJDBCSchemaFetcher {
         }
     }
 
-    //	/**
-    //	 * get time zone
-    //	 *
-    //	 * @param conn Connection
-    //	 * @return String time zone
-    //	 * @throws SQLException e
-    //	 */
-    //	public String getTimezone(final Connection conn) throws SQLException {
-    //
-    //		Statement stmt = null; // NOPMD
-    //		ResultSet rs = null; // NOPMD
-    //		try {
-    //			String timezone = "";
-    //			stmt = conn.createStatement();
-    //			rs = stmt.executeQuery("select dbtimezone from dual");
-    //
-    //			if (rs.next()) {
-    //				timezone = rs.getString(1);
-    //				timezone = "GMT" + timezone;
-    //			}
-    //
-    //			return timezone;
-    //		} finally {
-    //			Closer.close(rs);
-    //			Closer.close(stmt);
-    //		}
-    //	}
+    /**
+     * Build enabled primary key information for the given table.
+     *
+     * @param conn Connection
+     * @param catalog Catalog
+     * @param schema Schema
+     * @param table Table
+     * @throws SQLException e
+     */
+    @Override
+    protected void buildTablePK(
+            final Connection conn, final Catalog catalog, final Schema schema, final Table table)
+            throws SQLException {
+        LOG.debug("[IN] buildTablePK()");
+        try (PreparedStatement pstmt = conn.prepareStatement(SQL_GET_ENABLED_PK)) {
+            pstmt.setString(1, schema.getName());
+            pstmt.setString(2, table.getName());
+            LOG.debug(
+                    "[SQL]{} (1={}, 2={})", SQL_GET_ENABLED_PK, schema.getName(), table.getName());
+            try (ResultSet rs = pstmt.executeQuery()) {
+                PK primaryKey = null;
+
+                while (rs.next()) {
+                    if (primaryKey == null) {
+                        primaryKey = factory.createPK(table);
+                        primaryKey.setName(rs.getString("PK_NAME"));
+                        table.setPk(primaryKey);
+                    }
+
+                    // The SQL result is already ordered by POSITION, so we don't need to sort here.
+                    String columnName = rs.getString("COLUMN_NAME");
+                    Column col = table.getColumnWithNoCase(columnName);
+                    if (col != null) {
+                        primaryKey.addColumn(col.getName());
+                    }
+                }
+
+                if (primaryKey != null) {
+                    final String primaryKeyName = primaryKey.getName();
+                    if (primaryKeyName != null) {
+                        table.getIndexes()
+                                .removeIf(idx -> primaryKeyName.equalsIgnoreCase(idx.getName()));
+                    }
+                }
+            }
+        }
+        setUniquColumnByPK(table);
+    }
 
     /**
      * extract Table's FK
