@@ -69,6 +69,8 @@ public class CmdMigrationMonitor implements IMigrationMonitor {
     private Map<String, Long> tableTotalRows = new HashMap<>();
     private Map<String, Long> tableCurrentRows = new HashMap<>();
     private List<String> tableOrder = new ArrayList<>();
+    private int currentTableIndex = 0;
+    private boolean tablesInitialized = false;
 
     public CmdMigrationMonitor(MigrationConfiguration config, int monitorMode) {
         if (config.sourceIsOnline() || config.sourceIsXMLDump()) {
@@ -180,6 +182,5 @@ public class CmdMigrationMonitor implements IMigrationMonitor {
             outPrinter.print("Progress:" + progress + "%");
         }
     }
-    
     
 }
