@@ -190,6 +190,22 @@ public final class OracleSchemaFetcher extends AbstractJDBCSchemaFetcher {
                     + "WHERE ac.CONSTRAINT_TYPE = 'P' AND ac.STATUS = 'ENABLED' AND ac.OWNER = ? AND ac.TABLE_NAME = ? "
                     + "ORDER BY acc.POSITION";
 
+    private static final String SQL_GET_ENABLED_FKS =
+            "SELECT fk.constraint_name AS FK_NAME, "
+                    + "fk.delete_rule AS DELETE_RULE, "
+                    + "fk_col.column_name AS FK_COLUMN_NAME, "
+                    + "pk_col.table_name AS PK_TABLE_NAME, "
+                    + "pk_col.column_name AS PK_COLUMN_NAME "
+                    + "FROM all_constraints fk "
+                    + "JOIN all_cons_columns fk_col "
+                    + "ON fk.owner = fk_col.owner AND fk.constraint_name = fk_col.constraint_name "
+                    + "JOIN all_cons_columns pk_col "
+                    + "ON fk.r_owner = pk_col.owner AND fk.r_constraint_name = pk_col.constraint_name "
+                    + "AND fk_col.position = pk_col.position "
+                    + "WHERE fk.owner = ? AND fk.table_name = ? "
+                    + "AND fk.constraint_type = 'R' AND fk.status = 'ENABLED' "
+                    + "ORDER BY fk.constraint_name, fk_col.position";
+
     public OracleSchemaFetcher() {
         factory = new DBObjectFactory() {};
     }
@@ -660,83 +676,59 @@ public final class OracleSchemaFetcher extends AbstractJDBCSchemaFetcher {
     protected void buildTableFKs(
             final Connection conn, final Catalog catalog, final Schema schema, final Table table)
             throws SQLException {
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("[IN]buildTableFKs()");
-        }
-        ResultSet rs = null; // NOPMD
-        try {
-            final String schemaName = schema == null ? null : schema.getName();
-            rs =
-                    conn.getMetaData()
-                            .getImportedKeys(
-                                    catalog == null ? null : catalog.getName(),
-                                    schemaName,
-                                    table.getName());
-            String fkName = "";
-            FK foreignKey = null;
+        LOG.debug("[IN] buildTableFKs()");
+        try (PreparedStatement pstmt = conn.prepareStatement(SQL_GET_ENABLED_FKS)) {
+            pstmt.setString(1, schema.getName());
+            pstmt.setString(2, table.getName());
+            LOG.debug(
+                    "[SQL]{} (1={}, 2={})", SQL_GET_ENABLED_FKS, schema.getName(), table.getName());
 
-            while (rs.next()) {
-                final String newFkName = rs.getString("FK_NAME");
-                if (LOG.isDebugEnabled()) {
+            try (ResultSet rs = pstmt.executeQuery()) {
+                String fkName = "";
+                FK foreignKey = null;
+
+                while (rs.next()) {
+                    final String newFkName = rs.getString("FK_NAME");
                     LOG.debug("[VAR]newFkName=" + newFkName);
-                }
-                if (fkName.compareToIgnoreCase(newFkName) != 0) {
-                    if (foreignKey != null) {
-                        table.addFK(foreignKey);
-                    }
+                    if (fkName.compareToIgnoreCase(newFkName) != 0) {
+                        if (foreignKey != null) {
+                            table.addFK(foreignKey);
+                        }
 
-                    fkName = newFkName;
-                    foreignKey = factory.createFK(table);
-                    foreignKey.setName(fkName);
-                    foreignKey.setUpdateRule(
-                            FK.ON_UPDATE_NO_ACTION); // oracle doesn't have update rule
-                    // foreignKey.setDeferability(rs.getInt("DEFERRABILITY"));
+                        fkName = newFkName;
+                        foreignKey = factory.createFK(table);
+                        foreignKey.setName(fkName);
+                        foreignKey.setUpdateRule(
+                                FK.ON_UPDATE_NO_ACTION); // oracle doesn't have update rule
 
-                    switch (rs.getShort("delete_rule")) {
-                        case 0:
+                        String deleteRule = rs.getString("DELETE_RULE");
+                        if ("CASCADE".equalsIgnoreCase(deleteRule)) {
                             foreignKey.setDeleteRule(FK.ON_DELETE_CASCADE);
-                            break;
-                        case 1:
-                            foreignKey.setDeleteRule(FK.ON_DELETE_NO_ACTION);
-                            break;
-
-                        default:
+                        } else if ("SET NULL".equalsIgnoreCase(deleteRule)) {
                             foreignKey.setDeleteRule(FK.ON_DELETE_SET_NULL);
-                            break;
+                        } else {
+                            foreignKey.setDeleteRule(FK.ON_DELETE_RESTRICT);
+                        }
+
+                        foreignKey.setReferencedTableName(rs.getString("PK_TABLE_NAME"));
                     }
-
-                    // final String fkSchemaName = rs.getString("PKTABLE_SCHEM");
-                    //					if (rs.wasNull()) {
-                    //						foreignKey.setFkSchemaName(schemaName);
-                    //					} else {
-                    //						foreignKey.setFkSchemaName(fkSchemaName);
-                    //					}
-
-                    foreignKey.setReferencedTableName(rs.getString("PKTABLE_NAME"));
+                    if (foreignKey != null) {
+                        // find reference table column
+                        final String colName = rs.getString("FK_COLUMN_NAME");
+                        Column column = table.getColumnByName(colName);
+                        if (column != null) {
+                            foreignKey.addRefColumnName(colName, rs.getString("PK_COLUMN_NAME"));
+                        }
+                    }
                 }
+
                 if (foreignKey != null) {
-                    // find reference table column
-                    final String colName = rs.getString("FKCOLUMN_NAME");
-                    Column column = table.getColumnByName(colName);
-                    if (column != null) {
-                        foreignKey.addRefColumnName(colName, rs.getString("PKCOLUMN_NAME"));
-                    }
-                    //					for (int j = 0; j < table.getColumns().size(); j++) {
-                    //						final Column column = (Column) (table.getColumns().get(j));
-                    //
-                    //						if (column.getName().compareToIgnoreCase(colName) == 0) {
-                    //							foreignKey.addColumn(column);
-                    //							break;
-                    //						}
-                    //					}
+                    table.addFK(foreignKey);
                 }
             }
-
-            if (foreignKey != null) {
-                table.addFK(foreignKey);
-            }
-        } finally {
-            Closer.close(rs);
+        } catch (SQLException e) {
+            LOG.error("Error while building table FKs", e);
+            throw e;
         }
     }
 
