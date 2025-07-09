@@ -169,24 +169,19 @@ public class CmdMigrationMonitor implements IMigrationMonitor {
             Long totalRows = tableTotalRows.get(tableName);
             Long currentRows = tableCurrentRows.get(tableName);
             long tableProgress = (totalRows > 0) ? (currentRows * 100 / totalRows) : 0;
-
-            if (tableProgress != lastPrintedTableProgress[i]) {
-                outPrinter.print("\r\033[K");
-                outPrinter.println(
-                        tableName
-                                + " ("
-                                + (i + 1)
-                                + "/"
-                                + tableOrder.size()
-                                + "): "
-                                + tableProgress
-                                + "% ["
-                                + currentRows
-                                + " / "
-                                + totalRows
-                                + "]");
-                lastPrintedTableProgress[i] = tableProgress;
-            }
+            outPrinter.println(
+                    tableName
+                            + " ("
+                            + (i + 1)
+                            + "/"
+                            + tableOrder.size()
+                            + "): "
+                            + tableProgress
+                            + "% ["
+                            + currentRows
+                            + " / "
+                            + totalRows
+                            + "]");
         }
     }
 
