@@ -121,6 +121,10 @@ public class CmdMigrationMonitor implements IMigrationMonitor {
     /** Print started message. */
     public void start() {
 
+        if (tablesInitialized || tableOrder.isEmpty()) {
+            return;
+        }
+
         for (int i = 0; i < tableOrder.size() + 1; i++) {
             outPrinter.println();
         }
@@ -151,24 +155,12 @@ public class CmdMigrationMonitor implements IMigrationMonitor {
                         + totalRecords
                         + "]\n");
 
-        if (percent != lastPrintedPercent) {
-            outPrinter.print("\033[" + (tableOrder.size() + 1) + "A");
-            outPrinter.print(
-                    "\r\033[KProgress: "
-                            + percent
-                            + "% ["
-                            + currentRecords
-                            + " / "
-                            + totalRecords
-                            + "]\n");
-            lastPrintedPercent = percent;
-        }
-
         for (int i = 0; i < tableOrder.size(); i++) {
             String tableName = tableOrder.get(i);
             Long totalRows = tableTotalRows.get(tableName);
             Long currentRows = tableCurrentRows.get(tableName);
             long tableProgress = (totalRows > 0) ? (currentRows * 100 / totalRows) : 0;
+            outPrinter.print("\r\033[K");
             outPrinter.println(
                     tableName
                             + " ("
