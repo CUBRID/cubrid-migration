@@ -47,7 +47,7 @@ import com.cubrid.cubridmigration.cubrid.CUBRIDTimeUtil;
 import java.io.File;
 import java.io.PrintStream;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -66,10 +66,9 @@ public class CmdMigrationMonitor implements IMigrationMonitor {
     private boolean hasError;
     private final int monitorMode;
     private PrintStream outPrinter = System.out;
-    private Map<String, Long> tableTotalRows = new HashMap<>();
-    private Map<String, Long> tableCurrentRows = new HashMap<>();
-    private List<String> tableOrder = new ArrayList<>();
-    private int currentTableIndex = 0;
+    private final Map<String, Long> tableTotalRows = new LinkedHashMap<>();
+    private final Map<String, Long> tableCurrentRows = new LinkedHashMap<>();
+    private final List<String> tableOrder = new ArrayList<>();
     private boolean tablesInitialized = false;
 
     public CmdMigrationMonitor(MigrationConfiguration config, int monitorMode) {
@@ -195,5 +194,4 @@ public class CmdMigrationMonitor implements IMigrationMonitor {
             outPrinter.print(ch);
         }
     }
-    
 }
