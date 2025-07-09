@@ -70,6 +70,8 @@ public class CmdMigrationMonitor implements IMigrationMonitor {
     private final Map<String, Long> tableCurrentRows = new LinkedHashMap<>();
     private final List<String> tableOrder = new ArrayList<>();
     private boolean tablesInitialized = false;
+    private long lastPrintedPercent = -1;
+    private long[] lastPrintedTableProgress;
 
     public CmdMigrationMonitor(MigrationConfiguration config, int monitorMode) {
         if (config.sourceIsOnline() || config.sourceIsXMLDump()) {
@@ -111,6 +113,68 @@ public class CmdMigrationMonitor implements IMigrationMonitor {
         }
 
         tablesInitialized = true;
+    }
+
+    private void printLiveProgressBlock() {
+        if (tableOrder.isEmpty()) return;
+
+        long totalRecords = 0;
+        long currentRecords = 0;
+        for (String tableName : tableOrder) {
+            totalRecords += tableTotalRows.getOrDefault(tableName, 0L);
+            currentRecords += tableCurrentRows.getOrDefault(tableName, 0L);
+        }
+
+        long percent = (totalRecords > 0) ? (currentRecords * 100 / totalRecords) : 100;
+        percent = Math.max(percent, 1);
+
+        outPrinter.print("\033[" + (tableOrder.size() + 1) + "A");
+        outPrinter.print(
+                "\r\033[KProgress: "
+                        + percent
+                        + "% ["
+                        + currentRecords
+                        + " / "
+                        + totalRecords
+                        + "]\n");
+
+        if (percent != lastPrintedPercent) {
+            outPrinter.print("\033[" + (tableOrder.size() + 1) + "A");
+            outPrinter.print(
+                    "\r\033[KProgress: "
+                            + percent
+                            + "% ["
+                            + currentRecords
+                            + " / "
+                            + totalRecords
+                            + "]\n");
+            lastPrintedPercent = percent; 
+        }
+
+        for (int i = 0; i < tableOrder.size(); i++) {
+            String tableName = tableOrder.get(i);
+            Long totalRows = tableTotalRows.get(tableName);
+            Long currentRows = tableCurrentRows.get(tableName);
+            long tableProgress = (totalRows > 0) ? (currentRows * 100 / totalRows) : 0;
+
+            if (tableProgress != lastPrintedTableProgress[i]) {
+                outPrinter.print("\r\033[K");
+                outPrinter.println(
+                        tableName
+                                + " ("
+                                + (i + 1)
+                                + "/"
+                                + tableOrder.size()
+                                + "): "
+                                + tableProgress
+                                + "% ["
+                                + currentRows
+                                + " / "
+                                + totalRows
+                                + "]");
+                lastPrintedTableProgress[i] = tableProgress; 
+            }
+        }
     }
 
     /**
