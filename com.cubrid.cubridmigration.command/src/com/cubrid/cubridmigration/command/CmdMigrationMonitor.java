@@ -74,32 +74,45 @@ public class CmdMigrationMonitor implements IMigrationMonitor {
     private long[] lastPrintedTableProgress;
 
     public CmdMigrationMonitor(MigrationConfiguration config, int monitorMode) {
+        this.monitorMode = monitorMode;
+        hasError = false;
+
         if (config.sourceIsOnline() || config.sourceIsXMLDump()) {
-            List<SourceEntryTableConfig> tables = config.getExpEntryTableCfg();
-            for (SourceEntryTableConfig tbl : tables) {
+            for (SourceEntryTableConfig tbl : config.getExpEntryTableCfg()) {
                 Table table = config.getSrcTableSchema(tbl.getOwner(), tbl.getName());
                 if (tbl.isCreatePK() && table.getPk() != null) {
                     totalProgress++;
                 }
-                totalProgress = totalProgress + table.getTableRowCount();
+                long rowCount = table.getTableRowCount();
+                totalProgress += rowCount;
+
+                String name = tbl.getName();
+                tableOrder.add(name);
+                tableTotalRows.put(name, rowCount);
+                tableCurrentRows.put(name, 0L);
             }
-            List<SourceSQLTableConfig> sqlTables = config.getExpSQLCfg();
-            for (SourceSQLTableConfig tbl : sqlTables) {
+
+            for (SourceSQLTableConfig tbl : config.getExpSQLCfg()) {
                 Table table = config.getSrcTableSchema(tbl.getOwner(), tbl.getName());
-                totalProgress = totalProgress + (table == null ? 0 : table.getTableRowCount());
+                long rowCount = table == null ? 0 : table.getTableRowCount();
+                totalProgress += rowCount;
+
+                String name = tbl.getName();
+                tableOrder.add(name);
+                tableTotalRows.put(name, rowCount);
+                tableCurrentRows.put(name, 0L);
             }
-            totalProgress = totalProgress + config.getExpObjCount();
+
+            totalProgress += config.getExpObjCount();
         } else if (config.sourceIsSQL()) {
             for (String ss : config.getSqlFiles()) {
-                totalProgress = totalProgress + new File(ss).length();
+                totalProgress += new File(ss).length();
             }
         } else if (config.sourceIsCSV()) {
             for (SourceCSVConfig scc : config.getCSVConfigs()) {
-                totalProgress = totalProgress + new File(scc.getName()).length();
+                totalProgress += new File(scc.getName()).length();
             }
         }
-        this.monitorMode = monitorMode;
-        hasError = false;
     }
 
     /** Print finished message. */
