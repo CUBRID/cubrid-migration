@@ -104,7 +104,14 @@ public class CmdMigrationMonitor implements IMigrationMonitor {
     public void finished() {}
 
     /** Print started message. */
-    public void start() {}
+    public void start() {
+
+        for (int i = 0; i < tableOrder.size() + 1; i++) {
+            outPrinter.println();
+        }
+
+        tablesInitialized = true;
+    }
 
     /**
      * Print event message.
