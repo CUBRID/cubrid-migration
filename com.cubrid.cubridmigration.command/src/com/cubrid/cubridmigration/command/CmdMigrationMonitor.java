@@ -148,7 +148,7 @@ public class CmdMigrationMonitor implements IMigrationMonitor {
                             + " / "
                             + totalRecords
                             + "]\n");
-            lastPrintedPercent = percent; 
+            lastPrintedPercent = percent;
         }
 
         for (int i = 0; i < tableOrder.size(); i++) {
@@ -172,7 +172,7 @@ public class CmdMigrationMonitor implements IMigrationMonitor {
                                 + " / "
                                 + totalRows
                                 + "]");
-                lastPrintedTableProgress[i] = tableProgress; 
+                lastPrintedTableProgress[i] = tableProgress;
             }
         }
     }
@@ -189,13 +189,14 @@ public class CmdMigrationMonitor implements IMigrationMonitor {
 
         if (event instanceof MigrationStartEvent) {
             outPrinter.println(event.toString());
+            start();
             return;
         }
 
         if (event instanceof MigrationFinishedEvent) {
             finalEvent = (MigrationFinishedEvent) event;
-            print('\b', String.valueOf(progress).length() + 2);
-            outPrinter.print("100%");
+            printLiveProgressBlock();
+            outPrinter.print("\rProgress:100%");
             outPrinter.println();
             if (hasError) {
                 outPrinter.println("Some errors occurred during migration.");
@@ -206,6 +207,7 @@ public class CmdMigrationMonitor implements IMigrationMonitor {
         }
 
         boolean isError = false;
+        boolean progressUpdated = false;
         if (event instanceof CreateObjectEvent) {
             CreateObjectEvent ev = (CreateObjectEvent) event;
             if (ev.isSuccess()) {
@@ -217,6 +219,12 @@ public class CmdMigrationMonitor implements IMigrationMonitor {
             final ImportRecordsEvent importRecordsEvent = (ImportRecordsEvent) event;
             if (importRecordsEvent.isSuccess()) {
                 currentProgress = currentProgress + importRecordsEvent.getRecordCount();
+                String tblName = importRecordsEvent.getSourceTable().getName();
+                if (tableCurrentRows.containsKey(tblName)) {
+                    long current = tableCurrentRows.get(tblName);
+                    tableCurrentRows.put(tblName, current + importRecordsEvent.getRecordCount());
+                    progressUpdated = true;
+                }
             } else {
                 isError = true;
             }
