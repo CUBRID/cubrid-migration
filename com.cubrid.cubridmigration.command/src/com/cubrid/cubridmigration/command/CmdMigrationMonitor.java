@@ -254,11 +254,13 @@ public class CmdMigrationMonitor implements IMigrationMonitor {
             // print progress
             long tmpPro = currentProgress * 100 / totalProgress;
             tmpPro = tmpPro == 0 ? 1 : tmpPro;
-            progress = tmpPro;
-            if (!isNewLine) {
-                outPrinter.print('\r');
+            if (tmpPro != progress) {
+                progress = tmpPro;
+                progressUpdated = true;
             }
-            outPrinter.print("Progress:" + progress + "%");
+        }
+        if (progressUpdated) {
+            printLiveProgressBlock();
         }
     }
 }
