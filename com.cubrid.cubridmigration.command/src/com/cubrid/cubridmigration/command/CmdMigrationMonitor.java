@@ -62,7 +62,6 @@ public class CmdMigrationMonitor implements IMigrationMonitor {
     private long currentProgress = 0;
     private long progress = 0;
     private MigrationFinishedEvent finalEvent = null;
-    // private int circle = 0;
     private boolean hasError;
     private final int monitorMode;
     private PrintStream outPrinter = System.out;
@@ -70,8 +69,6 @@ public class CmdMigrationMonitor implements IMigrationMonitor {
     private final Map<String, Long> tableCurrentRows = new LinkedHashMap<>();
     private final List<String> tableOrder = new ArrayList<>();
     private boolean tablesInitialized = false;
-    private long lastPrintedPercent = -1;
-    private long[] lastPrintedTableProgress;
 
     public CmdMigrationMonitor(MigrationConfiguration config, int monitorMode) {
         this.monitorMode = monitorMode;
@@ -119,8 +116,9 @@ public class CmdMigrationMonitor implements IMigrationMonitor {
     public void finished() {}
 
     /** Print started message. */
-    public void start() {
+    public void start() {}
 
+    public void prepareTableProgressOutput() {
         if (tablesInitialized || tableOrder.isEmpty()) {
             return;
         }
@@ -189,7 +187,7 @@ public class CmdMigrationMonitor implements IMigrationMonitor {
 
         if (event instanceof MigrationStartEvent) {
             outPrinter.println(event.toString());
-            start();
+            prepareTableProgressOutput();
             return;
         }
 
