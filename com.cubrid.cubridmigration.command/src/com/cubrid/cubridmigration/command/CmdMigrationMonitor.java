@@ -58,9 +58,9 @@ import java.util.Map;
  * @version 1.0 - 2012-2-2 created by Kevin Cao
  */
 public class CmdMigrationMonitor implements IMigrationMonitor {
-    private long totalProgress = 0;
-    private long currentProgress = 0;
-    private long progress = 0;
+    private long totalWorkUnits = 0;
+    private long completedWorkUnits = 0;
+    private long lastPrintedProgressPercent = 0;
     private MigrationFinishedEvent finalEvent = null;
     private boolean hasError;
     private final int monitorMode;
@@ -69,6 +69,8 @@ public class CmdMigrationMonitor implements IMigrationMonitor {
     private final Map<String, Long> tableCurrentRows = new LinkedHashMap<>();
     private final List<String> tableOrder = new ArrayList<>();
     private boolean tablesInitialized = false;
+    private static final String CONSOLE_CURSOR_UP_FORMAT = "\033[%dA";
+    private static final String CLEAR_LINE = "\r\033[K";
 
     public CmdMigrationMonitor(MigrationConfiguration config, int monitorMode) {
         this.monitorMode = monitorMode;
@@ -78,10 +80,10 @@ public class CmdMigrationMonitor implements IMigrationMonitor {
             for (SourceEntryTableConfig tbl : config.getExpEntryTableCfg()) {
                 Table table = config.getSrcTableSchema(tbl.getOwner(), tbl.getName());
                 if (tbl.isCreatePK() && table.getPk() != null) {
-                    totalProgress++;
+                    totalWorkUnits++;
                 }
                 long rowCount = table.getTableRowCount();
-                totalProgress += rowCount;
+                totalWorkUnits += rowCount;
 
                 String name = tbl.getName();
                 tableOrder.add(name);
@@ -92,7 +94,7 @@ public class CmdMigrationMonitor implements IMigrationMonitor {
             for (SourceSQLTableConfig tbl : config.getExpSQLCfg()) {
                 Table table = config.getSrcTableSchema(tbl.getOwner(), tbl.getName());
                 long rowCount = table == null ? 0 : table.getTableRowCount();
-                totalProgress += rowCount;
+                totalWorkUnits += rowCount;
 
                 String name = tbl.getName();
                 tableOrder.add(name);
@@ -100,14 +102,14 @@ public class CmdMigrationMonitor implements IMigrationMonitor {
                 tableCurrentRows.put(name, 0L);
             }
 
-            totalProgress += config.getExpObjCount();
+            totalWorkUnits += config.getExpObjCount();
         } else if (config.sourceIsSQL()) {
             for (String ss : config.getSqlFiles()) {
-                totalProgress += new File(ss).length();
+                totalWorkUnits += new File(ss).length();
             }
         } else if (config.sourceIsCSV()) {
             for (SourceCSVConfig scc : config.getCSVConfigs()) {
-                totalProgress += new File(scc.getName()).length();
+                totalWorkUnits += new File(scc.getName()).length();
             }
         }
     }
@@ -143,35 +145,27 @@ public class CmdMigrationMonitor implements IMigrationMonitor {
         long percent = (totalRecords > 0) ? (currentRecords * 100 / totalRecords) : 100;
         percent = Math.max(percent, 1);
 
-        outPrinter.print("\033[" + (tableOrder.size() + 1) + "A");
+        outPrinter.print(String.format(CONSOLE_CURSOR_UP_FORMAT, tableOrder.size() + 1));
         outPrinter.print(
-                "\r\033[KProgress: "
-                        + percent
-                        + "% ["
-                        + currentRecords
-                        + " / "
-                        + totalRecords
-                        + "]\n");
+                String.format(
+                        "%sProgress: %d%% [%d / %d]%n",
+                        CLEAR_LINE, percent, currentRecords, totalRecords));
 
         for (int i = 0; i < tableOrder.size(); i++) {
             String tableName = tableOrder.get(i);
             Long totalRows = tableTotalRows.get(tableName);
             Long currentRows = tableCurrentRows.get(tableName);
             long tableProgress = (totalRows > 0) ? (currentRows * 100 / totalRows) : 0;
-            outPrinter.print("\r\033[K");
+            outPrinter.print(CLEAR_LINE);
             outPrinter.println(
-                    tableName
-                            + " ("
-                            + (i + 1)
-                            + "/"
-                            + tableOrder.size()
-                            + "): "
-                            + tableProgress
-                            + "% ["
-                            + currentRows
-                            + " / "
-                            + totalRows
-                            + "]");
+                    String.format(
+                            "%s (%d/%d): %d%% [%d / %d]",
+                            tableName,
+                            i + 1,
+                            tableOrder.size(),
+                            tableProgress,
+                            currentRows,
+                            totalRows));
         }
     }
 
@@ -209,14 +203,14 @@ public class CmdMigrationMonitor implements IMigrationMonitor {
         if (event instanceof CreateObjectEvent) {
             CreateObjectEvent ev = (CreateObjectEvent) event;
             if (ev.isSuccess()) {
-                currentProgress++;
+                completedWorkUnits++;
             } else {
                 isError = true;
             }
         } else if (event instanceof ImportRecordsEvent) {
             final ImportRecordsEvent importRecordsEvent = (ImportRecordsEvent) event;
             if (importRecordsEvent.isSuccess()) {
-                currentProgress = currentProgress + importRecordsEvent.getRecordCount();
+                completedWorkUnits = completedWorkUnits + importRecordsEvent.getRecordCount();
                 String tblName = importRecordsEvent.getSourceTable().getName();
                 if (tableCurrentRows.containsKey(tblName)) {
                     long current = tableCurrentRows.get(tblName);
@@ -228,32 +222,29 @@ public class CmdMigrationMonitor implements IMigrationMonitor {
             }
         } else if (event instanceof ImportSQLsEvent) {
             ImportSQLsEvent ev = (ImportSQLsEvent) event;
-            currentProgress = currentProgress + ev.getSize();
+            completedWorkUnits = completedWorkUnits + ev.getSize();
             if (!ev.isSuccess()) {
                 isError = true;
             }
         } else if (event instanceof ImportCSVEvent) {
             ImportCSVEvent ev = (ImportCSVEvent) event;
-            currentProgress = currentProgress + ev.getSize();
+            completedWorkUnits = completedWorkUnits + ev.getSize();
             if (!ev.isSuccess()) {
                 isError = true;
             }
         }
         hasError = isError;
-        boolean isNewLine = false;
         if (event.getLevel() <= monitorMode) {
             outPrinter.println(
                     CUBRIDTimeUtil.defaultFormatMilin(event.getEventTime())
                             + " "
                             + event.toString());
-            isNewLine = true;
         }
-        if (monitorMode <= MigrationConfiguration.RPT_LEVEL_ERROR && (totalProgress > 0)) {
-            // print progress
-            long tmpPro = currentProgress * 100 / totalProgress;
+        if (monitorMode <= MigrationConfiguration.RPT_LEVEL_ERROR && (totalWorkUnits > 0)) {
+            long tmpPro = completedWorkUnits * 100 / totalWorkUnits;
             tmpPro = tmpPro == 0 ? 1 : tmpPro;
-            if (tmpPro != progress) {
-                progress = tmpPro;
+            if (tmpPro != lastPrintedProgressPercent) {
+                lastPrintedProgressPercent = tmpPro;
                 progressUpdated = true;
             }
         }
