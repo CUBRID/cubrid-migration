@@ -67,11 +67,11 @@ public class CmdMigrationMonitor implements IMigrationMonitor {
     private PrintStream outPrinter = System.out;
     private final Map<String, Long> tableTotalRows = new LinkedHashMap<>();
     private final Map<String, Long> tableCurrentRows = new LinkedHashMap<>();
+    private final Map<String, Long> tablePreviousRows = new LinkedHashMap<>();
     private final List<String> tableOrder = new ArrayList<>();
     private boolean tablesInitialized = false;
     private static final String CONSOLE_CURSOR_UP_FORMAT = "\033[%dA";
     private static final String CLEAR_LINE = "\r\033[K";
-    private final Map<String, Long> tablePreviousRows = new LinkedHashMap<>();
 
     public CmdMigrationMonitor(MigrationConfiguration config, int monitorMode) {
         this.monitorMode = monitorMode;
@@ -135,7 +135,7 @@ public class CmdMigrationMonitor implements IMigrationMonitor {
         tablesInitialized = true;
     }
 
-    private void printLiveProgressBlock() {
+    private void printSelectiveProgressUpdate() {
         if (tableOrder.isEmpty()) return;
 
         long totalRecords = 0;
@@ -158,17 +158,20 @@ public class CmdMigrationMonitor implements IMigrationMonitor {
             String tableName = tableOrder.get(i);
             Long totalRows = tableTotalRows.get(tableName);
             Long currentRows = tableCurrentRows.get(tableName);
-            long tableProgress = (totalRows > 0) ? (currentRows * 100 / totalRows) : 0;
-            outPrinter.print(CLEAR_LINE);
-            outPrinter.println(
-                    String.format(
-                            "%s (%d/%d): %d%% [%d / %d]",
-                            tableName,
-                            i + 1,
-                            tableOrder.size(),
-                            tableProgress,
-                            currentRows,
-                            totalRows));
+            Long previousRows = tablePreviousRows.get(tableName);
+            
+            if (!currentRows.equals(previousRows)) {
+                outPrinter.print(CLEAR_LINE);
+                long tableProgress = (totalRows > 0) ? (currentRows * 100 / totalRows) : 0;
+                outPrinter.println(String.format(
+                    "%s (%d/%d): %d%% [%d / %d]",
+                    tableName, i + 1, tableOrder.size(),
+                    tableProgress, currentRows, totalRows));
+                tablePreviousRows.put(tableName, currentRows);
+            } else {
+                // 줄은 유지하되 출력은 생략
+                outPrinter.print("\033[1B"); 
+            }
         }
     }
 
@@ -190,7 +193,7 @@ public class CmdMigrationMonitor implements IMigrationMonitor {
 
         if (event instanceof MigrationFinishedEvent) {
             finalEvent = (MigrationFinishedEvent) event;
-            printLiveProgressBlock();
+            printSelectiveProgressUpdate();
             outPrinter.print("\rProgress:100%");
             outPrinter.println();
             if (hasError) {
@@ -252,7 +255,7 @@ public class CmdMigrationMonitor implements IMigrationMonitor {
             }
         }
         if (progressUpdated) {
-            printLiveProgressBlock();
+        	printSelectiveProgressUpdate();
         }
     }
 }
