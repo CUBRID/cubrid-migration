@@ -71,6 +71,7 @@ public class CmdMigrationMonitor implements IMigrationMonitor {
     private boolean tablesInitialized = false;
     private static final String CONSOLE_CURSOR_UP_FORMAT = "\033[%dA";
     private static final String CLEAR_LINE = "\r\033[K";
+    private final Map<String, Long> tablePreviousRows = new LinkedHashMap<>();
 
     public CmdMigrationMonitor(MigrationConfiguration config, int monitorMode) {
         this.monitorMode = monitorMode;
@@ -89,6 +90,7 @@ public class CmdMigrationMonitor implements IMigrationMonitor {
                 tableOrder.add(name);
                 tableTotalRows.put(name, rowCount);
                 tableCurrentRows.put(name, 0L);
+                tablePreviousRows.put(name, -1L);
             }
 
             for (SourceSQLTableConfig tbl : config.getExpSQLCfg()) {
@@ -100,6 +102,7 @@ public class CmdMigrationMonitor implements IMigrationMonitor {
                 tableOrder.add(name);
                 tableTotalRows.put(name, rowCount);
                 tableCurrentRows.put(name, 0L);
+                tablePreviousRows.put(name, -1L);
             }
 
             totalWorkUnits += config.getExpObjCount();
