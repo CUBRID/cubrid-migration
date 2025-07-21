@@ -385,9 +385,6 @@ public class Oracle2CUBRIDTranformHelper extends DBTransformHelper {
             case "sysdate":
                 return "sys_datetime";
             case "current_date":
-            case "localtimestamp":
-            case "systimestamp":
-            case "current_timestamp":
                 return "current_datetime";
         }
 
