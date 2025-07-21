@@ -324,6 +324,7 @@ public class Oracle2CUBRIDTranformHelper extends DBTransformHelper {
 
         if ((dataType.indexOf("TIMESTAMP") > -1 || "DATE".equalsIgnoreCase(dataType))
                 && isDefaultDateTimeFunction(defaultValue)) {
+            defaultValue = convertFunctionInDefaultValue(defaultValue, cubridColumn.getDataType());
             cubridColumn.setDefaultValue(defaultValue);
             return;
         }
@@ -379,6 +380,14 @@ public class Oracle2CUBRIDTranformHelper extends DBTransformHelper {
      */
     private String convertFunctionInDefaultValue(String defaultValue, String dataType) {
         String lowerCaseDefaultValue = defaultValue.toLowerCase(Locale.US);
+
+        switch (lowerCaseDefaultValue) {
+            case "sysdate":
+                return "sys_datetime";
+            case "current_date":
+            case "localtimestamp":
+                return "current_datetime";
+        }
 
         if ("datetime".equalsIgnoreCase(dataType) && lowerCaseDefaultValue.startsWith("to_date")) {
             return lowerCaseDefaultValue.replaceFirst("to_date", "to_datetime");
