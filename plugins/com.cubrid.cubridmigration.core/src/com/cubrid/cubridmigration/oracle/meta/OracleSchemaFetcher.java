@@ -145,13 +145,15 @@ public final class OracleSchemaFetcher extends AbstractJDBCSchemaFetcher {
 
     private static final String SQL_SHOW_ALL_OBJECTS =
             "SELECT NAME FROM ALL_SOURCE S "
-                    + "WHERE S.TYPE=? AND S.OWNER=? AND NOT S.NAME LIKE 'BIN$%'";
+                    + "WHERE S.TYPE=? AND S.OWNER=? AND NOT S.NAME LIKE 'BIN$%' "
+                    + "AND NOT S.NAME LIKE 'MLOG$%' AND NOT S.NAME LIKE 'RUPD$%'";
 
     private static final String SQL_SHOW_DDL = "SELECT DBMS_METADATA.GET_DDL(?, ?, ?) FROM dual";
 
     private static final String SQL_SHOW_SEQUENCES =
             "SELECT S.* FROM ALL_SEQUENCES S "
-                    + "WHERE S.SEQUENCE_OWNER=? AND NOT S.SEQUENCE_NAME LIKE 'BIN$%' ";
+                    + "WHERE S.SEQUENCE_OWNER=? AND NOT S.SEQUENCE_NAME LIKE 'BIN$%' "
+                    + "AND NOT S.SEQUENCE_NAME LIKE 'MLOG$%' AND NOT S.SEQUENCE_NAME LIKE 'RUPD$%' ";
 
     private static final String SQL_SHOW_SYNONYM =
             "SELECT SYNONYM_NAME, TABLE_OWNER, TABLE_NAME, DB_LINK FROM ALL_SYNONYMS WHERE OWNER=?";
@@ -1071,7 +1073,9 @@ public final class OracleSchemaFetcher extends AbstractJDBCSchemaFetcher {
                 tables.getString(1);
                 tables.getString(2);
                 String name = tables.getString(3);
-                if (name.startsWith("BIN$%")) {
+                if (name.startsWith("BIN$")
+                        || name.startsWith("MLOG$")
+                        || name.startsWith("RUPD$")) {
                     continue;
                 }
                 tableNameList.add(owner + "." + name);
@@ -1140,7 +1144,10 @@ public final class OracleSchemaFetcher extends AbstractJDBCSchemaFetcher {
         try {
             while (rs.next()) {
                 String name = rs.getString(3);
-                if (name.startsWith("BIN$%") || "USER_SEQUENCES".equals(name)) {
+                if (name.startsWith("BIN$")
+                        || name.startsWith("MLOG$")
+                        || name.startsWith("RUPD$")
+                        || "USER_SEQUENCES".equals(name)) {
                     continue;
                 }
                 viewNameList.add(owner + "." + name);
