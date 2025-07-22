@@ -5,10 +5,10 @@ PROFILE="all"
 MVN_DEBUG=""
 DIR=$PWD
 TARGET=$DIR/target
-PRODUCT_TARGET=$DIR/com.cubrid.cubridmigration.product/target
-CONSOLE_TARGET=$DIR/com.cubrid.cubridmigration.console/target
+PRODUCT_TARGET=$DIR/product/com.cubrid.cubridmigration.desktop/target
+CONSOLE_TARGET=$DIR/product/com.cubrid.cubridmigration.console/target
 VERSION_FILE_PATH=$DIR/VERSION
-RELEASE_VERSION_FILE_PATH=$DIR/com.cubrid.cubridmigration.ui/version.properties
+RELEASE_VERSION_FILE_PATH=$DIR/plugins/com.cubrid.cubridmigration.ui/version.properties
 RELEASE_VERSION=""
 CMT_PRODUCT_NAME="CUBRID-Migration-Toolkit"
 CMT_CONSOLE_NAME="$CMT_PRODUCT_NAME-console"
@@ -32,7 +32,7 @@ function get_options ()
 {
   while getopts ":p:X" opt; do
     case $opt in
-	  p ) PROFILE="${OPTARG,,}" ;;
+	  p ) PROFILE=$(printf %s "$OPTARG" | tr '[:upper:]' '[:lower:]') ;;
           X ) MVN_DEBUG="-Dtycho.debug.resolver=true -X" ;;
           * ) show_usage 
               exit ;;
@@ -59,7 +59,7 @@ function check_configuration ()
 
 function update_build_version ()
 {
-  echo "Version File Update....  (com.cubrid.cubridmigration.ui/version.properties)"
+  echo "Version File Update....  (plugins/com.cubrid.cubridmigration.ui/version.properties)"
 
   if [ -d ${DIR}/.git ]; then
     COMMIT_NUMBER=$(git rev-list --count HEAD | awk '{ printf "%04d", $1 }')

@@ -1,0 +1,6 @@
+Bundle-Name: CUBRID Migration Toolkit Command
+Bundle-Version: 1.0.0.qualifier
+Bundle-Vendor: CUBRID
+Bundle-RequiredExecutionEnvironment: JavaSE-21
+Bundle-ClassPath: .
+Main-Class: com.cubrid.cubridmigration.command.DoMigration

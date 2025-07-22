@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature
+      id="com.cubrid.common.update.feature"
+      label="%featureName"
+      version="1.0.0.qualifier"
+      provider-name="%providerName"
+      plugin="com.cubrid.common.update">
+
+   <description>%description</description>
+   <copyright>%copyright</copyright>
+   <license>%licence</license>
+
+   <requires>
+      <import plugin="org.eclipse.osgi"/>
+      <import plugin="org.eclipse.equinox.common"/>
+      <import plugin="org.eclipse.core.runtime"/>
+      <import plugin="org.eclipse.ui"/>
+   </requires>
+
+   <plugin id="org.eclipse.equinox.p2.core" version="0.0.0"/>
+   <plugin id="org.eclipse.equinox.p2.engine" version="0.0.0"/>
+   <plugin id="org.eclipse.equinox.p2.director" version="0.0.0"/>
+   <plugin id="org.eclipse.equinox.p2.metadata" version="0.0.0"/>
+   <plugin id="org.eclipse.equinox.p2.repository" version="0.0.0"/>
+   <plugin id="org.eclipse.equinox.p2.artifact.repository" version="0.0.0"/>
+   <plugin id="org.eclipse.equinox.p2.transport.ecf" version="0.0.0"/>
+   <plugin id="org.eclipse.equinox.p2.touchpoint.eclipse" version="0.0.0"/>
+   <plugin id="org.eclipse.equinox.p2.operations" version="0.0.0"/>
+   <plugin id="org.eclipse.equinox.p2.ui" version="0.0.0"/>
+   <plugin id="org.eclipse.equinox.p2.updatechecker" version="0.0.0"/>
+   <plugin id="org.eclipse.ecf" version="0.0.0"/>
+   <plugin id="org.eclipse.ecf.identity" version="0.0.0"/>
+   <plugin id="org.eclipse.ecf.filetransfer" version="0.0.0"/>
+   <plugin id="org.eclipse.ecf.provider.filetransfer" version="0.0.0"/>
+   <plugin id="org.eclipse.ecf.provider.filetransfer.httpclient5" version="0.0.0"/>
+   <plugin id="org.eclipse.equinox.security" version="0.0.0"/>
+   <plugin id="com.cubrid.common.update" version="0.0.0"/>
+   <plugin id="org.eclipse.equinox.p2.touchpoint.natives" version="0.0.0"/>
+</feature>

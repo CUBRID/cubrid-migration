@@ -37,10 +37,10 @@ if ($SelectedProfile -notin @('all','desktop','console')) {
 
 $Dir                      = (Get-Location).Path
 $Target                   = Join-Path $Dir "target"
-$ProductTarget            = Join-Path $Dir "com.cubrid.cubridmigration.product/target"
-$ConsoleTarget            = Join-Path $Dir "com.cubrid.cubridmigration.console/target"
+$ProductTarget            = Join-Path $Dir "product/com.cubrid.cubridmigration.desktop/target"
+$ConsoleTarget            = Join-Path $Dir "product/com.cubrid.cubridmigration.console/target"
 $VersionFilePath          = Join-Path $Dir "VERSION"
-$ReleaseVersionFilePath   = Join-Path $Dir "com.cubrid.cubridmigration.ui/version.properties"
+$ReleaseVersionFilePath   = Join-Path $Dir "plugins/com.cubrid.cubridmigration.ui/version.properties"
 $ReleaseVersion           = ""
 
 $CmtProductName           = "CUBRID-Migration-Toolkit"
@@ -68,7 +68,7 @@ function Update-BuildVersion {
     param()
     if (-not $PSCmdlet.ShouldProcess("version.properties", "update build version")) { return }
 
-    Write-Output "Version File Update....  (com.cubrid.cubridmigration.ui/version.properties)"
+    Write-Output "Version File Update....  (plugins/com.cubrid.cubridmigration.ui/version.properties)"
 
     $CommitNumber = if (Test-Path ".git") {
         "{0:D4}" -f [int](& git rev-list --count HEAD).Trim()

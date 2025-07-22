@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+         xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.cubrid.cubridmigration</groupId>
+        <artifactId>cubridmigration</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+        <relativePath>../</relativePath>
+    </parent>
+    <artifactId>plugins</artifactId>
+    <packaging>pom</packaging>
+
+	<profiles>
+	    <profile>
+		    <id>desktop</id>
+			<modules>
+			    <module>com.cubrid.common.log</module>
+			    <module>com.cubrid.common.configuration</module>
+				<module>com.cubrid.common.update</module>
+				<module>com.cubrid.cubridmigration.app</module>
+				<module>com.cubrid.cubridmigration.core</module>
+				<module>com.cubrid.cubridmigration.plugin</module>
+				<module>com.cubrid.cubridmigration.ui</module>
+			</modules>
+		</profile>
+		<profile>
+		    <id>console</id>
+			<modules>
+			    <module>com.cubrid.common.log</module>
+			    <module>com.cubrid.common.configuration</module>
+				<module>com.cubrid.cubridmigration.core</module>
+				<module>com.cubrid.cubridmigration.command</module>
+			</modules>
+		</profile>
+	</profiles>
+</project>

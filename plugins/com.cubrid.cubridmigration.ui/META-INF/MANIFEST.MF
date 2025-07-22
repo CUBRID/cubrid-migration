@@ -1,0 +1,25 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: CUBRID Migration Toolkit UI
+Bundle-SymbolicName: com.cubrid.cubridmigration.ui;singleton:=true
+Bundle-Version: 1.0.0.qualifier
+Bundle-Activator: com.cubrid.cubridmigration.ui.MigrationUIPlugin
+Bundle-Vendor: CUBRID
+Bundle-ActivationPolicy: lazy
+Bundle-RequiredExecutionEnvironment: JavaSE-21
+Bundle-Localization: plugin
+Require-Bundle: org.eclipse.ui,
+ org.eclipse.core.runtime,
+ org.eclipse.ui.forms,
+ com.cubrid.bundle.ui,
+ com.cubrid.common.log,
+ com.cubrid.common.configuration,
+ com.cubrid.cubridmigration.core
+Bundle-ClassPath: .
+Export-Package: com.cubrid.common.ui.common.notice,
+ com.cubrid.common.ui.handler,
+ com.cubrid.cubridmigration.ui,
+ com.cubrid.cubridmigration.ui.common,
+ com.cubrid.cubridmigration.ui.preference,
+ com.cubrid.cubridmigration.ui.product,
+ com.cubrid.cubridmigration.ui.script

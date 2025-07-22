@@ -1,0 +1,15 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: CUBRID Migration Toolkit Common Configuration
+Bundle-SymbolicName: com.cubrid.common.configuration;singleton:=true
+Bundle-Version: 1.0.0.qualifier
+Bundle-Vendor: CUBRID
+Bundle-Activator: com.cubrid.common.configuration.Activator
+Bundle-RequiredExecutionEnvironment: JavaSE-21
+Bundle-ActivationPolicy: lazy
+Require-Bundle: org.eclipse.osgi,
+ com.cubrid.bundle.configuration;visibility:=reexport
+Export-Package: com.cubrid.common.configuration.classloader,
+ com.cubrid.common.configuration.jdbc,
+ com.cubrid.common.configuration
+Bundle-ClassPath: .
