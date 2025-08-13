@@ -43,10 +43,11 @@ import com.cubrid.cubridmigration.core.engine.event.ImportSQLsEvent;
 import com.cubrid.cubridmigration.core.engine.event.MigrationEvent;
 import com.cubrid.cubridmigration.core.engine.event.MigrationFinishedEvent;
 import com.cubrid.cubridmigration.core.engine.event.MigrationStartEvent;
-import com.cubrid.cubridmigration.cubrid.CUBRIDTimeUtil;
 import java.io.File;
 import java.io.PrintStream;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * CommandMigrationMonitor Description
@@ -55,12 +56,11 @@ import java.util.List;
  * @version 1.0 - 2012-2-2 created by Kevin Cao
  */
 public class CmdMigrationMonitor implements IMigrationMonitor {
-    private long totalProgress = 0;
-    private long currentProgress = 0;
-    private long progress = 0;
-    private MigrationFinishedEvent finalEvent = null;
-    // private int circle = 0;
-    private boolean hasError;
+    private final AtomicLong totalWorkUnits = new AtomicLong(0);
+    private final AtomicLong completedWorkUnits = new AtomicLong(0);
+    private final AtomicLong lastPrintedProgressPercent = new AtomicLong(0);
+    private volatile MigrationFinishedEvent finalEvent = null;
+    private final AtomicBoolean hasError = new AtomicBoolean(false);
     private final int monitorMode;
     private PrintStream outPrinter = System.out;
 
@@ -70,27 +70,26 @@ public class CmdMigrationMonitor implements IMigrationMonitor {
             for (SourceEntryTableConfig tbl : tables) {
                 Table table = config.getSrcTableSchema(tbl.getOwner(), tbl.getName());
                 if (tbl.isCreatePK() && table.getPk() != null) {
-                    totalProgress++;
+                    totalWorkUnits.incrementAndGet();
                 }
-                totalProgress = totalProgress + table.getTableRowCount();
+                totalWorkUnits.addAndGet(table.getTableRowCount());
             }
             List<SourceSQLTableConfig> sqlTables = config.getExpSQLCfg();
             for (SourceSQLTableConfig tbl : sqlTables) {
                 Table table = config.getSrcTableSchema(tbl.getOwner(), tbl.getName());
-                totalProgress = totalProgress + (table == null ? 0 : table.getTableRowCount());
+                totalWorkUnits.addAndGet(table == null ? 0 : table.getTableRowCount());
             }
-            totalProgress = totalProgress + config.getExpObjCount();
+            totalWorkUnits.addAndGet(config.getExpObjCount());
         } else if (config.sourceIsSQL()) {
             for (String ss : config.getSqlFiles()) {
-                totalProgress = totalProgress + new File(ss).length();
+                totalWorkUnits.addAndGet(new File(ss).length());
             }
         } else if (config.sourceIsCSV()) {
             for (SourceCSVConfig scc : config.getCSVConfigs()) {
-                totalProgress = totalProgress + new File(scc.getName()).length();
+                totalWorkUnits.addAndGet(new File(scc.getName()).length());
             }
         }
         this.monitorMode = monitorMode;
-        hasError = false;
     }
 
     /** Print finished message. */
@@ -118,7 +117,7 @@ public class CmdMigrationMonitor implements IMigrationMonitor {
             finalEvent = (MigrationFinishedEvent) event;
             outPrinter.print("\rProgress:100%");
             outPrinter.println();
-            if (hasError) {
+            if (hasError.get()) {
                 outPrinter.println("Some errors occurred during migration.");
                 outPrinter.println("Please see the report for more.");
             }
@@ -130,48 +129,49 @@ public class CmdMigrationMonitor implements IMigrationMonitor {
         if (event instanceof CreateObjectEvent) {
             CreateObjectEvent ev = (CreateObjectEvent) event;
             if (ev.isSuccess()) {
-                currentProgress++;
+                completedWorkUnits.incrementAndGet();
             } else {
                 isError = true;
             }
         } else if (event instanceof ImportRecordsEvent) {
             final ImportRecordsEvent importRecordsEvent = (ImportRecordsEvent) event;
             if (importRecordsEvent.isSuccess()) {
-                currentProgress = currentProgress + importRecordsEvent.getRecordCount();
+                completedWorkUnits.addAndGet(importRecordsEvent.getRecordCount());
             } else {
                 isError = true;
             }
         } else if (event instanceof ImportSQLsEvent) {
             ImportSQLsEvent ev = (ImportSQLsEvent) event;
-            currentProgress = currentProgress + ev.getSize();
+            completedWorkUnits.addAndGet(ev.getSize());
             if (!ev.isSuccess()) {
                 isError = true;
             }
         } else if (event instanceof ImportCSVEvent) {
             ImportCSVEvent ev = (ImportCSVEvent) event;
-            currentProgress = currentProgress + ev.getSize();
+            completedWorkUnits.addAndGet(ev.getSize());
             if (!ev.isSuccess()) {
                 isError = true;
             }
         }
-        hasError = isError;
+
+        if (isError) {
+            hasError.set(true);
+        }
+
         boolean isNewLine = false;
         if (event.getLevel() <= monitorMode) {
-            outPrinter.println(
-                    CUBRIDTimeUtil.defaultFormatMilin(event.getEventTime())
-                            + " "
-                            + event.toString());
+            outPrinter.println(event.toString());
             isNewLine = true;
         }
-        if (monitorMode <= MigrationConfiguration.RPT_LEVEL_ERROR && (totalProgress > 0)) {
-            // print progress
-            long tmpPro = currentProgress * 100 / totalProgress;
+
+        if (monitorMode <= MigrationConfiguration.RPT_LEVEL_ERROR && (totalWorkUnits.get() > 0)) {
+            long tmpPro = completedWorkUnits.get() * 100 / totalWorkUnits.get();
             tmpPro = tmpPro == 0 ? 1 : tmpPro;
-            progress = tmpPro;
+            lastPrintedProgressPercent.set(tmpPro);
             if (!isNewLine) {
                 outPrinter.print('\r');
             }
-            outPrinter.print("Progress:" + progress + "%");
+            outPrinter.print("Progress:" + tmpPro + "%");
         }
     }
 }
