@@ -49,9 +49,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * CommandMigrationMonitor Description
@@ -63,19 +65,31 @@ public class CmdMigrationMonitor implements IMigrationMonitor {
     private final AtomicLong totalWorkUnits = new AtomicLong(0);
     private final AtomicLong completedWorkUnits = new AtomicLong(0);
     private final AtomicLong lastPrintedProgressPercent = new AtomicLong(0);
-    private volatile MigrationFinishedEvent finalEvent = null;
+    private final AtomicBoolean processingTablesChanged = new AtomicBoolean(false);
     private final AtomicBoolean hasError = new AtomicBoolean(false);
+
+    private volatile MigrationFinishedEvent finalEvent = null;
     private final int monitorMode;
     private PrintStream outPrinter = System.out;
 
     private final Map<String, Long> tableTotalRows = new ConcurrentHashMap<>();
     private final Map<String, Long> tableCurrentRows = new ConcurrentHashMap<>();
     private final Map<String, Long> tablePreviousRows = new ConcurrentHashMap<>();
+    private final Map<String, AtomicReference<TableStatus>> tableStatus = new ConcurrentHashMap<>();
+    private final Set<String> processingTables = ConcurrentHashMap.newKeySet();
+    private final List<String> tableOrder = new ArrayList<>();
+
     private final Map<String, Long> tableTotalWorkUnits = new ConcurrentHashMap<>();
     private final Map<String, Long> tableCompletedWorkUnits = new ConcurrentHashMap<>();
     private final Map<String, Long> tablePreviousWorkUnits = new ConcurrentHashMap<>();
-    private final List<String> tableOrder = new ArrayList<>();
+
     private final Map<String, Integer> tableIndexMap = new ConcurrentHashMap<>();
+
+    public enum TableStatus {
+        PENDING,
+        PROCESSING,
+        COMPLETED
+    }
 
     public CmdMigrationMonitor(MigrationConfiguration config, int monitorMode) {
         this.monitorMode = monitorMode;
@@ -146,6 +160,7 @@ public class CmdMigrationMonitor implements IMigrationMonitor {
         tableTotalRows.put(tableName, rowCount);
         tableCurrentRows.put(tableName, 0L);
         tablePreviousRows.put(tableName, -1L);
+        tableStatus.put(tableName, new AtomicReference<>(TableStatus.PENDING));
     }
 
     private long calculateTableWorkUnits(
@@ -155,6 +170,52 @@ public class CmdMigrationMonitor implements IMigrationMonitor {
             workUnits += 1;
         }
         return workUnits;
+    }
+
+    public void updateTableProgress(String tableName, long increment) {
+        long newCurrent = tableCurrentRows.merge(tableName, increment, Long::sum);
+        long total = tableTotalRows.getOrDefault(tableName, 0L);
+
+        tableCompletedWorkUnits.merge(tableName, increment, Long::sum);
+
+        TableStatus newStatus = determineTableStatus(newCurrent, total);
+
+        AtomicReference<TableStatus> statusRef = tableStatus.get(tableName);
+        if (statusRef != null) {
+            TableStatus oldStatus;
+            do {
+                oldStatus = statusRef.get();
+                if (oldStatus == newStatus) {
+                    return;
+                }
+            } while (!statusRef.compareAndSet(oldStatus, newStatus));
+
+            updateProcessingTables(tableName, oldStatus, newStatus);
+            processingTablesChanged.set(true);
+        }
+    }
+
+    public void updateTableObjectProgress(String tableName, long increment) {
+        tableCompletedWorkUnits.merge(tableName, increment, Long::sum);
+    }
+
+    private TableStatus determineTableStatus(long current, long total) {
+        if (current == 0) return TableStatus.PENDING;
+        else if (current >= total) return TableStatus.COMPLETED;
+        else return TableStatus.PROCESSING;
+    }
+
+    private void updateProcessingTables(
+            String tableName, TableStatus oldStatus, TableStatus newStatus) {
+        if (newStatus == TableStatus.PROCESSING) {
+            processingTables.add(tableName);
+        } else {
+            processingTables.remove(tableName);
+        }
+    }
+
+    private int calculateProgressLines() {
+        return processingTables.size();
     }
 
     /** Print finished message. */
@@ -202,6 +263,9 @@ public class CmdMigrationMonitor implements IMigrationMonitor {
             final ImportRecordsEvent importRecordsEvent = (ImportRecordsEvent) event;
             if (importRecordsEvent.isSuccess()) {
                 completedWorkUnits.addAndGet(importRecordsEvent.getRecordCount());
+                updateTableProgress(
+                        importRecordsEvent.getSourceTable().getName(),
+                        importRecordsEvent.getRecordCount());
             } else {
                 isError = true;
             }
