@@ -45,13 +45,15 @@ import com.cubrid.cubridmigration.core.engine.event.MigrationFinishedEvent;
 import com.cubrid.cubridmigration.core.engine.event.MigrationStartEvent;
 import java.io.File;
 import java.io.PrintStream;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -72,13 +74,14 @@ public class CmdMigrationMonitor implements IMigrationMonitor, Runnable {
     private volatile boolean stopRequested = false;
 
     private final Object printLock = new Object();
+    private final Object startLock = new Object();
 
     private final Map<String, Long> tableTotalRows = new ConcurrentHashMap<>();
     private final Map<String, Long> tableCurrentRows = new ConcurrentHashMap<>();
     private final Map<String, Long> tablePreviousRows = new ConcurrentHashMap<>();
     private final Map<String, AtomicReference<TableStatus>> tableStatus = new ConcurrentHashMap<>();
     private final Set<String> processingTables = ConcurrentHashMap.newKeySet();
-    private final List<String> tableOrder = new ArrayList<>();
+    private final ConcurrentLinkedQueue<String> tableOrder = new ConcurrentLinkedQueue<>();
 
     private final Map<String, Long> tableTotalWorkUnits = new ConcurrentHashMap<>();
     private final Map<String, Long> tableCompletedWorkUnits = new ConcurrentHashMap<>();
@@ -86,11 +89,16 @@ public class CmdMigrationMonitor implements IMigrationMonitor, Runnable {
 
     private final Map<String, Integer> tableIndexMap = new ConcurrentHashMap<>();
 
+    private final Set<String> changedTables = ConcurrentHashMap.newKeySet();
+    private final AtomicBoolean hasAnyChange = new AtomicBoolean(false);
+    private final Set<String> cachedProcessingTables = ConcurrentHashMap.newKeySet();
+    private final AtomicBoolean processingTablesCacheValid = new AtomicBoolean(false);
+
     private final int monitorMode;
     private final PrintStream outPrinter = System.out;
 
-    private boolean firstProgressOutput = true;
-    private int lastProgressLineCount = 0;
+    private final AtomicBoolean firstProgressOutput = new AtomicBoolean(true);
+    private final AtomicInteger lastProgressLineCount = new AtomicInteger(0);
 
     private static final long PROGRESS_UPDATE_INTERVAL_MS = 100;
 
@@ -190,12 +198,15 @@ public class CmdMigrationMonitor implements IMigrationMonitor, Runnable {
 
     @Override
     public void start() {
-        if (progressThread != null && progressThread.isAlive()) {
-            return;
+
+        synchronized (startLock) {
+            if (progressThread != null && progressThread.isAlive()) {
+                return;
+            }
+            progressThread = new Thread(this, "MigrationProgressPrinter");
+            progressThread.setDaemon(true);
+            progressThread.start();
         }
-        progressThread = new Thread(this, "MigrationProgressPrinter");
-        progressThread.setDaemon(true);
-        progressThread.start();
     }
 
     public void updateTableProgress(String tableName, long increment) {
@@ -203,6 +214,9 @@ public class CmdMigrationMonitor implements IMigrationMonitor, Runnable {
         long total = tableTotalRows.getOrDefault(tableName, 0L);
 
         tableCompletedWorkUnits.merge(tableName, increment, Long::sum);
+
+        changedTables.add(tableName);
+        hasAnyChange.set(true);
 
         TableStatus newStatus = determineTableStatus(newCurrent, total);
 
@@ -223,6 +237,9 @@ public class CmdMigrationMonitor implements IMigrationMonitor, Runnable {
 
     public void updateTableObjectProgress(String tableName, long increment) {
         tableCompletedWorkUnits.merge(tableName, increment, Long::sum);
+
+        changedTables.add(tableName);
+        hasAnyChange.set(true);
     }
 
     private TableStatus determineTableStatus(long current, long total) {
@@ -238,10 +255,31 @@ public class CmdMigrationMonitor implements IMigrationMonitor, Runnable {
         } else {
             processingTables.remove(tableName);
         }
+
+        processingTablesCacheValid.set(false);
+    }
+
+    private Set<String> getCachedProcessingTables() {
+        if (!processingTablesCacheValid.get()) {
+            cachedProcessingTables.clear();
+            cachedProcessingTables.addAll(processingTables);
+            processingTablesCacheValid.set(true);
+        }
+        return cachedProcessingTables;
+    }
+
+    private Set<String> getAndClearChangedTables() {
+        if (!hasAnyChange.compareAndSet(true, false)) {
+            return Collections.emptySet();
+        }
+
+        Set<String> result = new HashSet<>(changedTables);
+        changedTables.clear();
+        return result;
     }
 
     private int calculateProgressLines() {
-        return processingTables.size();
+        return getCachedProcessingTables().size();
     }
 
     public void addEvent(MigrationEvent event) {
@@ -306,29 +344,28 @@ public class CmdMigrationMonitor implements IMigrationMonitor, Runnable {
     }
 
     private void printProgressIfChanged() {
-        boolean anyChange = false;
 
-        for (String tableName : tableOrder) {
-            long completedWork = tableCompletedWorkUnits.getOrDefault(tableName, 0L);
-            long previous = tablePreviousWorkUnits.getOrDefault(tableName, -1L);
-
-            if (completedWork != previous) {
-                anyChange = true;
-                tablePreviousWorkUnits.put(tableName, completedWork);
-            }
+        if (!hasAnyChange.get() && !processingTablesChanged.compareAndSet(true, false)) {
+            return;
         }
 
-        boolean tablesChanged = processingTablesChanged.compareAndSet(true, false);
-        if (!anyChange && !tablesChanged) return;
+        Set<String> currentChangedTables = getAndClearChangedTables();
+
+        Set<String> currentProcessingTables = getCachedProcessingTables();
+
+        for (String tableName : currentChangedTables) {
+            long completedWork = tableCompletedWorkUnits.getOrDefault(tableName, 0L);
+            tablePreviousWorkUnits.put(tableName, completedWork);
+        }
 
         synchronized (printLock) {
-            if (!firstProgressOutput) {
-                for (int i = 0; i < lastProgressLineCount; i++) {
+            if (!firstProgressOutput.get()) {
+                for (int i = 0; i < lastProgressLineCount.get(); i++) {
                     outPrinter.print("\033[F");
                 }
                 outPrinter.print("\033[J");
             } else {
-                firstProgressOutput = false;
+                firstProgressOutput.set(false);
             }
 
             long totalWork = totalWorkUnits.get();
@@ -339,8 +376,9 @@ public class CmdMigrationMonitor implements IMigrationMonitor, Runnable {
             outPrinter.printf(
                     "Migration Progress: %d%% [%,d / %,d]\n", percent, completedWork, totalWork);
 
+            int outputCount = 0;
             for (String tableName : tableOrder) {
-                if (!processingTables.contains(tableName)) continue;
+                if (!currentProcessingTables.contains(tableName)) continue;
 
                 long totalTableWork = tableTotalWorkUnits.getOrDefault(tableName, 0L);
                 long completedTableWork = tableCompletedWorkUnits.getOrDefault(tableName, 0L);
@@ -359,9 +397,10 @@ public class CmdMigrationMonitor implements IMigrationMonitor, Runnable {
                         completedTableWork,
                         totalTableWork,
                         tablePercent);
+                outputCount++;
             }
 
-            lastProgressLineCount = 1 + calculateProgressLines();
+            lastProgressLineCount.set(1 + outputCount);
             outPrinter.flush();
         }
     }
