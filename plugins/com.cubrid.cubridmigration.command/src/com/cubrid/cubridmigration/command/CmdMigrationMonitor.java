@@ -93,7 +93,6 @@ public class CmdMigrationMonitor implements IMigrationMonitor, Runnable {
     private final Set<String> cachedProcessingTables = ConcurrentHashMap.newKeySet();
     private final AtomicBoolean cacheValid = new AtomicBoolean(false);
 
-    // 🔥 ConcurrentLinkedQueue.size() 최적화 - O(1) 성능
     private final AtomicInteger tableOrderSize = new AtomicInteger(0);
 
     private final int monitorMode;
@@ -156,9 +155,12 @@ public class CmdMigrationMonitor implements IMigrationMonitor, Runnable {
 
             addTotalWorkUnits(isEntryTable, createPK, table, rowCount);
 
-            int index = tableOrderSize.get();
-            tableOrderSize.incrementAndGet();
-            tableIndexMap.put(tableName, index);
+            synchronized (tableOrder) {
+                int index = tableOrderSize.get();
+                tableOrder.add(tableName);
+                tableOrderSize.incrementAndGet();
+                tableIndexMap.put(tableName, index);
+            }
 
             initializeTableProgress(tableName, rowCount);
 
@@ -374,9 +376,8 @@ public class CmdMigrationMonitor implements IMigrationMonitor, Runnable {
                     "Migration Progress: %d%% [%,d / %,d]\n", percent, completedWork, totalWork);
 
             int outputCount = 0;
-            for (String tableName : tableOrder) {
-                if (!currentProcessingTables.contains(tableName)) continue;
 
+            for (String tableName : currentProcessingTables) {
                 long totalTableWork = tableTotalWorkUnits.getOrDefault(tableName, 0L);
                 long completedTableWork = tableCompletedWorkUnits.getOrDefault(tableName, 0L);
 
