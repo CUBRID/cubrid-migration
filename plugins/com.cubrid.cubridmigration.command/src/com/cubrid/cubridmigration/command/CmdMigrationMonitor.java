@@ -64,10 +64,9 @@ import java.util.concurrent.atomic.AtomicReference;
  * @version 1.0 - 2012-2-2 created by Kevin Cao
  */
 public class CmdMigrationMonitor implements IMigrationMonitor, Runnable {
+
     private final AtomicLong totalWorkUnits = new AtomicLong(0);
     private final AtomicLong completedWorkUnits = new AtomicLong(0);
-
-    private final AtomicBoolean processingTablesChanged = new AtomicBoolean(false);
     private final AtomicBoolean hasError = new AtomicBoolean(false);
 
     private volatile MigrationFinishedEvent finalEvent = null;
@@ -88,18 +87,19 @@ public class CmdMigrationMonitor implements IMigrationMonitor, Runnable {
 
     private final Map<String, Integer> tableIndexMap = new ConcurrentHashMap<>();
 
+    // 🔥 단순화된 상태 및 캐시 관리
     private final Set<String> changedTables = ConcurrentHashMap.newKeySet();
-    private final AtomicBoolean stateChanged = new AtomicBoolean(false);
+    private final AtomicBoolean hasChanges =
+            new AtomicBoolean(false); 
     private final Set<String> cachedProcessingTables = ConcurrentHashMap.newKeySet();
-    private final AtomicBoolean cacheValid = new AtomicBoolean(false);
-
+    private volatile boolean cacheNeedsUpdate = false; 
     private final AtomicInteger tableOrderSize = new AtomicInteger(0);
 
     private final int monitorMode;
     private final PrintStream outPrinter = System.out;
 
-    private final AtomicBoolean firstProgressOutput = new AtomicBoolean(true);
-    private final AtomicInteger lastProgressLineCount = new AtomicInteger(0);
+    private volatile boolean isFirstOutput = true; 
+    private volatile int lastLineCount = 0;
 
     private static final long PROGRESS_UPDATE_INTERVAL_MS = 100;
 
@@ -157,7 +157,7 @@ public class CmdMigrationMonitor implements IMigrationMonitor, Runnable {
 
             synchronized (tableOrder) {
                 int index = tableOrderSize.get();
-                tableOrder.add(tableName);
+                tableOrder.add(tableName); 
                 tableOrderSize.incrementAndGet();
                 tableIndexMap.put(tableName, index);
             }
@@ -220,7 +220,7 @@ public class CmdMigrationMonitor implements IMigrationMonitor, Runnable {
         tableCompletedWorkUnits.merge(tableName, increment, Long::sum);
 
         changedTables.add(tableName);
-        stateChanged.set(true);
+        hasChanges.set(true); 
 
         TableStatus newStatus = determineTableStatus(newCurrent, total);
 
@@ -243,7 +243,7 @@ public class CmdMigrationMonitor implements IMigrationMonitor, Runnable {
         tableCompletedWorkUnits.merge(tableName, increment, Long::sum);
 
         changedTables.add(tableName);
-        stateChanged.set(true);
+        hasChanges.set(true); 
     }
 
     private TableStatus determineTableStatus(long current, long total) {
@@ -260,20 +260,24 @@ public class CmdMigrationMonitor implements IMigrationMonitor, Runnable {
             processingTables.remove(tableName);
         }
 
-        cacheValid.set(false);
+        cacheNeedsUpdate = true; 
     }
 
     private Set<String> getCachedProcessingTables() {
-        if (!cacheValid.get()) {
-            cachedProcessingTables.clear();
-            cachedProcessingTables.addAll(processingTables);
-            cacheValid.set(true);
+        if (cacheNeedsUpdate) { 
+            synchronized (this) { 
+                if (cacheNeedsUpdate) {
+                    cachedProcessingTables.clear();
+                    cachedProcessingTables.addAll(processingTables);
+                    cacheNeedsUpdate = false;
+                }
+            }
         }
         return cachedProcessingTables;
     }
 
     private Set<String> getAndClearChangedTables() {
-        if (!stateChanged.compareAndSet(true, false)) {
+        if (!hasChanges.compareAndSet(true, false)) { 
             return Collections.emptySet();
         }
 
@@ -344,7 +348,7 @@ public class CmdMigrationMonitor implements IMigrationMonitor, Runnable {
 
     private void printProgressIfChanged() {
 
-        if (!stateChanged.get()) {
+        if (!hasChanges.get()) { 
             return;
         }
 
@@ -358,13 +362,13 @@ public class CmdMigrationMonitor implements IMigrationMonitor, Runnable {
         }
 
         synchronized (printLock) {
-            if (!firstProgressOutput.get()) {
-                for (int i = 0; i < lastProgressLineCount.get(); i++) {
+            if (!isFirstOutput) { 
+                for (int i = 0; i < lastLineCount; i++) { 
                     outPrinter.print("\033[F");
                 }
                 outPrinter.print("\033[J");
             } else {
-                firstProgressOutput.set(false);
+                isFirstOutput = false; 
             }
 
             long totalWork = totalWorkUnits.get();
@@ -398,7 +402,7 @@ public class CmdMigrationMonitor implements IMigrationMonitor, Runnable {
                 outputCount++;
             }
 
-            lastProgressLineCount.set(1 + outputCount);
+            lastLineCount = 1 + outputCount; 
             outPrinter.flush();
         }
     }
