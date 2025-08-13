@@ -61,7 +61,7 @@ import java.util.concurrent.atomic.AtomicReference;
  * @author Kevin Cao
  * @version 1.0 - 2012-2-2 created by Kevin Cao
  */
-public class CmdMigrationMonitor implements IMigrationMonitor {
+public class CmdMigrationMonitor implements IMigrationMonitor, Runnable {
     private final AtomicLong totalWorkUnits = new AtomicLong(0);
     private final AtomicLong completedWorkUnits = new AtomicLong(0);
     private final AtomicLong lastPrintedProgressPercent = new AtomicLong(0);
@@ -69,8 +69,9 @@ public class CmdMigrationMonitor implements IMigrationMonitor {
     private final AtomicBoolean hasError = new AtomicBoolean(false);
 
     private volatile MigrationFinishedEvent finalEvent = null;
-    private final int monitorMode;
-    private PrintStream outPrinter = System.out;
+    private volatile boolean stopRequested = false;
+
+    private final Object printLock = new Object();
 
     private final Map<String, Long> tableTotalRows = new ConcurrentHashMap<>();
     private final Map<String, Long> tableCurrentRows = new ConcurrentHashMap<>();
@@ -84,6 +85,16 @@ public class CmdMigrationMonitor implements IMigrationMonitor {
     private final Map<String, Long> tablePreviousWorkUnits = new ConcurrentHashMap<>();
 
     private final Map<String, Integer> tableIndexMap = new ConcurrentHashMap<>();
+
+    private final int monitorMode;
+    private final PrintStream outPrinter = System.out;
+
+    private boolean firstProgressOutput = true;
+    private int lastProgressLineCount = 0;
+
+    private static final long PROGRESS_UPDATE_INTERVAL_MS = 100;
+
+    private Thread progressThread;
 
     public enum TableStatus {
         PENDING,
@@ -100,6 +111,7 @@ public class CmdMigrationMonitor implements IMigrationMonitor {
         if (config.sourceIsOnline() || config.sourceIsXMLDump()) {
             processSourceTables(config.getExpEntryTableCfg(), true, config);
             processSourceTables(config.getExpSQLCfg(), false, config);
+
             totalWorkUnits.addAndGet(config.getExpObjCount());
         } else if (config.sourceIsSQL()) {
             for (String ss : config.getSqlFiles()) {
@@ -118,7 +130,6 @@ public class CmdMigrationMonitor implements IMigrationMonitor {
             String tableName;
             String owner = null;
             boolean createPK = false;
-
             if (isEntryTable) {
                 SourceEntryTableConfig tbl = (SourceEntryTableConfig) obj;
                 tableName = tbl.getName();
@@ -172,6 +183,21 @@ public class CmdMigrationMonitor implements IMigrationMonitor {
         return workUnits;
     }
 
+    @Override
+    public void finished() {
+        requestStop();
+    }
+
+    @Override
+    public void start() {
+        if (progressThread != null && progressThread.isAlive()) {
+            return;
+        }
+        progressThread = new Thread(this, "MigrationProgressPrinter");
+        progressThread.setDaemon(true);
+        progressThread.start();
+    }
+
     public void updateTableProgress(String tableName, long increment) {
         long newCurrent = tableCurrentRows.merge(tableName, increment, Long::sum);
         long total = tableTotalRows.getOrDefault(tableName, 0L);
@@ -218,40 +244,25 @@ public class CmdMigrationMonitor implements IMigrationMonitor {
         return processingTables.size();
     }
 
-    /** Print finished message. */
-    public void finished() {}
-
-    /** Print started message. */
-    public void start() {}
-
-    /**
-     * Print event message.
-     *
-     * @param event MigrationEvent
-     */
     public void addEvent(MigrationEvent event) {
-        if (finalEvent != null) {
-            return;
-        }
+        if (finalEvent != null) return;
 
         if (event instanceof MigrationStartEvent) {
-            outPrinter.println(event.toString());
+            synchronized (printLock) {
+                outPrinter.println(event.toString());
+            }
             return;
         }
 
         if (event instanceof MigrationFinishedEvent) {
             finalEvent = (MigrationFinishedEvent) event;
-            outPrinter.print("\rProgress:100%");
-            outPrinter.println();
-            if (hasError.get()) {
-                outPrinter.println("Some errors occurred during migration.");
-                outPrinter.println("Please see the report for more.");
-            }
-            outPrinter.println(event.toString());
+            printFinalProgress();
+            requestStop();
             return;
         }
 
         boolean isError = false;
+
         if (event instanceof CreateObjectEvent) {
             CreateObjectEvent ev = (CreateObjectEvent) event;
             if (ev.isSuccess()) {
@@ -260,47 +271,125 @@ public class CmdMigrationMonitor implements IMigrationMonitor {
                 isError = true;
             }
         } else if (event instanceof ImportRecordsEvent) {
-            final ImportRecordsEvent importRecordsEvent = (ImportRecordsEvent) event;
-            if (importRecordsEvent.isSuccess()) {
-                completedWorkUnits.addAndGet(importRecordsEvent.getRecordCount());
-                updateTableProgress(
-                        importRecordsEvent.getSourceTable().getName(),
-                        importRecordsEvent.getRecordCount());
+            ImportRecordsEvent ev = (ImportRecordsEvent) event;
+            if (ev.isSuccess()) {
+                completedWorkUnits.addAndGet(ev.getRecordCount());
+                updateTableProgress(ev.getSourceTable().getName(), ev.getRecordCount());
             } else {
                 isError = true;
             }
         } else if (event instanceof ImportSQLsEvent) {
             ImportSQLsEvent ev = (ImportSQLsEvent) event;
             completedWorkUnits.addAndGet(ev.getSize());
-            if (!ev.isSuccess()) {
-                isError = true;
-            }
+            if (!ev.isSuccess()) isError = true;
         } else if (event instanceof ImportCSVEvent) {
             ImportCSVEvent ev = (ImportCSVEvent) event;
             completedWorkUnits.addAndGet(ev.getSize());
-            if (!ev.isSuccess()) {
-                isError = true;
-            }
+            if (!ev.isSuccess()) isError = true;
         }
 
         if (isError) {
             hasError.set(true);
         }
 
-        boolean isNewLine = false;
-        if (event.getLevel() <= monitorMode) {
-            outPrinter.println(event.toString());
-            isNewLine = true;
+        if (monitorMode <= MigrationConfiguration.RPT_LEVEL_ERROR && totalWorkUnits.get() > 0) {
+            long tmpPro = completedWorkUnits.get() * 100 / totalWorkUnits.get();
+            lastPrintedProgressPercent.set(Math.max(tmpPro, 1));
+        }
+    }
+
+    public void requestStop() {
+        stopRequested = true;
+        if (progressThread != null) {
+            progressThread.interrupt();
+        }
+    }
+
+    private void printProgressIfChanged() {
+        boolean anyChange = false;
+
+        for (String tableName : tableOrder) {
+            long completedWork = tableCompletedWorkUnits.getOrDefault(tableName, 0L);
+            long previous = tablePreviousWorkUnits.getOrDefault(tableName, -1L);
+
+            if (completedWork != previous) {
+                anyChange = true;
+                tablePreviousWorkUnits.put(tableName, completedWork);
+            }
         }
 
-        if (monitorMode <= MigrationConfiguration.RPT_LEVEL_ERROR && (totalWorkUnits.get() > 0)) {
-            long tmpPro = completedWorkUnits.get() * 100 / totalWorkUnits.get();
-            tmpPro = tmpPro == 0 ? 1 : tmpPro;
-            lastPrintedProgressPercent.set(tmpPro);
-            if (!isNewLine) {
-                outPrinter.print('\r');
+        boolean tablesChanged = processingTablesChanged.compareAndSet(true, false);
+        if (!anyChange && !tablesChanged) return;
+
+        synchronized (printLock) {
+            if (!firstProgressOutput) {
+                for (int i = 0; i < lastProgressLineCount; i++) {
+                    outPrinter.print("\033[F");
+                }
+                outPrinter.print("\033[J");
+            } else {
+                firstProgressOutput = false;
             }
-            outPrinter.print("Progress:" + tmpPro + "%");
+
+            long totalWork = totalWorkUnits.get();
+            long completedWork = completedWorkUnits.get();
+            long percent = (totalWork > 0) ? (completedWork * 100 / totalWork) : 100;
+            percent = Math.max(percent, 1);
+
+            outPrinter.printf(
+                    "Migration Progress: %d%% [%,d / %,d]\n", percent, completedWork, totalWork);
+
+            for (String tableName : tableOrder) {
+                if (!processingTables.contains(tableName)) continue;
+
+                long totalTableWork = tableTotalWorkUnits.getOrDefault(tableName, 0L);
+                long completedTableWork = tableCompletedWorkUnits.getOrDefault(tableName, 0L);
+
+                Integer indexObj = tableIndexMap.get(tableName);
+                int index = (indexObj != null) ? indexObj + 1 : 1;
+
+                long tablePercent =
+                        (totalTableWork > 0) ? (completedTableWork * 100 / totalTableWork) : 0;
+
+                outPrinter.printf(
+                        "%s(%d/%d) | %,d/%,d %d%%\n",
+                        tableName,
+                        index,
+                        tableOrder.size(),
+                        completedTableWork,
+                        totalTableWork,
+                        tablePercent);
+            }
+
+            lastProgressLineCount = 1 + calculateProgressLines();
+            outPrinter.flush();
         }
+    }
+
+    private void printFinalProgress() {
+        printProgressIfChanged();
+
+        synchronized (printLock) {
+            if (hasError.get()) {
+                outPrinter.println("Some errors occurred during migration.");
+                outPrinter.println("Please see the report for more.");
+            }
+            if (finalEvent != null) {
+                outPrinter.println(finalEvent.toString());
+            }
+        }
+    }
+
+    @Override
+    public void run() {
+        while (!stopRequested) {
+            printProgressIfChanged();
+            try {
+                Thread.sleep(PROGRESS_UPDATE_INTERVAL_MS);
+            } catch (InterruptedException e) {
+                break;
+            }
+        }
+        printProgressIfChanged();
     }
 }
