@@ -45,7 +45,11 @@ import com.cubrid.cubridmigration.core.engine.event.MigrationFinishedEvent;
 import com.cubrid.cubridmigration.core.engine.event.MigrationStartEvent;
 import java.io.File;
 import java.io.PrintStream;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -64,21 +68,24 @@ public class CmdMigrationMonitor implements IMigrationMonitor {
     private final int monitorMode;
     private PrintStream outPrinter = System.out;
 
+    private final Map<String, Long> tableTotalRows = new ConcurrentHashMap<>();
+    private final Map<String, Long> tableCurrentRows = new ConcurrentHashMap<>();
+    private final Map<String, Long> tablePreviousRows = new ConcurrentHashMap<>();
+    private final Map<String, Long> tableTotalWorkUnits = new ConcurrentHashMap<>();
+    private final Map<String, Long> tableCompletedWorkUnits = new ConcurrentHashMap<>();
+    private final Map<String, Long> tablePreviousWorkUnits = new ConcurrentHashMap<>();
+    private final List<String> tableOrder = new ArrayList<>();
+    private final Map<String, Integer> tableIndexMap = new ConcurrentHashMap<>();
+
     public CmdMigrationMonitor(MigrationConfiguration config, int monitorMode) {
+        this.monitorMode = monitorMode;
+        initializeMonitor(config);
+    }
+
+    private void initializeMonitor(MigrationConfiguration config) {
         if (config.sourceIsOnline() || config.sourceIsXMLDump()) {
-            List<SourceEntryTableConfig> tables = config.getExpEntryTableCfg();
-            for (SourceEntryTableConfig tbl : tables) {
-                Table table = config.getSrcTableSchema(tbl.getOwner(), tbl.getName());
-                if (tbl.isCreatePK() && table.getPk() != null) {
-                    totalWorkUnits.incrementAndGet();
-                }
-                totalWorkUnits.addAndGet(table.getTableRowCount());
-            }
-            List<SourceSQLTableConfig> sqlTables = config.getExpSQLCfg();
-            for (SourceSQLTableConfig tbl : sqlTables) {
-                Table table = config.getSrcTableSchema(tbl.getOwner(), tbl.getName());
-                totalWorkUnits.addAndGet(table == null ? 0 : table.getTableRowCount());
-            }
+            processSourceTables(config.getExpEntryTableCfg(), true, config);
+            processSourceTables(config.getExpSQLCfg(), false, config);
             totalWorkUnits.addAndGet(config.getExpObjCount());
         } else if (config.sourceIsSQL()) {
             for (String ss : config.getSqlFiles()) {
@@ -89,7 +96,65 @@ public class CmdMigrationMonitor implements IMigrationMonitor {
                 totalWorkUnits.addAndGet(new File(scc.getName()).length());
             }
         }
-        this.monitorMode = monitorMode;
+    }
+
+    private void processSourceTables(
+            Collection<?> tables, boolean isEntryTable, MigrationConfiguration config) {
+        for (Object obj : tables) {
+            String tableName;
+            String owner = null;
+            boolean createPK = false;
+
+            if (isEntryTable) {
+                SourceEntryTableConfig tbl = (SourceEntryTableConfig) obj;
+                tableName = tbl.getName();
+                owner = tbl.getOwner();
+                createPK = tbl.isCreatePK();
+            } else {
+                SourceSQLTableConfig tbl = (SourceSQLTableConfig) obj;
+                tableName = tbl.getName();
+                owner = tbl.getOwner();
+            }
+
+            Table table = config.getSrcTableSchema(owner, tableName);
+            long rowCount = (table == null) ? 0L : table.getTableRowCount();
+
+            addTotalWorkUnits(isEntryTable, createPK, table, rowCount);
+
+            int index = tableOrder.size();
+            tableOrder.add(tableName);
+            tableIndexMap.put(tableName, index);
+
+            initializeTableProgress(tableName, rowCount);
+
+            long tableWorkUnits = calculateTableWorkUnits(isEntryTable, createPK, table, rowCount);
+            tableTotalWorkUnits.put(tableName, tableWorkUnits);
+            tableCompletedWorkUnits.put(tableName, 0L);
+            tablePreviousWorkUnits.put(tableName, -1L);
+        }
+    }
+
+    private void addTotalWorkUnits(
+            boolean isEntryTable, boolean createPK, Table table, long rowCount) {
+        if (isEntryTable && createPK && table != null && table.getPk() != null) {
+            totalWorkUnits.incrementAndGet();
+        }
+        totalWorkUnits.addAndGet(rowCount);
+    }
+
+    private void initializeTableProgress(String tableName, long rowCount) {
+        tableTotalRows.put(tableName, rowCount);
+        tableCurrentRows.put(tableName, 0L);
+        tablePreviousRows.put(tableName, -1L);
+    }
+
+    private long calculateTableWorkUnits(
+            boolean isEntryTable, boolean createPK, Table table, long rowCount) {
+        long workUnits = rowCount;
+        if (isEntryTable && createPK && table != null && table.getPk() != null) {
+            workUnits += 1;
+        }
+        return workUnits;
     }
 
     /** Print finished message. */
