@@ -64,7 +64,7 @@ import java.util.concurrent.atomic.AtomicReference;
  * @version 1.0 - 2012-2-2 created by Kevin Cao
  */
 public class CmdMigrationMonitor implements IMigrationMonitor, Runnable {
-    // 🔥 핵심 데이터 변수들
+
     private final AtomicLong totalWorkUnits = new AtomicLong(0);
     private final AtomicLong completedWorkUnits = new AtomicLong(0);
     private final AtomicBoolean hasError = new AtomicBoolean(false);
@@ -74,16 +74,8 @@ public class CmdMigrationMonitor implements IMigrationMonitor, Runnable {
 
     private final Object printLock = new Object();
     private final Object startLock = new Object();
-    private final Map<String, Long> tableTotalRows = new ConcurrentHashMap<>();
-    private final Map<String, Long> tableCurrentRows = new ConcurrentHashMap<>();
-    private final Map<String, Long> tablePreviousRows = new ConcurrentHashMap<>();
-    private final Map<String, AtomicReference<TableStatus>> tableStatus = new ConcurrentHashMap<>();
     private final Set<String> processingTables = ConcurrentHashMap.newKeySet();
     private final ConcurrentLinkedQueue<String> tableOrder = new ConcurrentLinkedQueue<>();
-
-    private final Map<String, Long> tableTotalWorkUnits = new ConcurrentHashMap<>();
-    private final Map<String, Long> tableCompletedWorkUnits = new ConcurrentHashMap<>();
-    private final Map<String, Long> tablePreviousWorkUnits = new ConcurrentHashMap<>();
 
     private final Map<String, Integer> tableIndexMap = new ConcurrentHashMap<>();
 
@@ -104,6 +96,8 @@ public class CmdMigrationMonitor implements IMigrationMonitor, Runnable {
     private final StringBuilder outputBuffer = new StringBuilder(256);
     private volatile boolean hasPendingCacheUpdates = false;
 
+    private final Map<String, TableProgressData> tableProgressMap = new ConcurrentHashMap<>();
+
     private static final long PROGRESS_UPDATE_INTERVAL_MS = 100;
 
     private Thread progressThread;
@@ -112,6 +106,93 @@ public class CmdMigrationMonitor implements IMigrationMonitor, Runnable {
         PENDING,
         PROCESSING,
         COMPLETED
+    }
+
+    static class TableProgressData {
+        private final String tableName;
+        private final int index;
+
+        private volatile long totalRows;
+        private volatile long currentRows;
+        private volatile long previousRows;
+
+        private volatile long totalWorkUnits;
+        private volatile long completedWorkUnits;
+        private volatile long previousWorkUnits;
+
+        private final AtomicReference<TableStatus> status;
+
+        TableProgressData(String tableName, long totalRows, long totalWorkUnits, int index) {
+            this.tableName = tableName;
+            this.totalRows = totalRows;
+            this.totalWorkUnits = totalWorkUnits;
+            this.index = index;
+            this.currentRows = 0L;
+            this.previousRows = -1L;
+            this.completedWorkUnits = 0L;
+            this.previousWorkUnits = -1L;
+            this.status = new AtomicReference<>(TableStatus.PENDING);
+        }
+
+        public void addCurrentRows(long increment) {
+            this.currentRows += increment;
+        }
+
+        public void addCompletedWorkUnits(long increment) {
+            this.completedWorkUnits += increment;
+        }
+
+        public void updatePreviousRows() {
+            this.previousRows = this.currentRows;
+        }
+
+        public void updatePreviousWorkUnits() {
+            this.previousWorkUnits = this.completedWorkUnits;
+        }
+
+        public long getRowPercent() {
+            return totalRows > 0 ? (currentRows * 100 / totalRows) : 0;
+        }
+
+        public long getWorkPercent() {
+            return totalWorkUnits > 0 ? (completedWorkUnits * 100 / totalWorkUnits) : 0;
+        }
+
+        public String getTableName() {
+            return tableName;
+        }
+
+        public int getIndex() {
+            return index;
+        }
+
+        public long getTotalRows() {
+            return totalRows;
+        }
+
+        public long getCurrentRows() {
+            return currentRows;
+        }
+
+        public long getPreviousRows() {
+            return previousRows;
+        }
+
+        public long getTotalWorkUnits() {
+            return totalWorkUnits;
+        }
+
+        public long getCompletedWorkUnits() {
+            return completedWorkUnits;
+        }
+
+        public long getPreviousWorkUnits() {
+            return previousWorkUnits;
+        }
+
+        public AtomicReference<TableStatus> getStatus() {
+            return status;
+        }
     }
 
     public CmdMigrationMonitor(MigrationConfiguration config, int monitorMode) {
@@ -166,11 +247,6 @@ public class CmdMigrationMonitor implements IMigrationMonitor, Runnable {
             }
 
             initializeTableProgress(tableName, rowCount);
-
-            long tableWorkUnits = calculateTableWorkUnits(isEntryTable, createPK, table, rowCount);
-            tableTotalWorkUnits.put(tableName, tableWorkUnits);
-            tableCompletedWorkUnits.put(tableName, 0L);
-            tablePreviousWorkUnits.put(tableName, -1L);
         }
     }
 
@@ -183,10 +259,10 @@ public class CmdMigrationMonitor implements IMigrationMonitor, Runnable {
     }
 
     private void initializeTableProgress(String tableName, long rowCount) {
-        tableTotalRows.put(tableName, rowCount);
-        tableCurrentRows.put(tableName, 0L);
-        tablePreviousRows.put(tableName, -1L);
-        tableStatus.put(tableName, new AtomicReference<>(TableStatus.PENDING));
+        int index = tableIndexMap.get(tableName);
+        long workUnits = calculateTableWorkUnits(true, true, null, rowCount); // 기본값 사용
+        TableProgressData data = new TableProgressData(tableName, rowCount, workUnits, index);
+        tableProgressMap.put(tableName, data);
     }
 
     private long calculateTableWorkUnits(
@@ -217,36 +293,40 @@ public class CmdMigrationMonitor implements IMigrationMonitor, Runnable {
     }
 
     public void updateTableProgress(String tableName, long increment) {
-        long newCurrent = tableCurrentRows.merge(tableName, increment, Long::sum);
-        long total = tableTotalRows.getOrDefault(tableName, 0L);
+        TableProgressData data = tableProgressMap.get(tableName);
+        if (data != null) {
+            data.addCurrentRows(increment);
+            data.addCompletedWorkUnits(increment);
 
-        tableCompletedWorkUnits.merge(tableName, increment, Long::sum);
+            long newCurrent = data.getCurrentRows();
+            long total = data.getTotalRows();
+            TableStatus newStatus = determineTableStatus(newCurrent, total);
 
-        changedTables.add(tableName);
-        hasChanges.set(true);
-
-        TableStatus newStatus = determineTableStatus(newCurrent, total);
-
-        AtomicReference<TableStatus> statusRef = tableStatus.get(tableName);
-        if (statusRef != null) {
+            AtomicReference<TableStatus> statusRef = data.getStatus();
             TableStatus oldStatus;
             do {
                 oldStatus = statusRef.get();
                 if (oldStatus == newStatus) {
-                    return;
+                    break;
                 }
             } while (!statusRef.compareAndSet(oldStatus, newStatus));
 
-            updateProcessingTables(tableName, oldStatus, newStatus);
+            if (oldStatus != newStatus) {
+                updateProcessingTables(tableName, oldStatus, newStatus);
+            }
+
+            changedTables.add(tableName);
             hasChanges.set(true);
         }
     }
 
     public void updateTableObjectProgress(String tableName, long increment) {
-        tableCompletedWorkUnits.merge(tableName, increment, Long::sum);
-
-        changedTables.add(tableName);
-        hasChanges.set(true);
+        TableProgressData data = tableProgressMap.get(tableName);
+        if (data != null) {
+            data.addCompletedWorkUnits(increment);
+            changedTables.add(tableName);
+            hasChanges.set(true);
+        }
     }
 
     private TableStatus determineTableStatus(long current, long total) {
@@ -367,8 +447,10 @@ public class CmdMigrationMonitor implements IMigrationMonitor, Runnable {
         Set<String> currentProcessingTables = getCachedProcessingTables();
 
         for (String tableName : currentChangedTables) {
-            long completedWork = tableCompletedWorkUnits.getOrDefault(tableName, 0L);
-            tablePreviousWorkUnits.put(tableName, completedWork);
+            TableProgressData data = tableProgressMap.get(tableName);
+            if (data != null) {
+                data.updatePreviousWorkUnits();
+            }
         }
 
         synchronized (printLock) {
@@ -391,15 +473,17 @@ public class CmdMigrationMonitor implements IMigrationMonitor, Runnable {
 
             int outputCount = 0;
 
-            for (String tableName : currentProcessingTables) {
-                long totalTableWork = tableTotalWorkUnits.getOrDefault(tableName, 0L);
-                long completedTableWork = tableCompletedWorkUnits.getOrDefault(tableName, 0L);
+            for (String tableName : tableOrder) {
+                if (!currentProcessingTables.contains(tableName)) continue;
 
-                Integer indexObj = tableIndexMap.get(tableName);
-                int index = (indexObj != null) ? indexObj + 1 : 1;
+                TableProgressData data = tableProgressMap.get(tableName);
+                if (data == null) continue;
 
-                long tablePercent =
-                        (totalTableWork > 0) ? (completedTableWork * 100 / totalTableWork) : 0;
+                long totalTableWork = data.getTotalWorkUnits();
+                long completedTableWork = data.getCompletedWorkUnits();
+                int index = data.getIndex() + 1;
+
+                long tablePercent = data.getWorkPercent();
 
                 outputBuffer.setLength(0);
                 outputBuffer
@@ -410,7 +494,9 @@ public class CmdMigrationMonitor implements IMigrationMonitor, Runnable {
                         .append(tableOrderSize.get())
                         .append(") | ")
                         .append(completedTableWork)
+                        .append(' ')
                         .append('/')
+                        .append(' ')
                         .append(totalTableWork)
                         .append(' ')
                         .append(tablePercent)
@@ -449,6 +535,7 @@ public class CmdMigrationMonitor implements IMigrationMonitor, Runnable {
                 break;
             }
         }
+
         printProgressIfChanged();
     }
 }
