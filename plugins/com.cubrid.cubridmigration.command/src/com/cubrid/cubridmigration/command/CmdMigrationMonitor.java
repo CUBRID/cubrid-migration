@@ -64,7 +64,7 @@ import java.util.concurrent.atomic.AtomicReference;
  * @version 1.0 - 2012-2-2 created by Kevin Cao
  */
 public class CmdMigrationMonitor implements IMigrationMonitor, Runnable {
-
+    // 🔥 핵심 데이터 변수들
     private final AtomicLong totalWorkUnits = new AtomicLong(0);
     private final AtomicLong completedWorkUnits = new AtomicLong(0);
     private final AtomicBoolean hasError = new AtomicBoolean(false);
@@ -87,19 +87,22 @@ public class CmdMigrationMonitor implements IMigrationMonitor, Runnable {
 
     private final Map<String, Integer> tableIndexMap = new ConcurrentHashMap<>();
 
-    // 🔥 단순화된 상태 및 캐시 관리
     private final Set<String> changedTables = ConcurrentHashMap.newKeySet();
-    private final AtomicBoolean hasChanges =
-            new AtomicBoolean(false); 
+    private final AtomicBoolean hasChanges = new AtomicBoolean(false);
     private final Set<String> cachedProcessingTables = ConcurrentHashMap.newKeySet();
-    private volatile boolean cacheNeedsUpdate = false; 
+    private volatile boolean cacheNeedsUpdate = false;
+
     private final AtomicInteger tableOrderSize = new AtomicInteger(0);
 
     private final int monitorMode;
     private final PrintStream outPrinter = System.out;
 
-    private volatile boolean isFirstOutput = true; 
+    private volatile boolean isFirstOutput = true;
     private volatile int lastLineCount = 0;
+
+    private final Set<String> reusableResultSet = new HashSet<>();
+    private final StringBuilder outputBuffer = new StringBuilder(256);
+    private volatile boolean hasPendingCacheUpdates = false;
 
     private static final long PROGRESS_UPDATE_INTERVAL_MS = 100;
 
@@ -157,7 +160,7 @@ public class CmdMigrationMonitor implements IMigrationMonitor, Runnable {
 
             synchronized (tableOrder) {
                 int index = tableOrderSize.get();
-                tableOrder.add(tableName); 
+                tableOrder.add(tableName);
                 tableOrderSize.incrementAndGet();
                 tableIndexMap.put(tableName, index);
             }
@@ -220,7 +223,7 @@ public class CmdMigrationMonitor implements IMigrationMonitor, Runnable {
         tableCompletedWorkUnits.merge(tableName, increment, Long::sum);
 
         changedTables.add(tableName);
-        hasChanges.set(true); 
+        hasChanges.set(true);
 
         TableStatus newStatus = determineTableStatus(newCurrent, total);
 
@@ -235,7 +238,7 @@ public class CmdMigrationMonitor implements IMigrationMonitor, Runnable {
             } while (!statusRef.compareAndSet(oldStatus, newStatus));
 
             updateProcessingTables(tableName, oldStatus, newStatus);
-            stateChanged.set(true);
+            hasChanges.set(true);
         }
     }
 
@@ -243,7 +246,7 @@ public class CmdMigrationMonitor implements IMigrationMonitor, Runnable {
         tableCompletedWorkUnits.merge(tableName, increment, Long::sum);
 
         changedTables.add(tableName);
-        hasChanges.set(true); 
+        hasChanges.set(true);
     }
 
     private TableStatus determineTableStatus(long current, long total) {
@@ -260,16 +263,20 @@ public class CmdMigrationMonitor implements IMigrationMonitor, Runnable {
             processingTables.remove(tableName);
         }
 
-        cacheNeedsUpdate = true; 
+        if (!hasPendingCacheUpdates) {
+            hasPendingCacheUpdates = true;
+            cacheNeedsUpdate = true;
+        }
     }
 
     private Set<String> getCachedProcessingTables() {
-        if (cacheNeedsUpdate) { 
-            synchronized (this) { 
+        if (cacheNeedsUpdate) {
+            synchronized (this) {
                 if (cacheNeedsUpdate) {
                     cachedProcessingTables.clear();
                     cachedProcessingTables.addAll(processingTables);
                     cacheNeedsUpdate = false;
+                    hasPendingCacheUpdates = false;
                 }
             }
         }
@@ -277,13 +284,16 @@ public class CmdMigrationMonitor implements IMigrationMonitor, Runnable {
     }
 
     private Set<String> getAndClearChangedTables() {
-        if (!hasChanges.compareAndSet(true, false)) { 
+        if (!hasChanges.compareAndSet(true, false)) {
             return Collections.emptySet();
         }
 
-        Set<String> result = new HashSet<>(changedTables);
-        changedTables.clear();
-        return result;
+        synchronized (reusableResultSet) {
+            reusableResultSet.clear();
+            reusableResultSet.addAll(changedTables);
+            changedTables.clear();
+            return new HashSet<>(reusableResultSet);
+        }
     }
 
     private int calculateProgressLines() {
@@ -348,7 +358,7 @@ public class CmdMigrationMonitor implements IMigrationMonitor, Runnable {
 
     private void printProgressIfChanged() {
 
-        if (!hasChanges.get()) { 
+        if (!hasChanges.get()) {
             return;
         }
 
@@ -362,13 +372,13 @@ public class CmdMigrationMonitor implements IMigrationMonitor, Runnable {
         }
 
         synchronized (printLock) {
-            if (!isFirstOutput) { 
-                for (int i = 0; i < lastLineCount; i++) { 
+            if (!isFirstOutput) {
+                for (int i = 0; i < lastLineCount; i++) {
                     outPrinter.print("\033[F");
                 }
                 outPrinter.print("\033[J");
             } else {
-                isFirstOutput = false; 
+                isFirstOutput = false;
             }
 
             long totalWork = totalWorkUnits.get();
@@ -391,18 +401,26 @@ public class CmdMigrationMonitor implements IMigrationMonitor, Runnable {
                 long tablePercent =
                         (totalTableWork > 0) ? (completedTableWork * 100 / totalTableWork) : 0;
 
-                outPrinter.printf(
-                        "%s(%d/%d) | %,d/%,d %d%%\n",
-                        tableName,
-                        index,
-                        tableOrderSize.get(),
-                        completedTableWork,
-                        totalTableWork,
-                        tablePercent);
+                outputBuffer.setLength(0);
+                outputBuffer
+                        .append(tableName)
+                        .append('(')
+                        .append(index)
+                        .append('/')
+                        .append(tableOrderSize.get())
+                        .append(") | ")
+                        .append(completedTableWork)
+                        .append('/')
+                        .append(totalTableWork)
+                        .append(' ')
+                        .append(tablePercent)
+                        .append("%\n");
+
+                outPrinter.print(outputBuffer.toString());
                 outputCount++;
             }
 
-            lastLineCount = 1 + outputCount; 
+            lastLineCount = 1 + outputCount;
             outPrinter.flush();
         }
     }
