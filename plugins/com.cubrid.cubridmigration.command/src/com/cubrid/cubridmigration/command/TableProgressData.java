@@ -44,7 +44,6 @@ public class TableProgressData {
 
     private volatile long totalRows;
     private volatile long currentRows;
-    private volatile long previousRows;
 
     private volatile long totalWorkUnits;
     private volatile long completedWorkUnits;
@@ -58,7 +57,6 @@ public class TableProgressData {
         this.totalWorkUnits = totalWorkUnits;
         this.index = index;
         this.currentRows = 0L;
-        this.previousRows = -1L;
         this.completedWorkUnits = 0L;
         this.previousWorkUnits = -1L;
         this.status = new AtomicReference<>(TableStatus.PENDING);
@@ -72,16 +70,8 @@ public class TableProgressData {
         this.completedWorkUnits += increment;
     }
 
-    public void updatePreviousRows() {
-        this.previousRows = this.currentRows;
-    }
-
     public void updatePreviousWorkUnits() {
         this.previousWorkUnits = this.completedWorkUnits;
-    }
-
-    public long getRowPercent() {
-        return totalRows > 0 ? (currentRows * 100 / totalRows) : 0;
     }
 
     public long getWorkPercent() {
@@ -104,20 +94,12 @@ public class TableProgressData {
         return currentRows;
     }
 
-    public long getPreviousRows() {
-        return previousRows;
-    }
-
     public long getTotalWorkUnits() {
         return totalWorkUnits;
     }
 
     public long getCompletedWorkUnits() {
         return completedWorkUnits;
-    }
-
-    public long getPreviousWorkUnits() {
-        return previousWorkUnits;
     }
 
     public AtomicReference<TableStatus> getStatus() {
