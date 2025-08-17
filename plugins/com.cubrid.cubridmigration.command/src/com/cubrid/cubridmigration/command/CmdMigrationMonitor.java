@@ -32,7 +32,14 @@ package com.cubrid.cubridmigration.command;
 
 import com.cubrid.cubridmigration.core.engine.IMigrationMonitor;
 import com.cubrid.cubridmigration.core.engine.config.MigrationConfiguration;
+import com.cubrid.cubridmigration.core.engine.event.CreateObjectEvent;
+import com.cubrid.cubridmigration.core.engine.event.ImportCSVEvent;
+import com.cubrid.cubridmigration.core.engine.event.ImportRecordsEvent;
+import com.cubrid.cubridmigration.core.engine.event.ImportSQLsEvent;
 import com.cubrid.cubridmigration.core.engine.event.MigrationEvent;
+import com.cubrid.cubridmigration.core.engine.event.MigrationFinishedEvent;
+import com.cubrid.cubridmigration.core.engine.event.MigrationStartEvent;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * CommandMigrationMonitor Description
@@ -45,8 +52,10 @@ public class CmdMigrationMonitor implements IMigrationMonitor, Runnable {
     private static final long PROGRESS_UPDATE_INTERVAL_MS = 100;
 
     private final MigrationProgressTracker progressTracker;
-    private final MigrationEventHandler eventHandler;
     private final ProgressDisplayManager displayManager;
+
+    private final AtomicBoolean hasError = new AtomicBoolean(false);
+    private volatile MigrationFinishedEvent finalEvent = null;
 
     private final Object startLock = new Object();
     private volatile boolean stopRequested = false;
@@ -55,7 +64,6 @@ public class CmdMigrationMonitor implements IMigrationMonitor, Runnable {
     public CmdMigrationMonitor(MigrationConfiguration config, int monitorMode) {
         this.progressTracker = new MigrationProgressTracker();
         this.displayManager = new ProgressDisplayManager();
-        this.eventHandler = new MigrationEventHandler(progressTracker, displayManager);
 
         progressTracker.initialize(config);
     }
@@ -78,12 +86,50 @@ public class CmdMigrationMonitor implements IMigrationMonitor, Runnable {
     }
 
     public void addEvent(MigrationEvent event) {
-        eventHandler.handleEvent(event);
+        if (finalEvent != null) return;
 
-        if (eventHandler.isFinished()) {
-            displayManager.printFinalProgress(
-                    progressTracker, eventHandler.hasError(), eventHandler.getFinalEvent());
+        if (event instanceof MigrationStartEvent) {
+            displayManager.printStartEvent(event);
+            return;
+        }
+
+        if (event instanceof MigrationFinishedEvent) {
+            finalEvent = (MigrationFinishedEvent) event;
+            displayManager.printFinalProgress(progressTracker, hasError.get(), finalEvent);
             requestStop();
+            return;
+        }
+
+        boolean isError = false;
+
+        if (event instanceof CreateObjectEvent) {
+            CreateObjectEvent ev = (CreateObjectEvent) event;
+            if (ev.isSuccess()) {
+                progressTracker.incrementCompletedWorkUnits();
+            } else {
+                isError = true;
+            }
+        } else if (event instanceof ImportRecordsEvent) {
+            ImportRecordsEvent ev = (ImportRecordsEvent) event;
+            if (ev.isSuccess()) {
+                progressTracker.addCompletedWorkUnits(ev.getRecordCount());
+                progressTracker.updateTableProgress(
+                        ev.getSourceTable().getName(), ev.getRecordCount());
+            } else {
+                isError = true;
+            }
+        } else if (event instanceof ImportSQLsEvent) {
+            ImportSQLsEvent ev = (ImportSQLsEvent) event;
+            progressTracker.addCompletedWorkUnits(ev.getSize());
+            if (!ev.isSuccess()) isError = true;
+        } else if (event instanceof ImportCSVEvent) {
+            ImportCSVEvent ev = (ImportCSVEvent) event;
+            progressTracker.addCompletedWorkUnits(ev.getSize());
+            if (!ev.isSuccess()) isError = true;
+        }
+
+        if (isError) {
+            hasError.set(true);
         }
     }
 
