@@ -73,7 +73,7 @@ public class MigrationProgressTracker {
         if (config.sourceIsOnline() || config.sourceIsXMLDump()) {
             processSourceTables(config.getExpEntryTableCfg(), true, config);
             processSourceTables(config.getExpSQLCfg(), false, config);
-            totalWorkUnits.addAndGet(config.getExpObjCount());
+            addConfiguredObjectCounts(config);
         } else if (config.sourceIsSQL()) {
             for (String ss : config.getSqlFiles()) {
                 totalWorkUnits.addAndGet(new File(ss).length());
@@ -117,10 +117,62 @@ public class MigrationProgressTracker {
 
     private void addTotalWorkUnits(
             boolean isEntryTable, boolean createPK, Table table, long rowCount) {
-        if (isEntryTable && createPK && table != null && table.getPk() != null) {
-            totalWorkUnits.incrementAndGet();
-        }
         totalWorkUnits.addAndGet(rowCount);
+    }
+
+    private void addConfiguredObjectCounts(MigrationConfiguration config) {
+
+        int tableCount = 0;
+        int viewCount = 0;
+        int sequenceCount = 0;
+        int pkCount = 0;
+        int fkCount = 0;
+        int indexCount = 0;
+
+        for (SourceEntryTableConfig setc : config.getExpEntryTableCfg()) {
+            if (setc.isCreateNewTable()) {
+                tableCount++;
+
+                if (setc.isCreatePK()) {
+                    Table table = config.getSrcTableSchema(setc.getOwner(), setc.getName());
+                    if (table != null && table.getPk() != null) {
+                        pkCount++;
+                    }
+                }
+
+                fkCount +=
+                        setc.getFKConfigList().stream().mapToInt(fk -> fk.isCreate() ? 1 : 0).sum();
+
+                // Count indexes that will be created
+                indexCount +=
+                        setc.getIndexConfigList().stream()
+                                .mapToInt(idx -> idx.isCreate() ? 1 : 0)
+                                .sum();
+            }
+        }
+
+        for (SourceSQLTableConfig setc : config.getExpSQLCfg()) {
+            if (setc.isCreateNewTable()) {
+                tableCount++;
+            }
+        }
+
+        viewCount = config.getExpViewCfg().size();
+        sequenceCount = config.getExpSerialCfg().size();
+
+        int schemaCount = 1;
+
+        int synonymCount = config.getExpSynonymCfg().size();
+
+        totalWorkUnits.addAndGet(
+                schemaCount
+                        + tableCount
+                        + viewCount
+                        + pkCount
+                        + fkCount
+                        + indexCount
+                        + sequenceCount
+                        + synonymCount);
     }
 
     private void initializeTableProgress(
@@ -133,11 +185,7 @@ public class MigrationProgressTracker {
 
     private long calculateTableWorkUnits(
             boolean isEntryTable, boolean createPK, Table table, long rowCount) {
-        long workUnits = rowCount;
-        if (isEntryTable && createPK && table != null && table.getPk() != null) {
-            workUnits += 1;
-        }
-        return workUnits;
+        return rowCount;
     }
 
     public void updateTableProgress(String tableName, long increment) {
