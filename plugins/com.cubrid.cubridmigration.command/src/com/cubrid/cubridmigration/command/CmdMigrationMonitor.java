@@ -169,7 +169,7 @@ public class CmdMigrationMonitor implements IMigrationMonitor, Runnable {
     }
 
     private boolean shouldShowProgress() {
-        return monitorMode != 1;
+        return monitorMode <= 1;
     }
 
     private void logEventIfNeeded(MigrationEvent event) {
