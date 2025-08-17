@@ -39,6 +39,8 @@ import com.cubrid.cubridmigration.core.engine.event.ImportSQLsEvent;
 import com.cubrid.cubridmigration.core.engine.event.MigrationEvent;
 import com.cubrid.cubridmigration.core.engine.event.MigrationFinishedEvent;
 import com.cubrid.cubridmigration.core.engine.event.MigrationStartEvent;
+import com.cubrid.cubridmigration.cubrid.CUBRIDTimeUtil;
+import java.io.PrintStream;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -53,9 +55,12 @@ public class CmdMigrationMonitor implements IMigrationMonitor, Runnable {
 
     private final MigrationProgressTracker progressTracker;
     private final ProgressDisplayManager displayManager;
+    private final int monitorMode;
+    private final PrintStream outPrinter = System.out;
 
     private final AtomicBoolean hasError = new AtomicBoolean(false);
     private volatile MigrationFinishedEvent finalEvent = null;
+    private volatile boolean isNewLine = true;
 
     private final Object startLock = new Object();
     private volatile boolean stopRequested = false;
@@ -64,6 +69,7 @@ public class CmdMigrationMonitor implements IMigrationMonitor, Runnable {
     public CmdMigrationMonitor(MigrationConfiguration config, int monitorMode) {
         this.progressTracker = new MigrationProgressTracker();
         this.displayManager = new ProgressDisplayManager();
+        this.monitorMode = monitorMode;
 
         progressTracker.initialize(config);
     }
@@ -87,6 +93,8 @@ public class CmdMigrationMonitor implements IMigrationMonitor, Runnable {
 
     public void addEvent(MigrationEvent event) {
         if (finalEvent != null) return;
+
+        logEventIfNeeded(event);
 
         if (event instanceof MigrationStartEvent) {
             displayManager.printStartEvent(event);
@@ -143,7 +151,10 @@ public class CmdMigrationMonitor implements IMigrationMonitor, Runnable {
     @Override
     public void run() {
         while (!stopRequested) {
-            displayManager.printProgressIfChanged(progressTracker);
+            if (shouldShowProgress()) {
+                displayManager.printProgressIfChanged(progressTracker);
+                isNewLine = false;
+            }
             try {
                 Thread.sleep(PROGRESS_UPDATE_INTERVAL_MS);
             } catch (InterruptedException e) {
@@ -151,6 +162,28 @@ public class CmdMigrationMonitor implements IMigrationMonitor, Runnable {
             }
         }
 
-        displayManager.printProgressIfChanged(progressTracker);
+        if (shouldShowProgress()) {
+            displayManager.printProgressIfChanged(progressTracker);
+            isNewLine = false;
+        }
+    }
+
+    private boolean shouldShowProgress() {
+        return monitorMode != 1;
+    }
+
+    private void logEventIfNeeded(MigrationEvent event) {
+        if (event.getLevel() <= monitorMode) {
+            synchronized (outPrinter) {
+                if (!isNewLine) {
+                    outPrinter.println();
+                }
+                outPrinter.println(
+                        CUBRIDTimeUtil.defaultFormatMilin(event.getEventTime())
+                                + " "
+                                + event.toString());
+                isNewLine = true;
+            }
+        }
     }
 }
