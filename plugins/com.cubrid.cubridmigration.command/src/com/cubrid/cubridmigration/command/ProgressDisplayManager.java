@@ -63,7 +63,7 @@ public class ProgressDisplayManager {
         }
 
         Set<String> currentChangedTables = progressTracker.getAndClearChangedTables();
-        Set<String> currentProcessingTables = progressTracker.getCachedProcessingTables();
+        Set<String> currentProcessingTables = progressTracker.getProcessingTables();
 
         progressTracker.updatePreviousWorkUnitsForChangedTables(currentChangedTables);
 

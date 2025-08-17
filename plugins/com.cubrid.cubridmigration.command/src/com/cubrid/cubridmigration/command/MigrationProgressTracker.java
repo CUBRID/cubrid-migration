@@ -66,13 +66,8 @@ public class MigrationProgressTracker {
 
     private final Set<String> changedTables = ConcurrentHashMap.newKeySet();
     private final AtomicBoolean hasChanges = new AtomicBoolean(false);
-    private final Set<String> cachedProcessingTables = ConcurrentHashMap.newKeySet();
-    private volatile boolean cacheNeedsUpdate = false;
-    private volatile boolean hasPendingCacheUpdates = false;
 
     private final AtomicInteger tableOrderSize = new AtomicInteger(0);
-
-    private final Set<String> reusableResultSet = new HashSet<>();
 
     public void initialize(MigrationConfiguration config) {
         if (config.sourceIsOnline() || config.sourceIsXMLDump()) {
@@ -165,7 +160,11 @@ public class MigrationProgressTracker {
             } while (!statusRef.compareAndSet(oldStatus, newStatus));
 
             if (oldStatus != newStatus) {
-                updateProcessingTables(tableName, oldStatus, newStatus);
+                if (newStatus == TableStatus.PROCESSING) {
+                    processingTables.add(tableName);
+                } else {
+                    processingTables.remove(tableName);
+                }
             }
 
             changedTables.add(tableName);
@@ -196,32 +195,8 @@ public class MigrationProgressTracker {
         else return TableStatus.PROCESSING;
     }
 
-    private void updateProcessingTables(
-            String tableName, TableStatus oldStatus, TableStatus newStatus) {
-        if (newStatus == TableStatus.PROCESSING) {
-            processingTables.add(tableName);
-        } else {
-            processingTables.remove(tableName);
-        }
-
-        if (!hasPendingCacheUpdates) {
-            hasPendingCacheUpdates = true;
-            cacheNeedsUpdate = true;
-        }
-    }
-
-    public Set<String> getCachedProcessingTables() {
-        if (cacheNeedsUpdate) {
-            synchronized (this) {
-                if (cacheNeedsUpdate) {
-                    cachedProcessingTables.clear();
-                    cachedProcessingTables.addAll(processingTables);
-                    cacheNeedsUpdate = false;
-                    hasPendingCacheUpdates = false;
-                }
-            }
-        }
-        return cachedProcessingTables;
+    public Set<String> getProcessingTables() {
+        return new HashSet<>(processingTables);
     }
 
     public Set<String> getAndClearChangedTables() {
@@ -229,12 +204,9 @@ public class MigrationProgressTracker {
             return Collections.emptySet();
         }
 
-        synchronized (reusableResultSet) {
-            reusableResultSet.clear();
-            reusableResultSet.addAll(changedTables);
-            changedTables.clear();
-            return new HashSet<>(reusableResultSet);
-        }
+        Set<String> result = new HashSet<>(changedTables);
+        changedTables.clear();
+        return result;
     }
 
     public void updatePreviousWorkUnitsForChangedTables(Set<String> changedTables) {
