@@ -50,7 +50,7 @@ public class TableProgressData {
     private volatile long completedWorkUnits;
     private volatile long previousWorkUnits;
 
-    private final AtomicReference<TableStatus> status;
+    private final AtomicReference<MigrationProgressTracker.TableStatus> status;
 
     public TableProgressData(String tableName, long totalRows, long totalWorkUnits, int index) {
         this.tableName = tableName;
@@ -61,7 +61,7 @@ public class TableProgressData {
         this.previousRows = -1L;
         this.completedWorkUnits = 0L;
         this.previousWorkUnits = -1L;
-        this.status = new AtomicReference<>(TableStatus.PENDING);
+        this.status = new AtomicReference<>(MigrationProgressTracker.TableStatus.PENDING);
     }
 
     public void addCurrentRows(long increment) {
@@ -120,7 +120,7 @@ public class TableProgressData {
         return previousWorkUnits;
     }
 
-    public AtomicReference<TableStatus> getStatus() {
+    public AtomicReference<MigrationProgressTracker.TableStatus> getStatus() {
         return status;
     }
 }

@@ -56,6 +56,12 @@ import java.util.concurrent.atomic.AtomicReference;
  */
 public class MigrationProgressTracker {
 
+    public enum TableStatus {
+        PENDING,
+        PROCESSING,
+        COMPLETED
+    }
+
     private final AtomicLong totalWorkUnits = new AtomicLong(0);
     private final AtomicLong completedWorkUnits = new AtomicLong(0);
 
