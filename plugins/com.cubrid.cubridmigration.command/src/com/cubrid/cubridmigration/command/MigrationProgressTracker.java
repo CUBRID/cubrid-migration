@@ -83,10 +83,7 @@ public class MigrationProgressTracker {
                 totalWorkUnits.addAndGet(new File(scc.getName()).length());
             }
         }
-        // Mark as changed so initial progress can be displayed
-        hasChanges.set(true);
-        // Debug: print total work units
-        System.err.println("DEBUG: Total work units initialized: " + totalWorkUnits.get());
+        // hasChanges.set(true);
     }
 
     private void processSourceTables(
@@ -147,7 +144,6 @@ public class MigrationProgressTracker {
                 fkCount +=
                         setc.getFKConfigList().stream().mapToInt(fk -> fk.isCreate() ? 1 : 0).sum();
 
-                // Count indexes that will be created
                 indexCount +=
                         setc.getIndexConfigList().stream()
                                 .mapToInt(idx -> idx.isCreate() ? 1 : 0)
