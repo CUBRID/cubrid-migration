@@ -94,12 +94,12 @@ public class CmdMigrationMonitor implements IMigrationMonitor, Runnable {
     public void addEvent(MigrationEvent event) {
         if (finalEvent != null) return;
 
-        logEventIfNeeded(event);
-
         if (event instanceof MigrationStartEvent) {
-            displayManager.printStartEvent(event);
+            logEventIfNeeded(event);
             return;
         }
+
+        logEventIfNeeded(event);
 
         if (event instanceof MigrationFinishedEvent) {
             finalEvent = (MigrationFinishedEvent) event;

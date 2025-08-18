@@ -83,6 +83,10 @@ public class MigrationProgressTracker {
                 totalWorkUnits.addAndGet(new File(scc.getName()).length());
             }
         }
+        // Mark as changed so initial progress can be displayed
+        hasChanges.set(true);
+        // Debug: print total work units
+        System.err.println("DEBUG: Total work units initialized: " + totalWorkUnits.get());
     }
 
     private void processSourceTables(
