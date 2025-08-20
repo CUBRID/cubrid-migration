@@ -34,7 +34,11 @@ import com.cubrid.cubridmigration.core.dbobject.Table;
 import com.cubrid.cubridmigration.core.engine.config.MigrationConfiguration;
 import com.cubrid.cubridmigration.core.engine.config.SourceCSVConfig;
 import com.cubrid.cubridmigration.core.engine.config.SourceEntryTableConfig;
+import com.cubrid.cubridmigration.core.engine.config.SourceGrantConfig;
 import com.cubrid.cubridmigration.core.engine.config.SourceSQLTableConfig;
+import com.cubrid.cubridmigration.core.engine.config.SourceSequenceConfig;
+import com.cubrid.cubridmigration.core.engine.config.SourceSynonymConfig;
+import com.cubrid.cubridmigration.core.engine.config.SourceViewConfig;
 import java.io.File;
 import java.util.Collection;
 import java.util.Collections;
@@ -83,11 +87,11 @@ public class MigrationProgressTracker {
                 totalWorkUnits.addAndGet(new File(scc.getName()).length());
             }
         }
-        // hasChanges.set(true);
     }
 
     private void processSourceTables(
             Collection<?> tables, boolean isEntryTable, MigrationConfiguration config) {
+
         for (Object obj : tables) {
             String tableName;
             String owner = null;
@@ -160,9 +164,37 @@ public class MigrationProgressTracker {
         viewCount = config.getExpViewCfg().size();
         sequenceCount = config.getExpSerialCfg().size();
 
-        int schemaCount = 1;
+        Set<String> schemas = new HashSet<>();
+
+        for (SourceEntryTableConfig setc : config.getExpEntryTableCfg()) {
+            schemas.add(setc.getOwner());
+        }
+
+        for (SourceSQLTableConfig setc : config.getExpSQLCfg()) {
+            schemas.add(setc.getOwner());
+        }
+
+        for (SourceViewConfig svc : config.getExpViewCfg()) {
+            schemas.add(svc.getOwner());
+        }
+
+        for (SourceSequenceConfig ssc : config.getExpSerialCfg()) {
+            schemas.add(ssc.getOwner());
+        }
+
+        for (SourceSynonymConfig ssc : config.getExpSynonymCfg()) {
+            schemas.add(ssc.getOwner());
+        }
+
+        for (SourceGrantConfig sgc : config.getExpGrantCfg()) {
+            schemas.add(sgc.getOwner());
+        }
+
+        int schemaCount = schemas.size();
 
         int synonymCount = config.getExpSynonymCfg().size();
+
+        int grantCount = config.getExpGrantCfg().size();
 
         totalWorkUnits.addAndGet(
                 schemaCount
@@ -172,7 +204,8 @@ public class MigrationProgressTracker {
                         + fkCount
                         + indexCount
                         + sequenceCount
-                        + synonymCount);
+                        + synonymCount
+                        + grantCount);
     }
 
     private void initializeTableProgress(
