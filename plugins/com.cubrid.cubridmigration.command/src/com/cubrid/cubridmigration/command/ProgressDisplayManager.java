@@ -94,7 +94,8 @@ public class ProgressDisplayManager {
         percent = Math.max(percent, 1);
 
         outPrinter.printf(
-                "Migration Progress: %d%% [%,d / %,d]\n", percent, completedWork, totalWork);
+                "Record Migration Progress: %d%% [%,d / %,d records]\n",
+                percent, completedWork, totalWork);
     }
 
     private int printTableProgress(

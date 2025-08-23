@@ -111,7 +111,6 @@ public class CmdMigrationMonitor implements IMigrationMonitor, Runnable {
         if (event instanceof CreateObjectEvent) {
             CreateObjectEvent ev = (CreateObjectEvent) event;
             if (ev.isSuccess()) {
-                progressTracker.incrementCompletedWorkUnits();
             } else {
                 isError = true;
             }
