@@ -30,7 +30,6 @@
  */
 package com.cubrid.cubridmigration.command;
 
-import com.cubrid.cubridmigration.core.engine.event.MigrationEvent;
 import com.cubrid.cubridmigration.core.engine.event.MigrationFinishedEvent;
 import java.io.PrintStream;
 import java.util.Set;
@@ -50,12 +49,6 @@ public class ProgressDisplayManager {
     private volatile int lastLineCount = 0;
 
     private final StringBuilder outputBuffer = new StringBuilder(256);
-
-    public void printStartEvent(MigrationEvent event) {
-        synchronized (printLock) {
-            outPrinter.println(event.toString());
-        }
-    }
 
     public void printProgressIfChanged(MigrationProgressTracker progressTracker) {
         if (!progressTracker.hasChanges()) {

@@ -158,14 +158,6 @@ public class MigrationProgressTracker {
         }
     }
 
-    public void updateTableObjectProgress(String tableName, long increment) {
-        TableProgressData data = tableProgressMap.get(tableName);
-        if (data != null) {
-            changedTables.add(tableName);
-            hasChanges.set(true);
-        }
-    }
-
     public void addCompletedWorkUnits(long increment) {
         completedRecordUnits.addAndGet(increment);
     }
