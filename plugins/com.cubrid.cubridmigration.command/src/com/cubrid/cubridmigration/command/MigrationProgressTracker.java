@@ -88,12 +88,10 @@ public class MigrationProgressTracker {
         for (Object obj : tables) {
             String tableName;
             String owner = null;
-            boolean createPK = false;
             if (isEntryTable) {
                 SourceEntryTableConfig tbl = (SourceEntryTableConfig) obj;
                 tableName = tbl.getName();
                 owner = tbl.getOwner();
-                createPK = tbl.isCreatePK();
             } else {
                 SourceSQLTableConfig tbl = (SourceSQLTableConfig) obj;
                 tableName = tbl.getName();
