@@ -30,6 +30,7 @@
  */
 package com.cubrid.cubridmigration.command;
 
+import com.cubrid.cubridmigration.core.engine.config.MigrationConfiguration;
 import com.cubrid.cubridmigration.core.engine.event.MigrationFinishedEvent;
 import java.io.PrintStream;
 import java.util.Set;
@@ -44,9 +45,14 @@ public class ProgressDisplayManager {
 
     private final PrintStream outPrinter = System.out;
     private final Object printLock = new Object();
+    private final int monitorMode;
 
     private volatile boolean isFirstOutput = true;
     private volatile int lastLineCount = 0;
+
+    public ProgressDisplayManager(int monitorMode) {
+        this.monitorMode = monitorMode;
+    }
 
     public void printProgressIfChanged(MigrationProgressTracker progressTracker) {
         if (!progressTracker.hasChanges()) {
@@ -79,42 +85,50 @@ public class ProgressDisplayManager {
     }
 
     private void printOverallProgress(MigrationProgressTracker progressTracker) {
-        long totalWork = progressTracker.getTotalRecordUnits();
-        long completedWork = progressTracker.getCompletedWorkUnits();
-        long percent = (totalWork > 0) ? (completedWork * 100 / totalWork) : 100;
-        percent = Math.max(percent, 1);
+        if (monitorMode <= MigrationConfiguration.RPT_LEVEL_ERROR) {
+            long totalWork = progressTracker.getTotalRecordUnits();
+            if (totalWork > 0) {
+                long completedWork = progressTracker.getCompletedWorkUnits();
+                long percent = (totalWork > 0) ? (completedWork * 100 / totalWork) : 100;
+                percent = Math.max(percent, 1);
 
-        outPrinter.printf(
-                "Record Migration Progress: %d%% [%,d / %,d records]\n",
-                percent, completedWork, totalWork);
+                outPrinter.printf(
+                        "Record Migration Progress: %d%% [%,d / %,d records]\n",
+                        percent, completedWork, totalWork);
+            }
+        }
     }
 
     private int printTableProgress(
             MigrationProgressTracker progressTracker, Set<String> currentProcessingTables) {
         int outputCount = 0;
 
-        for (String tableName : progressTracker.getTableOrder()) {
-            if (!currentProcessingTables.contains(tableName)) continue;
+        if (monitorMode <= MigrationConfiguration.RPT_LEVEL_ERROR) {
+            for (String tableName : progressTracker.getTableOrder()) {
+                if (!currentProcessingTables.contains(tableName)) continue;
 
-            TableProgressData data = progressTracker.getTableProgressData(tableName);
-            if (data == null) continue;
+                TableProgressData data = progressTracker.getTableProgressData(tableName);
+                if (data == null) continue;
 
-            long totalTableWork = data.getTotalRows();
-            long completedTableWork = data.getCompletedWorkUnits();
-            int index = data.getIndex() + 1;
-            long tablePercent = data.getWorkPercent();
+                long totalTableWork = data.getTotalRows();
+                if (totalTableWork > 0) {
+                    long completedTableWork = data.getCompletedWorkUnits();
+                    int index = data.getIndex() + 1;
+                    long tablePercent = data.getWorkPercent();
 
-            String output =
-                    String.format(
-                            "%s(%d/%d) | %d / %d %d%%\n",
-                            tableName,
-                            index,
-                            progressTracker.getTableOrderSize(),
-                            completedTableWork,
-                            totalTableWork,
-                            tablePercent);
-            outPrinter.print(output);
-            outputCount++;
+                    String output =
+                            String.format(
+                                    "%s(%d/%d) | %d / %d %d%%\n",
+                                    tableName,
+                                    index,
+                                    progressTracker.getTableOrderSize(),
+                                    completedTableWork,
+                                    totalTableWork,
+                                    tablePercent);
+                    outPrinter.print(output);
+                    outputCount++;
+                }
+            }
         }
 
         return outputCount;

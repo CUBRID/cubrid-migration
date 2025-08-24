@@ -68,7 +68,7 @@ public class CmdMigrationMonitor implements IMigrationMonitor, Runnable {
 
     public CmdMigrationMonitor(MigrationConfiguration config, int monitorMode) {
         this.progressTracker = new MigrationProgressTracker();
-        this.displayManager = new ProgressDisplayManager();
+        this.displayManager = new ProgressDisplayManager(monitorMode);
         this.monitorMode = monitorMode;
 
         progressTracker.initialize(config);
