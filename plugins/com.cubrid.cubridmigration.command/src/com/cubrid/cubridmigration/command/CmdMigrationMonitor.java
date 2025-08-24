@@ -136,6 +136,8 @@ public class CmdMigrationMonitor implements IMigrationMonitor, Runnable {
         if (isError) {
             hasError.set(true);
         }
+
+        logEventIfNeeded(event);
     }
 
     public void requestStop() {
