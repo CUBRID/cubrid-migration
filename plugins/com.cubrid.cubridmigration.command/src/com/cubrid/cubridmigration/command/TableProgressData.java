@@ -45,16 +45,14 @@ public class TableProgressData {
     private volatile long totalRows;
     private volatile long currentRows;
 
-    private volatile long totalWorkUnits;
     private volatile long completedWorkUnits;
     private volatile long previousWorkUnits;
 
     private final AtomicReference<TableStatus> status;
 
-    public TableProgressData(String tableName, long totalRows, long totalWorkUnits, int index) {
+    public TableProgressData(String tableName, long totalRows, int index) {
         this.tableName = tableName;
         this.totalRows = totalRows;
-        this.totalWorkUnits = totalWorkUnits;
         this.index = index;
         this.currentRows = 0L;
         this.completedWorkUnits = 0L;
@@ -75,7 +73,7 @@ public class TableProgressData {
     }
 
     public long getWorkPercent() {
-        return totalWorkUnits > 0 ? (completedWorkUnits * 100 / totalWorkUnits) : 0;
+        return totalRows > 0 ? (completedWorkUnits * 100 / totalRows) : 0;
     }
 
     public String getTableName() {
@@ -92,10 +90,6 @@ public class TableProgressData {
 
     public long getCurrentRows() {
         return currentRows;
-    }
-
-    public long getTotalWorkUnits() {
-        return totalWorkUnits;
     }
 
     public long getCompletedWorkUnits() {

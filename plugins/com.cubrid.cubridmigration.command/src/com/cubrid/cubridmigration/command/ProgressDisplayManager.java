@@ -48,8 +48,6 @@ public class ProgressDisplayManager {
     private volatile boolean isFirstOutput = true;
     private volatile int lastLineCount = 0;
 
-    private final StringBuilder outputBuffer = new StringBuilder(256);
-
     public void printProgressIfChanged(MigrationProgressTracker progressTracker) {
         if (!progressTracker.hasChanges()) {
             return;
@@ -81,7 +79,7 @@ public class ProgressDisplayManager {
     }
 
     private void printOverallProgress(MigrationProgressTracker progressTracker) {
-        long totalWork = progressTracker.getTotalWorkUnits();
+        long totalWork = progressTracker.getTotalRecordUnits();
         long completedWork = progressTracker.getCompletedWorkUnits();
         long percent = (totalWork > 0) ? (completedWork * 100 / totalWork) : 100;
         percent = Math.max(percent, 1);
@@ -101,29 +99,21 @@ public class ProgressDisplayManager {
             TableProgressData data = progressTracker.getTableProgressData(tableName);
             if (data == null) continue;
 
-            long totalTableWork = data.getTotalWorkUnits();
+            long totalTableWork = data.getTotalRows();
             long completedTableWork = data.getCompletedWorkUnits();
             int index = data.getIndex() + 1;
             long tablePercent = data.getWorkPercent();
 
-            outputBuffer.setLength(0);
-            outputBuffer
-                    .append(tableName)
-                    .append('(')
-                    .append(index)
-                    .append('/')
-                    .append(progressTracker.getTableOrderSize())
-                    .append(") | ")
-                    .append(completedTableWork)
-                    .append(' ')
-                    .append('/')
-                    .append(' ')
-                    .append(totalTableWork)
-                    .append(' ')
-                    .append(tablePercent)
-                    .append("%\n");
-
-            outPrinter.print(outputBuffer.toString());
+            String output =
+                    String.format(
+                            "%s(%d/%d) | %d / %d %d%%\n",
+                            tableName,
+                            index,
+                            progressTracker.getTableOrderSize(),
+                            completedTableWork,
+                            totalTableWork,
+                            tablePercent);
+            outPrinter.print(output);
             outputCount++;
         }
 

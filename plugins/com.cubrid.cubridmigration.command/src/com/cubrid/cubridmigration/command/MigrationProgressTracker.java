@@ -109,21 +109,13 @@ public class MigrationProgressTracker {
             tableOrder.add(tableName);
             tableIndexMap.put(tableName, index);
 
-            initializeTableProgress(tableName, rowCount, isEntryTable, createPK, table);
+            initializeTableProgress(tableName, rowCount, index);
         }
     }
 
-    private void initializeTableProgress(
-            String tableName, long rowCount, boolean isEntryTable, boolean createPK, Table table) {
-        int index = tableIndexMap.get(tableName);
-        long workUnits = calculateTableWorkUnits(isEntryTable, createPK, table, rowCount);
-        TableProgressData data = new TableProgressData(tableName, rowCount, workUnits, index);
+    private void initializeTableProgress(String tableName, long rowCount, int index) {
+        TableProgressData data = new TableProgressData(tableName, rowCount, index);
         tableProgressMap.put(tableName, data);
-    }
-
-    private long calculateTableWorkUnits(
-            boolean isEntryTable, boolean createPK, Table table, long rowCount) {
-        return rowCount;
     }
 
     public void updateTableProgress(String tableName, long increment) {
@@ -191,7 +183,7 @@ public class MigrationProgressTracker {
         }
     }
 
-    public long getTotalWorkUnits() {
+    public long getTotalRecordUnits() {
         return totalRecordUnits.get();
     }
 
