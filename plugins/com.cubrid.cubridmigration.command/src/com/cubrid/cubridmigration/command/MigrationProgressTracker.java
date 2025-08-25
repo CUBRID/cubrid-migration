@@ -48,12 +48,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
-/**
- * Tracks migration progress for all tables and work units
- *
- * @author Kevin Cao
- * @version 1.0 - 2012-2-2 created by Kevin Cao
- */
 public class MigrationProgressTracker {
 
     private final AtomicLong totalRecordUnits = new AtomicLong(0);
