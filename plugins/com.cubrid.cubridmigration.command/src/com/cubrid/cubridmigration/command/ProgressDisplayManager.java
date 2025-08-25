@@ -5,7 +5,6 @@ import com.cubrid.cubridmigration.core.engine.event.MigrationFinishedEvent;
 import java.io.PrintStream;
 import java.util.Set;
 
-
 public class ProgressDisplayManager {
 
     private final PrintStream outPrinter = System.out;
