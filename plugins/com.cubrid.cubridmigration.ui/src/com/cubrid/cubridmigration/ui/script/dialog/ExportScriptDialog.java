@@ -244,7 +244,7 @@ public class ExportScriptDialog extends TransFileBySSHDialog {
             changeOutputDirectory();
             MigrationTemplateParser.save(config, tmpFile, isSaveSchema);
         } finally {
-            // Restore original values to avoid side effects
+            // Restore config for the migration step that runs after export
             config.setName(originalName);
             if (config.getSourceConParams() != null) {
                 config.getSourceConParams().setDriverFileName(originalSrcDriver);
