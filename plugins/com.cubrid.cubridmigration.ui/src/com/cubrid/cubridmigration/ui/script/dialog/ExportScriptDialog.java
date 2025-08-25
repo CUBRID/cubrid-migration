@@ -226,11 +226,34 @@ public class ExportScriptDialog extends TransFileBySSHDialog {
     /** create temporary script xml */
     private void createTempXml(String fName) {
         tmpFile = PathUtils.getBaseTempDir() + UUID.randomUUID() + ".xml";
-        changeMigrationName(fName);
-        changeSourceJDBCDriverDirectory();
-        changeTargetJDBCDriverDirectory();
-        changeOutputDirectory();
-        MigrationTemplateParser.save(config, tmpFile, isSaveSchema);
+        // Backup fields we are about to change
+        String originalName = config.getName();
+        String originalSrcDriver =
+                config.getSourceConParams() == null
+                        ? null
+                        : config.getSourceConParams().getDriverFileName();
+        String originalTarDriver =
+                config.getTargetConParams() == null
+                        ? null
+                        : config.getTargetConParams().getDriverFileName();
+        String originalOutputDir = config.getFileRepositroyPath();
+        try {
+            changeMigrationName(fName);
+            changeSourceJDBCDriverDirectory();
+            changeTargetJDBCDriverDirectory();
+            changeOutputDirectory();
+            MigrationTemplateParser.save(config, tmpFile, isSaveSchema);
+        } finally {
+            // Restore original values to avoid side effects
+            config.setName(originalName);
+            if (config.getSourceConParams() != null) {
+                config.getSourceConParams().setDriverFileName(originalSrcDriver);
+            }
+            if (config.getTargetConParams() != null) {
+                config.getTargetConParams().setDriverFileName(originalTarDriver);
+            }
+            config.setFileRepositroyPath(originalOutputDir);
+        }
     }
 
     /** OK pressed */
