@@ -35,6 +35,8 @@ import com.cubrid.cubridmigration.command.ConsoleCommandHandler;
 import com.cubrid.cubridmigration.command.ConsoleUtils;
 import com.cubrid.cubridmigration.core.common.PathUtils;
 import com.cubrid.cubridmigration.core.connection.ConnParameters;
+import com.cubrid.cubridmigration.core.connection.JDBCDriverManager;
+import com.cubrid.cubridmigration.core.connection.JDBCUtil;
 import com.cubrid.cubridmigration.core.dbmetadata.DBSchemaInfoFetcherFactory;
 import com.cubrid.cubridmigration.core.dbmetadata.IDBSchemaInfoFetcher;
 import com.cubrid.cubridmigration.core.dbmetadata.IDBSource;
@@ -45,11 +47,13 @@ import com.cubrid.cubridmigration.core.dbtype.DatabaseType;
 import com.cubrid.cubridmigration.core.engine.config.MigrationConfiguration;
 import com.cubrid.cubridmigration.core.engine.config.SourceEntryTableConfig;
 import com.cubrid.cubridmigration.core.engine.template.MigrationTemplateParser;
+import com.cubrid.cubridmigration.cubrid.CUBRIDTimeUtil;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.PrintStream;
 import java.sql.Connection;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
@@ -191,19 +195,44 @@ public class ScriptCommandHandler implements ConsoleCommandHandler {
                 printHelp();
                 return;
             }
-            String outputFileName = getParameter(tmpArgs, "-o");
-            if (StringUtils.isBlank(outputFileName)) {
-                outPrinter.println("Output file should be specified with '-o'.");
+            String outputDirPath = getParameter(tmpArgs, "-o");
+            if (StringUtils.isBlank(outputDirPath)) {
+                outPrinter.println("Output directory should be specified with '-o'.");
+                return;
+            }
+            File outputDir = new File(outputDirPath);
+            if (outputDir.exists() && !outputDir.isDirectory()) {
+                outPrinter.println("'-o' must be a directory path: " + outputDirPath);
+                return;
+            }
+            if (!outputDir.exists() && !outputDir.mkdirs()) {
+                outPrinter.println(
+                        "Failed to create output directory: " + outputDir.getAbsolutePath());
+                return;
+            }
+            if (!outputDir.canWrite()) {
+                outPrinter.println(
+                        "Output directory is not writable: " + outputDir.getAbsolutePath());
                 return;
             }
             loadDBProperties();
+            try {
+                JDBCUtil.initialJdbcByPath(PathUtils.getJDBCLibDir());
+            } catch (Exception ex) {
+                LOG.warn(
+                        "Skip default JDBC init ({}): {}",
+                        PathUtils.getJDBCLibDir(),
+                        ex.getMessage());
+                LOG.debug("Default JDBC init failed", ex);
+            }
             boolean isNeedReset = false;
             MigrationConfiguration config = getInitConfig(tmpArgs);
             if (config == null) {
                 isNeedReset = true;
                 config = new MigrationConfiguration();
-                File outputFile = new File(outputFileName);
-                config.setName(PathUtils.getFileNameWithoutExtendName(outputFile.getName()));
+                config.setWizardStartDateTime(
+                        CUBRIDTimeUtil.wizardStarDateTimeFormat(
+                                new Date(System.currentTimeMillis())));
             }
             if (!setSource(config, tmpArgs)) {
                 return;
@@ -212,6 +241,10 @@ public class ScriptCommandHandler implements ConsoleCommandHandler {
                 return;
             }
             setOtherOptions(config, tmpArgs);
+            config.setName(
+                    config.getSourceDBType().getName(),
+                    config.getSourceConParams().getDbName(),
+                    config.getWizardStartDateTime());
             Catalog srcCat = config.buildSourceSchema();
             if (srcCat == null) {
                 outPrinter.println("Build source schema error.");
@@ -222,11 +255,13 @@ public class ScriptCommandHandler implements ConsoleCommandHandler {
                 config.setAll(true);
             }
             configObjectMapping(config);
+            String outputFileName = config.getName() + ".xml";
+            File outputFile = new File(outputDir, outputFileName);
             MigrationTemplateParser.save(
                     config,
-                    outputFileName,
+                    outputFile.getAbsolutePath(),
                     "yes".equalsIgnoreCase(getParameter(tmpArgs, "-schema")));
-            outPrinter.println(outputFileName + " was created successfully.");
+            outPrinter.println(outputFile.getAbsolutePath() + " was created successfully.");
         } catch (Exception ex) {
             outPrinter.println("Unexpected error. Please check the log for more information.");
             LOG.error("Unexpected error while processing CLI arguments: {}.", args, ex);
@@ -338,6 +373,10 @@ public class ScriptCommandHandler implements ConsoleCommandHandler {
                 outPrinter.println("Read JDBC configuration error:" + svalue);
                 return false;
             }
+            if (!checkJDBCDriver(scp.getDatabaseType(), scp.getDriverFileName())) {
+                outPrinter.println("Invalid driver : " + scp.getDriverFileName());
+                return false;
+            }
             try {
                 Connection con = scp.createConnection();
                 con.close();
@@ -400,6 +439,10 @@ public class ScriptCommandHandler implements ConsoleCommandHandler {
                 outPrinter.println("Read JDBC configuration error:" + tvalue);
                 return false;
             }
+            if (!checkJDBCDriver(tcp.getDatabaseType(), tcp.getDriverFileName())) {
+                outPrinter.println("Invalid driver : " + tcp.getDriverFileName());
+                return false;
+            }
             try {
                 Connection con = tcp.createConnection();
                 con.close();
@@ -410,13 +453,63 @@ public class ScriptCommandHandler implements ConsoleCommandHandler {
             }
             config.setTargetConParams(tcp);
         } else if (config.targetIsFile()) {
-            String ouputDir = dbProperties.getProperty(tvalue + ".output");
-            String prefix = dbProperties.getProperty(tvalue + ".prefix");
-            String charset = dbProperties.getProperty(tvalue + ".charset");
-            config.setExp2FileOuput(prefix, ouputDir, charset);
+            String prefix = dbProperties.getProperty(tvalue + ".file_prefix");
+            config.setTargetFilePrefix(
+                    prefix == null ? config.getSourceConParams().getDbName() : prefix);
+            config.setFileRepositroyPath(dbProperties.getProperty(tvalue + ".output"));
+            config.setTargetCharSet(dbProperties.getProperty(tvalue + ".charset"));
             config.setTargetFileTimeZone("Default");
+
+            String splitSchema = dbProperties.getProperty(tvalue + ".split_schema");
+            config.setSplitSchema(isDefaultYes(splitSchema));
+
+            String addSchema = dbProperties.getProperty(tvalue + ".add_schema");
+            config.setAddUserSchema(isDefaultYes(addSchema));
+
+            String oneTableOneFile = dbProperties.getProperty(tvalue + ".one_table_one_file");
+            config.setOneTableOneFile(isDefaultNo(oneTableOneFile));
         }
         return true;
+    }
+
+    /**
+     * Check and add JDBC driver if necessary.
+     *
+     * @param dt DatabaseType
+     * @param driverPath driverPath
+     * @return true if driver exists or added successfully
+     */
+    private boolean checkJDBCDriver(DatabaseType dt, String driverPath) {
+        boolean isDriverAlreadyRegistered =
+                JDBCDriverManager.getInstance().addDriver(driverPath, false);
+        boolean successfullyAddedNewDriver = (dt.getJDBCData(driverPath) != null);
+        return successfullyAddedNewDriver || isDriverAlreadyRegistered;
+    }
+
+    /**
+     * Return true if the value is null or not "no".
+     *
+     * @param value the text to check
+     * @return true if default is "yes"
+     */
+    private boolean isDefaultYes(String value) {
+        if (value == null) {
+            return true;
+        }
+        return !value.equalsIgnoreCase("no");
+    }
+
+    /**
+     * Return true if the value is "yes". Return false is null or anything else.
+     *
+     * @param value the text to check
+     * @return true if default is "no"
+     */
+    private boolean isDefaultNo(String value) {
+        if (value == null) {
+            return false;
+        }
+        return value.equalsIgnoreCase("yes");
     }
 
     //	public static void main(String[] args) {

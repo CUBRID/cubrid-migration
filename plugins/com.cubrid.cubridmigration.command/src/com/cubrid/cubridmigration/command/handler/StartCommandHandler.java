@@ -181,6 +181,7 @@ public class StartCommandHandler implements ConsoleCommandHandler {
             }
             if (targetPath != null) {
                 config.changeTargetFilePath(targetPath);
+                config.setFileRepositroyPath(targetPath);
             }
             config.cleanNoUsedConfigForStart();
             if (config.hasOtherParam()) {
@@ -344,19 +345,21 @@ public class StartCommandHandler implements ConsoleCommandHandler {
                 return false;
             }
         } else {
-            boolean confirm;
-            String tempPath = config.getFileRepositroyPath();
-            if (SystemUtils.IS_OS_WINDOWS) {
-                confirm = !tempPath.matches("^[A-Za-z]:\\\\.*");
-            } else {
-                confirm = tempPath.matches("^[A-Za-z]:\\\\.*");
-            }
-            if (confirm) {
-                outPrinter.println("Invalid path : " + tempPath);
-                outPrinter.println(
-                        "Please specify the path where you want to save exported files by parameter [-tp]");
-                outPrinter.println();
-                return false;
+            if (targetPath == null) {
+                boolean confirm;
+                String tempPath = config.getFileRepositroyPath();
+                if (SystemUtils.IS_OS_WINDOWS) {
+                    confirm = !tempPath.matches("^[A-Za-z]:\\\\.*");
+                } else {
+                    confirm = tempPath.matches("^[A-Za-z]:\\\\.*");
+                }
+                if (confirm) {
+                    outPrinter.println("Invalid path : " + tempPath);
+                    outPrinter.println(
+                            "Please specify the path where you want to save exported files by parameter [-tp]");
+                    outPrinter.println();
+                    return false;
+                }
             }
         }
 
