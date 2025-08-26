@@ -54,7 +54,6 @@ public class MigrationProgressTracker {
 
     private final Set<String> processingTables = ConcurrentHashMap.newKeySet();
     private final ConcurrentLinkedQueue<String> tableOrder = new ConcurrentLinkedQueue<>();
-    private final Map<String, Integer> tableIndexMap = new ConcurrentHashMap<>();
     private final Map<String, TableProgressData> tableProgressMap = new ConcurrentHashMap<>();
     private final Set<String> changedTables = ConcurrentHashMap.newKeySet();
     private final AtomicBoolean hasChanges = new AtomicBoolean(false);
@@ -98,7 +97,6 @@ public class MigrationProgressTracker {
 
             int index = tableOrderSize.getAndIncrement();
             tableOrder.add(tableName);
-            tableIndexMap.put(tableName, index);
 
             initializeTableProgress(tableName, rowCount, index);
         }
@@ -163,15 +161,6 @@ public class MigrationProgressTracker {
         Set<String> result = new HashSet<>(changedTables);
         changedTables.clear();
         return result;
-    }
-
-    public void updatePreviousWorkUnitsForChangedTables(Set<String> changedTables) {
-        for (String tableName : changedTables) {
-            TableProgressData data = tableProgressMap.get(tableName);
-            if (data != null) {
-                data.updatePreviousWorkUnits();
-            }
-        }
     }
 
     public long getTotalRecordUnits() {

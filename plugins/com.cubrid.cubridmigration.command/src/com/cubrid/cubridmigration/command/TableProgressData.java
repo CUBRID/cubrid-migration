@@ -39,7 +39,6 @@ public class TableProgressData {
     private volatile long currentRows;
 
     private volatile long completedWorkUnits;
-    private volatile long previousWorkUnits;
 
     private final AtomicReference<TableStatus> status;
 
@@ -49,7 +48,6 @@ public class TableProgressData {
         this.index = index;
         this.currentRows = 0L;
         this.completedWorkUnits = 0L;
-        this.previousWorkUnits = -1L;
         this.status = new AtomicReference<>(TableStatus.PENDING);
     }
 
@@ -59,10 +57,6 @@ public class TableProgressData {
 
     public void addCompletedWorkUnits(long increment) {
         this.completedWorkUnits += increment;
-    }
-
-    public void updatePreviousWorkUnits() {
-        this.previousWorkUnits = this.completedWorkUnits;
     }
 
     public long getWorkPercent() {
