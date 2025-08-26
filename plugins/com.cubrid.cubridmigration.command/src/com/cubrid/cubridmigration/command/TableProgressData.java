@@ -52,7 +52,6 @@ public class TableProgressData {
 
     public void addCurrentRows(long increment) {
         this.currentRows.addAndGet(increment);
-        this.currentRows += increment;
     }
 
     public void addCompletedWorkUnits(long increment) {
