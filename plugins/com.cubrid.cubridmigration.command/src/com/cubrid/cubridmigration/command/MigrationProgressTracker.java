@@ -32,8 +32,6 @@ package com.cubrid.cubridmigration.command;
 import com.cubrid.cubridmigration.core.dbobject.Table;
 import com.cubrid.cubridmigration.core.engine.config.MigrationConfiguration;
 import com.cubrid.cubridmigration.core.engine.config.SourceCSVConfig;
-import com.cubrid.cubridmigration.core.engine.config.SourceEntryTableConfig;
-import com.cubrid.cubridmigration.core.engine.config.SourceSQLTableConfig;
 import java.io.File;
 import java.util.Collection;
 import java.util.Collections;
@@ -75,20 +73,11 @@ public class MigrationProgressTracker {
     }
 
     private void processSourceTables(
-            Collection<?> tables, boolean isEntryTable, MigrationConfiguration config) {
+            Collection<? extends SourceTableConfig> tables, MigrationConfiguration config) {
 
-        for (Object obj : tables) {
-            String tableName;
-            String owner = null;
-            if (isEntryTable) {
-                SourceEntryTableConfig tbl = (SourceEntryTableConfig) obj;
-                tableName = tbl.getName();
-                owner = tbl.getOwner();
-            } else {
-                SourceSQLTableConfig tbl = (SourceSQLTableConfig) obj;
-                tableName = tbl.getName();
-                owner = tbl.getOwner();
-            }
+        for (SourceTableConfig tbl : tables) {
+            String tableName = tbl.getName();
+            String owner = tbl.getOwner();
 
             Table table = config.getSrcTableSchema(owner, tableName);
             long rowCount = (table == null) ? 0L : table.getTableRowCount();
