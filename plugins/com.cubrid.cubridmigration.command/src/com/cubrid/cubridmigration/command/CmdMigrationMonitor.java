@@ -168,7 +168,7 @@ public class CmdMigrationMonitor implements IMigrationMonitor, Runnable {
     }
 
     private boolean shouldShowProgress() {
-        return monitorMode <= 1;
+        return monitorMode <= MigrationConfiguration.RPT_LEVEL_ERROR;
     }
 
     private void logEventIfNeeded(MigrationEvent event) {
