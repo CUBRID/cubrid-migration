@@ -35,7 +35,7 @@ public class TableProgressData {
     private final String tableName;
     private final int index;
 
-    private volatile long totalRows;
+    private volatile final long totalRows;
     private volatile long currentRows;
 
     private volatile long completedWorkUnits;
