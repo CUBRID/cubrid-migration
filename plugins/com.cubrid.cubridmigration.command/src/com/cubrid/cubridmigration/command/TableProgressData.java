@@ -29,16 +29,17 @@
  */
 package com.cubrid.cubridmigration.command;
 
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class TableProgressData {
     private final String tableName;
     private final int index;
 
-    private volatile final long totalRows;
-    private volatile long currentRows;
+    private final long totalRows;
+    private final AtomicLong currentRows = new AtomicLong(0L);
 
-    private volatile long completedWorkUnits;
+    private final AtomicLong completedWorkUnits = new AtomicLong(0L);
 
     private final AtomicReference<TableStatus> status;
 
@@ -46,17 +47,16 @@ public class TableProgressData {
         this.tableName = tableName;
         this.totalRows = totalRows;
         this.index = index;
-        this.currentRows = 0L;
-        this.completedWorkUnits = 0L;
         this.status = new AtomicReference<>(TableStatus.PENDING);
     }
 
     public void addCurrentRows(long increment) {
+        this.currentRows.addAndGet(increment);
         this.currentRows += increment;
     }
 
     public void addCompletedWorkUnits(long increment) {
-        this.completedWorkUnits += increment;
+        this.completedWorkUnits.addAndGet(increment);
     }
 
     public long getWorkPercent() {
@@ -76,11 +76,11 @@ public class TableProgressData {
     }
 
     public long getCurrentRows() {
-        return currentRows;
+        return this.currentRows.get();
     }
 
     public long getCompletedWorkUnits() {
-        return completedWorkUnits;
+        return this.completedWorkUnits.get();
     }
 
     public AtomicReference<TableStatus> getStatus() {
