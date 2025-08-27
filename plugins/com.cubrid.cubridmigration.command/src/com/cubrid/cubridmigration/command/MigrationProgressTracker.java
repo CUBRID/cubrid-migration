@@ -32,6 +32,7 @@ package com.cubrid.cubridmigration.command;
 import com.cubrid.cubridmigration.core.dbobject.Table;
 import com.cubrid.cubridmigration.core.engine.config.MigrationConfiguration;
 import com.cubrid.cubridmigration.core.engine.config.SourceCSVConfig;
+import com.cubrid.cubridmigration.core.engine.config.SourceTableConfig;
 import java.io.File;
 import java.util.Collection;
 import java.util.Collections;
@@ -59,8 +60,8 @@ public class MigrationProgressTracker {
 
     public void initialize(MigrationConfiguration config) {
         if (config.sourceIsOnline() || config.sourceIsXMLDump()) {
-            processSourceTables(config.getExpEntryTableCfg(), true, config);
-            processSourceTables(config.getExpSQLCfg(), false, config);
+            processSourceTables(config.getExpEntryTableCfg(), config);
+            processSourceTables(config.getExpSQLCfg(), config);
         } else if (config.sourceIsSQL()) {
             for (String ss : config.getSqlFiles()) {
                 totalRecordUnits.addAndGet(new File(ss).length());
@@ -85,19 +86,20 @@ public class MigrationProgressTracker {
             totalRecordUnits.addAndGet(rowCount);
 
             int index = tableOrderSize.getAndIncrement();
-            tableOrder.add(tableName);
+            String ownerTableName = owner + "." + tableName;
+            tableOrder.add(ownerTableName);
 
-            initializeTableProgress(tableName, rowCount, index);
+            initializeTableProgress(ownerTableName, rowCount, index);
         }
     }
 
-    private void initializeTableProgress(String tableName, long rowCount, int index) {
-        TableProgressData data = new TableProgressData(tableName, rowCount, index);
-        tableProgressMap.put(tableName, data);
+    private void initializeTableProgress(String ownerTableName, long rowCount, int index) {
+        TableProgressData data = new TableProgressData(ownerTableName, rowCount, index);
+        tableProgressMap.put(ownerTableName, data);
     }
 
-    public void updateTableProgress(String tableName, long increment) {
-        TableProgressData data = tableProgressMap.get(tableName);
+    public void updateTableProgress(String ownerTableName, long increment) {
+        TableProgressData data = tableProgressMap.get(ownerTableName);
         if (data != null) {
             data.addCurrentRows(increment);
             data.addCompletedWorkUnits(increment);
@@ -117,13 +119,13 @@ public class MigrationProgressTracker {
 
             if (oldStatus != newStatus) {
                 if (newStatus == TableStatus.PROCESSING) {
-                    processingTables.add(tableName);
+                    processingTables.add(ownerTableName);
                 } else {
-                    processingTables.remove(tableName);
+                    processingTables.remove(ownerTableName);
                 }
             }
 
-            changedTables.add(tableName);
+            changedTables.add(ownerTableName);
             hasChanges.set(true);
         }
     }
@@ -172,7 +174,7 @@ public class MigrationProgressTracker {
         return tableOrderSize.get();
     }
 
-    public TableProgressData getTableProgressData(String tableName) {
-        return tableProgressMap.get(tableName);
+    public TableProgressData getTableProgressData(String ownerTableName) {
+        return tableProgressMap.get(ownerTableName);
     }
 }

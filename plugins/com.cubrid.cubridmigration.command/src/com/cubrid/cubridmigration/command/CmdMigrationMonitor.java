@@ -119,7 +119,8 @@ public class CmdMigrationMonitor implements IMigrationMonitor, Runnable {
             if (ev.isSuccess()) {
                 progressTracker.addCompletedWorkUnits(ev.getRecordCount());
                 progressTracker.updateTableProgress(
-                        ev.getSourceTable().getName(), ev.getRecordCount());
+                        ev.getSourceTable().getOwner() + "." + ev.getSourceTable().getName(),
+                        ev.getRecordCount());
             } else {
                 isError = true;
             }

@@ -95,10 +95,10 @@ public class ProgressDisplayManager {
         int outputCount = 0;
 
         if (monitorMode <= MigrationConfiguration.RPT_LEVEL_ERROR) {
-            for (String tableName : progressTracker.getTableOrder()) {
-                if (!currentProcessingTables.contains(tableName)) continue;
+            for (String ownerTableName : progressTracker.getTableOrder()) {
+                if (!currentProcessingTables.contains(ownerTableName)) continue;
 
-                TableProgressData data = progressTracker.getTableProgressData(tableName);
+                TableProgressData data = progressTracker.getTableProgressData(ownerTableName);
                 if (data == null) continue;
 
                 long totalTableWork = data.getTotalRows();
@@ -110,7 +110,7 @@ public class ProgressDisplayManager {
                     String output =
                             String.format(
                                     "%s(%d/%d) | %d / %d %d%%\n",
-                                    tableName,
+                                    ownerTableName,
                                     index,
                                     progressTracker.getTableOrderSize(),
                                     completedTableWork,

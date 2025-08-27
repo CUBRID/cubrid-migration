@@ -33,7 +33,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class TableProgressData {
-    private final String tableName;
+
     private final int index;
 
     private final long totalRows;
@@ -43,8 +43,8 @@ public class TableProgressData {
 
     private final AtomicReference<TableStatus> status;
 
-    public TableProgressData(String tableName, long totalRows, int index) {
-        this.tableName = tableName;
+    public TableProgressData(String ownerTableName, long totalRows, int index) {
+        this.ownerTableName = ownerTableName;
         this.totalRows = totalRows;
         this.index = index;
         this.status = new AtomicReference<>(TableStatus.PENDING);
@@ -59,11 +59,7 @@ public class TableProgressData {
     }
 
     public long getWorkPercent() {
-        return totalRows > 0 ? (completedWorkUnits * 100 / totalRows) : 0;
-    }
-
-    public String getTableName() {
-        return tableName;
+        return totalRows > 0 ? (completedWorkUnits.get() * 100 / totalRows) : 0;
     }
 
     public int getIndex() {
