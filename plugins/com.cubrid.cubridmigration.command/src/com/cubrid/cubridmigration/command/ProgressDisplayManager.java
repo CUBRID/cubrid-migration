@@ -52,14 +52,17 @@ public class ProgressDisplayManager {
             return;
         }
 
-        Set<String> currentChangedTables = progressTracker.getAndClearChangedTables();
         Set<String> currentProcessingTables = progressTracker.getProcessingTables();
 
         synchronized (printLock) {
             clearPreviousOutput();
-            printOverallProgress(progressTracker);
-            int outputCount = printTableProgress(progressTracker, currentProcessingTables);
-            lastLineCount = 1 + outputCount;
+
+            if (monitorMode <= MigrationConfiguration.RPT_LEVEL_ERROR) {
+                printOverallProgress(progressTracker);
+                int outputCount = printTableProgress(progressTracker, currentProcessingTables);
+                lastLineCount = 1 + outputCount;
+            }
+
             outPrinter.flush();
         }
     }
@@ -76,17 +79,15 @@ public class ProgressDisplayManager {
     }
 
     private void printOverallProgress(MigrationProgressTracker progressTracker) {
-        if (monitorMode <= MigrationConfiguration.RPT_LEVEL_ERROR) {
-            long totalWork = progressTracker.getTotalRecordUnits();
-            if (totalWork > 0) {
-                long completedWork = progressTracker.getCompletedWorkUnits();
-                long percent = (totalWork > 0) ? (completedWork * 100 / totalWork) : 100;
-                percent = Math.max(percent, 1);
+        long totalWork = progressTracker.getTotalRecordUnits();
+        if (totalWork > 0) {
+            long completedWork = progressTracker.getCompletedWorkUnits();
+            long percent = (totalWork > 0) ? (completedWork * 100 / totalWork) : 100;
+            percent = Math.max(percent, 1);
 
-                outPrinter.printf(
-                        "Record Migration Progress: %d%% [%d / %d records]\n",
-                        percent, completedWork, totalWork);
-            }
+            outPrinter.printf(
+                    "Record Migration Progress: %d%% [%d / %d records]\n",
+                    percent, completedWork, totalWork);
         }
     }
 
@@ -94,31 +95,29 @@ public class ProgressDisplayManager {
             MigrationProgressTracker progressTracker, Set<String> currentProcessingTables) {
         int outputCount = 0;
 
-        if (monitorMode <= MigrationConfiguration.RPT_LEVEL_ERROR) {
-            for (String ownerTableName : progressTracker.getTableOrder()) {
-                if (!currentProcessingTables.contains(ownerTableName)) continue;
+        for (String ownerTableName : progressTracker.getTableOrder()) {
+            if (!currentProcessingTables.contains(ownerTableName)) continue;
 
-                TableProgressData data = progressTracker.getTableProgressData(ownerTableName);
-                if (data == null) continue;
+            TableProgressData data = progressTracker.getTableProgressData(ownerTableName);
+            if (data == null) continue;
 
-                long totalTableWork = data.getTotalRows();
-                if (totalTableWork > 0) {
-                    long completedTableWork = data.getCompletedWorkUnits();
-                    int index = data.getIndex() + 1;
-                    long tablePercent = data.getWorkPercent();
+            long totalTableWork = data.getTotalRows();
+            if (totalTableWork > 0) {
+                long completedTableWork = data.getCompletedWorkUnits();
+                int index = data.getIndex() + 1;
+                long tablePercent = data.getWorkPercent();
 
-                    String output =
-                            String.format(
-                                    "%s(%d/%d) | %d / %d %d%%\n",
-                                    ownerTableName,
-                                    index,
-                                    progressTracker.getTableOrderSize(),
-                                    completedTableWork,
-                                    totalTableWork,
-                                    tablePercent);
-                    outPrinter.print(output);
-                    outputCount++;
-                }
+                String output =
+                        String.format(
+                                "%s(%d/%d) | %d / %d %d%%\n",
+                                ownerTableName,
+                                index,
+                                progressTracker.getTableOrderSize(),
+                                completedTableWork,
+                                totalTableWork,
+                                tablePercent);
+                outPrinter.print(output);
+                outputCount++;
             }
         }
 

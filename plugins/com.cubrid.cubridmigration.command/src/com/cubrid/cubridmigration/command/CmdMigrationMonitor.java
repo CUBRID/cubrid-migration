@@ -151,25 +151,17 @@ public class CmdMigrationMonitor implements IMigrationMonitor, Runnable {
     @Override
     public void run() {
         while (!stopRequested) {
-            if (shouldShowProgress()) {
-                displayManager.printProgressIfChanged(progressTracker);
-                isNewLine = false;
-            }
+            displayManager.printProgressIfChanged(progressTracker);
+            isNewLine = false;
+
             try {
                 Thread.sleep(PROGRESS_UPDATE_INTERVAL_MS);
             } catch (InterruptedException e) {
                 break;
             }
         }
-
-        if (shouldShowProgress()) {
-            displayManager.printProgressIfChanged(progressTracker);
-            isNewLine = false;
-        }
-    }
-
-    private boolean shouldShowProgress() {
-        return monitorMode <= MigrationConfiguration.RPT_LEVEL_ERROR;
+        displayManager.printProgressIfChanged(progressTracker);
+        isNewLine = false;
     }
 
     private void logEventIfNeeded(MigrationEvent event) {

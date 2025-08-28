@@ -35,7 +35,6 @@ import com.cubrid.cubridmigration.core.engine.config.SourceCSVConfig;
 import com.cubrid.cubridmigration.core.engine.config.SourceTableConfig;
 import java.io.File;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -94,7 +93,7 @@ public class MigrationProgressTracker {
     }
 
     private void initializeTableProgress(String ownerTableName, long rowCount, int index) {
-        TableProgressData data = new TableProgressData(ownerTableName, rowCount, index);
+        TableProgressData data = new TableProgressData(rowCount, index);
         tableProgressMap.put(ownerTableName, data);
     }
 
@@ -142,16 +141,6 @@ public class MigrationProgressTracker {
 
     public Set<String> getProcessingTables() {
         return new HashSet<>(processingTables);
-    }
-
-    public Set<String> getAndClearChangedTables() {
-        if (!hasChanges.compareAndSet(true, false)) {
-            return Collections.emptySet();
-        }
-
-        Set<String> result = new HashSet<>(changedTables);
-        changedTables.clear();
-        return result;
     }
 
     public long getTotalRecordUnits() {

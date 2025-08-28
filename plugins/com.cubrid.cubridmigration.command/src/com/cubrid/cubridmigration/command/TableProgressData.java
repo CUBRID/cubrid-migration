@@ -43,8 +43,7 @@ public class TableProgressData {
 
     private final AtomicReference<TableStatus> status;
 
-    public TableProgressData(String ownerTableName, long totalRows, int index) {
-        this.ownerTableName = ownerTableName;
+    public TableProgressData(long totalRows, int index) {
         this.totalRows = totalRows;
         this.index = index;
         this.status = new AtomicReference<>(TableStatus.PENDING);
