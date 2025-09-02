@@ -37,6 +37,7 @@ import java.io.Serializable;
 import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.SQLException;
+import java.util.Objects;
 import org.apache.commons.lang3.StringUtils;
 
 /**
@@ -45,7 +46,7 @@ import org.apache.commons.lang3.StringUtils;
  * @author JessieHuang
  * @version 1.0 - 2009-9-18
  */
-public class ConnParameters implements Cloneable, Serializable, IDBSource, IJDBCConnecInfo {
+public final class ConnParameters implements Serializable, IDBSource, IJDBCConnecInfo {
 
     private static final long serialVersionUID = 2531031197450692000L;
 
@@ -169,17 +170,32 @@ public class ConnParameters implements Cloneable, Serializable, IDBSource, IJDBC
 
     private ConnParameters() {}
 
+    private ConnParameters(ConnParameters src) {
+        Objects.requireNonNull(src, "src");
+        this.dbType = src.dbType;
+        this.host = src.host;
+        this.port = src.port;
+        this.dbName = src.dbName;
+        this.charSet = src.charSet;
+        this.timeZone = src.timeZone;
+        this.conUser = src.conUser;
+        this.conPassword = src.conPassword;
+        this.driverFileName = src.driverFileName;
+        this.userJDBCURL = src.userJDBCURL;
+        this.conName = src.conName;
+    }
+
     /**
-     * clone
+     * Return a clone of this instance.
      *
-     * @return Object
+     * <p>Semantic: deep copy. When adding mutable fields in the future, update the copy constructor
+     * accordingly.
+     *
+     * @return ConnParameters
      */
+    @Override
     public ConnParameters clone() {
-        try {
-            return (ConnParameters) super.clone();
-        } catch (CloneNotSupportedException e) { // NOPMD
-            throw new RuntimeException(e);
-        }
+        return new ConnParameters(this);
     }
 
     /**
