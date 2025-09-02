@@ -104,11 +104,7 @@ public class DBConnectionDialog extends TitleAreaDialog {
 
     public DBConnectionDialog(
             Shell parentShell, DatabaseType[] databaseTypes, ConnParameters oldParam) {
-        super(parentShell);
-        this.oldParam = oldParam;
-        dbConnectView = new JDBCConnectEditView(databaseTypes);
-        this.mode = (oldParam == null) ? Mode.NEW : Mode.EDIT;
-        setHelpAvailable(false);
+        this(parentShell, databaseTypes, oldParam, oldParam == null ? Mode.NEW : Mode.EDIT);
     }
 
     public DBConnectionDialog(
