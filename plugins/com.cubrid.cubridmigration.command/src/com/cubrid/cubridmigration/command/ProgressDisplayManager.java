@@ -64,6 +64,8 @@ public class ProgressDisplayManager {
             }
 
             outPrinter.flush();
+
+            progressTracker.resetChanges();
         }
     }
 

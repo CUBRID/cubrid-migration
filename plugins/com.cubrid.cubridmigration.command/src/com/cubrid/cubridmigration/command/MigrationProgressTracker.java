@@ -155,6 +155,10 @@ public class MigrationProgressTracker {
         return hasChanges.get();
     }
 
+    public void resetChanges() {
+        hasChanges.set(false);
+    }
+
     public ConcurrentLinkedQueue<String> getTableOrder() {
         return tableOrder;
     }
