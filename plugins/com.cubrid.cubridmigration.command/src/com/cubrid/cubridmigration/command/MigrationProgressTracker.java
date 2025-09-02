@@ -99,10 +99,9 @@ public class MigrationProgressTracker {
     public void updateTableProgress(String ownerTableName, long increment) {
         TableProgressData data = tableProgressMap.get(ownerTableName);
         if (data != null) {
-            data.addCurrentRows(increment);
             data.addCompletedWorkUnits(increment);
 
-            long newCurrent = data.getCurrentRows();
+            long newCurrent = data.getCompletedWorkUnits();
             long total = data.getTotalRows();
             TableStatus newStatus = determineTableStatus(newCurrent, total);
 

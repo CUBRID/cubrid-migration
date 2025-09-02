@@ -37,8 +37,6 @@ public class TableProgressData {
     private final int index;
 
     private final long totalRows;
-    private final AtomicLong currentRows = new AtomicLong(0L);
-
     private final AtomicLong completedWorkUnits = new AtomicLong(0L);
 
     private final AtomicReference<TableStatus> status;
@@ -47,10 +45,6 @@ public class TableProgressData {
         this.totalRows = totalRows;
         this.index = index;
         this.status = new AtomicReference<>(TableStatus.PENDING);
-    }
-
-    public void addCurrentRows(long increment) {
-        this.currentRows.addAndGet(increment);
     }
 
     public void addCompletedWorkUnits(long increment) {
@@ -67,10 +61,6 @@ public class TableProgressData {
 
     public long getTotalRows() {
         return totalRows;
-    }
-
-    public long getCurrentRows() {
-        return this.currentRows.get();
     }
 
     public long getCompletedWorkUnits() {
