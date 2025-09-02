@@ -53,7 +53,6 @@ public class MigrationProgressTracker {
     private final Set<String> processingTables = ConcurrentHashMap.newKeySet();
     private final ConcurrentLinkedQueue<String> tableOrder = new ConcurrentLinkedQueue<>();
     private final Map<String, TableProgressData> tableProgressMap = new ConcurrentHashMap<>();
-    private final Set<String> changedTables = ConcurrentHashMap.newKeySet();
     private final AtomicBoolean hasChanges = new AtomicBoolean(false);
     private final AtomicInteger tableOrderSize = new AtomicInteger(0);
 
@@ -124,7 +123,6 @@ public class MigrationProgressTracker {
                 }
             }
 
-            changedTables.add(ownerTableName);
             hasChanges.set(true);
         }
     }
