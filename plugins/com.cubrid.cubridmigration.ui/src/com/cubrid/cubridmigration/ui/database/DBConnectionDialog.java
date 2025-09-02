@@ -56,7 +56,8 @@ public class DBConnectionDialog extends TitleAreaDialog {
 
     public static enum Mode {
         NEW,
-        EDIT
+        EDIT,
+        COPY
     };
 
     /**
@@ -158,6 +159,10 @@ public class DBConnectionDialog extends TitleAreaDialog {
             case EDIT:
                 setTitle(Messages.msgEditJDBC);
                 setMessage(Messages.msgEditJDBCDesc);
+                break;
+            case COPY:
+                setTitle(Messages.msgCopyJDBC);
+                setMessage(Messages.msgCopyJDBCDesc);
                 break;
         }
         return area;

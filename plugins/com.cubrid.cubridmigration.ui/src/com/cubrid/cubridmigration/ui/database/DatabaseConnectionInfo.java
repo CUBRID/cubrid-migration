@@ -43,6 +43,13 @@ public class DatabaseConnectionInfo {
 
     private ConnParameters connParameters;
 
+    public DatabaseConnectionInfo() {}
+
+    public DatabaseConnectionInfo(ConnParameters params, boolean selected) {
+        this.connParameters = params;
+        this.isSelected = selected;
+    }
+
     public String getCharacterEncoding() {
         return connParameters.getCharset();
     }
