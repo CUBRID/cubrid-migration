@@ -54,6 +54,11 @@ import org.eclipse.swt.widgets.Shell;
  */
 public class DBConnectionDialog extends TitleAreaDialog {
 
+    public static enum Mode {
+        NEW,
+        EDIT
+    };
+
     /**
      * Get catalog from dialog
      *
@@ -67,7 +72,24 @@ public class DBConnectionDialog extends TitleAreaDialog {
         if (databaseTypes == null || databaseTypes.length == 0) {
             throw new IllegalArgumentException("Database type can't be empty");
         }
-        DBConnectionDialog dialog = new DBConnectionDialog(parentShell, databaseTypes, oldParam);
+        DBConnectionDialog dialog =
+                new DBConnectionDialog(
+                        parentShell,
+                        databaseTypes,
+                        oldParam,
+                        oldParam == null ? Mode.NEW : Mode.EDIT);
+        if (dialog.open() != IDialogConstants.OK_ID) {
+            return null;
+        }
+        return dialog.resultParam;
+    }
+
+    public static ConnParameters getCatalog(
+            Shell parentShell, DatabaseType[] databaseTypes, ConnParameters param, Mode mode) {
+        if (databaseTypes == null || databaseTypes.length == 0) {
+            throw new IllegalArgumentException("Database type can't be empty");
+        }
+        DBConnectionDialog dialog = new DBConnectionDialog(parentShell, databaseTypes, param, mode);
         if (dialog.open() != IDialogConstants.OK_ID) {
             return null;
         }
@@ -77,11 +99,22 @@ public class DBConnectionDialog extends TitleAreaDialog {
     private final ConnParameters oldParam;
     private ConnParameters resultParam;
     private final JDBCConnectEditView dbConnectView;
+    private final Mode mode;
 
     public DBConnectionDialog(
             Shell parentShell, DatabaseType[] databaseTypes, ConnParameters oldParam) {
         super(parentShell);
         this.oldParam = oldParam;
+        dbConnectView = new JDBCConnectEditView(databaseTypes);
+        this.mode = (oldParam == null) ? Mode.NEW : Mode.EDIT;
+        setHelpAvailable(false);
+    }
+
+    public DBConnectionDialog(
+            Shell parentShell, DatabaseType[] databaseTypes, ConnParameters oldParam, Mode mode) {
+        super(parentShell);
+        this.oldParam = oldParam;
+        this.mode = mode == null ? ((oldParam == null) ? Mode.NEW : Mode.EDIT) : mode;
         dbConnectView = new JDBCConnectEditView(databaseTypes);
         setHelpAvailable(false);
     }
@@ -117,12 +150,15 @@ public class DBConnectionDialog extends TitleAreaDialog {
         Composite area = (Composite) super.createDialogArea(parent);
         dbConnectView.createConstrols(parent);
         dbConnectView.setConParameters(oldParam);
-        if (oldParam == null) {
-            setTitle(Messages.newDBConnDialogTitle);
-            setMessage(Messages.newDBConnDialogMessage);
-        } else {
-            setTitle(Messages.msgEditJDBC);
-            setMessage(Messages.msgEditJDBCDesc);
+        switch (mode) {
+            case NEW:
+                setTitle(Messages.newDBConnDialogTitle);
+                setMessage(Messages.newDBConnDialogMessage);
+                break;
+            case EDIT:
+                setTitle(Messages.msgEditJDBC);
+                setMessage(Messages.msgEditJDBCDesc);
+                break;
         }
         return area;
     }
