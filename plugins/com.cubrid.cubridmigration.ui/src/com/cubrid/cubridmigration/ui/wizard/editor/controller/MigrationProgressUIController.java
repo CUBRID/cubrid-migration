@@ -229,7 +229,7 @@ public class MigrationProgressUIController {
                             NA_STRING,
                             stc.getOwner()
                         };
-            } else if (tbl == null || tbl.getTableRowCount() == 0) {
+            } else if (tbl == null) {
                 tableItems[index] =
                         new String[] {
                             stc.getName(),
@@ -239,6 +239,19 @@ public class MigrationProgressUIController {
                             NA_STRING,
                             stc.getOwner()
                         };
+            } else if (!stc.isMigrateData()) {
+                tableItems[index] =
+                        new String[] {
+                            stc.getName(),
+                            NA_STRING,
+                            NA_STRING,
+                            NA_STRING,
+                            NA_STRING,
+                            stc.getOwner()
+                        };
+            } else if (tbl.getTableRowCount() == 0) {
+                tableItems[index] =
+                        new String[] {stc.getName(), "0", "0", "0", "100%", stc.getOwner()};
             } else {
                 tableItems[index] =
                         new String[] {
