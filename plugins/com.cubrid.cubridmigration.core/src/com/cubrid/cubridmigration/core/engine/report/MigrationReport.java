@@ -593,6 +593,7 @@ public class MigrationReport implements Serializable {
             result.setSrcSchema(stc.getOwner());
             result.setSource(stc.getName());
             result.setTarget(stc.getTarget());
+            result.setDataMigrationSelected(stc.isMigrateData());
             if (!restore) {
                 result.setTotalCount(0);
             } else if (stc.isMigrateData()) {
@@ -612,6 +613,7 @@ public class MigrationReport implements Serializable {
             RecordMigrationResult result = new RecordMigrationResult();
             result.setSource(sstc.getName());
             result.setTarget(sstc.getTarget());
+            result.setDataMigrationSelected(sstc.isMigrateData());
             if (!restore) {
                 result.setTotalCount(0);
             } else if (sstc.isMigrateData()) {

@@ -72,19 +72,28 @@ public class RecordMigrationResultTableLabelProvider extends BaseTableLabelProvi
             case 0:
                 return rs.getSource();
             case 1:
+                if (!rs.isDataMigrationSelected()) {
+                    return MigrationReportEditorPart.EMPTY_CELL_VALUE;
+                }
                 return rs.getTotalCount() == 0
-                        ? MigrationReportEditorPart.EMPTY_CELL_VALUE
+                        ? "0"
                         : NumberFormat.getIntegerInstance().format(rs.getTotalCount());
             case 2:
+                if (!rs.isDataMigrationSelected()) {
+                    return MigrationReportEditorPart.EMPTY_CELL_VALUE;
+                }
                 return rs.getTotalCount() == 0
-                        ? MigrationReportEditorPart.EMPTY_CELL_VALUE
+                        ? "0"
                         : NumberFormat.getIntegerInstance().format(rs.getExpCount());
             case 3:
                 return getTimeUsed(
                         rs.getTotalCount(), rs.getStartExportTime(), rs.getEndExportTime());
             case 4:
+                if (!rs.isDataMigrationSelected()) {
+                    return MigrationReportEditorPart.EMPTY_CELL_VALUE;
+                }
                 return rs.getTotalCount() == 0
-                        ? MigrationReportEditorPart.EMPTY_CELL_VALUE
+                        ? "0"
                         : NumberFormat.getIntegerInstance().format(rs.getImpCount());
             case 5:
                 return getTimeUsed(
