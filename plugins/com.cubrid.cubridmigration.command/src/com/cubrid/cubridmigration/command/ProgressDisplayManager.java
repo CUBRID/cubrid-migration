@@ -30,7 +30,6 @@
 package com.cubrid.cubridmigration.command;
 
 import com.cubrid.cubridmigration.core.engine.config.MigrationConfiguration;
-import com.cubrid.cubridmigration.core.engine.event.MigrationFinishedEvent;
 import java.io.PrintStream;
 import java.util.Set;
 
@@ -124,22 +123,5 @@ public class ProgressDisplayManager {
         }
 
         return outputCount;
-    }
-
-    public void printFinalProgress(
-            MigrationProgressTracker progressTracker,
-            boolean hasError,
-            MigrationFinishedEvent finalEvent) {
-        printProgressIfChanged(progressTracker);
-
-        synchronized (printLock) {
-            if (hasError) {
-                outPrinter.println("Some errors occurred during migration.");
-                outPrinter.println("Please see the report for more.");
-            }
-            if (finalEvent != null) {
-                outPrinter.println(finalEvent.toString());
-            }
-        }
     }
 }

@@ -101,7 +101,7 @@ public class CmdMigrationMonitor implements IMigrationMonitor, Runnable {
 
         if (event instanceof MigrationFinishedEvent) {
             finalEvent = (MigrationFinishedEvent) event;
-            displayManager.printFinalProgress(progressTracker, hasError.get(), finalEvent);
+            displayManager.printProgressIfChanged(progressTracker);
             requestStop();
             return;
         }
