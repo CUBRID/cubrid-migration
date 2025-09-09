@@ -1034,7 +1034,10 @@ public class MigrationConfiguration {
                             getTargetPlcsqlProcedureSchema(sc.getTargetOwner(), sc.getTarget());
                 }
 
-                if (tprocedure == null) {
+                if (tprocedure == null
+                        || !sourceDBSchema
+                                .getTargetSchemaName()
+                                .equals(tprocedure.getTargetOwner())) {
                     tprocedure = new PlcsqlProcedure();
                     tprocedure.setOwner(sc.getOwner());
                     tprocedure.setTargetOwner(sc.getTargetOwner());
@@ -1106,7 +1109,10 @@ public class MigrationConfiguration {
                     tfunction = getTargetPlcsqlFunctionSchema(sc.getTargetOwner(), sc.getTarget());
                 }
 
-                if (tfunction == null) {
+                if (tfunction == null
+                        || !sourceDBSchema
+                                .getTargetSchemaName()
+                                .equals(tfunction.getTargetOwner())) {
                     tfunction = new PlcsqlFunction();
                     tfunction.setOwner(sc.getOwner());
                     tfunction.setTargetOwner(sc.getTargetOwner());
