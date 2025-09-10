@@ -265,7 +265,7 @@ public class GeneralObjMappingView extends AbstractMappingView {
                             data.add(
                                     new Object[] {
                                         setc.getName(),
-                                        setc.getTargetOwner(),
+                                        Objects.requireNonNullElse(setc.getTargetOwner(), "-"),
                                         setc.getTarget(),
                                         setc.isMigrateData(),
                                         setc.getCondition(),
