@@ -30,6 +30,7 @@
  */
 package com.cubrid.cubridmigration.cubrid.meta;
 
+import com.cubrid.common.log.LogUtil;
 import com.cubrid.cubridmigration.core.common.Closer;
 import com.cubrid.cubridmigration.core.common.CommonUtils;
 import com.cubrid.cubridmigration.core.common.DBUtils;
@@ -78,6 +79,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
 
 /**
  * ReverseEngineeringCUBRIDJdbc
@@ -86,6 +88,7 @@ import org.apache.commons.lang3.StringUtils;
  * @version 1.0 - 2009-9-15
  */
 public final class CUBRIDSchemaFetcher extends AbstractJDBCSchemaFetcher {
+    private static final Logger LOG = LogUtil.getLogger(CUBRIDSchemaFetcher.class);
 
     private static final Map<String, String> STD_TYPE_MAPPING = new HashMap<String, String>();
 
@@ -199,19 +202,30 @@ public final class CUBRIDSchemaFetcher extends AbstractJDBCSchemaFetcher {
                 //				String type = rs.getString("attr_type");
                 Integer precision = rs.getInt("prec");
                 Integer scale = rs.getInt("scale");
-                dataType = getStdDataType(dataType);
+                try {
+                    dataType = getStdDataType(dataType);
 
-                Table table = tables.get(tableName);
-                if (table == null) {
-                    continue;
+                    Table table = tables.get(tableName);
+                    if (table == null) {
+                        continue;
+                    }
+
+                    Column cubridColumn = table.getColumnByName(attrName);
+                    cubridColumn.setSubDataType(dataType);
+                    cubridColumn.setJdbcIDOfSubDataType(cubDTHelper.getCUBRIDDataTypeID(dataType));
+                    cubridColumn.setPrecision(precision);
+                    cubridColumn.setScale(scale);
+                    cubridColumn.setShownDataType(cubDTHelper.getShownDataType(cubridColumn));
+                } catch (Exception ex) {
+                    LOG.error(
+                            "Failed to set collection element type from metadata. table={}, column={}, dataType={}, precision={}, scale={}",
+                            tableName,
+                            attrName,
+                            dataType,
+                            precision,
+                            scale,
+                            ex);
                 }
-
-                Column cubridColumn = table.getColumnByName(attrName);
-                cubridColumn.setSubDataType(dataType);
-                cubridColumn.setJdbcIDOfSubDataType(cubDTHelper.getCUBRIDDataTypeID(dataType));
-                cubridColumn.setPrecision(precision);
-                cubridColumn.setScale(scale);
-                cubridColumn.setShownDataType(cubDTHelper.getShownDataType(cubridColumn));
             }
         } finally {
             Closer.close(rs);
@@ -505,40 +519,50 @@ public final class CUBRIDSchemaFetcher extends AbstractJDBCSchemaFetcher {
                     columnComment = commentEditor(columnComment);
                 }
 
-                Column column = factory.createColumn();
-                column.setName(attrName);
-                column.setShared(isShared);
-                column.setComment(columnComment);
-                if (cubDTHelper.isObjectType(dataTypeInView)) {
-                    column.setDataType(domainClassName);
-                } else {
-                    String standardDataType = getStdDataType(dataTypeInView);
-                    column.setDataType(standardDataType);
-                    column.setJdbcIDOfDataType(cubDTHelper.getCUBRIDDataTypeID(standardDataType));
-                }
-                column.setPrecision(prec);
-                column.setScale(scale);
+                try {
+                    Column column = factory.createColumn();
+                    column.setName(attrName);
+                    column.setShared(isShared);
+                    column.setComment(columnComment);
+                    if (cubDTHelper.isObjectType(dataTypeInView)) {
+                        column.setDataType(domainClassName);
+                    } else {
+                        String standardDataType = getStdDataType(dataTypeInView);
+                        column.setDataType(standardDataType);
+                        column.setJdbcIDOfDataType(
+                                cubDTHelper.getCUBRIDDataTypeID(standardDataType));
+                    }
+                    column.setPrecision(prec);
+                    column.setScale(scale);
 
-                String isNull = rs.getString("is_nullable");
-                column.setNullable(isYes(isNull));
+                    String isNull = rs.getString("is_nullable");
+                    column.setNullable(isYes(isNull));
 
-                String defaultValue = rs.getString("default_value");
-                if (column.isShared()) {
-                    column.setSharedValue(defaultValue);
-                    column.setDefaultValue(null);
-                } else {
-                    column.setSharedValue(null);
-                    column.setDefaultValue(defaultValue);
+                    String defaultValue = rs.getString("default_value");
+                    if (column.isShared()) {
+                        column.setSharedValue(defaultValue);
+                        column.setDefaultValue(null);
+                    } else {
+                        column.setSharedValue(null);
+                        column.setDefaultValue(defaultValue);
+                    }
+                    if (cubDTHelper.isEnum(dataTypeInView)) {
+                        String realDataType = fetchEnumType(conn, null, tableName, attrName);
+                        DataTypeInstance dti = cubDTHelper.parseDTInstance(realDataType);
+                        column.setDataTypeInstance(dti);
+                    }
+                    if (!cubDTHelper.isCollection(dataTypeInView)) {
+                        column.setShownDataType(cubDTHelper.getShownDataType(column));
+                    }
+                    table.addColumn(column);
+                } catch (Exception ex) {
+                    LOG.error(
+                            "Failed to build table schema from metadata. schema={}, table={}, column={}",
+                            schema.getName(),
+                            rs.getString("class_name"),
+                            rs.getString("attr_name"),
+                            ex);
                 }
-                if (cubDTHelper.isEnum(dataTypeInView)) {
-                    String realDataType = fetchEnumType(conn, null, tableName, attrName);
-                    DataTypeInstance dti = cubDTHelper.parseDTInstance(realDataType);
-                    column.setDataTypeInstance(dti);
-                }
-                if (!cubDTHelper.isCollection(dataTypeInView)) {
-                    column.setShownDataType(cubDTHelper.getShownDataType(column));
-                }
-                table.addColumn(column);
             }
         } finally {
             Closer.close(rs);
@@ -638,76 +662,86 @@ public final class CUBRIDSchemaFetcher extends AbstractJDBCSchemaFetcher {
             rs = stmt.executeQuery();
 
             while (rs.next()) {
-                String tableName = rs.getString("class_name");
-                String comment = rs.getString("comment");
-                String owner = rs.getString("owner_name");
+                try {
+                    String tableName = rs.getString("class_name");
+                    String comment = rs.getString("comment");
+                    String owner = rs.getString("owner_name");
 
-                String columnComment = rs.getString("attr_comment");
+                    String columnComment = rs.getString("attr_comment");
 
-                comment = commentEditor(comment);
-                columnComment = commentEditor(columnComment);
+                    comment = commentEditor(comment);
+                    columnComment = commentEditor(columnComment);
 
-                if (tableName == null) {
-                    continue;
+                    if (tableName == null) {
+                        continue;
+                    }
+                    if (filter != null && filter.filter(null, tableName)) {
+                        // CUBRID is one DB one schema
+                        continue;
+                    }
+                    Table table = tables.get(owner + "." + tableName);
+                    if (table == null) {
+                        table = factory.createTable();
+                        table.setName(tableName);
+                        table.setComment(comment);
+                        table.setOwner(owner);
+                        table.setReuseOID(isYes(rs.getString("is_reuse_oid_class")));
+                        schema.addTable(table);
+
+                        tables.put(owner + "." + tableName, table);
+                    }
+
+                    String attrName = rs.getString("attr_name");
+                    boolean isShared = "SHARED".equals(rs.getString("attr_type"));
+                    String dataTypeInView = rs.getString("data_type");
+                    String domainClassName = rs.getString("domain_class_name");
+                    Integer prec = rs.getInt("prec");
+                    Integer scale = rs.getInt("scale");
+
+                    Column column = factory.createColumn();
+                    column.setName(attrName);
+                    column.setShared(isShared);
+                    if (cubDTHelper.isObjectType(dataTypeInView)) {
+                        column.setDataType(domainClassName);
+                    } else {
+                        String standardDataType = getStdDataType(dataTypeInView);
+                        column.setDataType(standardDataType);
+                        column.setJdbcIDOfDataType(
+                                cubDTHelper.getCUBRIDDataTypeID(standardDataType));
+                    }
+                    column.setPrecision(prec);
+                    column.setScale(scale);
+                    column.setComment(columnComment);
+
+                    String isNull = rs.getString("is_nullable");
+                    column.setNullable(isYes(isNull));
+
+                    String defaultValue = rs.getString("default_value");
+                    if (column.isShared()) {
+                        column.setSharedValue(defaultValue);
+                        column.setDefaultValue(null);
+                    } else {
+                        column.setSharedValue(null);
+                        column.setDefaultValue(defaultValue);
+                    }
+                    if (cubDTHelper.isEnum(dataTypeInView)) {
+                        String realDataType =
+                                fetchEnumType(conn, schema.getName(), tableName, attrName);
+                        DataTypeInstance dti = cubDTHelper.parseDTInstance(realDataType);
+                        column.setDataTypeInstance(dti);
+                    }
+                    if (!cubDTHelper.isCollection(dataTypeInView)) {
+                        column.setShownDataType(cubDTHelper.getShownDataType(column));
+                    }
+                    table.addColumn(column);
+                } catch (Exception ex) {
+                    LOG.error(
+                            "Failed to build table schema from metadata. schema={}, table={}, column={}",
+                            schema.getName(),
+                            rs.getString("class_name"),
+                            rs.getString("attr_name"),
+                            ex);
                 }
-                if (filter != null && filter.filter(null, tableName)) {
-                    // CUBRID is one DB one schema
-                    continue;
-                }
-                Table table = tables.get(owner + "." + tableName);
-                if (table == null) {
-                    table = factory.createTable();
-                    table.setName(tableName);
-                    table.setComment(comment);
-                    table.setOwner(owner);
-                    table.setReuseOID(isYes(rs.getString("is_reuse_oid_class")));
-                    schema.addTable(table);
-
-                    tables.put(owner + "." + tableName, table);
-                }
-
-                String attrName = rs.getString("attr_name");
-                boolean isShared = "SHARED".equals(rs.getString("attr_type"));
-                String dataTypeInView = rs.getString("data_type");
-                String domainClassName = rs.getString("domain_class_name");
-                Integer prec = rs.getInt("prec");
-                Integer scale = rs.getInt("scale");
-
-                Column column = factory.createColumn();
-                column.setName(attrName);
-                column.setShared(isShared);
-                if (cubDTHelper.isObjectType(dataTypeInView)) {
-                    column.setDataType(domainClassName);
-                } else {
-                    String standardDataType = getStdDataType(dataTypeInView);
-                    column.setDataType(standardDataType);
-                    column.setJdbcIDOfDataType(cubDTHelper.getCUBRIDDataTypeID(standardDataType));
-                }
-                column.setPrecision(prec);
-                column.setScale(scale);
-                column.setComment(columnComment);
-
-                String isNull = rs.getString("is_nullable");
-                column.setNullable(isYes(isNull));
-
-                String defaultValue = rs.getString("default_value");
-                if (column.isShared()) {
-                    column.setSharedValue(defaultValue);
-                    column.setDefaultValue(null);
-                } else {
-                    column.setSharedValue(null);
-                    column.setDefaultValue(defaultValue);
-                }
-                if (cubDTHelper.isEnum(dataTypeInView)) {
-                    String realDataType =
-                            fetchEnumType(conn, schema.getName(), tableName, attrName);
-                    DataTypeInstance dti = cubDTHelper.parseDTInstance(realDataType);
-                    column.setDataTypeInstance(dti);
-                }
-                if (!cubDTHelper.isCollection(dataTypeInView)) {
-                    column.setShownDataType(cubDTHelper.getShownDataType(column));
-                }
-                table.addColumn(column);
             }
         } finally {
             Closer.close(rs);
@@ -1101,27 +1135,31 @@ public final class CUBRIDSchemaFetcher extends AbstractJDBCSchemaFetcher {
             rs = stmt.executeQuery(sql);
 
             while (rs.next()) {
-                String tableName = rs.getString("class_name");
-                String attrName = rs.getString("attr_name");
-                String dataType = rs.getString("data_type");
+                try {
+                    String tableName = rs.getString("class_name");
+                    String attrName = rs.getString("attr_name");
+                    String dataType = rs.getString("data_type");
 
-                //				String type = rs.getString("attr_type");
-                Integer precision = rs.getInt("prec");
-                Integer scale = rs.getInt("scale");
-                dataType = getStdDataType(dataType);
+                    //				String type = rs.getString("attr_type");
+                    Integer precision = rs.getInt("prec");
+                    Integer scale = rs.getInt("scale");
+                    dataType = getStdDataType(dataType);
 
-                tableName = schema.getName() + "." + tableName;
-                Table table = tables.get(tableName);
-                if (table == null) {
-                    continue;
+                    tableName = schema.getName() + "." + tableName;
+                    Table table = tables.get(tableName);
+                    if (table == null) {
+                        continue;
+                    }
+
+                    Column cubridColumn = table.getColumnByName(attrName);
+                    cubridColumn.setSubDataType(dataType);
+                    cubridColumn.setJdbcIDOfSubDataType(cubDTHelper.getCUBRIDDataTypeID(dataType));
+                    cubridColumn.setPrecision(precision);
+                    cubridColumn.setScale(scale);
+                    cubridColumn.setShownDataType(cubDTHelper.getShownDataType(cubridColumn));
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
-
-                Column cubridColumn = table.getColumnByName(attrName);
-                cubridColumn.setSubDataType(dataType);
-                cubridColumn.setJdbcIDOfSubDataType(cubDTHelper.getCUBRIDDataTypeID(dataType));
-                cubridColumn.setPrecision(precision);
-                cubridColumn.setScale(scale);
-                cubridColumn.setShownDataType(cubDTHelper.getShownDataType(cubridColumn));
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -1525,37 +1563,42 @@ public final class CUBRIDSchemaFetcher extends AbstractJDBCSchemaFetcher {
                     comment = commentEditor(comment);
                 }
 
-                Column column = factory.createColumn();
-                column.setName(attrName);
-                column.setShared(isShared);
-                if ("OBJECT".equals(dataTypeInView)) {
-                    column.setDataType(domainClassName);
-                } else {
-                    String standardDataType = getStdDataType(dataTypeInView);
-                    column.setDataType(standardDataType);
-                    column.setJdbcIDOfDataType(cubDTHelper.getCUBRIDDataTypeID(standardDataType));
-                }
+                try {
+                    Column column = factory.createColumn();
+                    column.setName(attrName);
+                    column.setShared(isShared);
+                    if ("OBJECT".equals(dataTypeInView)) {
+                        column.setDataType(domainClassName);
+                    } else {
+                        String standardDataType = getStdDataType(dataTypeInView);
+                        column.setDataType(standardDataType);
+                        column.setJdbcIDOfDataType(
+                                cubDTHelper.getCUBRIDDataTypeID(standardDataType));
+                    }
 
-                column.setPrecision(prec);
-                column.setScale(scale);
-                column.setComment(comment);
-                table.addColumn(column);
+                    column.setPrecision(prec);
+                    column.setScale(scale);
+                    column.setComment(comment);
+                    table.addColumn(column);
 
-                if (isYes(isNull)) { // null
-                    column.setNullable(true);
-                } else {
-                    column.setNullable(false);
-                }
-                if (column.isShared()) {
-                    column.setSharedValue(defaultValue);
-                    column.setDefaultValue(null);
-                } else {
-                    column.setSharedValue(null);
-                    column.setDefaultValue(defaultValue);
-                }
+                    if (isYes(isNull)) { // null
+                        column.setNullable(true);
+                    } else {
+                        column.setNullable(false);
+                    }
+                    if (column.isShared()) {
+                        column.setSharedValue(defaultValue);
+                        column.setDefaultValue(null);
+                    } else {
+                        column.setSharedValue(null);
+                        column.setDefaultValue(defaultValue);
+                    }
 
-                if (!cubDTHelper.isCollection(dataTypeInView)) {
-                    column.setShownDataType(cubDTHelper.getShownDataType(column));
+                    if (!cubDTHelper.isCollection(dataTypeInView)) {
+                        column.setShownDataType(cubDTHelper.getShownDataType(column));
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
             }
         } finally {
