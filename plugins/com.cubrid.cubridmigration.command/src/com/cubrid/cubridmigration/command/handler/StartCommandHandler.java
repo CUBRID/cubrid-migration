@@ -468,17 +468,6 @@ public class StartCommandHandler implements ConsoleCommandHandler {
         }
     }
 
-    /** Print final result banner, quick failure summary and report location. */
-    private void printFinalResultBanner(
-            MigrationReport mr, ConsoleMigrationReporter migrationReporter) {
-        boolean hasError = mr.hasError();
-        outPrinter.println();
-        outPrinter.println(
-                hasError
-                        ? "==================== RESULT: FAILED ====================="
-                        : "==================== RESULT: SUCCESS ====================");
-    }
-
     /**
      * Print report information onto screen after migration.
      *
@@ -487,8 +476,8 @@ public class StartCommandHandler implements ConsoleCommandHandler {
     private void printReport(ConsoleMigrationReporter migrationReporter) {
         MigrationReport mr = migrationReporter.getReport();
 
-        printFinalResultBanner(mr, migrationReporter);
-
+        outPrinter.println();
+        outPrinter.println("-------------------------------------------------------------");
         outPrinter.println("Migration Report summary:");
         outPrinter.print("    Time used: ");
         outPrinter.print(TimeZoneUtils.format(mr.getTotalEndTime() - mr.getTotalStartTime()));
@@ -521,7 +510,8 @@ public class StartCommandHandler implements ConsoleCommandHandler {
                 outPrinter.println();
             }
         }
-        outPrinter.println("--------------------------------------------------------");
+        outPrinter.println("-------------------------------------------------------------");
+        outPrinter.println();
         // Write report to a local text file
         String txtFile =
                 PathUtils.getReportDir()
