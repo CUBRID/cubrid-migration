@@ -602,6 +602,11 @@ public class StartCommandHandler implements ConsoleCommandHandler {
         } catch (IOException ex) {
             LOG.error("", ex);
         }
+
+        String finalResult = mr.hasError() ? "FAILED" : "SUCCESS";
+        outPrinter.println("=============================================================");
+        outPrinter.println("MIGRATION RESULT: " + finalResult);
+        outPrinter.println("=============================================================");
     }
 
     /**
