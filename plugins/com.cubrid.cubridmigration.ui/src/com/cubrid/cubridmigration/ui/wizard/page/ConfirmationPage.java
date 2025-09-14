@@ -218,12 +218,9 @@ public class ConfirmationPage extends BaseConfirmationPage {
             text.append(migration.getTargetDataFileFormatLabel());
             text.append(")").append(lineSeparator).append(tabSeparator);
 
-            text.append(Messages.confirmDatabaseType)
+            text.append(Messages.confirmMultipleSchemas)
                     .append("  ")
-                    .append(
-                            migration.isAddUserSchema()
-                                    ? Messages.confirmCubrid112Higher
-                                    : Messages.confirmCubrid110Lower)
+                    .append(migration.isAddUserSchema() ? "Yes" : "No")
                     .append(lineSeparator)
                     .append(tabSeparator);
 

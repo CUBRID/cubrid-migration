@@ -241,6 +241,7 @@ public class Messages extends NLS {
     public static String confirmMessage;
     public static String confirmMigrationPageDescription;
     public static String confirmMigrationPageTile;
+    public static String confirmMultipleSchemas;
     public static String confirmPath;
     public static String confirmPort;
     public static String confirmSettingsSourceDatabase;
