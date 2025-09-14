@@ -46,6 +46,8 @@ import org.apache.commons.lang3.StringUtils;
  */
 public class ConsoleUtils {
 
+    public static final String EMPTY_CELL_VALUE = "-";
+
     /**
      * Reading console input
      *

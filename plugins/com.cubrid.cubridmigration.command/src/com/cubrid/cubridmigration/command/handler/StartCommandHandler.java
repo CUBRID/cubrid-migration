@@ -566,11 +566,21 @@ public class StartCommandHandler implements ConsoleCommandHandler {
                     bw.append(rmr.getTarget());
                     bw.append("]");
                     bw.append(":");
-                    bw.append(" Exported:[");
-                    bw.append(Long.toString(rmr.getExpCount()));
-                    bw.append("] Imported:[");
-                    bw.append(Long.toString(rmr.getImpCount()));
-                    bw.append("]\r\n");
+                    if (!rmr.isDataMigrationSelected()) {
+                        bw.append(
+                                " Exported:["
+                                        + ConsoleUtils.EMPTY_CELL_VALUE
+                                        + "] Imported:["
+                                        + ConsoleUtils.EMPTY_CELL_VALUE
+                                        + "]");
+                    } else {
+                        bw.append(" Exported:[");
+                        bw.append(Long.toString(rmr.getExpCount()));
+                        bw.append("] Imported:[");
+                        bw.append(Long.toString(rmr.getImpCount()));
+                        bw.append("]");
+                    }
+                    bw.append("\r\n");
                 }
                 bw.flush();
             } finally {
