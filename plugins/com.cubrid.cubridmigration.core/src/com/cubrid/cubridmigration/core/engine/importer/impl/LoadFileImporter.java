@@ -234,14 +234,16 @@ public class LoadFileImporter extends OfflineImporter {
                             eventHandler.handleEvent(new ImportRecordsEvent(stc, impCount));
                             final MigrationStatusManager sm = mrManager.getStatusMgr();
                             sm.addImpCount(stc.getOwner(), stc.getName(), expCount);
+                            if (config.targetIsCSV()
+                                    || config.targetIsXLS()
+                                    || config.isOneTableOneFile()) {
+                                return;
+                            }
                             final Table st =
                                     config.getSrcTableSchema(stc.getOwner(), stc.getName());
-                            boolean skipMerge =
-                                    (config.targetIsCSV()
-                                            || config.targetIsXLS()
-                                            || config.isOneTableOneFile()
-                                            || st == null);
-                            if (skipMerge) return;
+                            if (null == st) {
+                                return;
+                            }
                             final long totalEc = sm.getExpCount(stc.getOwner(), stc.getName());
                             final long totalIc = sm.getImpCount(stc.getOwner(), stc.getName());
                             final boolean expEnd = sm.getExpFlag(stc.getOwner(), stc.getName());
