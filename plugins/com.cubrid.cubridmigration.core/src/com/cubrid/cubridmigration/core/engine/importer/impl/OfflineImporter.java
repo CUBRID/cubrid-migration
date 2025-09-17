@@ -160,11 +160,6 @@ public abstract class OfflineImporter extends Importer {
                             new PrintWriter(file, config.getTargetCharSet()),
                             CUBRIDIOUtils.DEFAULT_MEMORY_CACHE_SIZE);
             try {
-                String header = getDataFileHeader(stc);
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("[VAR]header=" + header);
-                }
-                pw.write(header);
                 // The template LOB files path in local.
                 List<String> lobFiles = new ArrayList<String>();
                 int total = 0;
@@ -571,7 +566,7 @@ public abstract class OfflineImporter extends Importer {
             sb.append(spliter).append("[").append(col.getTarget()).append("]");
             spliter = " ";
         }
-        sb.append(")\n");
+        sb.append(")");
         return sb.toString();
     }
 
