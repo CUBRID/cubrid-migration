@@ -385,5 +385,17 @@
 			<scale></scale>
 		</TargetDataType>
 	</DataTypeMapping>
-	
+
+	<DataTypeMapping>
+	    <SourceDataType>
+	        <type>json</type>
+	        <precision></precision>
+	        <scale></scale>
+	    </SourceDataType>
+	    <TargetDataType>
+	        <type>json</type>
+	        <precision></precision>
+	        <scale></scale>
+	    </TargetDataType>
+	</DataTypeMapping>
 </CUBRID2CUBRID>

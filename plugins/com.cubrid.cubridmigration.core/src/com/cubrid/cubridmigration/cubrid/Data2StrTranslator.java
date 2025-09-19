@@ -152,6 +152,9 @@ public class Data2StrTranslator implements IData2StrTranslator {
                     DataTypeConstant.CUBRID_DT_DATETIME,
                     new CSVCharToCUBRIDString(new DatetimeToCUBRIDString(config), config));
             formaters.put(DataTypeConstant.CUBRID_DT_NUMERIC, new NumericToCUBRIDString());
+            formaters.put(
+                    DataTypeConstant.CUBRID_DT_JSON,
+                    new CSVCharToCUBRIDString(new CharToCUBRIDString(), config));
         } else {
             formaters.put(
                     DataTypeConstant.CUBRID_DT_BIT,
@@ -189,6 +192,9 @@ public class Data2StrTranslator implements IData2StrTranslator {
             formaters.put(
                     DataTypeConstant.CUBRID_DT_NUMERIC,
                     new UnloadNumericToCUBRIDString(new NumericToCUBRIDString()));
+            formaters.put(
+                    DataTypeConstant.CUBRID_DT_JSON,
+                    new UnloadCharToCUBRIDString(new CharToCUBRIDString()));
         }
     }
 
