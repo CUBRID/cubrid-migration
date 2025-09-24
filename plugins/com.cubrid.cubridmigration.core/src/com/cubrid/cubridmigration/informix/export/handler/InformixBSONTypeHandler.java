@@ -30,11 +30,15 @@
 
 package com.cubrid.cubridmigration.informix.export.handler;
 
+import com.cubrid.common.log.LogUtil;
 import com.cubrid.cubridmigration.core.dbobject.Column;
 import com.cubrid.cubridmigration.core.export.IExportDataHandler;
-import java.lang.reflect.Method;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import org.bson.RawBsonDocument;
+import org.bson.json.JsonMode;
+import org.bson.json.JsonWriterSettings;
+import org.slf4j.Logger;
 
 /**
  * InformixBSONTypeHandler Description
@@ -45,33 +49,27 @@ import java.sql.SQLException;
  */
 public class InformixBSONTypeHandler implements IExportDataHandler {
 
+    private static final Logger LOG = LogUtil.getLogger(InformixBSONTypeHandler.class);
+    private static final JsonWriterSettings JSON_SETTINGS =
+            JsonWriterSettings.builder().outputMode(JsonMode.RELAXED).build();
+
     /**
-     * Retrieves the value object of year column.
+     * Retrieves the value object of BSON column.
      *
      * @param rs the result set
      * @param column column description
-     * @return value of column
+     * @return JSON string representation of BSON column
      * @throws SQLException e
      */
     public Object getJdbcObject(ResultSet rs, Column column) throws SQLException {
-
+        final String colName = column.getName();
+        final byte[] bytes = rs.getBytes(colName);
+        if (bytes == null) return null;
         try {
-
-            try {
-                Class<?> c = Class.forName("com.informix.jdbc.IfxBSONObject");
-                byte[] b = rs.getBytes(column.getName());
-                Object o = c.newInstance();
-                Method method = o.getClass().getMethod("setBytes", byte[].class);
-                method.invoke(o, b);
-                Method method1 = o.getClass().getMethod("toJson");
-                String value = (String) method1.invoke(o);
-                return value;
-            } catch (Exception e) {
-                e.printStackTrace();
-                return "";
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
+            RawBsonDocument doc = new RawBsonDocument(bytes);
+            return doc.toJson(JSON_SETTINGS);
+        } catch (RuntimeException ex) {
+            LOG.warn("Failed to convert Informix BSON to JSON. column={}", colName, ex);
             return "";
         }
     }
