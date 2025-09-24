@@ -630,7 +630,7 @@ public class SchemaMappingPage extends MigrationWizardPage {
                 }
 
                 if (tarSchemaName == null || tarSchemaName.isEmpty()) {
-                    srcTable.setTarSchema(tarCatalog.getName());
+                    srcTable.setTarSchema(srcTable.getSrcSchema());
                 }
 
                 logger.info("srcTable target schema : " + srcTable.getTarSchema());
