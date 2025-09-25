@@ -777,32 +777,7 @@ public class CUBRIDSQLHelper extends SQLHelper {
      * @return String
      */
     public String getTestSelectSQL(String sql) {
-        String cleanSql = sql.toUpperCase().trim();
-        String realSQL = sql;
-        Pattern groupbyPattern =
-                Pattern.compile("GROUP\\s+BY", Pattern.MULTILINE | Pattern.CASE_INSENSITIVE);
-        Pattern orderbyPattern =
-                Pattern.compile("ORDER\\s+BY", Pattern.MULTILINE | Pattern.CASE_INSENSITIVE);
-        realSQL = realSQL.replaceAll(LIMIT_PATTEN_1, "");
-        realSQL = realSQL.replaceAll(LIMIT_PATTEN_2, "");
-        Matcher groupbyMatcher = groupbyPattern.matcher(cleanSql);
-        Matcher orderbyMatcher = orderbyPattern.matcher(cleanSql);
-        StringBuilder buf = new StringBuilder(realSQL);
-        if (groupbyMatcher.find()) {
-            if (cleanSql.indexOf("HAVING") == -1) {
-                buf.append(" HAVING ");
-            } else {
-                buf.append(" AND ");
-            }
-            buf.append(" GROUPBY_NUM() = 1 ");
-        } else if (orderbyMatcher.find()) {
-            buf.append(" FOR ORDERBY_NUM() = 1 ");
-        } else if (cleanSql.indexOf("WHERE") != -1) {
-            buf.append(" AND ROWNUM = 1");
-        } else {
-            buf.append(" WHERE ROWNUM = 1");
-        }
-        return buf.toString();
+        return "SELECT * FROM ( " + sql + " ) WHERE 1<>1";
     }
 
     /**
