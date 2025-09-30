@@ -923,6 +923,7 @@ public final class CUBRIDSchemaFetcher extends AbstractJDBCSchemaFetcher {
                         continue;
                     }
 
+                    // CUBRID JDBC 11.2 returns "schema.table", 11.3 returns "table" only.
                     String referencedTable = fkTableName;
                     int dotIndex = fkTableName.indexOf('.');
                     if (dotIndex >= 0) {
