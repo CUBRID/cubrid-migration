@@ -923,10 +923,15 @@ public final class CUBRIDSchemaFetcher extends AbstractJDBCSchemaFetcher {
                         continue;
                     }
 
-                    String noSchemaFkTableName = fkTableName.split("\\.")[1];
-                    foreignKey.setReferencedTableName(noSchemaFkTableName);
-
-                    //					foreignKey.setReferencedTableName(fkTableName);
+                    String referencedTable = fkTableName;
+                    int dotIndex = fkTableName.indexOf('.');
+                    if (dotIndex >= 0) {
+                        String[] parts = fkTableName.split("\\.", 2);
+                        if (parts.length == 2) {
+                            referencedTable = parts[1];
+                        }
+                    }
+                    foreignKey.setReferencedTableName(referencedTable);
 
                     // foreignKey.setDeferability(rs.getInt("DEFERRABILITY"));
 
