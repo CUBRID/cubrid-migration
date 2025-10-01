@@ -445,6 +445,27 @@ public abstract class DBExportHelper implements IDependOnDatabaseType {
             String sql, long pageSize, long exportedRecords, PK pk);
 
     /**
+     * Retrieves the SQL with page condition. Overload that is aware of SourceTableConfig type.
+     *
+     * <p>Policy: If it is a user-provided SQL (SourceSQLTableConfig), pagination MUST NOT be
+     * applied and the original SQL should be returned as-is.
+     *
+     * @param stc SourceTableConfig
+     * @param sql original SQL
+     * @param pageSize record count per-page
+     * @param exportedRecords record count to be skipped.
+     * @param pk table's primary key
+     * @return SQL (paginated or original)
+     */
+    public String getPagedSelectSQL(
+            SourceTableConfig stc, String sql, long pageSize, long exportedRecords, PK pk) {
+        if (stc instanceof SourceSQLTableConfig) {
+            return sql;
+        }
+        return getPagedSelectSQL(sql, pageSize, exportedRecords, pk);
+    }
+
+    /**
      * Is support fast search with PK.
      *
      * @param conn Connection

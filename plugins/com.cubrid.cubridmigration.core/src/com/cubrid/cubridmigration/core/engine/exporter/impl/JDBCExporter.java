@@ -264,7 +264,8 @@ public class JDBCExporter extends MigrationExporter {
                     realPageCount =
                             Math.min(sTable.getTableRowCount() - totalExported, intPageCount);
                 }
-                String pagesql = expHelper.getPagedSelectSQL(sql, realPageCount, totalExported, pk);
+                String pagesql =
+                        expHelper.getPagedSelectSQL(stc, sql, realPageCount, totalExported, pk);
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("[SQL]PAGINATED=" + pagesql);
                 }
