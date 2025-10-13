@@ -127,7 +127,7 @@ public class ExportScriptDialog extends TransFileBySSHDialog {
         btnEnableLocal.setText(Messages.btnExportScript2Local);
         btnEnableLocal.setSelection(prefers.getBoolean(EXPORT_LOCAL, true));
         String rf = getDefaultScriptFileName();
-        txtLocal.setText(PathUtils.getUserHomeDir() + rf);
+        txtLocal.setText(PathUtils.getInstallPath() + rf);
         btnBrowseLocal.addSelectionListener(
                 new SelectionAdapter() {
 
