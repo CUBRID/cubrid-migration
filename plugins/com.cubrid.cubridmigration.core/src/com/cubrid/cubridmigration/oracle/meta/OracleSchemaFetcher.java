@@ -700,7 +700,7 @@ public final class OracleSchemaFetcher extends AbstractJDBCSchemaFetcher {
                         } else if ("SET NULL".equalsIgnoreCase(deleteRule)) {
                             foreignKey.setDeleteRule(FK.ON_DELETE_SET_NULL);
                         } else {
-                            foreignKey.setDeleteRule(FK.ON_DELETE_RESTRICT);
+                            foreignKey.setDeleteRule(FK.ON_DELETE_NO_ACTION);
                         }
 
                         foreignKey.setReferencedTableName(rs.getString("PK_TABLE_NAME"));
