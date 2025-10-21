@@ -32,50 +32,34 @@ package com.cubrid.cubridmigration.core.engine.template.writer;
 import static com.cubrid.cubridmigration.core.engine.template.MigrationTemplateUtils.*;
 import static com.cubrid.cubridmigration.core.engine.template.TemplateTags.*;
 
-import com.cubrid.common.log.LogUtil;
 import com.cubrid.cubridmigration.core.engine.config.MigrationConfiguration;
-import java.io.FileOutputStream;
-import javax.xml.stream.XMLOutputFactory;
+import com.cubrid.cubridmigration.mysql.trans.MySQL2CUBRIDMigParas;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
-import org.slf4j.Logger;
 
-public final class MigrationTemplateWriter {
-    private static final Logger log = LogUtil.getLogger(MigrationTemplateWriter.class);
+public class ParametersNodeWriter {
 
-    private MigrationTemplateWriter() {}
+    public void write(XMLStreamWriter writer, MigrationConfiguration config)
+            throws XMLStreamException {
+        writer.writeEmptyElement(TAG_PARAMS);
+        writer.writeAttribute(ATTR_EXPORT_THREAD, String.valueOf(config.getExportThreadCount()));
+        writer.writeAttribute(ATTR_IMPORT_THREAD, String.valueOf(config.getImportThreadCount()));
+        writer.writeAttribute(ATTR_COMMIT_COUNT, String.valueOf(config.getCommitCount()));
+        writer.writeAttribute(ATTR_PAGE_FETCH_COUNT, String.valueOf(config.getPageFetchCount()));
+        writer.writeAttribute(
+                ATTR_IMPLICIT_ESTIMATE_PROGRESS, getBooleanString(config.isImplicitEstimate()));
+        writer.writeAttribute(
+                ATTR_UPDATE_STATISTICS, getBooleanString(config.isUpdateStatistics()));
 
-    public static void save(MigrationConfiguration config, String fileName, boolean saveSchema) {
-        XMLStreamWriter writer = null;
-        try {
-            XMLOutputFactory factory = XMLOutputFactory.newInstance();
-            writer =
-                    new IndentingXMLStreamWriter(
-                            factory.createXMLStreamWriter(new FileOutputStream(fileName), UTF_8));
-
-            writer.writeStartDocument(UTF_8, "1.0");
-            writer.writeStartElement(TAG_MIGRATION);
-            writer.writeAttribute(ATTR_NAME, config.getName());
-            writer.writeAttribute(ATTR_VERSION, "11.1.0");
-            writer.writeAttribute(ATTR_WIZARD_START_DATE_TIME, config.getWizardStartDateTime());
-
-            new SourceNodeWriter().write(writer, config, saveSchema);
-            new TargetNodeWriter().write(writer, config);
-            new ParametersNodeWriter().write(writer, config);
-
-            writer.writeEndElement(); // </migration>
-            writer.writeEndDocument();
-        } catch (Exception e) {
-            log.error("Failed to save migration script to file: " + fileName, e);
-            throw new RuntimeException("Failed to save migration script.", e);
-        } finally {
-            if (writer != null) {
-                try {
-                    writer.close();
-                } catch (XMLStreamException e) {
-                    log.error("Error closing XMLStreamWriter", e);
-                }
-            }
+        if (config.hasOtherParam()) {
+            String s1 = config.getOtherParam(MySQL2CUBRIDMigParas.UNPARSED_TIME);
+            writer.writeAttribute(MySQL2CUBRIDMigParas.UNPARSED_TIME, s1 == null ? "" : s1);
+            String s2 = config.getOtherParam(MySQL2CUBRIDMigParas.UNPARSED_DATE);
+            writer.writeAttribute(MySQL2CUBRIDMigParas.UNPARSED_DATE, s2 == null ? "" : s2);
+            String s3 = config.getOtherParam(MySQL2CUBRIDMigParas.UNPARSED_TIMESTAMP);
+            writer.writeAttribute(MySQL2CUBRIDMigParas.UNPARSED_TIMESTAMP, s3 == null ? "" : s3);
+            String s4 = config.getOtherParam(MySQL2CUBRIDMigParas.REPLAXE_CHAR0);
+            writer.writeAttribute(MySQL2CUBRIDMigParas.REPLAXE_CHAR0, s4 == null ? "" : s4);
         }
     }
 }

@@ -1,0 +1,463 @@
+/*
+ * Copyright (C) 2016 CUBRID Corporation.
+ *
+ * Redistribution and use in source and binary forms, with or without modification,
+ * are permitted provided that the following conditions are met:
+ *
+ * - Redistributions of source code must retain the above copyright notice,
+ *   this list of conditions and the following disclaimer.
+ *
+ * - Redistributions in binary form must reproduce the above copyright notice,
+ *   this list of conditions and the following disclaimer in the documentation
+ *   and/or other materials provided with the distribution.
+ *
+ * - Neither the name of the <ORGANIZATION> nor the names of its contributors
+ *   may be used to endorse or promote products derived from this software without
+ *   specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
+ * IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+ * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+ * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA,
+ * OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
+ * OF SUCH DAMAGE.
+ *
+ */
+package com.cubrid.cubridmigration.core.engine.template.reader;
+
+import static com.cubrid.cubridmigration.core.engine.template.MigrationTemplateUtils.*;
+import static com.cubrid.cubridmigration.core.engine.template.TemplateTags.*;
+
+import com.cubrid.cubridmigration.core.connection.ConnParameters;
+import com.cubrid.cubridmigration.core.dbobject.Column;
+import com.cubrid.cubridmigration.core.dbobject.FK;
+import com.cubrid.cubridmigration.core.dbobject.Grant;
+import com.cubrid.cubridmigration.core.dbobject.Index;
+import com.cubrid.cubridmigration.core.dbobject.PK;
+import com.cubrid.cubridmigration.core.dbobject.PartitionInfo;
+import com.cubrid.cubridmigration.core.dbobject.PartitionTable;
+import com.cubrid.cubridmigration.core.dbobject.PlcsqlFunction;
+import com.cubrid.cubridmigration.core.dbobject.PlcsqlProcedure;
+import com.cubrid.cubridmigration.core.dbobject.Schema;
+import com.cubrid.cubridmigration.core.dbobject.Sequence;
+import com.cubrid.cubridmigration.core.dbobject.Synonym;
+import com.cubrid.cubridmigration.core.dbobject.Table;
+import com.cubrid.cubridmigration.core.dbobject.View;
+import com.cubrid.cubridmigration.core.dbtype.DatabaseType;
+import com.cubrid.cubridmigration.core.engine.config.MigrationConfiguration;
+import com.cubrid.cubridmigration.cubrid.CUBRIDDataTypeHelper;
+import java.math.BigInteger;
+import java.util.List;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.xml.sax.Attributes;
+import org.xml.sax.helpers.DefaultHandler;
+
+public class TargetNodeHandler extends DefaultHandler {
+
+    private final MigrationConfiguration config;
+
+    private Table targetTable;
+    private View targetView;
+    private StringBuffer sqlStatement;
+    private StringBuffer schemaCache;
+
+    private final CUBRIDDataTypeHelper dtHelper = CUBRIDDataTypeHelper.getInstance(null);
+
+    public TargetNodeHandler(MigrationConfiguration config) {
+        this.config = config;
+    }
+
+    public void processAttributes(Attributes attributes) {
+        config.setTargetDBVersion(attributes.getValue(ATTR_VERSION));
+        String type = attributes.getValue(ATTR_TYPE);
+        config.setDestType(MigrationConfiguration.DEST_ONLINE);
+        if (VALUE_ONLINE.equalsIgnoreCase(type)) {
+            config.setDestType(MigrationConfiguration.DEST_ONLINE);
+        } else if (VALUE_DIR.equalsIgnoreCase(type)) {
+            config.setDestType(MigrationConfiguration.DEST_DB_UNLOAD);
+        }
+    }
+
+    @Override
+    public void startElement(String uri, String localName, String qName, Attributes attributes) {
+        switch (qName) {
+            case TAG_JDBC:
+                parseTargetJDBC(attributes);
+                break;
+            case TAG_FILE_REPOSITORY:
+                parseTargetFileRepository(attributes);
+                break;
+            case TAG_SCHEMA:
+                schemaCache = new StringBuffer();
+                break;
+            case TAG_SCHEMA_INFO:
+                parseTargetSchemaInfo(attributes);
+                break;
+            case TAG_TABLE:
+                parseTargetTable(attributes);
+                break;
+            case TAG_COLUMN:
+                parseTargetColumn(attributes);
+                break;
+            case TAG_PK:
+                parseTargetPK(attributes);
+                break;
+            case TAG_FK:
+                parseTargetFK(attributes);
+                break;
+            case TAG_INDEX:
+                parseTargetIndex(attributes);
+                break;
+            case TAG_PARTITIONS:
+                parseTargetPartition(attributes);
+                break;
+            case TAG_RANGE:
+            case TAG_LIST:
+                parseTargetRangePartition(attributes);
+                break;
+            case TAG_HASH:
+                parseTargetHashPartition(attributes);
+                break;
+            case TAG_VIEW:
+                parseTargetView(attributes);
+                break;
+            case TAG_VIEWCOLUMN:
+                parseTargetViewColumn(attributes);
+                break;
+            case TAG_SEQUENCE:
+                parseTargetSequence(attributes);
+                break;
+            case TAG_SYNONYM:
+                parseTargetSynonym(attributes);
+                break;
+            case TAG_GRANT:
+                parseTargetGrant(attributes);
+                break;
+            case TAG_PLCSQL_PROCEDURE:
+                parseTargetPlcsqlProcedure(attributes);
+                break;
+            case TAG_PLCSQL_FUNCTION:
+                parseTargetPlcsqlFunction(attributes);
+                break;
+            case TAG_VIEWQUERYSQL:
+            case TAG_CREATEVIEWSQL:
+            case TAG_PARTITION_DDL:
+                sqlStatement = new StringBuffer();
+        }
+    }
+
+    @Override
+    public void endElement(String uri, String localName, String qName) {
+        switch (qName) {
+            case TAG_TABLE:
+                targetTable = null;
+                break;
+            case TAG_VIEW:
+                targetView = null;
+                break;
+            case TAG_VIEWQUERYSQL:
+                targetView.setQuerySpec(sqlStatement.toString().trim());
+                sqlStatement = null;
+                break;
+            case TAG_CREATEVIEWSQL:
+                targetView.setDDL(sqlStatement.toString().trim());
+                sqlStatement = null;
+                break;
+            case TAG_PARTITION_DDL:
+                targetTable.getPartitionInfo().setDDL(sqlStatement.toString());
+                sqlStatement = null;
+        }
+    }
+
+    @Override
+    public void characters(char[] ch, int start, int length) {
+        if (schemaCache != null) {
+            schemaCache.append(ch, start, length);
+            return;
+        }
+        if (sqlStatement == null) {
+            return;
+        }
+        sqlStatement.append(ch, start, length);
+    }
+
+    /** @param attributes of node */
+    private void parseTargetJDBC(Attributes attributes) {
+        ConnParameters cp =
+                ConnParameters.getConParam(
+                        null,
+                        attributes.getValue(ATTR_HOST),
+                        Integer.parseInt(attributes.getValue(ATTR_PORT)),
+                        attributes.getValue(ATTR_NAME),
+                        DatabaseType.CUBRID,
+                        attributes.getValue(ATTR_CHARSET),
+                        attributes.getValue(ATTR_USER),
+                        attributes.getValue(ATTR_PASSWORD),
+                        attributes.getValue(ATTR_DRIVER),
+                        attributes.getValue(ATTR_SCHEMA));
+        cp.setUserJDBCURL(attributes.getValue(ATTR_USER_JDBC_URL));
+        cp.setTimeZone(attributes.getValue(ATTR_TIMEZONE));
+
+        config.setTargetConParams(cp);
+        config.setCreateConstrainsBeforeData(
+                getBoolean(attributes.getValue(ATTR_CREATE_CONSTRAINT_NOW), false));
+        config.setWriteErrorRecords(
+                getBoolean(attributes.getValue(ATTR_WRITE_ERROR_RECORDS), false));
+        config.setAddUserSchema(getBoolean(attributes.getValue(ATTR_ADD_SCHEMA), false));
+    }
+
+    private void parseTargetFileRepository(Attributes attributes) {
+        config.setFileRepositroyPath(attributes.getValue(ATTR_DIR));
+        config.setTargetFileTimeZone(attributes.getValue(ATTR_TIMEZONE));
+        config.setOneTableOneFile(getBoolean(attributes.getValue(ATTR_ONETABLEONEFILE), false));
+        final String fileMaxSize = attributes.getValue(ATTR_FILE_MAX_SIZE);
+        config.setMaxCountPerFile(fileMaxSize == null ? 0 : Integer.parseInt(fileMaxSize));
+        config.setTargetFilePrefix(attributes.getValue(ATTR_OUTPUT_FILE_PREFIX));
+        try {
+            config.setDestType(Integer.parseInt(attributes.getValue(ATTR_DATA_FILE_FORMAT)));
+        } catch (Exception ex) {
+            config.setDestType(MigrationConfiguration.DEST_DB_UNLOAD);
+        }
+        config.setTargetCharSet(attributes.getValue(ATTR_CHARSET));
+        if (config.targetIsCSV()) {
+            String value = attributes.getValue(ATTR_CSV_SEPARATE);
+            config.getCsvSettings()
+                    .setSeparateChar(StringUtils.isEmpty(value) ? ',' : value.charAt(0));
+            value = attributes.getValue(ATTR_CSV_QUOTE);
+            config.getCsvSettings()
+                    .setQuoteChar(
+                            StringUtils.isEmpty(value)
+                                    ? MigrationConfiguration.CSV_NO_CHAR
+                                    : value.charAt(0));
+            value = attributes.getValue(ATTR_CSV_ESCAPE);
+            config.getCsvSettings()
+                    .setEscapeChar(
+                            StringUtils.isEmpty(value)
+                                    ? MigrationConfiguration.CSV_NO_CHAR
+                                    : value.charAt(0));
+        }
+        config.setTargetLOBRootPath(attributes.getValue(ATTR_LOB_ROOT_DIR));
+        config.setAddUserSchema(getBoolean(attributes.getValue(ATTR_ADD_SCHEMA), false));
+        config.setSplitSchema(getBoolean(attributes.getValue(ATTR_SPLIT_SCHEMA), false));
+        config.setCreateUserSQL(getBoolean(attributes.getValue(ATTR_CREATE_USER_SQL), false));
+        config.createDumpfile(config.isSplitSchema(), config.isOneTableOneFile());
+    }
+
+    private void parseTargetSchemaInfo(Attributes attributes) {
+        Schema schema = new Schema();
+        schema.setName(attributes.getValue(ATTR_SCHEMA_NAME));
+        schema.setTargetSchemaName(attributes.getValue(ATTR_TARGET_SCHEMA));
+        schema.setMigration(true);
+        config.addTargetSchemaList(schema);
+    }
+
+    private void parseTargetTable(Attributes attributes) {
+        targetTable = new Table();
+        targetTable.setName(attributes.getValue(ATTR_NAME));
+        targetTable.setReuseOID(getBoolean(attributes.getValue(ATTR_REUSE_OID), false));
+        targetTable.setOwner(attributes.getValue(ATTR_OWNER));
+        targetTable.setSourceOwner(attributes.getValue(ATTR_SOURCE_OWNER));
+        if (targetTable.getOwner() != null) {
+            if (targetTable.getOwner().isEmpty()) {
+                targetTable.setOwner(null);
+            }
+        }
+        targetTable.setComment(attributes.getValue(ATTR_COMMENT));
+        config.addTargetTableSchema(targetTable);
+    }
+
+    private void parseTargetColumn(Attributes attributes) {
+        Column column = new Column();
+        column.setName(attributes.getValue(ATTR_NAME));
+        column.setNullable(getBoolean(attributes.getValue(ATTR_NULL), true));
+        column.setAutoIncrement(getBoolean(attributes.getValue(ATTR_AUTO_INCREMENT), false));
+        column.setUnique(getBoolean(attributes.getValue(ATTR_UNIQUE), false));
+        column.setShared(getBoolean(attributes.getValue(ATTR_SHARED), false));
+        if (column.isShared()) {
+            column.setSharedValue(attributes.getValue(ATTR_SHARED_VALUE));
+        }
+        if (column.isAutoIncrement()) {
+            column.setAutoIncIncrVal(Integer.parseInt(attributes.getValue(ATTR_INCREMENT)));
+            column.setAutoIncSeedVal(Integer.parseInt(attributes.getValue(ATTR_START)));
+        }
+        column.setDefaultValue(attributes.getValue(ATTR_DEFAULT));
+        column.setDefaultIsExpression(
+                getBoolean(attributes.getValue(ATTR_DEFAULT_EXPRESSION), false));
+        final String type = attributes.getValue(ATTR_TYPE);
+        if (StringUtils.isEmpty(type)) {
+            System.out.println(targetTable.getName() + ":" + column.getName());
+        }
+        column.setComment(attributes.getValue(ATTR_COMMENT));
+        dtHelper.setColumnDataType(type, column);
+        targetTable.addColumn(column);
+    }
+
+    private void parseTargetPK(Attributes attributes) {
+        PK pk = new PK(targetTable);
+        targetTable.setPk(pk);
+        pk.setPkColumns(getStringList(attributes.getValue(ATTR_FIELDS)));
+    }
+
+    private void parseTargetFK(Attributes attributes) {
+        FK fk = new FK(targetTable);
+        targetTable.addFK(fk);
+        fk.setName(attributes.getValue(ATTR_NAME));
+        fk.setDeleteRule(getFKOptIndex(attributes.getValue(ATTR_ON_DELETE)));
+        fk.setUpdateRule(getFKOptIndex(attributes.getValue(ATTR_ON_UPDATE)));
+        fk.setReferencedTableName(attributes.getValue(ATTR_REF_TABLE));
+        final List<String> cols = getStringList(attributes.getValue(ATTR_FIELDS));
+        final List<String> refCols = getStringList(attributes.getValue(ATTR_REF_FIELDS));
+        if (CollectionUtils.isNotEmpty(cols)
+                && CollectionUtils.isNotEmpty(refCols)
+                && cols.size() == refCols.size()) {
+            for (int i = 0; i < cols.size(); i++) {
+                fk.addRefColumnName(cols.get(i), refCols.get(i));
+            }
+        } else {
+            targetTable.removeFK(fk.getName());
+        }
+    }
+
+    private void parseTargetIndex(Attributes attributes) {
+        Index index = new Index(targetTable);
+        index.setName(attributes.getValue(ATTR_NAME));
+
+        List<String> rules = getStringList(attributes.getValue(ATTR_ORDER_RULE));
+        List<String> columns = getStringList(attributes.getValue(ATTR_FIELDS));
+        if (CollectionUtils.isEmpty(rules)
+                || CollectionUtils.isEmpty(columns)
+                || rules.size() != columns.size()) {
+            return;
+        }
+        for (int i = 0; i < columns.size(); i++) {
+            index.addColumn(columns.get(i), rules.get(i).startsWith("A"));
+        }
+        index.setUnique(getBoolean(attributes.getValue(ATTR_UNIQUE), false));
+        index.setReverse(getBoolean(attributes.getValue(ATTR_REVERSE), false));
+
+        targetTable.addIndex(index);
+    }
+
+    private void parseTargetPartition(Attributes attributes) {
+        PartitionInfo partition = new PartitionInfo();
+        targetTable.setPartitionInfo(partition);
+        partition.setPartitionExp(attributes.getValue(ATTR_EXPRESSION));
+        partition.setPartitionMethod(attributes.getValue(ATTR_TYPE));
+    }
+
+    private void parseTargetRangePartition(Attributes attributes) {
+        PartitionTable pt = new PartitionTable();
+        pt.setPartitionName(attributes.getValue(ATTR_NAME));
+        pt.setPartitionDesc(attributes.getValue(ATTR_VALUE));
+        targetTable.getPartitionInfo().addPartition(pt);
+    }
+
+    private void parseTargetHashPartition(Attributes attributes) {
+        PartitionTable pt = new PartitionTable();
+        pt.setPartitionName(attributes.getValue(ATTR_NAME));
+        targetTable.getPartitionInfo().addPartition(pt);
+    }
+
+    private void parseTargetView(Attributes attributes) {
+        targetView = new View();
+        targetView.setOwner(attributes.getValue(ATTR_OWNER));
+        targetView.setTargetOwner(attributes.getValue(ATTR_TARGET_OWNER));
+        targetView.setName(attributes.getValue(ATTR_NAME));
+        targetView.setSourceOwner(attributes.getValue(ATTR_SOURCE_OWNER));
+        targetView.setComment(attributes.getValue(ATTR_COMMENT));
+        config.addTargetViewSchema(targetView);
+    }
+
+    private void parseTargetViewColumn(Attributes attributes) {
+        Column column = new Column();
+        targetView.addColumn(column);
+        column.setTableOrView(targetView);
+        column.setName(attributes.getValue(ATTR_NAME));
+        column.setComment(attributes.getValue(ATTR_COMMENT));
+        dtHelper.setColumnDataType(attributes.getValue(ATTR_TYPE), column);
+    }
+
+    private void parseTargetSequence(Attributes attributes) {
+        Sequence seq = new Sequence();
+        seq.setName(attributes.getValue(ATTR_NAME));
+        seq.setIncrementBy(new BigInteger(attributes.getValue(ATTR_INCREMENT)));
+        seq.setCurrentValue(new BigInteger(attributes.getValue(ATTR_START)));
+        seq.setCycleFlag(getBoolean(attributes.getValue(ATTR_CYCLE), false));
+        seq.setNoCache(!getBoolean(attributes.getValue(ATTR_CACHE), true));
+        seq.setOwner(attributes.getValue(ATTR_OWNER));
+        seq.setTargetOwner(attributes.getValue(ATTR_OWNER));
+        if (!seq.isNoCache()) {
+            final String cs = attributes.getValue(ATTR_CACHE_SIZE);
+            seq.setCacheSize(cs == null ? 2 : Integer.parseInt(cs));
+        }
+        seq.setNoMaxValue(getBoolean(attributes.getValue(ATTR_NO_MAX), true));
+        if (!seq.isNoMaxValue()) {
+            seq.setMaxValue(new BigInteger(attributes.getValue(ATTR_MAX)));
+        }
+        seq.setNoMinValue(getBoolean(attributes.getValue(ATTR_NO_MIN), true));
+        if (!seq.isNoMinValue()) {
+            seq.setMinValue(new BigInteger(attributes.getValue(ATTR_MIN)));
+        }
+        seq.setSourceOwner(attributes.getValue(ATTR_SOURCE_OWNER));
+        config.addTargetSerialSchema(seq);
+    }
+
+    private void parseTargetSynonym(Attributes attributes) {
+        Synonym syn = new Synonym();
+        syn.setName(attributes.getValue(ATTR_NAME));
+        syn.setOwner(attributes.getValue(ATTR_OWNER));
+        syn.setObjectName(attributes.getValue(ATTR_SYNONYM_OBJECT));
+        syn.setObjectOwner(attributes.getValue(ATTR_SYNONYM_OBJECT_OWNER));
+        syn.setSourceOwner(attributes.getValue(ATTR_SOURCE_OWNER));
+        syn.setPublic(false);
+        config.addTargetSynonymSchema(syn);
+    }
+
+    private void parseTargetGrant(Attributes attributes) {
+        Grant grn = new Grant();
+        grn.setOwner(attributes.getValue(ATTR_OWNER));
+        grn.setName(attributes.getValue(ATTR_NAME));
+        grn.setGrantorName(attributes.getValue(ATTR_GRANTOR));
+        grn.setGranteeName(attributes.getValue(ATTR_GRANTEE));
+        grn.setClassOwner(attributes.getValue(ATTR_OBJECT_OWNER));
+        grn.setClassName(attributes.getValue(ATTR_OBJECT_NAME));
+        grn.setAuthType(attributes.getValue(ATTR_AUTH_TYPE));
+        grn.setGrantable(getBoolean(attributes.getValue(ATTR_GRANTABLE), false));
+        grn.setSourceOwner(attributes.getValue(ATTR_OWNER));
+        grn.setSourceObjectOwner(attributes.getValue(ATTR_SOURCE_OBJECT_OWNER));
+        config.addTargetGrantSchema(grn);
+    }
+
+    private void parseTargetPlcsqlProcedure(Attributes attributes) {
+        PlcsqlProcedure proc = new PlcsqlProcedure();
+        proc.setOwner(attributes.getValue(ATTR_OWNER));
+        proc.setTargetOwner(attributes.getValue(ATTR_TARGET_OWNER));
+        proc.setName(attributes.getValue(ATTR_NAME));
+        proc.setTargetName(attributes.getValue(ATTR_TARGET_NAME));
+        proc.setAuthid(attributes.getValue(ATTR_AUTH_ID));
+        proc.setSourceDDL(attributes.getValue(ATTR_SOURCE_DDL));
+        proc.setHeaderDDL(attributes.getValue(ATTR_HEADER_DDL));
+        proc.setBodyDDL(attributes.getValue(ATTR_BODY_DDL));
+        proc.setProcedureDDL(attributes.getValue(ATTR_PROCEDURE_DDL));
+        config.addTargetPlcsqlProcedureSchema(proc);
+    }
+
+    private void parseTargetPlcsqlFunction(Attributes attributes) {
+        PlcsqlFunction func = new PlcsqlFunction();
+        func.setOwner(attributes.getValue(ATTR_OWNER));
+        func.setTargetOwner(attributes.getValue(ATTR_TARGET_OWNER));
+        func.setName(attributes.getValue(ATTR_NAME));
+        func.setTargetName(attributes.getValue(ATTR_TARGET_NAME));
+        func.setAuthid(attributes.getValue(ATTR_AUTH_ID));
+        func.setSourceDDL(attributes.getValue(ATTR_SOURCE_DDL));
+        func.setHeaderDDL(attributes.getValue(ATTR_HEADER_DDL));
+        func.setBodyDDL(attributes.getValue(ATTR_BODY_DDL));
+        func.setFunctionDDL(attributes.getValue(ATTR_FUNCTION_DDL));
+        config.addTargetPlcsqlFunctionSchema(func);
+    }
+}
