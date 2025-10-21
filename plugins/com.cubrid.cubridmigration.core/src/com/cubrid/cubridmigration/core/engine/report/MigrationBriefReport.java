@@ -34,7 +34,7 @@ import com.cubrid.common.log.LogUtil;
 import com.cubrid.cubridmigration.core.common.CUBRIDIOUtils;
 import com.cubrid.cubridmigration.core.common.PathUtils;
 import com.cubrid.cubridmigration.core.engine.config.MigrationConfiguration;
-import com.cubrid.cubridmigration.core.engine.template.MigrationTemplateParser;
+import com.cubrid.cubridmigration.core.engine.template.reader.MigrationTemplateReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -201,7 +201,7 @@ public class MigrationBriefReport {
         setOutputDir(null);
         if (StringUtils.isNotBlank(scriptFile)) {
             try {
-                MigrationConfiguration config = MigrationTemplateParser.parse(scriptFile);
+                MigrationConfiguration config = MigrationTemplateReader.parse(scriptFile);
                 if (config.targetIsFile()) {
                     setOutputDir(config.getFileRepositroyPath());
                 }

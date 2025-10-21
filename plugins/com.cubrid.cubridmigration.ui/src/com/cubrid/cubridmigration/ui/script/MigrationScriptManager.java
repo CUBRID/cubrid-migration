@@ -35,7 +35,8 @@ import com.cubrid.common.ui.navigator.IItemModelOfGroupProvider;
 import com.cubrid.cubridmigration.core.common.CUBRIDIOUtils;
 import com.cubrid.cubridmigration.core.common.PathUtils;
 import com.cubrid.cubridmigration.core.engine.config.MigrationConfiguration;
-import com.cubrid.cubridmigration.core.engine.template.MigrationTemplateParser;
+import com.cubrid.cubridmigration.core.engine.template.reader.MigrationTemplateReader;
+import com.cubrid.cubridmigration.core.engine.template.writer.MigrationTemplateWriter;
 import com.cubrid.cubridmigration.ui.message.Messages;
 import com.cubrid.cubridmigration.ui.script.dialog.EditScriptDialog;
 import java.beans.XMLDecoder;
@@ -156,10 +157,10 @@ public final class MigrationScriptManager implements IItemModelOfGroupProvider, 
             PathUtils.deleteFile(file);
         }
         MigrationConfiguration config =
-                MigrationTemplateParser.parse(script.getAbstractConfigFileName());
+                MigrationTemplateReader.parse(script.getAbstractConfigFileName());
         // synchronized configuration name with script name
         config.setName(script.getName());
-        MigrationTemplateParser.save(config, configFile, false);
+        MigrationTemplateWriter.save(config, configFile, false);
     }
 
     /**
@@ -188,7 +189,7 @@ public final class MigrationScriptManager implements IItemModelOfGroupProvider, 
      * @return is successfully
      */
     public boolean importScript(String configFile) {
-        MigrationConfiguration config = MigrationTemplateParser.parse(configFile);
+        MigrationConfiguration config = MigrationTemplateReader.parse(configFile);
         if (nameExists(config.getName(), null)) {
             String name =
                     EditScriptDialog.getMigrationScriptName(
@@ -265,7 +266,7 @@ public final class MigrationScriptManager implements IItemModelOfGroupProvider, 
         ms.setName(config.getName());
         String configFile = getConfigFileName(String.valueOf(System.currentTimeMillis()));
         ms.setConfigFileName(configFile);
-        MigrationTemplateParser.save(config, ms.getAbstractConfigFileName(), saveSchema);
+        MigrationTemplateWriter.save(config, ms.getAbstractConfigFileName(), saveSchema);
         addScript(ms);
         save();
         return ms;

@@ -29,8 +29,6 @@
  */
 package com.cubrid.cubridmigration.core.engine.template.reader;
 
-import static com.cubrid.cubridmigration.core.engine.template.MigrationTemplateUtils.*;
-
 import com.cubrid.cubridmigration.core.common.PathUtils;
 import com.cubrid.cubridmigration.core.engine.config.MigrationConfiguration;
 import com.cubrid.cubridmigration.core.engine.exception.ErrorMigrationTemplateException;
@@ -40,6 +38,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import org.apache.commons.lang3.StringUtils;
@@ -84,7 +83,7 @@ public final class MigrationTemplateReader {
             sf.setValidating(false);
             SAXParser sp;
             sp = sf.newSAXParser();
-            InputSource is = new InputSource(new InputStreamReader(file, UTF_8));
+            InputSource is = new InputSource(new InputStreamReader(file, StandardCharsets.UTF_8));
             sp.parse(is, handler);
         } catch (Exception e) {
             throw new ErrorMigrationTemplateException(e);

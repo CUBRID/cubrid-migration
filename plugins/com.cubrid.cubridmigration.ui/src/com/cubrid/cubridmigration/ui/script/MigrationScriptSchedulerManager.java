@@ -34,7 +34,7 @@ import com.cubrid.common.log.LogUtil;
 import com.cubrid.cubridmigration.core.dbobject.Catalog;
 import com.cubrid.cubridmigration.core.engine.config.MigrationConfiguration;
 import com.cubrid.cubridmigration.core.engine.report.MigrationBriefReport;
-import com.cubrid.cubridmigration.core.engine.template.MigrationTemplateParser;
+import com.cubrid.cubridmigration.core.engine.template.reader.MigrationTemplateReader;
 import com.cubrid.cubridmigration.ui.wizard.MigrationWizardFactory;
 import com.cubrid.cubridmigration.ui.wizard.editor.MigrationProgressEditorInput;
 import it.sauronsoftware.cron4j.Scheduler;
@@ -116,7 +116,7 @@ public class MigrationScriptSchedulerManager {
                                         MigrationScriptManager.getInstance().save();
                                         // Parsing configuration
                                         MigrationConfiguration config =
-                                                MigrationTemplateParser.parse(
+                                                MigrationTemplateReader.parse(
                                                         script.getAbstractConfigFileName());
                                         // Keeping configuration name as same as the script name
                                         config.setName(script.getName());

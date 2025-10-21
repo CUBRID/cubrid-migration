@@ -31,6 +31,7 @@ package com.cubrid.cubridmigration.core.engine.template.writer;
 
 import static com.cubrid.cubridmigration.core.engine.template.MigrationTemplateUtils.*;
 import static com.cubrid.cubridmigration.core.engine.template.TemplateTags.*;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 import com.cubrid.common.log.LogUtil;
 import com.cubrid.cubridmigration.core.common.PathUtils;
@@ -212,7 +213,7 @@ public class SourceNodeWriter {
                 srcCatalog.saveXML(tempFile);
                 String schemaXML =
                         TextFileUtils.readText(
-                                tempFile.getCanonicalPath(), UTF_8, Integer.MAX_VALUE);
+                                tempFile.getCanonicalPath(), UTF_8.name(), Integer.MAX_VALUE);
                 PathUtils.deleteFile(tempFile);
                 writer.writeCData(schemaXML);
             } catch (Exception e) {
@@ -235,7 +236,7 @@ public class SourceNodeWriter {
                 sqlCatalog.saveXML(tempFile);
                 String schemaXML =
                         TextFileUtils.readText(
-                                tempFile.getCanonicalPath(), UTF_8, Integer.MAX_VALUE);
+                                tempFile.getCanonicalPath(), UTF_8.name(), Integer.MAX_VALUE);
                 PathUtils.deleteFile(tempFile);
                 writer.writeCData(schemaXML);
             } catch (Exception e) {

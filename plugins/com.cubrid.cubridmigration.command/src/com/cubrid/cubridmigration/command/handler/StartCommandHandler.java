@@ -55,7 +55,7 @@ import com.cubrid.cubridmigration.core.engine.report.MigrationOverviewResult;
 import com.cubrid.cubridmigration.core.engine.report.MigrationReport;
 import com.cubrid.cubridmigration.core.engine.report.ObjNameMigrationResult;
 import com.cubrid.cubridmigration.core.engine.report.RecordMigrationResult;
-import com.cubrid.cubridmigration.core.engine.template.MigrationTemplateParser;
+import com.cubrid.cubridmigration.core.engine.template.reader.MigrationTemplateReader;
 import com.cubrid.cubridmigration.cubrid.CUBRIDTimeUtil;
 import com.cubrid.cubridmigration.mysql.trans.MySQL2CUBRIDMigParas;
 import java.io.BufferedWriter;
@@ -151,7 +151,7 @@ public class StartCommandHandler implements ConsoleCommandHandler {
      */
     private MigrationConfiguration getConfig(String file) {
         try {
-            MigrationConfiguration config = MigrationTemplateParser.parse(file);
+            MigrationConfiguration config = MigrationTemplateReader.parse(file);
             if (!initializeSource(config) || !initializeTarget(config)) {
                 printHelp();
                 return null;

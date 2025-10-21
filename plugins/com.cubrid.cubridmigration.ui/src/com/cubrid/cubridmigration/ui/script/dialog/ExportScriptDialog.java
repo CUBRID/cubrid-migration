@@ -36,7 +36,8 @@ import com.cubrid.cubridmigration.core.common.PathUtils;
 import com.cubrid.cubridmigration.core.common.SSHConnectFailedException;
 import com.cubrid.cubridmigration.core.common.SSHUtils;
 import com.cubrid.cubridmigration.core.engine.config.MigrationConfiguration;
-import com.cubrid.cubridmigration.core.engine.template.MigrationTemplateParser;
+import com.cubrid.cubridmigration.core.engine.template.reader.MigrationTemplateReader;
+import com.cubrid.cubridmigration.core.engine.template.writer.MigrationTemplateWriter;
 import com.cubrid.cubridmigration.ui.common.dialog.DetailMessageDialog;
 import com.cubrid.cubridmigration.ui.message.Messages;
 import com.cubrid.cubridmigration.ui.script.MigrationScript;
@@ -89,7 +90,7 @@ public class ExportScriptDialog extends TransFileBySSHDialog {
             throw new IllegalArgumentException("Script can't be null.");
         }
         MigrationConfiguration config =
-                MigrationTemplateParser.parse(script.getAbstractConfigFileName());
+                MigrationTemplateReader.parse(script.getAbstractConfigFileName());
         // synchronized configuration name with script name
         config.setName(script.getName());
         exportScript(config, config.getOfflineSrcCatalog() != null);
@@ -242,7 +243,7 @@ public class ExportScriptDialog extends TransFileBySSHDialog {
             changeSourceJDBCDriverDirectory();
             changeTargetJDBCDriverDirectory();
             changeOutputDirectory();
-            MigrationTemplateParser.save(config, tmpFile, isSaveSchema);
+            MigrationTemplateWriter.save(config, tmpFile, isSaveSchema);
         } finally {
             // Restore config for the migration step that runs after export
             config.setName(originalName);

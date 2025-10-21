@@ -34,7 +34,8 @@ import com.cubrid.common.log.LogUtil;
 import com.cubrid.cubridmigration.core.dbobject.Catalog;
 import com.cubrid.cubridmigration.core.dbtype.DatabaseType;
 import com.cubrid.cubridmigration.core.engine.config.MigrationConfiguration;
-import com.cubrid.cubridmigration.core.engine.template.MigrationTemplateParser;
+import com.cubrid.cubridmigration.core.engine.template.reader.MigrationTemplateReader;
+import com.cubrid.cubridmigration.core.engine.template.writer.MigrationTemplateWriter;
 import com.cubrid.cubridmigration.cubrid.CUBRIDTimeUtil;
 import com.cubrid.cubridmigration.ui.common.UICommonTool;
 import com.cubrid.cubridmigration.ui.common.navigator.event.CubridNodeManager;
@@ -161,7 +162,7 @@ public class MigrationWizard extends Wizard implements IMigrationWizardStatus {
             throw new RuntimeException("File(" + migrationFileName + ") does not exist");
         }
         this.migrationConfigFileName = migrationFileName;
-        migrationConfig = MigrationTemplateParser.parse(migrationConfigFileName);
+        migrationConfig = MigrationTemplateReader.parse(migrationConfigFileName);
         autoSetUniqueNameOfConfiguration();
     }
 
@@ -430,7 +431,7 @@ public class MigrationWizard extends Wizard implements IMigrationWizardStatus {
         if (isLoadMigrationScript()) {
             // Reload the migration configuration file
             MigrationConfiguration tempConfig = migrationConfig;
-            migrationConfig = MigrationTemplateParser.parse(migrationConfigFileName);
+            migrationConfig = MigrationTemplateReader.parse(migrationConfigFileName);
             migrationConfig.setName(tempConfig.getName());
             // Copy target DB information to new migration configuration object
             migrationConfig.setDestType(tempConfig.getDestType());
@@ -459,7 +460,7 @@ public class MigrationWizard extends Wizard implements IMigrationWizardStatus {
                     MigrationScriptManager.getInstance().newScript(migrationConfig, saveSchema);
         } else {
             migrationScript.setName(migrationConfig.getName());
-            MigrationTemplateParser.save(
+            MigrationTemplateWriter.save(
                     migrationConfig, migrationScript.getAbstractConfigFileName(), saveSchema);
             MigrationScriptManager.getInstance().save();
         }

@@ -29,8 +29,8 @@
  */
 package com.cubrid.cubridmigration.core.engine.template.writer;
 
-import static com.cubrid.cubridmigration.core.engine.template.MigrationTemplateUtils.*;
 import static com.cubrid.cubridmigration.core.engine.template.TemplateTags.*;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 import com.cubrid.common.log.LogUtil;
 import com.cubrid.cubridmigration.core.engine.config.MigrationConfiguration;
@@ -51,9 +51,10 @@ public final class MigrationTemplateWriter {
             XMLOutputFactory factory = XMLOutputFactory.newInstance();
             writer =
                     new IndentingXMLStreamWriter(
-                            factory.createXMLStreamWriter(new FileOutputStream(fileName), UTF_8));
+                            factory.createXMLStreamWriter(
+                                    new FileOutputStream(fileName), UTF_8.name()));
 
-            writer.writeStartDocument(UTF_8, "1.0");
+            writer.writeStartDocument(UTF_8.name(), "1.0");
             writer.writeStartElement(TAG_MIGRATION);
             writer.writeAttribute(ATTR_NAME, config.getName());
             writer.writeAttribute(ATTR_VERSION, "11.1.0");

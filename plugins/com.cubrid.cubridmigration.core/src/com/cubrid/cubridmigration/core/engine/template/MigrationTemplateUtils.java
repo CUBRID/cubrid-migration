@@ -39,7 +39,6 @@ import java.util.stream.Collectors;
 
 public final class MigrationTemplateUtils {
 
-    public static final String UTF_8 = "utf-8";
     public static final List<String> FK_OPERATION =
             List.of("CASCADE", "RESTRICT", "SET NULL", "NO ACTION");
     private static final int DEFAULT_FK_OPTION_INDEX = FK_OPERATION.indexOf("RESTRICT");
