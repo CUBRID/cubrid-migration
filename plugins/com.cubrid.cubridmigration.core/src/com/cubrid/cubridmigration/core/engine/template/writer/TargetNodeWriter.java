@@ -52,6 +52,7 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 import org.apache.commons.collections4.CollectionUtils;
 
+/** Writes the <target> section of the migration XML file. */
 public class TargetNodeWriter {
 
     public void write(XMLStreamWriter writer, MigrationConfiguration config)

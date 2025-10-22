@@ -37,6 +37,7 @@ import com.cubrid.cubridmigration.mysql.trans.MySQL2CUBRIDMigParas;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
+/** Writes the <params> section of the migration XML file. */
 public class ParametersNodeWriter {
 
     public void write(XMLStreamWriter writer, MigrationConfiguration config)

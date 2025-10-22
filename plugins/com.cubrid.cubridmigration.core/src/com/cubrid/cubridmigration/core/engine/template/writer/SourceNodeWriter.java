@@ -65,6 +65,7 @@ import javax.xml.stream.XMLStreamWriter;
 import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
 
+/** Writes the <source> section of the migration XML file. */
 public class SourceNodeWriter {
 
     private static final Logger log = LogUtil.getLogger(SourceNodeWriter.class);

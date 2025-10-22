@@ -45,7 +45,17 @@ import org.apache.commons.lang3.StringUtils;
 import org.xml.sax.InputSource;
 import org.xml.sax.helpers.DefaultHandler;
 
+/**
+ * Utility class for reading and parsing migration template files.
+ *
+ * <p>This class provides static methods to parse migration configuration XML files into {@link
+ * MigrationConfiguration} objects using a SAX-based parser.
+ *
+ * <p>It supports parsing from both file paths and input streams, and automatically assigns a
+ * configuration name if not specified in the template.
+ */
 public final class MigrationTemplateReader {
+
     private static final String DEFAULT_MIGRATION_SCRIPT_NAME = "migration_script";
 
     private MigrationTemplateReader() {}

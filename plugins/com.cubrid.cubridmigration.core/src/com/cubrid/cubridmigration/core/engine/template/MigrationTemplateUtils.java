@@ -37,6 +37,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/** Utility class that provides common helper methods for migration template processing. */
 public final class MigrationTemplateUtils {
 
     public static final List<String> FK_OPERATION =

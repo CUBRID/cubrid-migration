@@ -33,6 +33,12 @@ import javax.xml.namespace.NamespaceContext;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
+/**
+ * A decorator for {@link XMLStreamWriter} that adds indentation for pretty-printing.
+ *
+ * <p>This class improves the readability of generated XML without affecting its structure or
+ * content.
+ */
 public class IndentingXMLStreamWriter implements XMLStreamWriter {
 
     private static final String INDENT_CHAR = "    ";

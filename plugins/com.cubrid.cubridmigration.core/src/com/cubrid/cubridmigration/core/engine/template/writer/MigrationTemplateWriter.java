@@ -40,7 +40,15 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 import org.slf4j.Logger;
 
+/**
+ * Writes migration templates to XML using StAX.
+ *
+ * <p>This utility class handles serialization of {@link MigrationConfiguration} to an XML file. It
+ * focuses solely on writing the configuration data, and does not perform validation or
+ * transformation.
+ */
 public final class MigrationTemplateWriter {
+
     private static final Logger log = LogUtil.getLogger(MigrationTemplateWriter.class);
 
     private MigrationTemplateWriter() {}

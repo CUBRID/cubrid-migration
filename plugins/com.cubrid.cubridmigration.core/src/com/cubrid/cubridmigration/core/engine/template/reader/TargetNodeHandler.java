@@ -57,16 +57,22 @@ import org.apache.commons.lang3.StringUtils;
 import org.xml.sax.Attributes;
 import org.xml.sax.helpers.DefaultHandler;
 
+/**
+ * A SAX {@link DefaultHandler} implementation for parsing the target configuration section of a
+ * migration template.
+ *
+ * <p>This handler reads target-related information from XML and maps it to {@link
+ * MigrationConfiguration}.
+ */
 public class TargetNodeHandler extends DefaultHandler {
 
     private final MigrationConfiguration config;
+    private final CUBRIDDataTypeHelper dtHelper = CUBRIDDataTypeHelper.getInstance(null);
 
     private Table targetTable;
     private View targetView;
     private StringBuffer sqlStatement;
     private StringBuffer schemaCache;
-
-    private final CUBRIDDataTypeHelper dtHelper = CUBRIDDataTypeHelper.getInstance(null);
 
     public TargetNodeHandler(MigrationConfiguration config) {
         this.config = config;

@@ -31,16 +31,14 @@
 package com.cubrid.cubridmigration.core.engine.template;
 
 /**
- * TemplateTags Description
+ * This class defines the constants for the XML tags and attributes used in the migration template.
  *
  * @author Kevin Cao
  * @version 1.0 - 2011-9-30 created by Kevin Cao
  */
 public final class TemplateTags {
 
-    private TemplateTags() {
-        // Hide the constructor
-    }
+    private TemplateTags() {}
 
     public static final String ATTR_ADD_SCHEMA = "add_schema";
     public static final String ATTR_AFTER_SQL = "sql_after";
@@ -106,11 +104,11 @@ public final class TemplateTags {
     public static final String ATTR_NO_STATISTICS = "no_statistics";
     public static final String ATTR_NULL = "null";
     public static final String ATTR_OBJECT_NAME = "object_name";
-    public static final String ATTR_OBJECT_OWNER = "object_ower";
+    public static final String ATTR_OBJECT_OWNER = "object_owner";
     public static final String ATTR_ON_CACHE_OBJECT = "on_cache_object";
     public static final String ATTR_ON_DELETE = "on_delete";
     public static final String ATTR_ON_UPDATE = "on_update";
-    public static final String ATTR_ONETABLEONEFILE = "one_tale_one_file";
+    public static final String ATTR_ONETABLEONEFILE = "one_table_one_file";
     public static final String ATTR_ONLINE = "online";
     public static final String ATTR_OPTIMIZE_DB = "optimize_db";
     public static final String ATTR_ORDER = "order";
@@ -222,7 +220,7 @@ public final class TemplateTags {
     public static final String TAG_VIEW = "view";
     public static final String TAG_VIEWCOLUMN = "viewColumn";
     public static final String TAG_VIEWCOLUMNS = "viewColumns";
-    public static final String TAG_VIEWCOLUME = "viewColume";
+    public static final String TAG_VIEWCOLUME = "viewColumn";
     public static final String TAG_VIEWQUERYSQL = "viewQuerySQL";
     public static final String TAG_VIEWS = "views";
     public static final String TAG_VOLUME = "volume";

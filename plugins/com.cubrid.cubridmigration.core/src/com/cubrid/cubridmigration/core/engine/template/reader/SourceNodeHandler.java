@@ -52,6 +52,13 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
+/**
+ * A SAX {@link DefaultHandler} implementation for parsing the source configuration section of a
+ * migration template.
+ *
+ * <p>This handler reads source-related information from XML and maps it to {@link
+ * MigrationConfiguration}.
+ */
 public class SourceNodeHandler extends DefaultHandler {
 
     private final MigrationConfiguration config;
