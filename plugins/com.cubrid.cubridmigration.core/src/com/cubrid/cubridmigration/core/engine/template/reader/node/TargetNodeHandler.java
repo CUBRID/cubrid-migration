@@ -27,7 +27,7 @@
  * OF SUCH DAMAGE.
  *
  */
-package com.cubrid.cubridmigration.core.engine.template.reader;
+package com.cubrid.cubridmigration.core.engine.template.reader.node;
 
 import static com.cubrid.cubridmigration.core.engine.template.MigrationTemplateUtils.*;
 import static com.cubrid.cubridmigration.core.engine.template.TemplateTags.*;

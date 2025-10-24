@@ -33,6 +33,8 @@ import static com.cubrid.cubridmigration.core.engine.template.MigrationTemplateU
 import static com.cubrid.cubridmigration.core.engine.template.TemplateTags.*;
 
 import com.cubrid.cubridmigration.core.engine.config.MigrationConfiguration;
+import com.cubrid.cubridmigration.core.engine.template.reader.node.SourceNodeHandler;
+import com.cubrid.cubridmigration.core.engine.template.reader.node.TargetNodeHandler;
 import com.cubrid.cubridmigration.mysql.trans.MySQL2CUBRIDMigParas;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
