@@ -268,10 +268,8 @@ public class TargetNodeHandler extends DefaultHandler {
         targetTable.setReuseOID(getBoolean(attributes.getValue(ATTR_REUSE_OID), false));
         targetTable.setOwner(attributes.getValue(ATTR_OWNER));
         targetTable.setSourceOwner(attributes.getValue(ATTR_SOURCE_OWNER));
-        if (targetTable.getOwner() != null) {
-            if (targetTable.getOwner().isEmpty()) {
-                targetTable.setOwner(null);
-            }
+        if (targetTable.getOwner() != null && targetTable.getOwner().isEmpty()) {
+            targetTable.setOwner(null);
         }
         targetTable.setComment(attributes.getValue(ATTR_COMMENT));
         config.addTargetTableSchema(targetTable);

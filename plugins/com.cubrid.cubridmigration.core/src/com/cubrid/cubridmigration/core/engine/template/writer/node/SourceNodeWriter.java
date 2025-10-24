@@ -259,18 +259,11 @@ public class SourceNodeWriter {
                 writer.writeAttribute(ATTR_TARGET_SCHEMA, schema.getTargetSchemaName());
             }
         } else {
-            config.getScriptSchemaMapping()
-                    .forEach(
-                            (schemaName, schema) -> {
-                                try {
-                                    writer.writeEmptyElement(TAG_SCHEMA_INFO);
-                                    writer.writeAttribute(ATTR_SCHEMA_NAME, schema.getName());
-                                    writer.writeAttribute(
-                                            ATTR_TARGET_SCHEMA, schema.getTargetSchemaName());
-                                } catch (XMLStreamException e) {
-                                    throw new RuntimeException(e);
-                                }
-                            });
+            for (Schema schema : config.getScriptSchemaMapping().values()) {
+                writer.writeEmptyElement(TAG_SCHEMA_INFO);
+                writer.writeAttribute(ATTR_SCHEMA_NAME, schema.getName());
+                writer.writeAttribute(ATTR_TARGET_SCHEMA, schema.getTargetSchemaName());
+            }
         }
         writer.writeEndElement(); // </schemas>
     }
