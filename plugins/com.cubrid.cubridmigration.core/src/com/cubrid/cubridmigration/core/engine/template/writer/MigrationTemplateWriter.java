@@ -34,6 +34,9 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 
 import com.cubrid.common.log.LogUtil;
 import com.cubrid.cubridmigration.core.engine.config.MigrationConfiguration;
+import com.cubrid.cubridmigration.core.engine.template.writer.node.SourceNodeWriter;
+import com.cubrid.cubridmigration.core.engine.template.writer.node.TargetNodeWriter;
+
 import java.io.FileOutputStream;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
