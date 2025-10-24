@@ -39,6 +39,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import javax.xml.XMLConstants;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import org.apache.commons.lang3.StringUtils;
@@ -90,9 +91,14 @@ public final class MigrationTemplateReader {
     public static void parse(InputStream file, DefaultHandler handler) {
         try {
             SAXParserFactory sf = SAXParserFactory.newInstance();
+            sf.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+            sf.setFeature("http://javax.xml.XMLConstants/feature/disallow-doctype-decl", true);
+            sf.setFeature("http://xml.org/sax/features/external-general-entities", false);
+            sf.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
+            sf.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
             sf.setValidating(false);
-            SAXParser sp;
-            sp = sf.newSAXParser();
+
+            SAXParser sp = sf.newSAXParser();
             InputSource is = new InputSource(new InputStreamReader(file, StandardCharsets.UTF_8));
             sp.parse(is, handler);
         } catch (Exception e) {
