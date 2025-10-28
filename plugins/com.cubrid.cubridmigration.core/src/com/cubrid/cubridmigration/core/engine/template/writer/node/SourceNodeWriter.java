@@ -139,6 +139,18 @@ public class SourceNodeWriter {
     private void writeCSVSource(XMLStreamWriter writer, MigrationConfiguration config)
             throws XMLStreamException {
         writer.writeStartElement(TAG_CSVS);
+
+        writeCsvsAttributes(writer, config);
+
+        List<SourceCSVConfig> csvFiles = config.getCSVConfigs();
+        for (SourceCSVConfig scc : csvFiles) {
+            writeSingleCsvElement(writer, scc);
+        }
+        writer.writeEndElement(); // </csvs>
+    }
+
+    private void writeCsvsAttributes(XMLStreamWriter writer, MigrationConfiguration config)
+            throws XMLStreamException {
         writer.writeAttribute(
                 ATTR_CSV_SEPARATE,
                 config.getCsvSettings().getSeparateChar() == MigrationConfiguration.CSV_NO_CHAR
@@ -165,25 +177,25 @@ public class SourceNodeWriter {
             writer.writeAttribute(ATTR_CSV_NULL_VALUE, sb.toString());
         }
         writer.writeAttribute(ATTR_CHARSET, String.valueOf(config.getCsvSettings().getCharset()));
-        List<SourceCSVConfig> csvFiles = config.getCSVConfigs();
-        for (SourceCSVConfig scc : csvFiles) {
-            writer.writeStartElement(TAG_CSV);
-            writer.writeAttribute(ATTR_NAME, scc.getName());
-            writer.writeAttribute(ATTR_TARGET, scc.getTarget());
-            writer.writeAttribute(ATTR_CREATE, getBooleanString(scc.isCreate()));
-            writer.writeAttribute(ATTR_REPLACE, getBooleanString(scc.isReplace()));
-            writer.writeAttribute(ATTR_IMPORT_FIRST_ROW, getBooleanString(scc.isImportFirstRow()));
-            writer.writeStartElement(TAG_CSV_COLUMNS);
-            for (SourceCSVColumnConfig sccc : scc.getColumnConfigs()) {
-                writer.writeEmptyElement(TAG_CSV_COLUMN);
-                writer.writeAttribute(ATTR_NAME, sccc.getName());
-                writer.writeAttribute(ATTR_TARGET, sccc.getTarget());
-                writer.writeAttribute(ATTR_CREATE, getBooleanString(sccc.isCreate()));
-            }
-            writer.writeEndElement(); // </csv_columns>
-            writer.writeEndElement(); // </csv>
+    }
+
+    private void writeSingleCsvElement(XMLStreamWriter writer, SourceCSVConfig scc)
+            throws XMLStreamException {
+        writer.writeStartElement(TAG_CSV);
+        writer.writeAttribute(ATTR_NAME, scc.getName());
+        writer.writeAttribute(ATTR_TARGET, scc.getTarget());
+        writer.writeAttribute(ATTR_CREATE, getBooleanString(scc.isCreate()));
+        writer.writeAttribute(ATTR_REPLACE, getBooleanString(scc.isReplace()));
+        writer.writeAttribute(ATTR_IMPORT_FIRST_ROW, getBooleanString(scc.isImportFirstRow()));
+        writer.writeStartElement(TAG_CSV_COLUMNS);
+        for (SourceCSVColumnConfig sccc : scc.getColumnConfigs()) {
+            writer.writeEmptyElement(TAG_CSV_COLUMN);
+            writer.writeAttribute(ATTR_NAME, sccc.getName());
+            writer.writeAttribute(ATTR_TARGET, sccc.getTarget());
+            writer.writeAttribute(ATTR_CREATE, getBooleanString(sccc.isCreate()));
         }
-        writer.writeEndElement(); // </csvs>
+        writer.writeEndElement(); // </csv_columns>
+        writer.writeEndElement(); // </csv>
     }
 
     private void writeSourceJDBCNode(XMLStreamWriter writer, MigrationConfiguration config)
@@ -276,59 +288,78 @@ public class SourceNodeWriter {
         }
         writer.writeStartElement(TAG_TABLES);
         for (SourceEntryTableConfig setc : exportEntryTables) {
-            writer.writeStartElement(TAG_TABLE);
-            writer.writeAttribute(ATTR_NAME, setc.getName());
-            writer.writeAttribute(ATTR_OWNER, setc.getOwner());
-            writer.writeAttribute(ATTR_TARGET, setc.getTarget());
-            writer.writeAttribute(ATTR_TARGET_SCHEMA, setc.getTargetOwner());
-            writer.writeAttribute(ATTR_CHANGE_NAME, getBooleanString(setc.isChangeTableName()));
-            writer.writeAttribute(ATTR_CREATE, getBooleanString(setc.isCreateNewTable()));
-            writer.writeAttribute(ATTR_MIGRATE_DATA, getBooleanString(setc.isMigrateData()));
-            writer.writeAttribute(ATTR_REPLACE, getBooleanString(setc.isReplace()));
-            writer.writeAttribute(ATTR_PK, getBooleanString(setc.isCreatePK()));
-            writer.writeAttribute(ATTR_PARTITION, getBooleanString(setc.isCreatePartition()));
-            writer.writeAttribute(ATTR_CONDITION, setc.getCondition());
-            writer.writeAttribute(ATTR_BEFORE_SQL, setc.getSqlBefore());
-            writer.writeAttribute(ATTR_AFTER_SQL, setc.getSqlAfter());
-            if (setc.isEnableExpOpt()) {
-                writer.writeAttribute(ATTR_EXP_OPT_COL, getBooleanString(setc.isEnableExpOpt()));
-                writer.writeAttribute(
-                        ATTR_START_TAR_MAX, getBooleanString(setc.isStartFromTargetMax()));
-            }
-            writer.writeAttribute(ATTR_COMMENT, setc.getComment());
-
-            List<SourceColumnConfig> columnConfigList = setc.getColumnConfigList();
-            writer.writeStartElement(TAG_COLUMNS);
-            for (SourceColumnConfig scc : columnConfigList) {
-                writer.writeEmptyElement(TAG_COLUMN);
-                writer.writeAttribute(ATTR_NAME, scc.getName());
-                writer.writeAttribute(ATTR_TARGET, scc.getTarget());
-                writer.writeAttribute(ATTR_TRIM, getBooleanString(scc.isNeedTrim()));
-                writer.writeAttribute(ATTR_REPLACE_EXPRESSION, scc.getReplaceExp());
-                writer.writeAttribute(ATTR_USER_DATA_HANDLER, scc.getUserDataHandler());
-                writer.writeAttribute(ATTR_COMMENT, scc.getComment());
-            }
-            writer.writeEndElement(); // </columns>
-
-            List<SourceIndexConfig> indexConfigList = setc.getIndexConfigList();
-            List<SourceFKConfig> fkConfigList = setc.getFKConfigList();
-            if (!indexConfigList.isEmpty() || !fkConfigList.isEmpty()) {
-                writer.writeStartElement(TAG_CONSTRAINTS);
-                for (SourceFKConfig fkc : fkConfigList) {
-                    writer.writeEmptyElement(TAG_FK);
-                    writer.writeAttribute(ATTR_NAME, fkc.getName());
-                    writer.writeAttribute(ATTR_TARGET, fkc.getTarget());
-                }
-                for (SourceIndexConfig sic : indexConfigList) {
-                    writer.writeEmptyElement(TAG_INDEX);
-                    writer.writeAttribute(ATTR_NAME, sic.getName());
-                    writer.writeAttribute(ATTR_TARGET, sic.getTarget());
-                }
-                writer.writeEndElement(); // </constraints>
-            }
-            writer.writeEndElement(); // </table>
+            writeSingleTableElement(writer, setc);
         }
         writer.writeEndElement(); // </tables>
+    }
+
+    private void writeSingleTableElement(XMLStreamWriter writer, SourceEntryTableConfig setc)
+            throws XMLStreamException {
+        writer.writeStartElement(TAG_TABLE);
+        writeTableAttributes(writer, setc);
+        writeTableColumns(writer, setc.getColumnConfigList());
+        writeTableConstraints(writer, setc.getIndexConfigList(), setc.getFKConfigList());
+        writer.writeEndElement(); // </table>
+    }
+
+    private void writeTableAttributes(XMLStreamWriter writer, SourceEntryTableConfig setc)
+            throws XMLStreamException {
+        writer.writeAttribute(ATTR_NAME, setc.getName());
+        writer.writeAttribute(ATTR_OWNER, setc.getOwner());
+        writer.writeAttribute(ATTR_TARGET, setc.getTarget());
+        writer.writeAttribute(ATTR_TARGET_SCHEMA, setc.getTargetOwner());
+        writer.writeAttribute(ATTR_CHANGE_NAME, getBooleanString(setc.isChangeTableName()));
+        writer.writeAttribute(ATTR_CREATE, getBooleanString(setc.isCreateNewTable()));
+        writer.writeAttribute(ATTR_MIGRATE_DATA, getBooleanString(setc.isMigrateData()));
+        writer.writeAttribute(ATTR_REPLACE, getBooleanString(setc.isReplace()));
+        writer.writeAttribute(ATTR_PK, getBooleanString(setc.isCreatePK()));
+        writer.writeAttribute(ATTR_PARTITION, getBooleanString(setc.isCreatePartition()));
+        writer.writeAttribute(ATTR_CONDITION, setc.getCondition());
+        writer.writeAttribute(ATTR_BEFORE_SQL, setc.getSqlBefore());
+        writer.writeAttribute(ATTR_AFTER_SQL, setc.getSqlAfter());
+        if (setc.isEnableExpOpt()) {
+            writer.writeAttribute(ATTR_EXP_OPT_COL, getBooleanString(setc.isEnableExpOpt()));
+            writer.writeAttribute(
+                    ATTR_START_TAR_MAX, getBooleanString(setc.isStartFromTargetMax()));
+        }
+        writer.writeAttribute(ATTR_COMMENT, setc.getComment());
+    }
+
+    private void writeTableColumns(
+            XMLStreamWriter writer, List<SourceColumnConfig> columnConfigList)
+            throws XMLStreamException {
+        writer.writeStartElement(TAG_COLUMNS);
+        for (SourceColumnConfig scc : columnConfigList) {
+            writer.writeEmptyElement(TAG_COLUMN);
+            writer.writeAttribute(ATTR_NAME, scc.getName());
+            writer.writeAttribute(ATTR_TARGET, scc.getTarget());
+            writer.writeAttribute(ATTR_TRIM, getBooleanString(scc.isNeedTrim()));
+            writer.writeAttribute(ATTR_REPLACE_EXPRESSION, scc.getReplaceExp());
+            writer.writeAttribute(ATTR_USER_DATA_HANDLER, scc.getUserDataHandler());
+            writer.writeAttribute(ATTR_COMMENT, scc.getComment());
+        }
+        writer.writeEndElement(); // </columns>
+    }
+
+    private void writeTableConstraints(
+            XMLStreamWriter writer,
+            List<SourceIndexConfig> indexConfigList,
+            List<SourceFKConfig> fkConfigList)
+            throws XMLStreamException {
+        if (!indexConfigList.isEmpty() || !fkConfigList.isEmpty()) {
+            writer.writeStartElement(TAG_CONSTRAINTS);
+            for (SourceFKConfig fkc : fkConfigList) {
+                writer.writeEmptyElement(TAG_FK);
+                writer.writeAttribute(ATTR_NAME, fkc.getName());
+                writer.writeAttribute(ATTR_TARGET, fkc.getTarget());
+            }
+            for (SourceIndexConfig sic : indexConfigList) {
+                writer.writeEmptyElement(TAG_INDEX);
+                writer.writeAttribute(ATTR_NAME, sic.getName());
+                writer.writeAttribute(ATTR_TARGET, sic.getTarget());
+            }
+            writer.writeEndElement(); // </constraints>
+        }
     }
 
     private void writeSourceSQLTables(XMLStreamWriter writer, MigrationConfiguration config)

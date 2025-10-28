@@ -34,6 +34,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 
 import com.cubrid.common.log.LogUtil;
 import com.cubrid.cubridmigration.core.engine.config.MigrationConfiguration;
+import com.cubrid.cubridmigration.core.engine.exception.ErrorMigrationTemplateException;
 import com.cubrid.cubridmigration.core.engine.template.writer.node.ParametersNodeWriter;
 import com.cubrid.cubridmigration.core.engine.template.writer.node.SourceNodeWriter;
 import com.cubrid.cubridmigration.core.engine.template.writer.node.TargetNodeWriter;
@@ -79,7 +80,7 @@ public final class MigrationTemplateWriter {
             writer.writeEndDocument();
         } catch (Exception e) {
             log.error("Failed to save migration script to file: " + fileName, e);
-            throw new RuntimeException("Failed to save migration script.", e);
+            throw new ErrorMigrationTemplateException("Failed to save migration script.", e);
         } finally {
             if (writer != null) {
                 try {

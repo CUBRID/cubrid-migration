@@ -47,6 +47,9 @@ import com.cubrid.cubridmigration.core.engine.config.SourceSQLTableConfig;
 import com.cubrid.cubridmigration.core.engine.config.SourceSequenceConfig;
 import com.cubrid.cubridmigration.core.engine.config.SourceTableConfig;
 import com.cubrid.cubridmigration.cubrid.CUBRIDDatabase;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.Consumer;
 import org.apache.commons.collections4.CollectionUtils;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
@@ -62,16 +65,67 @@ import org.xml.sax.helpers.DefaultHandler;
 public class SourceNodeHandler extends DefaultHandler {
 
     private final MigrationConfiguration config;
+    private final Map<String, Consumer<Attributes>> startTagHandlers = new HashMap<>();
+    private final Map<String, Runnable> endTagHandlers = new HashMap<>();
 
     private SourceTableConfig srcTableCfg;
     private StringBuffer sqlStatement;
     private StringBuffer schemaCache;
-    private Catalog srcCatalog;
-    private Catalog srcSQLCatalog;
+
+    @SuppressWarnings("PMD.SingularField")
+    private Catalog srcCatalog; // NOPMD
+
+    @SuppressWarnings("PMD.SingularField")
+    private Catalog srcSQLCatalog; // NOPMD
+
     private SourceCSVConfig srcCSV;
 
     public SourceNodeHandler(MigrationConfiguration config) {
         this.config = config;
+        initializeStartTagHandlers();
+        initializeEndTagHandlers();
+    }
+
+    private void initializeStartTagHandlers() {
+        startTagHandlers.put(TAG_JDBC, this::parseSourceJDBC);
+        startTagHandlers.put(TAG_SCHEMA, attr -> schemaCache = new StringBuffer());
+        startTagHandlers.put(TAG_SQL_SCHEMA, attr -> schemaCache = new StringBuffer());
+        startTagHandlers.put(TAG_SCHEMA_INFO, this::parseSourceSchemaInfo);
+        startTagHandlers.put(TAG_FILE, this::parseSourceFile);
+        startTagHandlers.put(TAG_TABLE, this::parseSourceTable);
+        startTagHandlers.put(TAG_COLUMN, this::parseSourceColumn);
+        startTagHandlers.put(TAG_FK, this::parseSourceFK);
+        startTagHandlers.put(TAG_INDEX, this::parseSourceIndex);
+        startTagHandlers.put(TAG_SQLTABLE, this::parseSourceSQLTable);
+        startTagHandlers.put(TAG_STATEMENT, attr -> sqlStatement = new StringBuffer());
+        startTagHandlers.put(TAG_VIEW, this::parseSourceView);
+        startTagHandlers.put(TAG_SEQUENCE, this::parseSourceSequence);
+        startTagHandlers.put(TAG_SYNONYM, this::parseSourceSynonym);
+        startTagHandlers.put(TAG_GRANT, this::parseSourceGrant);
+        startTagHandlers.put(
+                TAG_TRIGGER, attr -> config.addExpTriggerCfg(attr.getValue(ATTR_NAME)));
+        startTagHandlers.put(
+                TAG_FUNCTION, attr -> config.addExpFunctionCfg(attr.getValue(ATTR_NAME)));
+        startTagHandlers.put(
+                TAG_PROCEDURE, attr -> config.addExpProcedureCfg(attr.getValue(ATTR_NAME)));
+        startTagHandlers.put(TAG_PLCSQL_FUNCTION, this::parseSourcePlcsqlFunction);
+        startTagHandlers.put(TAG_PLCSQL_PROCEDURE, this::parseSourcePlcsqlProcedure);
+        startTagHandlers.put(
+                TAG_SQL, attr -> config.setSourceFileEncoding(attr.getValue(ATTR_CHARSET)));
+        startTagHandlers.put(TAG_SQL_FILE, attr -> config.addSQLFile(attr.getValue(ATTR_LOCATION)));
+        startTagHandlers.put(TAG_CSVS, this::parseSourceCSVS);
+        startTagHandlers.put(TAG_CSV, this::parseSourceCSV);
+        startTagHandlers.put(TAG_CSV_COLUMN, this::parseSourceCSVColumn);
+    }
+
+    private void initializeEndTagHandlers() {
+        endTagHandlers.put(TAG_SCHEMA, this::handleEndSchema);
+        endTagHandlers.put(TAG_SQL_SCHEMA, this::handleEndSqlSchema);
+        endTagHandlers.put(TAG_TABLE, this::handleEndTable);
+        endTagHandlers.put(TAG_SQLTABLE, this::handleEndTable);
+        endTagHandlers.put(TAG_STATEMENT, this::handleEndStatement);
+        endTagHandlers.put(TAG_CSV, this::handleEndCsv);
+        endTagHandlers.put(TAG_SOURCE, this::handleEndSource);
     }
 
     public void processAttributes(Attributes attributes) {
@@ -85,121 +139,17 @@ public class SourceNodeHandler extends DefaultHandler {
     @Override
     public void startElement(String uri, String localName, String qName, Attributes attributes)
             throws SAXException {
-        switch (qName) {
-            case TAG_JDBC:
-                parseSourceJDBC(attributes);
-                break;
-            case TAG_SCHEMA:
-            case TAG_SQL_SCHEMA:
-                schemaCache = new StringBuffer();
-                break;
-            case TAG_SCHEMA_INFO:
-                parseSourceSchemaInfo(attributes);
-                break;
-            case TAG_FILE:
-                parseSourceFile(attributes);
-                break;
-            case TAG_TABLE:
-                parseSourceTable(attributes);
-                break;
-            case TAG_COLUMN:
-                parseSourceColumn(attributes);
-                break;
-            case TAG_FK:
-                parseSourceFK(attributes);
-                break;
-            case TAG_INDEX:
-                parseSourceIndex(attributes);
-                break;
-            case TAG_SQLTABLE:
-                parseSourceSQLTable(attributes);
-                break;
-            case TAG_STATEMENT:
-                sqlStatement = new StringBuffer();
-                break;
-            case TAG_VIEW:
-                parseSourceView(attributes);
-                break;
-            case TAG_SEQUENCE:
-                parseSourceSequence(attributes);
-                break;
-            case TAG_SYNONYM:
-                parseSourceSynonym(attributes);
-                break;
-            case TAG_GRANT:
-                parseSourceGrant(attributes);
-                break;
-            case TAG_TRIGGER:
-                config.addExpTriggerCfg(attributes.getValue(ATTR_NAME));
-                break;
-            case TAG_FUNCTION:
-                config.addExpFunctionCfg(attributes.getValue(ATTR_NAME));
-                break;
-            case TAG_PROCEDURE:
-                config.addExpProcedureCfg(attributes.getValue(ATTR_NAME));
-                break;
-            case TAG_PLCSQL_FUNCTION:
-                parseSourcePlcsqlFunction(attributes);
-                break;
-            case TAG_PLCSQL_PROCEDURE:
-                parseSourcePlcsqlProcedure(attributes);
-                break;
-            case TAG_SQL:
-                config.setSourceFileEncoding(attributes.getValue(ATTR_CHARSET));
-                break;
-            case TAG_SQL_FILE:
-                config.addSQLFile(attributes.getValue(ATTR_LOCATION));
-                break;
-            case TAG_CSVS:
-                parseSourceCSVS(attributes);
-                break;
-            case TAG_CSV:
-                parseSourceCSV(attributes);
-                break;
-            case TAG_CSV_COLUMN:
-                parseSourceCSVColumn(attributes);
-                break;
+        Consumer<Attributes> handler = startTagHandlers.get(qName);
+        if (handler != null) {
+            handler.accept(attributes);
         }
     }
 
     @Override
     public void endElement(String uri, String localName, String qName) throws SAXException {
-        switch (qName) {
-            case TAG_SCHEMA:
-                srcCatalog = Catalog.loadXML(schemaCache.toString());
-                schemaCache = null;
-                break;
-            case TAG_SQL_SCHEMA:
-                srcSQLCatalog = Catalog.loadXML(schemaCache.toString());
-                schemaCache = null;
-                break;
-            case TAG_TABLE:
-            case TAG_SQLTABLE:
-                srcTableCfg = null;
-                break;
-            case TAG_STATEMENT:
-                ((SourceSQLTableConfig) srcTableCfg).setSql(sqlStatement.toString().trim());
-                sqlStatement = null;
-                break;
-            case TAG_CSV:
-                config.addCSVFile(srcCSV);
-                break;
-            case TAG_SOURCE:
-                if (srcSQLCatalog != null
-                        && CollectionUtils.isNotEmpty(srcSQLCatalog.getSchemas())) {
-                    Schema sqlSchema = srcSQLCatalog.getSchemas().get(0);
-                    for (Table tt : sqlSchema.getTables()) {
-                        config.addExpSQLTableSchema(tt);
-                    }
-                }
-                if (srcCatalog != null) {
-                    ConnParameters sourceConParams = config.getSourceConParams();
-                    srcCatalog.setConnectionParameters(
-                            sourceConParams == null ? null : sourceConParams.clone());
-                    config.setSrcCatalog(srcCatalog, false);
-                    config.setOfflineSrcCatalog(srcCatalog);
-                }
-                break;
+        Runnable handler = endTagHandlers.get(qName);
+        if (handler != null) {
+            handler.run();
         }
     }
 
@@ -214,6 +164,8 @@ public class SourceNodeHandler extends DefaultHandler {
         }
         sqlStatement.append(ch, start, length);
     }
+
+    // startElement
 
     private void parseSourceJDBC(Attributes attributes) {
         ConnParameters scp =
@@ -381,30 +333,30 @@ public class SourceNodeHandler extends DefaultHandler {
     private void parseSourceCSVS(Attributes attributes) {
         String cs = attributes.getValue(ATTR_CSV_SEPARATE);
         final CSVSettings csvSettings = config.getCsvSettings();
-        if (cs == null) {
-            csvSettings.setSeparateChar(csvSettings.getSeparateChar());
-        } else if (cs.length() > 0) {
-            csvSettings.setSeparateChar(cs.charAt(0));
-        } else {
-            csvSettings.setSeparateChar(MigrationConfiguration.CSV_NO_CHAR);
+        if (cs != null) {
+            if (cs.length() > 0) {
+                csvSettings.setSeparateChar(cs.charAt(0));
+            } else {
+                csvSettings.setSeparateChar(MigrationConfiguration.CSV_NO_CHAR);
+            }
         }
 
         cs = attributes.getValue(ATTR_CSV_QUOTE);
-        if (cs == null) {
-            csvSettings.setQuoteChar(csvSettings.getQuoteChar());
-        } else if (cs.length() > 0) {
-            csvSettings.setQuoteChar(cs.charAt(0));
-        } else {
-            csvSettings.setQuoteChar(MigrationConfiguration.CSV_NO_CHAR);
+        if (cs != null) {
+            if (cs.length() > 0) {
+                csvSettings.setQuoteChar(cs.charAt(0));
+            } else {
+                csvSettings.setQuoteChar(MigrationConfiguration.CSV_NO_CHAR);
+            }
         }
 
         cs = attributes.getValue(ATTR_CSV_ESCAPE);
-        if (cs == null) {
-            csvSettings.setEscapeChar(csvSettings.getEscapeChar());
-        } else if (cs.length() > 0) {
-            csvSettings.setEscapeChar(cs.charAt(0));
-        } else {
-            csvSettings.setEscapeChar(MigrationConfiguration.CSV_NO_CHAR);
+        if (cs != null) {
+            if (cs.length() > 0) {
+                csvSettings.setEscapeChar(cs.charAt(0));
+            } else {
+                csvSettings.setEscapeChar(MigrationConfiguration.CSV_NO_CHAR);
+            }
         }
 
         cs = attributes.getValue(ATTR_CSV_NULL_VALUE);
@@ -433,5 +385,54 @@ public class SourceNodeHandler extends DefaultHandler {
         sccc.setName(attributes.getValue(ATTR_NAME));
         sccc.setTarget(attributes.getValue(ATTR_TARGET));
         srcCSV.addColumn(sccc);
+    }
+
+    // endElement
+
+    private void handleEndSchema() {
+        srcCatalog = Catalog.loadXML(schemaCache.toString());
+        schemaCache = null;
+    }
+
+    private void handleEndSqlSchema() {
+        srcSQLCatalog = Catalog.loadXML(schemaCache.toString());
+        schemaCache = null;
+    }
+
+    private void handleEndTable() {
+        srcTableCfg = null;
+    }
+
+    private void handleEndStatement() {
+        ((SourceSQLTableConfig) srcTableCfg).setSql(sqlStatement.toString().trim());
+        sqlStatement = null;
+    }
+
+    private void handleEndCsv() {
+        config.addCSVFile(srcCSV);
+    }
+
+    private void handleEndSource() {
+        processSQLCatalog();
+        processSourceCatalog();
+    }
+
+    private void processSQLCatalog() {
+        if (srcSQLCatalog != null && CollectionUtils.isNotEmpty(srcSQLCatalog.getSchemas())) {
+            Schema sqlSchema = srcSQLCatalog.getSchemas().get(0);
+            for (Table tt : sqlSchema.getTables()) {
+                config.addExpSQLTableSchema(tt);
+            }
+        }
+    }
+
+    private void processSourceCatalog() {
+        if (srcCatalog != null) {
+            ConnParameters sourceConParams = config.getSourceConParams();
+            srcCatalog.setConnectionParameters(
+                    sourceConParams == null ? null : sourceConParams.clone());
+            config.setSrcCatalog(srcCatalog, false);
+            config.setOfflineSrcCatalog(srcCatalog);
+        }
     }
 }

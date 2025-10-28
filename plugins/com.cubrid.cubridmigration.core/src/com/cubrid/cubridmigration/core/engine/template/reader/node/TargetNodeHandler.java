@@ -51,7 +51,10 @@ import com.cubrid.cubridmigration.core.dbtype.DatabaseType;
 import com.cubrid.cubridmigration.core.engine.config.MigrationConfiguration;
 import com.cubrid.cubridmigration.cubrid.CUBRIDDataTypeHelper;
 import java.math.BigInteger;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Consumer;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.xml.sax.Attributes;
@@ -68,6 +71,8 @@ public class TargetNodeHandler extends DefaultHandler {
 
     private final MigrationConfiguration config;
     private final CUBRIDDataTypeHelper dtHelper = CUBRIDDataTypeHelper.getInstance(null);
+    private final Map<String, Consumer<Attributes>> startTagHandlers = new HashMap<>();
+    private final Map<String, Runnable> endTagHandlers = new HashMap<>();
 
     private Table targetTable;
     private View targetView;
@@ -76,6 +81,42 @@ public class TargetNodeHandler extends DefaultHandler {
 
     public TargetNodeHandler(MigrationConfiguration config) {
         this.config = config;
+        initializeStartTagHandlers();
+        initializeEndTagHandlers();
+    }
+
+    private void initializeStartTagHandlers() {
+        startTagHandlers.put(TAG_JDBC, this::parseTargetJDBC);
+        startTagHandlers.put(TAG_FILE_REPOSITORY, this::parseTargetFileRepository);
+        startTagHandlers.put(TAG_SCHEMA, attr -> schemaCache = new StringBuffer());
+        startTagHandlers.put(TAG_SCHEMA_INFO, this::parseTargetSchemaInfo);
+        startTagHandlers.put(TAG_TABLE, this::parseTargetTable);
+        startTagHandlers.put(TAG_COLUMN, this::parseTargetColumn);
+        startTagHandlers.put(TAG_PK, this::parseTargetPK);
+        startTagHandlers.put(TAG_FK, this::parseTargetFK);
+        startTagHandlers.put(TAG_INDEX, this::parseTargetIndex);
+        startTagHandlers.put(TAG_PARTITIONS, this::parseTargetPartition);
+        startTagHandlers.put(TAG_RANGE, this::parseTargetRangePartition);
+        startTagHandlers.put(TAG_LIST, this::parseTargetRangePartition);
+        startTagHandlers.put(TAG_HASH, this::parseTargetHashPartition);
+        startTagHandlers.put(TAG_VIEW, this::parseTargetView);
+        startTagHandlers.put(TAG_VIEWCOLUMN, this::parseTargetViewColumn);
+        startTagHandlers.put(TAG_SEQUENCE, this::parseTargetSequence);
+        startTagHandlers.put(TAG_SYNONYM, this::parseTargetSynonym);
+        startTagHandlers.put(TAG_GRANT, this::parseTargetGrant);
+        startTagHandlers.put(TAG_PLCSQL_PROCEDURE, this::parseTargetPlcsqlProcedure);
+        startTagHandlers.put(TAG_PLCSQL_FUNCTION, this::parseTargetPlcsqlFunction);
+        startTagHandlers.put(TAG_VIEWQUERYSQL, attr -> sqlStatement = new StringBuffer());
+        startTagHandlers.put(TAG_CREATEVIEWSQL, attr -> sqlStatement = new StringBuffer());
+        startTagHandlers.put(TAG_PARTITION_DDL, attr -> sqlStatement = new StringBuffer());
+    }
+
+    private void initializeEndTagHandlers() {
+        endTagHandlers.put(TAG_TABLE, this::handleEndTable);
+        endTagHandlers.put(TAG_VIEW, this::handleEndView);
+        endTagHandlers.put(TAG_VIEWQUERYSQL, this::handleEndViewQuerySql);
+        endTagHandlers.put(TAG_CREATEVIEWSQL, this::handleEndCreateViewSql);
+        endTagHandlers.put(TAG_PARTITION_DDL, this::handleEndPartitionDdl);
     }
 
     public void processAttributes(Attributes attributes) {
@@ -91,92 +132,17 @@ public class TargetNodeHandler extends DefaultHandler {
 
     @Override
     public void startElement(String uri, String localName, String qName, Attributes attributes) {
-        switch (qName) {
-            case TAG_JDBC:
-                parseTargetJDBC(attributes);
-                break;
-            case TAG_FILE_REPOSITORY:
-                parseTargetFileRepository(attributes);
-                break;
-            case TAG_SCHEMA:
-                schemaCache = new StringBuffer();
-                break;
-            case TAG_SCHEMA_INFO:
-                parseTargetSchemaInfo(attributes);
-                break;
-            case TAG_TABLE:
-                parseTargetTable(attributes);
-                break;
-            case TAG_COLUMN:
-                parseTargetColumn(attributes);
-                break;
-            case TAG_PK:
-                parseTargetPK(attributes);
-                break;
-            case TAG_FK:
-                parseTargetFK(attributes);
-                break;
-            case TAG_INDEX:
-                parseTargetIndex(attributes);
-                break;
-            case TAG_PARTITIONS:
-                parseTargetPartition(attributes);
-                break;
-            case TAG_RANGE:
-            case TAG_LIST:
-                parseTargetRangePartition(attributes);
-                break;
-            case TAG_HASH:
-                parseTargetHashPartition(attributes);
-                break;
-            case TAG_VIEW:
-                parseTargetView(attributes);
-                break;
-            case TAG_VIEWCOLUMN:
-                parseTargetViewColumn(attributes);
-                break;
-            case TAG_SEQUENCE:
-                parseTargetSequence(attributes);
-                break;
-            case TAG_SYNONYM:
-                parseTargetSynonym(attributes);
-                break;
-            case TAG_GRANT:
-                parseTargetGrant(attributes);
-                break;
-            case TAG_PLCSQL_PROCEDURE:
-                parseTargetPlcsqlProcedure(attributes);
-                break;
-            case TAG_PLCSQL_FUNCTION:
-                parseTargetPlcsqlFunction(attributes);
-                break;
-            case TAG_VIEWQUERYSQL:
-            case TAG_CREATEVIEWSQL:
-            case TAG_PARTITION_DDL:
-                sqlStatement = new StringBuffer();
+        Consumer<Attributes> handler = startTagHandlers.get(qName);
+        if (handler != null) {
+            handler.accept(attributes);
         }
     }
 
     @Override
     public void endElement(String uri, String localName, String qName) {
-        switch (qName) {
-            case TAG_TABLE:
-                targetTable = null;
-                break;
-            case TAG_VIEW:
-                targetView = null;
-                break;
-            case TAG_VIEWQUERYSQL:
-                targetView.setQuerySpec(sqlStatement.toString().trim());
-                sqlStatement = null;
-                break;
-            case TAG_CREATEVIEWSQL:
-                targetView.setDDL(sqlStatement.toString().trim());
-                sqlStatement = null;
-                break;
-            case TAG_PARTITION_DDL:
-                targetTable.getPartitionInfo().setDDL(sqlStatement.toString());
-                sqlStatement = null;
+        Runnable handler = endTagHandlers.get(qName);
+        if (handler != null) {
+            handler.run();
         }
     }
 
@@ -191,6 +157,8 @@ public class TargetNodeHandler extends DefaultHandler {
         }
         sqlStatement.append(ch, start, length);
     }
+
+    // startElement
 
     /** @param attributes of node */
     private void parseTargetJDBC(Attributes attributes) {
@@ -463,5 +431,30 @@ public class TargetNodeHandler extends DefaultHandler {
         func.setBodyDDL(attributes.getValue(ATTR_BODY_DDL));
         func.setFunctionDDL(attributes.getValue(ATTR_FUNCTION_DDL));
         config.addTargetPlcsqlFunctionSchema(func);
+    }
+
+    // endElement
+
+    private void handleEndTable() {
+        targetTable = null;
+    }
+
+    private void handleEndView() {
+        targetView = null;
+    }
+
+    private void handleEndViewQuerySql() {
+        targetView.setQuerySpec(sqlStatement.toString().trim());
+        sqlStatement = null;
+    }
+
+    private void handleEndCreateViewSql() {
+        targetView.setDDL(sqlStatement.toString().trim());
+        sqlStatement = null;
+    }
+
+    private void handleEndPartitionDdl() {
+        targetTable.getPartitionInfo().setDDL(sqlStatement.toString());
+        sqlStatement = null;
     }
 }

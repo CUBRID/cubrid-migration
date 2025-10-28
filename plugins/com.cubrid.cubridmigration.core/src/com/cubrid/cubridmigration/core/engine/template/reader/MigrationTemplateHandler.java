@@ -64,57 +64,16 @@ public final class MigrationTemplateHandler extends DefaultHandler {
 
         switch (qName) {
             case TAG_SOURCE:
-                SourceNodeHandler sourceHandler = new SourceNodeHandler(config);
-                sourceHandler.processAttributes(attributes);
-                delegatingHandler = sourceHandler;
+                handleSource(attributes);
                 break;
             case TAG_TARGET:
-                TargetNodeHandler targetHandler = new TargetNodeHandler(config);
-                targetHandler.processAttributes(attributes);
-                delegatingHandler = targetHandler;
+                handleTarget(attributes);
                 break;
             case TAG_MIGRATION:
-                config.setName(attributes.getValue(ATTR_NAME));
-                config.setWizardStartDateTime(attributes.getValue(ATTR_WIZARD_START_DATE_TIME));
-                String version = attributes.getValue(ATTR_VERSION);
-                int versionValue = convertVersionToInt(version);
-
-                if (versionValue < 1110) {
-                    config.setOldScript(true);
-                }
+                handleMigration(attributes);
                 break;
             case TAG_PARAMS:
-                config.setExportThreadCount(
-                        Integer.parseInt(attributes.getValue(ATTR_EXPORT_THREAD)));
-                String attrImportThread = attributes.getValue(ATTR_IMPORT_THREAD);
-                attrImportThread =
-                        attrImportThread == null
-                                ? ("" + config.getExportThreadCount())
-                                : attrImportThread;
-                config.setImportThreadCount(Integer.parseInt(attrImportThread));
-                config.setCommitCount(Integer.parseInt(attributes.getValue(ATTR_COMMIT_COUNT)));
-                final String fetchCount = attributes.getValue(ATTR_PAGE_FETCH_COUNT);
-                config.setPageFetchCount(fetchCount == null ? 1000 : Integer.parseInt(fetchCount));
-                config.setImplicitEstimate(
-                        getBoolean(attributes.getValue(ATTR_IMPLICIT_ESTIMATE_PROGRESS), false));
-                config.setUpdateStatistics(
-                        getBoolean(attributes.getValue(ATTR_UPDATE_STATISTICS), true));
-                String s1 = attributes.getValue(MySQL2CUBRIDMigParas.UNPARSED_TIME);
-                if (s1 != null) {
-                    config.putOtherParam(MySQL2CUBRIDMigParas.UNPARSED_TIME, s1);
-                }
-                String s2 = attributes.getValue(MySQL2CUBRIDMigParas.UNPARSED_DATE);
-                if (s2 != null) {
-                    config.putOtherParam(MySQL2CUBRIDMigParas.UNPARSED_DATE, s2);
-                }
-                String s3 = attributes.getValue(MySQL2CUBRIDMigParas.UNPARSED_TIMESTAMP);
-                if (s3 != null) {
-                    config.putOtherParam(MySQL2CUBRIDMigParas.UNPARSED_TIMESTAMP, s3);
-                }
-                String s4 = attributes.getValue(MySQL2CUBRIDMigParas.REPLAXE_CHAR0);
-                if (s4 != null) {
-                    config.putOtherParam(MySQL2CUBRIDMigParas.REPLAXE_CHAR0, s4);
-                }
+                handleParams(attributes);
                 break;
             default:
                 break;
@@ -144,5 +103,54 @@ public final class MigrationTemplateHandler extends DefaultHandler {
 
     public MigrationConfiguration getResult() {
         return config;
+    }
+
+    private void handleSource(Attributes attributes) {
+        SourceNodeHandler sourceHandler = new SourceNodeHandler(config);
+        sourceHandler.processAttributes(attributes);
+        delegatingHandler = sourceHandler;
+    }
+
+    private void handleTarget(Attributes attributes) {
+        TargetNodeHandler targetHandler = new TargetNodeHandler(config);
+        targetHandler.processAttributes(attributes);
+        delegatingHandler = targetHandler;
+    }
+
+    private void handleMigration(Attributes attributes) {
+        config.setName(attributes.getValue(ATTR_NAME));
+        config.setWizardStartDateTime(attributes.getValue(ATTR_WIZARD_START_DATE_TIME));
+        String version = attributes.getValue(ATTR_VERSION);
+        int versionValue = convertVersionToInt(version);
+
+        if (versionValue < 1110) {
+            config.setOldScript(true);
+        }
+    }
+
+    private void handleParams(Attributes attributes) {
+        config.setExportThreadCount(Integer.parseInt(attributes.getValue(ATTR_EXPORT_THREAD)));
+        String attrImportThread = attributes.getValue(ATTR_IMPORT_THREAD);
+        attrImportThread =
+                attrImportThread == null ? ("" + config.getExportThreadCount()) : attrImportThread;
+        config.setImportThreadCount(Integer.parseInt(attrImportThread));
+        config.setCommitCount(Integer.parseInt(attributes.getValue(ATTR_COMMIT_COUNT)));
+        final String fetchCount = attributes.getValue(ATTR_PAGE_FETCH_COUNT);
+        config.setPageFetchCount(fetchCount == null ? 1000 : Integer.parseInt(fetchCount));
+        config.setImplicitEstimate(
+                getBoolean(attributes.getValue(ATTR_IMPLICIT_ESTIMATE_PROGRESS), false));
+        config.setUpdateStatistics(getBoolean(attributes.getValue(ATTR_UPDATE_STATISTICS), true));
+
+        setOtherParamIfPresent(attributes, MySQL2CUBRIDMigParas.UNPARSED_TIME);
+        setOtherParamIfPresent(attributes, MySQL2CUBRIDMigParas.UNPARSED_DATE);
+        setOtherParamIfPresent(attributes, MySQL2CUBRIDMigParas.UNPARSED_TIMESTAMP);
+        setOtherParamIfPresent(attributes, MySQL2CUBRIDMigParas.REPLAXE_CHAR0);
+    }
+
+    private void setOtherParamIfPresent(Attributes attributes, String paramName) {
+        String value = attributes.getValue(paramName);
+        if (value != null) {
+            config.putOtherParam(paramName, value);
+        }
     }
 }

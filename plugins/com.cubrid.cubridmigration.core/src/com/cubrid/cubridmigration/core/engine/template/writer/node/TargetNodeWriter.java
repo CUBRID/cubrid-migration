@@ -83,58 +83,65 @@ public class TargetNodeWriter {
     private void writeTargetConInfoNode(XMLStreamWriter writer, MigrationConfiguration config)
             throws XMLStreamException {
         if (config.targetIsOnline()) {
-            writer.writeEmptyElement(TAG_JDBC);
-            ConnParameters tcp = config.getTargetConParams();
-            writer.writeAttribute(ATTR_HOST, tcp.getHost());
-            writer.writeAttribute(ATTR_PORT, String.valueOf(tcp.getPort()));
-            writer.writeAttribute(ATTR_DRIVER, tcp.getDriverFileName());
-            writer.writeAttribute(ATTR_NAME, tcp.getDbName());
-            writer.writeAttribute(ATTR_USER, tcp.getConUser());
-            writer.writeAttribute(ATTR_PASSWORD, tcp.getConPassword());
-            writer.writeAttribute(ATTR_CHARSET, tcp.getCharset());
-            writer.writeAttribute(ATTR_TIMEZONE, tcp.getTimeZone());
-            writer.writeAttribute(ATTR_USER_JDBC_URL, tcp.getUserJDBCURL());
-            writer.writeAttribute(
-                    ATTR_CREATE_CONSTRAINT_NOW,
-                    getBooleanString(config.isCreateConstrainsBeforeData()));
-            writer.writeAttribute(
-                    ATTR_WRITE_ERROR_RECORDS, getBooleanString(config.isWriteErrorRecords()));
-            writer.writeAttribute(ATTR_ADD_SCHEMA, getBooleanString(config.isAddUserSchema()));
+            writeJdbcNode(writer, config);
         } else if (config.targetIsFile()) {
-            writer.writeEmptyElement(TAG_FILE_REPOSITORY);
-            writer.writeAttribute(ATTR_DIR, config.getFileRepositroyPath());
-            writer.writeAttribute(ATTR_TIMEZONE, config.getTargetFileTimeZone());
-            writer.writeAttribute(ATTR_CHARSET, config.getTargetCharSet());
-            writer.writeAttribute(ATTR_ADD_SCHEMA, getBooleanString(config.isAddUserSchema()));
-            writer.writeAttribute(ATTR_SPLIT_SCHEMA, getBooleanString(config.isSplitSchema()));
-            writer.writeAttribute(ATTR_CREATE_USER_SQL, getBooleanString(config.isCreateUserSQL()));
+            writeFileRepositoryNode(writer, config);
+        }
+    }
+
+    private void writeJdbcNode(XMLStreamWriter writer, MigrationConfiguration config)
+            throws XMLStreamException {
+        writer.writeEmptyElement(TAG_JDBC);
+        ConnParameters tcp = config.getTargetConParams();
+        writer.writeAttribute(ATTR_HOST, tcp.getHost());
+        writer.writeAttribute(ATTR_PORT, String.valueOf(tcp.getPort()));
+        writer.writeAttribute(ATTR_DRIVER, tcp.getDriverFileName());
+        writer.writeAttribute(ATTR_NAME, tcp.getDbName());
+        writer.writeAttribute(ATTR_USER, tcp.getConUser());
+        writer.writeAttribute(ATTR_PASSWORD, tcp.getConPassword());
+        writer.writeAttribute(ATTR_CHARSET, tcp.getCharset());
+        writer.writeAttribute(ATTR_TIMEZONE, tcp.getTimeZone());
+        writer.writeAttribute(ATTR_USER_JDBC_URL, tcp.getUserJDBCURL());
+        writer.writeAttribute(
+                ATTR_CREATE_CONSTRAINT_NOW,
+                getBooleanString(config.isCreateConstrainsBeforeData()));
+        writer.writeAttribute(
+                ATTR_WRITE_ERROR_RECORDS, getBooleanString(config.isWriteErrorRecords()));
+        writer.writeAttribute(ATTR_ADD_SCHEMA, getBooleanString(config.isAddUserSchema()));
+    }
+
+    private void writeFileRepositoryNode(XMLStreamWriter writer, MigrationConfiguration config)
+            throws XMLStreamException {
+        writer.writeEmptyElement(TAG_FILE_REPOSITORY);
+        writer.writeAttribute(ATTR_DIR, config.getFileRepositroyPath());
+        writer.writeAttribute(ATTR_TIMEZONE, config.getTargetFileTimeZone());
+        writer.writeAttribute(ATTR_CHARSET, config.getTargetCharSet());
+        writer.writeAttribute(ATTR_ADD_SCHEMA, getBooleanString(config.isAddUserSchema()));
+        writer.writeAttribute(ATTR_SPLIT_SCHEMA, getBooleanString(config.isSplitSchema()));
+        writer.writeAttribute(ATTR_CREATE_USER_SQL, getBooleanString(config.isCreateUserSQL()));
+        writer.writeAttribute(ATTR_ONETABLEONEFILE, getBooleanString(config.isOneTableOneFile()));
+        writer.writeAttribute(ATTR_DATA_FILE_FORMAT, String.valueOf(config.getDestType()));
+        writer.writeAttribute(ATTR_OUTPUT_FILE_PREFIX, config.getTargetFilePrefix());
+        writer.writeAttribute(ATTR_FILE_MAX_SIZE, String.valueOf(config.getMaxCountPerFile()));
+        if (config.targetIsCSV()) {
             writer.writeAttribute(
-                    ATTR_ONETABLEONEFILE, getBooleanString(config.isOneTableOneFile()));
-            writer.writeAttribute(ATTR_DATA_FILE_FORMAT, String.valueOf(config.getDestType()));
-            writer.writeAttribute(ATTR_OUTPUT_FILE_PREFIX, config.getTargetFilePrefix());
-            writer.writeAttribute(ATTR_FILE_MAX_SIZE, String.valueOf(config.getMaxCountPerFile()));
-            if (config.targetIsCSV()) {
-                writer.writeAttribute(
-                        ATTR_CSV_SEPARATE,
-                        config.getCsvSettings().getSeparateChar()
-                                        == MigrationConfiguration.CSV_NO_CHAR
-                                ? ""
-                                : String.valueOf(config.getCsvSettings().getSeparateChar()));
-                writer.writeAttribute(
-                        ATTR_CSV_QUOTE,
-                        config.getCsvSettings().getQuoteChar() == MigrationConfiguration.CSV_NO_CHAR
-                                ? ""
-                                : String.valueOf(config.getCsvSettings().getQuoteChar()));
-                writer.writeAttribute(
-                        ATTR_CSV_ESCAPE,
-                        config.getCsvSettings().getEscapeChar()
-                                        == MigrationConfiguration.CSV_NO_CHAR
-                                ? ""
-                                : String.valueOf(config.getCsvSettings().getEscapeChar()));
-            }
-            if (config.targetIsDBDump()) {
-                writer.writeAttribute(ATTR_LOB_ROOT_DIR, config.getTargetLOBRootPath());
-            }
+                    ATTR_CSV_SEPARATE,
+                    config.getCsvSettings().getSeparateChar() == MigrationConfiguration.CSV_NO_CHAR
+                            ? ""
+                            : String.valueOf(config.getCsvSettings().getSeparateChar()));
+            writer.writeAttribute(
+                    ATTR_CSV_QUOTE,
+                    config.getCsvSettings().getQuoteChar() == MigrationConfiguration.CSV_NO_CHAR
+                            ? ""
+                            : String.valueOf(config.getCsvSettings().getQuoteChar()));
+            writer.writeAttribute(
+                    ATTR_CSV_ESCAPE,
+                    config.getCsvSettings().getEscapeChar() == MigrationConfiguration.CSV_NO_CHAR
+                            ? ""
+                            : String.valueOf(config.getCsvSettings().getEscapeChar()));
+        }
+        if (config.targetIsDBDump()) {
+            writer.writeAttribute(ATTR_LOB_ROOT_DIR, config.getTargetLOBRootPath());
         }
     }
 
@@ -161,91 +168,113 @@ public class TargetNodeWriter {
         }
         writer.writeStartElement(TAG_TABLES);
         for (Table table : targetTables) {
-            writer.writeStartElement(TAG_TABLE);
-            writer.writeAttribute(ATTR_NAME, table.getName());
-            writer.writeAttribute(ATTR_OWNER, table.getOwner());
-            writer.writeAttribute(ATTR_SOURCE_OWNER, table.getSourceOwner());
-            writer.writeAttribute(ATTR_REUSE_OID, getBooleanString(table.isReuseOID()));
-            writer.writeAttribute(ATTR_COMMENT, table.getComment());
-
-            writer.writeStartElement(TAG_COLUMNS);
-            for (Column col : table.getColumns()) {
-                writer.writeEmptyElement(TAG_COLUMN);
-                writer.writeAttribute(ATTR_NAME, col.getName());
-                writer.writeAttribute(ATTR_TYPE, col.getShownDataType());
-                writer.writeAttribute(ATTR_BASE_TYPE, col.getDataType());
-                if (col.getSubDataType() != null) {
-                    writer.writeAttribute(ATTR_SUB_TYPE, col.getSubDataType());
-                }
-                writer.writeAttribute(ATTR_NULL, getBooleanString(col.isNullable()));
-                writer.writeAttribute(ATTR_UNIQUE, getBooleanString(col.isUnique()));
-                writer.writeAttribute(ATTR_SHARED, getBooleanString(col.isShared()));
-                if (col.getDefaultValue() != null) {
-                    writer.writeAttribute(ATTR_DEFAULT, col.getDefaultValue());
-                    writer.writeAttribute(
-                            ATTR_DEFAULT_EXPRESSION, getBooleanString(col.isDefaultIsExpression()));
-                }
-                writer.writeAttribute(ATTR_AUTO_INCREMENT, getBooleanString(col.isAutoIncrement()));
-                if (col.isAutoIncrement()) {
-                    writer.writeAttribute(ATTR_START, String.valueOf(col.getAutoIncSeedVal()));
-                    writer.writeAttribute(ATTR_INCREMENT, String.valueOf(col.getAutoIncIncrVal()));
-                }
-                if (col.isShared()) {
-                    writer.writeAttribute(ATTR_SHARED_VALUE, col.getSharedValue());
-                }
-                writer.writeAttribute(ATTR_COMMENT, col.getComment());
-            }
-            writer.writeEndElement(); // </columns>
-
-            PK pk = table.getPk();
-            List<FK> fks = table.getFks();
-            List<Index> indexes = table.getIndexes();
-            if (pk != null || !fks.isEmpty() || !indexes.isEmpty()) {
-                writer.writeStartElement(TAG_CONSTRAINTS);
-                if (pk != null && CollectionUtils.isNotEmpty(pk.getPkColumns())) {
-                    writer.writeEmptyElement(TAG_PK);
-                    writer.writeAttribute(ATTR_FIELDS, list2String(pk.getPkColumns()));
-                }
-                for (FK fk : fks) {
-                    writer.writeEmptyElement(TAG_FK);
-                    writer.writeAttribute(ATTR_NAME, fk.getName());
-                    writer.writeAttribute(ATTR_REF_TABLE, fk.getReferencedTableName());
-                    writer.writeAttribute(ATTR_ON_UPDATE, FK_OPERATION.get(fk.getUpdateRule()));
-                    writer.writeAttribute(ATTR_ON_DELETE, FK_OPERATION.get(fk.getDeleteRule()));
-                    writer.writeAttribute(ATTR_FIELDS, list2String(fk.getColumnNames()));
-                    writer.writeAttribute(ATTR_REF_FIELDS, list2String(fk.getCol2RefMapping()));
-                }
-                for (Index index : indexes) {
-                    writer.writeEmptyElement(TAG_INDEX);
-                    writer.writeAttribute(ATTR_NAME, index.getName());
-                    writer.writeAttribute(ATTR_FIELDS, list2String(index.getColumnNames()));
-                    writer.writeAttribute(
-                            ATTR_ORDER_RULE, list2String(index.getColumnOrderRulesString()));
-                    writer.writeAttribute(ATTR_REVERSE, getBooleanString(index.isReverse()));
-                    writer.writeAttribute(ATTR_UNIQUE, getBooleanString(index.isUnique()));
-                }
-                writer.writeEndElement(); // </constraints>
-            }
-            PartitionInfo pi = table.getPartitionInfo();
-            if (pi != null) {
-                writer.writeStartElement(TAG_PARTITIONS);
-                writer.writeAttribute(ATTR_TYPE, pi.getPartitionMethod());
-                writer.writeAttribute(ATTR_EXPRESSION, pi.getPartitionExp());
-                for (PartitionTable pt : pi.getPartitions()) {
-                    writer.writeEmptyElement(pi.getPartitionMethod().toLowerCase());
-                    writer.writeAttribute(ATTR_NAME, pt.getPartitionName());
-                    if (!VALUE_HASH.equals(pi.getPartitionMethod())) {
-                        writer.writeAttribute(ATTR_VALUE, pt.getPartitionDesc());
-                    }
-                }
-                writer.writeStartElement(TAG_PARTITION_DDL);
-                writer.writeCData(pi.getDDL());
-                writer.writeEndElement(); // </partition_ddl>
-                writer.writeEndElement(); // </partitions>
-            }
-            writer.writeEndElement(); // </table>
+            writeSingleTargetTable(writer, table);
         }
         writer.writeEndElement(); // </tables>
+    }
+
+    private void writeSingleTargetTable(XMLStreamWriter writer, Table table)
+            throws XMLStreamException {
+        writer.writeStartElement(TAG_TABLE);
+        writeTargetTableAttributes(writer, table);
+        writeTargetColumns(writer, table);
+        writeTargetConstraints(writer, table);
+        writeTargetPartitions(writer, table);
+        writer.writeEndElement(); // </table>
+    }
+
+    private void writeTargetTableAttributes(XMLStreamWriter writer, Table table)
+            throws XMLStreamException {
+        writer.writeAttribute(ATTR_NAME, table.getName());
+        writer.writeAttribute(ATTR_OWNER, table.getOwner());
+        writer.writeAttribute(ATTR_SOURCE_OWNER, table.getSourceOwner());
+        writer.writeAttribute(ATTR_REUSE_OID, getBooleanString(table.isReuseOID()));
+        writer.writeAttribute(ATTR_COMMENT, table.getComment());
+    }
+
+    private void writeTargetColumns(XMLStreamWriter writer, Table table) throws XMLStreamException {
+        writer.writeStartElement(TAG_COLUMNS);
+        for (Column col : table.getColumns()) {
+            writer.writeEmptyElement(TAG_COLUMN);
+            writer.writeAttribute(ATTR_NAME, col.getName());
+            writer.writeAttribute(ATTR_TYPE, col.getShownDataType());
+            writer.writeAttribute(ATTR_BASE_TYPE, col.getDataType());
+            if (col.getSubDataType() != null) {
+                writer.writeAttribute(ATTR_SUB_TYPE, col.getSubDataType());
+            }
+            writer.writeAttribute(ATTR_NULL, getBooleanString(col.isNullable()));
+            writer.writeAttribute(ATTR_UNIQUE, getBooleanString(col.isUnique()));
+            writer.writeAttribute(ATTR_SHARED, getBooleanString(col.isShared()));
+            if (col.getDefaultValue() != null) {
+                writer.writeAttribute(ATTR_DEFAULT, col.getDefaultValue());
+                writer.writeAttribute(
+                        ATTR_DEFAULT_EXPRESSION, getBooleanString(col.isDefaultIsExpression()));
+            }
+            writer.writeAttribute(ATTR_AUTO_INCREMENT, getBooleanString(col.isAutoIncrement()));
+            if (col.isAutoIncrement()) {
+                writer.writeAttribute(ATTR_START, String.valueOf(col.getAutoIncSeedVal()));
+                writer.writeAttribute(ATTR_INCREMENT, String.valueOf(col.getAutoIncIncrVal()));
+            }
+            if (col.isShared()) {
+                writer.writeAttribute(ATTR_SHARED_VALUE, col.getSharedValue());
+            }
+            writer.writeAttribute(ATTR_COMMENT, col.getComment());
+        }
+        writer.writeEndElement(); // </columns>
+    }
+
+    private void writeTargetConstraints(XMLStreamWriter writer, Table table)
+            throws XMLStreamException {
+        PK pk = table.getPk();
+        List<FK> fks = table.getFks();
+        List<Index> indexes = table.getIndexes();
+        if (pk != null || !fks.isEmpty() || !indexes.isEmpty()) {
+            writer.writeStartElement(TAG_CONSTRAINTS);
+            if (pk != null && CollectionUtils.isNotEmpty(pk.getPkColumns())) {
+                writer.writeEmptyElement(TAG_PK);
+                writer.writeAttribute(ATTR_FIELDS, list2String(pk.getPkColumns()));
+            }
+            for (FK fk : fks) {
+                writer.writeEmptyElement(TAG_FK);
+                writer.writeAttribute(ATTR_NAME, fk.getName());
+                writer.writeAttribute(ATTR_REF_TABLE, fk.getReferencedTableName());
+                writer.writeAttribute(ATTR_ON_UPDATE, FK_OPERATION.get(fk.getUpdateRule()));
+                writer.writeAttribute(ATTR_ON_DELETE, FK_OPERATION.get(fk.getDeleteRule()));
+                writer.writeAttribute(ATTR_FIELDS, list2String(fk.getColumnNames()));
+                writer.writeAttribute(ATTR_REF_FIELDS, list2String(fk.getCol2RefMapping()));
+            }
+            for (Index index : indexes) {
+                writer.writeEmptyElement(TAG_INDEX);
+                writer.writeAttribute(ATTR_NAME, index.getName());
+                writer.writeAttribute(ATTR_FIELDS, list2String(index.getColumnNames()));
+                writer.writeAttribute(
+                        ATTR_ORDER_RULE, list2String(index.getColumnOrderRulesString()));
+                writer.writeAttribute(ATTR_REVERSE, getBooleanString(index.isReverse()));
+                writer.writeAttribute(ATTR_UNIQUE, getBooleanString(index.isUnique()));
+            }
+            writer.writeEndElement(); // </constraints>
+        }
+    }
+
+    private void writeTargetPartitions(XMLStreamWriter writer, Table table)
+            throws XMLStreamException {
+        PartitionInfo pi = table.getPartitionInfo();
+        if (pi != null) {
+            writer.writeStartElement(TAG_PARTITIONS);
+            writer.writeAttribute(ATTR_TYPE, pi.getPartitionMethod());
+            writer.writeAttribute(ATTR_EXPRESSION, pi.getPartitionExp());
+            for (PartitionTable pt : pi.getPartitions()) {
+                writer.writeEmptyElement(pi.getPartitionMethod().toLowerCase());
+                writer.writeAttribute(ATTR_NAME, pt.getPartitionName());
+                if (!VALUE_HASH.equals(pi.getPartitionMethod())) {
+                    writer.writeAttribute(ATTR_VALUE, pt.getPartitionDesc());
+                }
+            }
+            writer.writeStartElement(TAG_PARTITION_DDL);
+            writer.writeCData(pi.getDDL());
+            writer.writeEndElement(); // </partition_ddl>
+            writer.writeEndElement(); // </partitions>
+        }
     }
 
     private void writeTargetSequenceNodes(XMLStreamWriter writer, MigrationConfiguration config)
