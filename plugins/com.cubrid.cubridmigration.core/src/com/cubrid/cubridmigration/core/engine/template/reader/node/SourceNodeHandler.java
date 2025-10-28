@@ -71,11 +71,7 @@ public class SourceNodeHandler extends DefaultHandler {
     private SourceTableConfig srcTableCfg;
     private StringBuffer sqlStatement;
     private StringBuffer schemaCache;
-
-    @SuppressWarnings("PMD.SingularField")
     private Catalog srcCatalog; // NOPMD
-
-    @SuppressWarnings("PMD.SingularField")
     private Catalog srcSQLCatalog; // NOPMD
 
     private SourceCSVConfig srcCSV;
@@ -331,41 +327,31 @@ public class SourceNodeHandler extends DefaultHandler {
     }
 
     private void parseSourceCSVS(Attributes attributes) {
-        String cs = attributes.getValue(ATTR_CSV_SEPARATE);
         final CSVSettings csvSettings = config.getCsvSettings();
+        setCharSetting(attributes, ATTR_CSV_SEPARATE, csvSettings::setSeparateChar);
+        setCharSetting(attributes, ATTR_CSV_QUOTE, csvSettings::setQuoteChar);
+        setCharSetting(attributes, ATTR_CSV_ESCAPE, csvSettings::setEscapeChar);
+
+        setStringSetting(attributes, ATTR_CSV_NULL_VALUE, csvSettings::setNullStrings);
+        setStringSetting(attributes, ATTR_CHARSET, csvSettings::setCharset);
+    }
+
+    private void setCharSetting(
+            Attributes attributes, String attrName, Consumer<Character> setter) {
+        String cs = attributes.getValue(attrName);
         if (cs != null) {
             if (cs.length() > 0) {
-                csvSettings.setSeparateChar(cs.charAt(0));
+                setter.accept(cs.charAt(0));
             } else {
-                csvSettings.setSeparateChar(MigrationConfiguration.CSV_NO_CHAR);
+                setter.accept(MigrationConfiguration.CSV_NO_CHAR);
             }
         }
+    }
 
-        cs = attributes.getValue(ATTR_CSV_QUOTE);
+    private void setStringSetting(Attributes attributes, String attrName, Consumer<String> setter) {
+        String cs = attributes.getValue(attrName);
         if (cs != null) {
-            if (cs.length() > 0) {
-                csvSettings.setQuoteChar(cs.charAt(0));
-            } else {
-                csvSettings.setQuoteChar(MigrationConfiguration.CSV_NO_CHAR);
-            }
-        }
-
-        cs = attributes.getValue(ATTR_CSV_ESCAPE);
-        if (cs != null) {
-            if (cs.length() > 0) {
-                csvSettings.setEscapeChar(cs.charAt(0));
-            } else {
-                csvSettings.setEscapeChar(MigrationConfiguration.CSV_NO_CHAR);
-            }
-        }
-
-        cs = attributes.getValue(ATTR_CSV_NULL_VALUE);
-        if (cs != null) {
-            csvSettings.setNullStrings(cs);
-        }
-        cs = attributes.getValue(ATTR_CHARSET);
-        if (cs != null) {
-            csvSettings.setCharset(cs);
+            setter.accept(cs);
         }
     }
 
