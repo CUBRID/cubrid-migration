@@ -92,7 +92,7 @@ public final class MigrationTemplateReader {
         try {
             SAXParserFactory sf = SAXParserFactory.newInstance();
             sf.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-            sf.setFeature("http://javax.xml.XMLConstants/feature/disallow-doctype-decl", true);
+            sf.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
             sf.setFeature("http://xml.org/sax/features/external-general-entities", false);
             sf.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
             sf.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
