@@ -32,6 +32,7 @@ package com.cubrid.cubridmigration.core.engine.template.reader.node;
 import static com.cubrid.cubridmigration.core.engine.template.MigrationTemplateUtils.*;
 import static com.cubrid.cubridmigration.core.engine.template.TemplateTags.*;
 
+import com.cubrid.common.log.LogUtil;
 import com.cubrid.cubridmigration.core.connection.ConnParameters;
 import com.cubrid.cubridmigration.core.dbobject.Column;
 import com.cubrid.cubridmigration.core.dbobject.FK;
@@ -57,6 +58,7 @@ import java.util.Map;
 import java.util.function.Consumer;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
 import org.xml.sax.Attributes;
 import org.xml.sax.helpers.DefaultHandler;
 
@@ -68,6 +70,8 @@ import org.xml.sax.helpers.DefaultHandler;
  * MigrationConfiguration}.
  */
 public class TargetNodeHandler extends DefaultHandler {
+
+    private static final Logger log = LogUtil.getLogger(TargetNodeHandler.class);
 
     private final MigrationConfiguration config;
     private final CUBRIDDataTypeHelper dtHelper = CUBRIDDataTypeHelper.getInstance(null);
@@ -262,7 +266,7 @@ public class TargetNodeHandler extends DefaultHandler {
                 getBoolean(attributes.getValue(ATTR_DEFAULT_EXPRESSION), false));
         final String type = attributes.getValue(ATTR_TYPE);
         if (StringUtils.isEmpty(type)) {
-            System.out.println(targetTable.getName() + ":" + column.getName());
+            log.warn("Column type missing: {}.{}", targetTable.getName(), column.getName());
         }
         column.setComment(attributes.getValue(ATTR_COMMENT));
         dtHelper.setColumnDataType(type, column);
