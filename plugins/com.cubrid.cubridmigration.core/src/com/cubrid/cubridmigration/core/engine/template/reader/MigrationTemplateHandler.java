@@ -33,9 +33,9 @@ import static com.cubrid.cubridmigration.core.engine.template.MigrationTemplateU
 import static com.cubrid.cubridmigration.core.engine.template.TemplateTags.*;
 
 import com.cubrid.cubridmigration.core.engine.config.MigrationConfiguration;
+import com.cubrid.cubridmigration.core.engine.template.reader.node.ParametersNodeHandler;
 import com.cubrid.cubridmigration.core.engine.template.reader.node.SourceNodeHandler;
 import com.cubrid.cubridmigration.core.engine.template.reader.node.TargetNodeHandler;
-import com.cubrid.cubridmigration.mysql.trans.MySQL2CUBRIDMigParas;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
@@ -48,11 +48,15 @@ import org.xml.sax.helpers.DefaultHandler;
  */
 public final class MigrationTemplateHandler extends DefaultHandler {
 
-    private final MigrationConfiguration config = new MigrationConfiguration();
+    private final MigrationConfiguration config;
+    private final ParametersNodeHandler parametersNodeHandler;
 
     private DefaultHandler delegatingHandler;
 
-    protected MigrationTemplateHandler() {}
+    protected MigrationTemplateHandler() {
+        this.config = new MigrationConfiguration();
+        this.parametersNodeHandler = new ParametersNodeHandler();
+    }
 
     @Override
     public void startElement(String uri, String localName, String qName, Attributes attributes)
@@ -73,7 +77,7 @@ public final class MigrationTemplateHandler extends DefaultHandler {
                 handleMigration(attributes);
                 break;
             case TAG_PARAMS:
-                handleParams(attributes);
+                parametersNodeHandler.parse(config, attributes);
                 break;
             default:
                 break;
@@ -89,8 +93,6 @@ public final class MigrationTemplateHandler extends DefaultHandler {
             }
             return;
         }
-
-        if (TAG_MIGRATION.equals(qName)) {}
     }
 
     @Override
@@ -125,32 +127,6 @@ public final class MigrationTemplateHandler extends DefaultHandler {
 
         if (versionValue < 1110) {
             config.setOldScript(true);
-        }
-    }
-
-    private void handleParams(Attributes attributes) {
-        config.setExportThreadCount(Integer.parseInt(attributes.getValue(ATTR_EXPORT_THREAD)));
-        String attrImportThread = attributes.getValue(ATTR_IMPORT_THREAD);
-        attrImportThread =
-                attrImportThread == null ? ("" + config.getExportThreadCount()) : attrImportThread;
-        config.setImportThreadCount(Integer.parseInt(attrImportThread));
-        config.setCommitCount(Integer.parseInt(attributes.getValue(ATTR_COMMIT_COUNT)));
-        final String fetchCount = attributes.getValue(ATTR_PAGE_FETCH_COUNT);
-        config.setPageFetchCount(fetchCount == null ? 1000 : Integer.parseInt(fetchCount));
-        config.setImplicitEstimate(
-                getBoolean(attributes.getValue(ATTR_IMPLICIT_ESTIMATE_PROGRESS), false));
-        config.setUpdateStatistics(getBoolean(attributes.getValue(ATTR_UPDATE_STATISTICS), true));
-
-        setOtherParamIfPresent(attributes, MySQL2CUBRIDMigParas.UNPARSED_TIME);
-        setOtherParamIfPresent(attributes, MySQL2CUBRIDMigParas.UNPARSED_DATE);
-        setOtherParamIfPresent(attributes, MySQL2CUBRIDMigParas.UNPARSED_TIMESTAMP);
-        setOtherParamIfPresent(attributes, MySQL2CUBRIDMigParas.REPLAXE_CHAR0);
-    }
-
-    private void setOtherParamIfPresent(Attributes attributes, String paramName) {
-        String value = attributes.getValue(paramName);
-        if (value != null) {
-            config.putOtherParam(paramName, value);
         }
     }
 }
