@@ -1,6 +1,6 @@
 
-Usage in Windows: migration.bat script [options]
-Usage in Linux: migration.sh script [options]
+Usage in Windows: migration.bat script [options] [output directory path]
+Usage in Linux: migration.sh script [options] [output directory path]
 
 Available options:
     -s,           Source config name in db.conf (Required).
