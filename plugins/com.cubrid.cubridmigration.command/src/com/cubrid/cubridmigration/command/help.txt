@@ -1,9 +1,9 @@
 
 Available <command> (Default is "start"):
-  start [options] [script_file]  Start a migration task.
-  script [options][output_dir]   Build a migration script.
-  log [options] [mh_file]        Review a migration work's log.
-  report [options] [mh_file]     Review a migration work's result.
+    start [options] [script_file]   Start a migration task.
+    script [options] [output_dir]   Build a migration script.
+    log [options] [mh_file]         Review a migration work's log.
+    report [options] [mh_file]      Review a migration work's result.
 
 For more information on a command, run:
   migration.sh <command> --help (Linux)
