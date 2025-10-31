@@ -83,11 +83,11 @@ jobs:
           distribution: temurin
           java-version: '21'
       - id: changed
-        uses: tj-actions/changed-files@v47
+        uses: tj-actions/changed-files@24d32ffd492484c1d75e0c0b894501ddb9d30d62
         with:
           files: "**/*.java"
           write_output_files: true
-      - uses: axel-op/googlejavaformat-action@v4
+      - uses: axel-op/googlejavaformat-action@c1134ebd196c4cbffb077f9476585b0be8b6afcd
         if: ${{ steps.changed.outputs.any_changed == 'true' }}
         with:
           release-name: v1.32.0
@@ -96,6 +96,6 @@ jobs:
           skip-commit: true
       - name: Suggest code changes
         if: ${{ failure() }}
-        uses: reviewdog/action-suggester@v1
+        uses: reviewdog/action-suggester@aa38384ceb608d00f84b4690cacc83a5aba307ff
         with:
           tool_name: code-style (indent, googlejavaformat)
