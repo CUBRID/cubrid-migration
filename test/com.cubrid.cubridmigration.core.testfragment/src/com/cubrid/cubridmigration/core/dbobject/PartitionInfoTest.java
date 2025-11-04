@@ -30,10 +30,12 @@
  */
 package com.cubrid.cubridmigration.core.dbobject;
 
+import junit.framework.Assert;
+
+import org.junit.Test;
+
 import java.util.ArrayList;
 import java.util.List;
-import junit.framework.Assert;
-import org.junit.Test;
 
 public class PartitionInfoTest {
 
@@ -66,7 +68,9 @@ public class PartitionInfoTest {
         Assert.assertNotNull(cloneObj.getSubPartitions());
     }
 
-    /** @return PartitionInfo */
+    /**
+     * @return PartitionInfo
+     */
     public static PartitionInfo newPartitionInfo() {
         PartitionInfo pt = new PartitionInfo();
         pt.setBoundaryValueOnRight(true);

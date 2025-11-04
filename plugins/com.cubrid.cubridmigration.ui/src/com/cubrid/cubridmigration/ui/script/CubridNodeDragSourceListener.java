@@ -31,6 +31,7 @@
 package com.cubrid.cubridmigration.ui.script;
 
 import com.cubrid.common.ui.navigator.ICUBRIDNode;
+
 import org.eclipse.swt.dnd.DragSourceEvent;
 import org.eclipse.swt.dnd.DragSourceListener;
 import org.eclipse.swt.widgets.Tree;

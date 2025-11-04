@@ -37,8 +37,10 @@ import com.cubrid.cubridmigration.core.mapping.AbstractDataTypeMappingHelper;
 import com.cubrid.cubridmigration.core.mapping.model.VerifyInfo;
 import com.cubrid.cubridmigration.core.trans.DBTransformHelper;
 import com.cubrid.cubridmigration.cubrid.CUBRIDDataTypeHelper;
-import java.util.Locale;
+
 import org.slf4j.Logger;
+
+import java.util.Locale;
 
 /**
  * a transform class which helps to data transform in migration of CUBRID to CUBRID

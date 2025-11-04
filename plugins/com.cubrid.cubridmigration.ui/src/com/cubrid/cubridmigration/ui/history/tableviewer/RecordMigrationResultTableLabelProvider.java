@@ -34,8 +34,10 @@ import com.cubrid.common.ui.swt.table.BaseTableLabelProvider;
 import com.cubrid.cubridmigration.core.common.TimeZoneUtils;
 import com.cubrid.cubridmigration.core.engine.report.RecordMigrationResult;
 import com.cubrid.cubridmigration.ui.history.MigrationReportEditorPart;
-import java.text.NumberFormat;
+
 import org.eclipse.swt.graphics.Color;
+
+import java.text.NumberFormat;
 
 /**
  * DB records migration result provider

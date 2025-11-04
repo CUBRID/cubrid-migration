@@ -35,14 +35,18 @@ import com.cubrid.cubridmigration.core.common.PathUtils;
 import com.cubrid.cubridmigration.ui.BaseUITestCase;
 import com.cubrid.cubridmigration.ui.common.TextAppender;
 import com.cubrid.cubridmigration.ui.history.MigrationReporter;
-import java.io.File;
-import java.io.IOException;
+
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-/** @author Kevin Cao */
+import java.io.File;
+import java.io.IOException;
+
+/**
+ * @author Kevin Cao
+ */
 public class MigrationReportUIControllerTest extends BaseUITestCase {
     private static final String REPORT_FILE_NAME = "1405584596196.mh";
     String reportFileFullName;

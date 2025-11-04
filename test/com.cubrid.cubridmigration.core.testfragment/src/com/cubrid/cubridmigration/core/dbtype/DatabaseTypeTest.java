@@ -32,7 +32,9 @@ package com.cubrid.cubridmigration.core.dbtype;
 
 import com.cubrid.cubridmigration.core.TestUtil2;
 import com.cubrid.cubridmigration.core.connection.JDBCUtil;
+
 import junit.framework.Assert;
+
 import org.junit.Test;
 
 public class DatabaseTypeTest {

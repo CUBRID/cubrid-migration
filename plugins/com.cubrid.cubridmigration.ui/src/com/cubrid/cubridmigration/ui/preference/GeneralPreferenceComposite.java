@@ -31,6 +31,7 @@
 package com.cubrid.cubridmigration.ui.preference;
 
 import com.cubrid.cubridmigration.ui.message.Messages;
+
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;

@@ -31,9 +31,12 @@
 package com.cubrid.cubridmigration.core.common;
 
 import com.cubrid.cubridmigration.BaseTestCaseWithPath;
-import java.io.File;
+
 import junit.framework.Assert;
+
 import org.junit.Test;
+
+import java.io.File;
 
 public class PathUtilsTest extends BaseTestCaseWithPath {
 

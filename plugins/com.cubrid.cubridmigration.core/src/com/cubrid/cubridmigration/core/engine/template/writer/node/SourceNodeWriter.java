@@ -31,6 +31,7 @@ package com.cubrid.cubridmigration.core.engine.template.writer.node;
 
 import static com.cubrid.cubridmigration.core.engine.template.MigrationTemplateUtils.*;
 import static com.cubrid.cubridmigration.core.engine.template.TemplateTags.*;
+
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 import com.cubrid.common.log.LogUtil;
@@ -56,14 +57,17 @@ import com.cubrid.cubridmigration.core.engine.config.SourceSequenceConfig;
 import com.cubrid.cubridmigration.core.engine.config.SourceSynonymConfig;
 import com.cubrid.cubridmigration.core.engine.config.SourceViewConfig;
 import com.cubrid.cubridmigration.cubrid.CUBRIDDatabase;
+
+import org.apache.commons.collections4.CollectionUtils;
+import org.slf4j.Logger;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
+
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
-import org.apache.commons.collections4.CollectionUtils;
-import org.slf4j.Logger;
 
 /** Writes the <source> section of the migration XML file. */
 public class SourceNodeWriter {

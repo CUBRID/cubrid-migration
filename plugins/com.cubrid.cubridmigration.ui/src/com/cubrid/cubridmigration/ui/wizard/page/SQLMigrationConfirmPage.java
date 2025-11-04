@@ -35,8 +35,10 @@ import com.cubrid.cubridmigration.core.engine.config.MigrationConfiguration;
 import com.cubrid.cubridmigration.ui.common.UIConstant;
 import com.cubrid.cubridmigration.ui.message.Messages;
 import com.cubrid.cubridmigration.ui.preference.MigrationConfigPage;
-import java.util.List;
+
 import org.eclipse.jface.dialogs.PageChangedEvent;
+
+import java.util.List;
 
 /**
  * New wizard step 3. Confirm Migration Settings

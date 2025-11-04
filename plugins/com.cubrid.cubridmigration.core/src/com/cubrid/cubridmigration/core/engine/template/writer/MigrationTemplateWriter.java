@@ -30,6 +30,7 @@
 package com.cubrid.cubridmigration.core.engine.template.writer;
 
 import static com.cubrid.cubridmigration.core.engine.template.TemplateTags.*;
+
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 import com.cubrid.common.log.LogUtil;
@@ -38,11 +39,14 @@ import com.cubrid.cubridmigration.core.engine.exception.ErrorMigrationTemplateEx
 import com.cubrid.cubridmigration.core.engine.template.writer.node.ParametersNodeWriter;
 import com.cubrid.cubridmigration.core.engine.template.writer.node.SourceNodeWriter;
 import com.cubrid.cubridmigration.core.engine.template.writer.node.TargetNodeWriter;
+
+import org.slf4j.Logger;
+
 import java.io.FileOutputStream;
+
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
-import org.slf4j.Logger;
 
 /**
  * Writes migration templates to XML using StAX.

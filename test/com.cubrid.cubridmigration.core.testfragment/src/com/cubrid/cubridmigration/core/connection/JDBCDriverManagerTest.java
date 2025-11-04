@@ -31,9 +31,11 @@
 package com.cubrid.cubridmigration.core.connection;
 
 import com.cubrid.cubridmigration.BaseTestCaseWithJDBC;
-import java.util.List;
+
 import org.junit.Assert;
 import org.junit.Test;
+
+import java.util.List;
 
 public class JDBCDriverManagerTest extends BaseTestCaseWithJDBC {
 

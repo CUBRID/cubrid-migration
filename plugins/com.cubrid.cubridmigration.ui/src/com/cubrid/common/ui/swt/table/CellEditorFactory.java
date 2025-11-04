@@ -33,7 +33,9 @@ package com.cubrid.common.ui.swt.table;
 import org.eclipse.jface.viewers.CellEditor;
 import org.eclipse.swt.widgets.Table;
 
-/** @author Kevin Cao */
+/**
+ * @author Kevin Cao
+ */
 public interface CellEditorFactory {
 
     public CellEditor getCellEditor(Table parent);

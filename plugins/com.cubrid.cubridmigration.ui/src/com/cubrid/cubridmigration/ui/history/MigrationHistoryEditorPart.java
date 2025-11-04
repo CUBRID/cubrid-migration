@@ -40,7 +40,7 @@ import com.cubrid.cubridmigration.ui.history.controller.MigrationHistoryUIContro
 import com.cubrid.cubridmigration.ui.history.tableviewer.MigrationHistoryBriefComparator;
 import com.cubrid.cubridmigration.ui.history.tableviewer.MigrationHistoryTableLabelProvider;
 import com.cubrid.cubridmigration.ui.message.Messages;
-import java.util.List;
+
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;
@@ -69,6 +69,8 @@ import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.ToolItem;
 
+import java.util.List;
+
 /**
  * MigrationHistoryEditorPart responses to show the migration history of local.
  *
@@ -77,7 +79,9 @@ import org.eclipse.swt.widgets.ToolItem;
  */
 public class MigrationHistoryEditorPart extends MigrationBaseEditorPart {
 
-    /** @author Kevin Cao */
+    /**
+     * @author Kevin Cao
+     */
     private final class SortTableItemsByColumnSelectionListener extends SelectionAdapter {
         private boolean up;
 
@@ -85,7 +89,9 @@ public class MigrationHistoryEditorPart extends MigrationBaseEditorPart {
             this.up = upStatus;
         }
 
-        /** @param event Table viewer column SelectionEvent */
+        /**
+         * @param event Table viewer column SelectionEvent
+         */
         public void widgetSelected(SelectionEvent event) {
             up = !up;
             sortColumn((TableColumn) event.getSource(), up);
@@ -161,7 +167,9 @@ public class MigrationHistoryEditorPart extends MigrationBaseEditorPart {
     private MigrationHistoryBriefComparator comparator = new MigrationHistoryBriefComparator();
     private Text txtFileter;
 
-    /** @param table to be created context menu. */
+    /**
+     * @param table to be created context menu.
+     */
     private void createContextMenu(final Table table) {
         final MenuManager mm = new MenuManager();
         mm.addMenuListener(

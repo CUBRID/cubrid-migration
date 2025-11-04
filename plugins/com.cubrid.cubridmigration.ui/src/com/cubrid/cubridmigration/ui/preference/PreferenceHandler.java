@@ -31,6 +31,7 @@
 package com.cubrid.cubridmigration.ui.preference;
 
 import com.cubrid.cubridmigration.ui.message.Messages;
+
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;

@@ -40,9 +40,7 @@ import com.cubrid.cubridmigration.ui.MigrationUIPlugin;
 import com.cubrid.cubridmigration.ui.common.dialog.DetailMessageDialog;
 import com.cubrid.cubridmigration.ui.message.Messages;
 import com.cubrid.cubridmigration.ui.wizard.MigrationWizard;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.MenuManager;
@@ -66,6 +64,10 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.ui.PlatformUI;
 import org.slf4j.Logger;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
 /**
  * JDBCConnectionMgrView Description
  *
@@ -74,7 +76,9 @@ import org.slf4j.Logger;
  */
 public class JDBCConnectionMgrView {
 
-    /** @author fulei */
+    /**
+     * @author fulei
+     */
     private class DeleteAction extends Action {
         public DeleteAction() {
             setText(Messages.removeButtonLabel);
@@ -87,7 +91,9 @@ public class JDBCConnectionMgrView {
         }
     }
 
-    /** @author fulei */
+    /**
+     * @author fulei
+     */
     private class RefreshAction extends Action {
         /** constructor */
         public RefreshAction() {
@@ -448,7 +454,9 @@ public class JDBCConnectionMgrView {
         return grpOnline;
     }
 
-    /** @return DatabaseType[] */
+    /**
+     * @return DatabaseType[]
+     */
     private DatabaseType[] getDBTypeArray() {
         DatabaseType[] result = new DatabaseType[supportedDBType.size()];
         int i = 0;
@@ -640,7 +648,9 @@ public class JDBCConnectionMgrView {
         }
     }
 
-    /** @param cp ConnParameters */
+    /**
+     * @param cp ConnParameters
+     */
     private void selectSameDB(ConnParameters cp) {
         for (DatabaseConnectionInfo dci : dbDataList) {
             if (dci.getConnParameters().isSameDB(cp)) {

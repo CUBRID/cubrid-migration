@@ -31,10 +31,12 @@
 package com.cubrid.cubridmigration.core.engine.config;
 
 import static com.cubrid.cubridmigration.core.common.PathUtils.mergePath;
+
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 
 import au.com.bytecode.opencsv.CSVReader;
+
 import com.cubrid.common.log.LogUtil;
 import com.cubrid.cubridmigration.core.common.CUBRIDIOUtils;
 import com.cubrid.cubridmigration.core.common.CharsetUtils;
@@ -70,6 +72,11 @@ import com.cubrid.cubridmigration.cubrid.CUBRIDSQLHelper;
 import com.cubrid.cubridmigration.mysql.MysqlXmlDumpSource;
 import com.cubrid.cubridmigration.oracle.parser.PlConvOracleToCubrid;
 import com.cubrid.cubridmigration.oracle.parser.ProcedureDDL;
+
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -87,9 +94,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.TimeZone;
 import java.util.TreeMap;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
 
 /**
  * MigrationConfiguration Description
@@ -1706,7 +1710,9 @@ public class MigrationConfiguration {
         }
     }
 
-    /** @param isReset boolean */
+    /**
+     * @param isReset boolean
+     */
     private void buildViewCfg(boolean isReset) {
         List<SourceViewConfig> tempSCList = new ArrayList<SourceViewConfig>();
         List<View> tempTarList = new ArrayList<View>();
@@ -2730,7 +2736,9 @@ public class MigrationConfiguration {
         return iCount;
     }
 
-    /** @return the exportThreadCount */
+    /**
+     * @return the exportThreadCount
+     */
     public int getExportThreadCount() {
         return exportThreadCount;
     }
@@ -3052,7 +3060,9 @@ public class MigrationConfiguration {
         return filePrefix;
     }
 
-    /** @return the importThreadCount */
+    /**
+     * @return the importThreadCount
+     */
     public int getImportThreadCount() {
         return importThreadCount;
     }
@@ -3122,7 +3132,9 @@ public class MigrationConfiguration {
     //		return sourceDBSchema;
     //	}
 
-    /** @return the sourceConParams */
+    /**
+     * @return the sourceConParams
+     */
     public ConnParameters getSourceConParams() {
         return sourceConParams;
     }
@@ -3148,7 +3160,9 @@ public class MigrationConfiguration {
         return tz == null ? TimeZone.getDefault() : tz;
     }
 
-    /** @return the getSourceDBType() */
+    /**
+     * @return the getSourceDBType()
+     */
     public DatabaseType getSourceDBType() {
         if (sourceIsCSV() || sourceIsSQL()) {
             return DatabaseType.CUBRID;
@@ -3159,22 +3173,30 @@ public class MigrationConfiguration {
         return DatabaseType.getDatabaseTypeByID(sourceType);
     }
 
-    /** @return the sourceFileEncoding */
+    /**
+     * @return the sourceFileEncoding
+     */
     public String getSourceFileEncoding() {
         return sourceFileEncoding == null ? "" : sourceFileEncoding;
     }
 
-    /** @return the sourceFileName */
+    /**
+     * @return the sourceFileName
+     */
     public String getSourceFileName() {
         return sourceFileName == null ? "" : sourceFileName;
     }
 
-    /** @return the sourceFileTimeZone */
+    /**
+     * @return the sourceFileTimeZone
+     */
     public String getSourceFileTimeZone() {
         return sourceFileTimeZone;
     }
 
-    /** @return the sourceFileVersion */
+    /**
+     * @return the sourceFileVersion
+     */
     public String getSourceFileVersion() {
         return sourceFileVersion;
     }
@@ -3501,7 +3523,9 @@ public class MigrationConfiguration {
         return null;
     }
 
-    /** @return the targetConParams */
+    /**
+     * @return the targetConParams
+     */
     public ConnParameters getTargetConParams() {
         return targetConParams;
     }
@@ -3546,7 +3570,9 @@ public class MigrationConfiguration {
         return this.targetDataFileName.get(schemaName);
     }
 
-    /** @return the targetDBVersion */
+    /**
+     * @return the targetDBVersion
+     */
     public String getTargetDBVersion() {
         return targetDBVersion;
     }
@@ -4497,6 +4523,7 @@ public class MigrationConfiguration {
             }
         }
     }
+
     /**
      * change SQL query's target table owner used in user schema db
      *
@@ -4688,7 +4715,9 @@ public class MigrationConfiguration {
         }
     }
 
-    /** @param commitCount the commitCount to set */
+    /**
+     * @param commitCount the commitCount to set
+     */
     public void setCommitCount(int commitCount) {
         this.commitCount = commitCount;
     }
@@ -4925,7 +4954,9 @@ public class MigrationConfiguration {
         this.reportLevel = reportLevel;
     }
 
-    /** @param sourceConParams the sourceConParams to set */
+    /**
+     * @param sourceConParams the sourceConParams to set
+     */
     public void setSourceConParams(ConnParameters sourceConParams) {
         this.sourceConParams = sourceConParams;
         if (sourceConParams != null) {
@@ -4933,22 +4964,30 @@ public class MigrationConfiguration {
         }
     }
 
-    /** @param sourceFileEncoding the sourceFileEncoding to set */
+    /**
+     * @param sourceFileEncoding the sourceFileEncoding to set
+     */
     public void setSourceFileEncoding(String sourceFileEncoding) {
         this.sourceFileEncoding = sourceFileEncoding;
     }
 
-    /** @param sourceFileName the sourceFileName to set */
+    /**
+     * @param sourceFileName the sourceFileName to set
+     */
     public void setSourceFileName(String sourceFileName) {
         this.sourceFileName = sourceFileName;
     }
 
-    /** @param sourceFileTimeZone the sourceFileTimeZone to set */
+    /**
+     * @param sourceFileTimeZone the sourceFileTimeZone to set
+     */
     public void setSourceFileTimeZone(String sourceFileTimeZone) {
         this.sourceFileTimeZone = sourceFileTimeZone;
     }
 
-    /** @param sourceFileVersion the sourceFileVersion to set */
+    /**
+     * @param sourceFileVersion the sourceFileVersion to set
+     */
     public void setSourceFileVersion(String sourceFileVersion) {
         this.sourceFileVersion = sourceFileVersion;
     }
@@ -4957,7 +4996,9 @@ public class MigrationConfiguration {
         sourceType = srcType;
     }
 
-    /** @param dbType the getSourceDBType() to set:xml,sql,mysql,cubrid,oracle */
+    /**
+     * @param dbType the getSourceDBType() to set:xml,sql,mysql,cubrid,oracle
+     */
     public void setSourceType(String dbType) {
         if (SQL.equalsIgnoreCase(dbType)) {
             this.sourceType = MigrationConfiguration.SOURCE_TYPE_SQL;
@@ -5036,7 +5077,9 @@ public class MigrationConfiguration {
         }
     }
 
-    /** @param targetConParams the targetConParams to set */
+    /**
+     * @param targetConParams the targetConParams to set
+     */
     public void setTargetConParams(ConnParameters targetConParams) {
         this.targetConParams = targetConParams;
     }
@@ -5049,7 +5092,9 @@ public class MigrationConfiguration {
         this.targetDataFileName.put(schemaName, filePath);
     }
 
-    /** @param targetDBVersion the targetDBVersion to set */
+    /**
+     * @param targetDBVersion the targetDBVersion to set
+     */
     public void setTargetDBVersion(String targetDBVersion) {
         this.targetDBVersion = targetDBVersion;
     }
@@ -5354,7 +5399,9 @@ public class MigrationConfiguration {
                 || destType == DEST_DB_UNLOAD;
     }
 
-    /** @return the targetDBIsOnline */
+    /**
+     * @return the targetDBIsOnline
+     */
     public boolean targetIsOnline() {
         return destType == DEST_ONLINE;
     }
@@ -5391,7 +5438,9 @@ public class MigrationConfiguration {
         }
     }
 
-    /** @return Retrieves true If source is a JDBC connection and can't be connected */
+    /**
+     * @return Retrieves true If source is a JDBC connection and can't be connected
+     */
     public boolean isSourceOfflineMode() {
         if (!sourceIsOnline()) {
             return false;
@@ -5404,7 +5453,9 @@ public class MigrationConfiguration {
         }
     }
 
-    /** @return Retrieves true If target is a JDBC connection and can't be connected */
+    /**
+     * @return Retrieves true If target is a JDBC connection and can't be connected
+     */
     public boolean isTargetOfflineMode() {
         if (!targetIsOnline()) {
             return false;
@@ -5429,7 +5480,9 @@ public class MigrationConfiguration {
         this.importThreadCount = importThreadCount;
     }
 
-    /** @return Retrieves the default extend file name of the target schema file. */
+    /**
+     * @return Retrieves the default extend file name of the target schema file.
+     */
     public String getDefaultTargetSchemaFileExtName() {
         if (targetIsDBDump()) {
             return "";

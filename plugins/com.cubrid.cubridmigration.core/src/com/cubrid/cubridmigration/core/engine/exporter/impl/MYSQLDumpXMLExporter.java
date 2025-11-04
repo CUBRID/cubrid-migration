@@ -38,14 +38,17 @@ import com.cubrid.cubridmigration.core.engine.event.MigrationErrorEvent;
 import com.cubrid.cubridmigration.core.engine.exception.BreakMigrationException;
 import com.cubrid.cubridmigration.core.engine.exporter.MigrationExporter;
 import com.cubrid.cubridmigration.core.io.RmInvalidXMLCharReader;
+
+import org.xml.sax.Attributes;
+
 import java.io.FileInputStream;
 import java.io.Reader;
 import java.util.ArrayList;
 import java.util.List;
+
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamReader;
-import org.xml.sax.Attributes;
 
 /**
  * MYSQLDumpXMLMigrationExporter Description

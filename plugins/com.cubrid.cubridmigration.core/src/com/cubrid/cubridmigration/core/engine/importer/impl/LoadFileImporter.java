@@ -45,12 +45,14 @@ import com.cubrid.cubridmigration.core.engine.exception.NormalMigrationException
 import com.cubrid.cubridmigration.core.engine.task.FileMergeRunnable;
 import com.cubrid.cubridmigration.core.engine.task.RunnableResultHandler;
 import com.cubrid.cubridmigration.cubrid.Data2StrTranslator;
+
+import org.slf4j.Logger;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
-import org.slf4j.Logger;
 
 /**
  * LoadDBImporter : Use LoadDB and CSQL commands to import database objects.

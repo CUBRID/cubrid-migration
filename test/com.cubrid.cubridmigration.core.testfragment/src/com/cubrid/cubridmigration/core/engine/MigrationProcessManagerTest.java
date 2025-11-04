@@ -34,11 +34,14 @@ import com.cubrid.cubridmigration.core.common.CUBRIDIOUtils;
 import com.cubrid.cubridmigration.core.engine.config.MigrationConfiguration;
 import com.cubrid.cubridmigration.core.engine.mock.MigrationReporterMock;
 import com.cubrid.cubridmigration.core.engine.template.TemplateParserTest;
+
+import junit.framework.Assert;
+
+import org.junit.Test;
+
 import java.io.File;
 import java.sql.Connection;
 import java.sql.Statement;
-import junit.framework.Assert;
-import org.junit.Test;
 
 /**
  * MigrationProcessManagerTester

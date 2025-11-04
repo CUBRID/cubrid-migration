@@ -37,9 +37,13 @@ package com.cubrid.cubridmigration.ui.wizard;
  */
 public interface IMigrationWizardStatus {
 
-    /** @return Retrieves true If source is a JDBC connection and can't be connected */
+    /**
+     * @return Retrieves true If source is a JDBC connection and can't be connected
+     */
     public boolean isSourceOfflineMode();
 
-    /** @return Retrieves true If target is a JDBC connection and can't be connected */
+    /**
+     * @return Retrieves true If target is a JDBC connection and can't be connected
+     */
     public boolean isTargetOfflineMode();
 }

@@ -30,6 +30,7 @@
 package com.cubrid.cubridmigration.mariadb.trans;
 
 import com.cubrid.cubridmigration.core.mapping.AbstractDataTypeMappingHelper;
+
 import java.util.Locale;
 
 /**

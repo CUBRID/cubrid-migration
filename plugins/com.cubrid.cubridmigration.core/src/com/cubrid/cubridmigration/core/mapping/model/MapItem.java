@@ -31,6 +31,7 @@
 package com.cubrid.cubridmigration.core.mapping.model;
 
 import com.cubrid.cubridmigration.core.mapping.AbstractDataTypeMappingHelper;
+
 import java.util.ArrayList;
 import java.util.List;
 

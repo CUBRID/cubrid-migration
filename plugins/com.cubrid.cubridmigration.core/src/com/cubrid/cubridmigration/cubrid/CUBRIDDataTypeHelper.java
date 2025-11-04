@@ -39,6 +39,10 @@ import com.cubrid.cubridmigration.core.dbobject.Catalog;
 import com.cubrid.cubridmigration.core.dbobject.Column;
 import com.cubrid.cubridmigration.core.dbtype.DatabaseType;
 import com.cubrid.cubridmigration.cubrid.exception.UnSupportCUBRIDDataTypeException;
+
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+
 import java.math.BigInteger;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -46,8 +50,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
 
 /**
  * CubridDataTypeHelper
@@ -77,6 +79,7 @@ public final class CUBRIDDataTypeHelper extends DBDataTypeHelper {
     private static final Map<Integer, Integer> TYPE_BYTES_MAP = new HashMap<Integer, Integer>();
 
     private static final CUBRIDDataTypeHelper HELPER = new CUBRIDDataTypeHelper();
+
     // init all cubrid datatype
     static {
         initTypeSpaceMap();

@@ -41,8 +41,7 @@ import com.cubrid.cubridmigration.core.dbtype.DatabaseType;
 import com.cubrid.cubridmigration.ui.common.Status;
 import com.cubrid.cubridmigration.ui.common.UICommonTool;
 import com.cubrid.cubridmigration.ui.message.Messages;
-import java.util.Arrays;
-import java.util.List;
+
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.core.runtime.IStatus;
@@ -61,6 +60,9 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Spinner;
 import org.eclipse.swt.widgets.Text;
+
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * JDBCConnectEditView
@@ -512,7 +514,9 @@ public class JDBCConnectEditView {
         return txtPassword.getText();
     }
 
-    /** @return String */
+    /**
+     * @return String
+     */
     private String getUserName() {
         return txtUserName.getText().trim();
     }

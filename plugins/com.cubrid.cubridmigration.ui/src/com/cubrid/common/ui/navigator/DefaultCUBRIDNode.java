@@ -32,15 +32,17 @@ package com.cubrid.common.ui.navigator;
 
 import com.cubrid.cubridmigration.ui.MigrationUIPlugin;
 import com.cubrid.cubridmigration.ui.common.navigator.node.CubridNodeType;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IPersistableElement;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * DefaultCubridNode
@@ -238,7 +240,9 @@ public class DefaultCUBRIDNode implements ICUBRIDNode {
         }
     }
 
-    /** @see ICUBRIDNode#removeAllChild() */
+    /**
+     * @see ICUBRIDNode#removeAllChild()
+     */
     public void removeAllChild() {
         childList.clear();
     }

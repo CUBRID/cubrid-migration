@@ -39,7 +39,9 @@ import com.cubrid.cubridmigration.core.dbobject.Table;
 import com.cubrid.cubridmigration.core.dbobject.Trigger;
 import com.cubrid.cubridmigration.core.engine.config.SourceTableConfig;
 import com.cubrid.cubridmigration.core.engine.exception.NormalMigrationException;
+
 import junit.framework.Assert;
+
 import org.junit.Test;
 
 public class MigrationEventsTest {

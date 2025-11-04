@@ -113,7 +113,9 @@ public class Function extends DBObject {
         this.functionDDL = funcDDL;
     }
 
-    /** @return column */
+    /**
+     * @return column
+     */
     public String getObjType() {
         return OBJ_TYPE_FUNCTION;
     }

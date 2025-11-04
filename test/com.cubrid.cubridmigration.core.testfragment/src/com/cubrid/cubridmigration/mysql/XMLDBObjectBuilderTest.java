@@ -32,10 +32,13 @@ package com.cubrid.cubridmigration.mysql;
 
 import com.cubrid.cubridmigration.core.dbmetadata.DBSchemaInfoFetcherFactory;
 import com.cubrid.cubridmigration.core.dbmetadata.IDBSchemaInfoFetcher;
-import java.io.IOException;
-import javax.xml.parsers.ParserConfigurationException;
+
 import org.junit.Test;
 import org.xml.sax.SAXException;
+
+import java.io.IOException;
+
+import javax.xml.parsers.ParserConfigurationException;
 
 public class XMLDBObjectBuilderTest {
 

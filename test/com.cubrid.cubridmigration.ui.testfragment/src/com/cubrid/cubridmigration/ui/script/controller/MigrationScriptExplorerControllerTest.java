@@ -35,8 +35,7 @@ import com.cubrid.common.ui.navigator.node.AbstractGroupNode;
 import com.cubrid.cubridmigration.ui.BaseUITestCase;
 import com.cubrid.cubridmigration.ui.script.MigrationScript;
 import com.cubrid.cubridmigration.ui.script.MigrationScriptManager;
-import java.io.File;
-import java.util.List;
+
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.junit.After;
@@ -44,7 +43,12 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-/** @author Kevin Cao */
+import java.io.File;
+import java.util.List;
+
+/**
+ * @author Kevin Cao
+ */
 public class MigrationScriptExplorerControllerTest extends BaseUITestCase {
 
     @Before

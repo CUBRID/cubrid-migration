@@ -41,6 +41,7 @@ import com.cubrid.common.ui.swt.table.listener.TableCursorSelectionListener;
 import com.cubrid.common.ui.swt.table.listener.TextCellEditorForTableCursorFocusListener;
 import com.cubrid.common.ui.swt.table.listener.TextCellEditorUpDownKeyListener;
 import com.cubrid.cubridmigration.ui.MigrationUIPlugin;
+
 import org.eclipse.jface.viewers.CellEditor;
 import org.eclipse.jface.viewers.CheckboxCellEditor;
 import org.eclipse.jface.viewers.IBaseLabelProvider;
@@ -190,7 +191,9 @@ public class TableViewerBuilder {
         return (style & SWT.CHECK) != 0;
     }
 
-    /** @param tv */
+    /**
+     * @param tv
+     */
     private void setTableViewerColumnProperties(TableViewer tv) {
         for (int i = 0; i < columnNames.length; i++) {
             String colName = columnNames[i];

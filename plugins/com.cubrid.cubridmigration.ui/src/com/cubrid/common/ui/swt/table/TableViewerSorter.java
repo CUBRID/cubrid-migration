@@ -30,9 +30,10 @@
  */
 package com.cubrid.common.ui.swt.table;
 
-import java.util.Map;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerSorter;
+
+import java.util.Map;
 
 /**
  * Table sorter for common table viewer

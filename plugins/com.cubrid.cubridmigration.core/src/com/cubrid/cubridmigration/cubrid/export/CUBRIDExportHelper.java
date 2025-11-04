@@ -48,6 +48,9 @@ import com.cubrid.cubridmigration.core.export.handler.NumberTypeHandler;
 import com.cubrid.cubridmigration.core.export.handler.TimeTypeHandler;
 import com.cubrid.cubridmigration.core.export.handler.TimestampTypeHandler;
 import com.cubrid.cubridmigration.cubrid.export.handler.CUBRIDSetTypeHandler;
+
+import org.slf4j.Logger;
+
 import java.math.BigInteger;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -55,7 +58,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.slf4j.Logger;
 
 /**
  * a class help to export CUBRID data and verify CUBRID sql statement

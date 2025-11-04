@@ -32,6 +32,7 @@ package com.cubrid.cubridmigration.cubrid.format;
 
 import com.cubrid.cubridmigration.core.common.CommonUtils;
 import com.cubrid.cubridmigration.cubrid.IFormatValueToString;
+
 import java.math.BigDecimal;
 
 /**

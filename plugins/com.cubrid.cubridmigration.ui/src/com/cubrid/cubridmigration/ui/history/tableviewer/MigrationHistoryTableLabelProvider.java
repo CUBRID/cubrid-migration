@@ -34,6 +34,7 @@ import com.cubrid.common.ui.swt.table.BaseTableLabelProvider;
 import com.cubrid.cubridmigration.core.engine.report.MigrationBriefReport;
 import com.cubrid.cubridmigration.cubrid.CUBRIDTimeUtil;
 import com.cubrid.cubridmigration.ui.message.Messages;
+
 import java.util.Date;
 
 /**

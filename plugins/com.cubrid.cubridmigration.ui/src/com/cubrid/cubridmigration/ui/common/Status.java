@@ -31,6 +31,7 @@
 package com.cubrid.cubridmigration.ui.common;
 
 import com.cubrid.cubridmigration.ui.MigrationUIPlugin;
+
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.IStatus;
 

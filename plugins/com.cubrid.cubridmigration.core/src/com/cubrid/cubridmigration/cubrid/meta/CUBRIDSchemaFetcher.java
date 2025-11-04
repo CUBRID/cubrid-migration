@@ -62,6 +62,10 @@ import com.cubrid.cubridmigration.core.export.DBExportHelper;
 import com.cubrid.cubridmigration.cubrid.CUBRIDDataTypeHelper;
 import com.cubrid.cubridmigration.cubrid.CUBRIDSQLHelper;
 import com.cubrid.cubridmigration.cubrid.dbobj.CUBRIDTrigger;
+
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+
 import java.math.BigInteger;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -78,8 +82,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
 
 /**
  * ReverseEngineeringCUBRIDJdbc
@@ -94,7 +96,8 @@ public final class CUBRIDSchemaFetcher extends AbstractJDBCSchemaFetcher {
 
     static {
         STD_TYPE_MAPPING.put("STRING", "varchar");
-    };
+    }
+    ;
 
     private CUBRIDDataTypeHelper cubDTHelper = CUBRIDDataTypeHelper.getInstance(null);
 
@@ -218,7 +221,8 @@ public final class CUBRIDSchemaFetcher extends AbstractJDBCSchemaFetcher {
                     cubridColumn.setShownDataType(cubDTHelper.getShownDataType(cubridColumn));
                 } catch (Exception ex) {
                     LOG.error(
-                            "Failed to set collection element type from metadata. table={}, column={}, dataType={}, precision={}, scale={}",
+                            "Failed to set collection element type from metadata. table={},"
+                                + " column={}, dataType={}, precision={}, scale={}",
                             tableName,
                             attrName,
                             dataType,
@@ -304,11 +308,12 @@ public final class CUBRIDSchemaFetcher extends AbstractJDBCSchemaFetcher {
                             + " b.key_attr_name, b.asc_desc"
                             + sqlFuncCol
                             + sqlComment
-                            + " FROM db_index a, db_index_key b, db_class c"
-                            + " WHERE a.class_name=b.class_name AND c.class_type='CLASS'"
-                            + " AND a.index_name=b.index_name AND a.class_name=c.class_name"
-                            + " AND c.is_system_class='NO' AND a.is_primary_key='NO' AND a.is_foreign_key='NO'"
-                            + " ORDER BY a.class_name, b.index_name, b.key_order";
+                            + " FROM db_index a, db_index_key b, db_class c WHERE"
+                            + " a.class_name=b.class_name AND c.class_type='CLASS' AND"
+                            + " a.index_name=b.index_name AND a.class_name=c.class_name AND"
+                            + " c.is_system_class='NO' AND a.is_primary_key='NO' AND"
+                            + " a.is_foreign_key='NO' ORDER BY a.class_name, b.index_name,"
+                            + " b.key_order";
 
             stmt = conn.createStatement();
             rs = stmt.executeQuery(sql);
@@ -557,7 +562,8 @@ public final class CUBRIDSchemaFetcher extends AbstractJDBCSchemaFetcher {
                     table.addColumn(column);
                 } catch (Exception ex) {
                     LOG.error(
-                            "Failed to build table schema from metadata. schema={}, table={}, column={}",
+                            "Failed to build table schema from metadata. schema={}, table={},"
+                                + " column={}",
                             schema.getName(),
                             rs.getString("class_name"),
                             rs.getString("attr_name"),
@@ -649,12 +655,12 @@ public final class CUBRIDSchemaFetcher extends AbstractJDBCSchemaFetcher {
 
         String sql =
                 "SELECT a.class_name, a.owner_name, a.attr_name, a.attr_type, a.from_class_name,"
-                        + " a.data_type, a.prec, a.scale, a.is_nullable,"
-                        + " a.domain_class_name, a.default_value, a.def_order,c.is_reuse_oid_class, c.comment, a.comment as attr_comment"
-                        + " FROM db_attribute a , db_class c"
-                        + " WHERE c.class_name = a.class_name AND c.class_type='CLASS' AND c.is_system_class='NO' AND from_class_name is NULL"
-                        + " AND c.owner_name = a.owner_name AND c.owner_name = ? "
-                        + " ORDER BY a.class_name, c.class_type, a.def_order";
+                    + " a.data_type, a.prec, a.scale, a.is_nullable, a.domain_class_name,"
+                    + " a.default_value, a.def_order,c.is_reuse_oid_class, c.comment, a.comment as"
+                    + " attr_comment FROM db_attribute a , db_class c WHERE c.class_name ="
+                    + " a.class_name AND c.class_type='CLASS' AND c.is_system_class='NO' AND"
+                    + " from_class_name is NULL AND c.owner_name = a.owner_name AND c.owner_name ="
+                    + " ?  ORDER BY a.class_name, c.class_type, a.def_order";
 
         try {
             stmt = conn.prepareStatement(sql);
@@ -736,7 +742,8 @@ public final class CUBRIDSchemaFetcher extends AbstractJDBCSchemaFetcher {
                     table.addColumn(column);
                 } catch (Exception ex) {
                     LOG.error(
-                            "Failed to build table schema from metadata. schema={}, table={}, column={}",
+                            "Failed to build table schema from metadata. schema={}, table={},"
+                                + " column={}",
                             schema.getName(),
                             rs.getString("class_name"),
                             rs.getString("attr_name"),
@@ -775,13 +782,15 @@ public final class CUBRIDSchemaFetcher extends AbstractJDBCSchemaFetcher {
             }
 
             String sql =
-                    "SELECT a.class_name, a.index_name, a.is_unique, b.key_attr_name, b.asc_desc, c.owner_name "
+                    "SELECT a.class_name, a.index_name, a.is_unique, b.key_attr_name, b.asc_desc,"
+                        + " c.owner_name "
                             + sqlFuncCol
-                            + " FROM db_index a, db_index_key b, db_class c "
-                            + "WHERE a.class_name=b.class_name AND c.class_type='CLASS' "
-                            + "AND a.index_name=b.index_name AND a.class_name=c.class_name "
-                            + "AND c.is_system_class='NO' AND is_primary_key='NO' AND is_foreign_key='NO' "
-                            + "ORDER BY a.class_name, b.index_name, b.key_order";
+                            + " FROM db_index a, db_index_key b, db_class c WHERE"
+                            + " a.class_name=b.class_name AND c.class_type='CLASS' AND"
+                            + " a.index_name=b.index_name AND a.class_name=c.class_name AND"
+                            + " c.is_system_class='NO' AND is_primary_key='NO' AND"
+                            + " is_foreign_key='NO' ORDER BY a.class_name, b.index_name,"
+                            + " b.key_order";
             stmt = conn.createStatement();
             rs = stmt.executeQuery(sql);
 
@@ -1004,12 +1013,12 @@ public final class CUBRIDSchemaFetcher extends AbstractJDBCSchemaFetcher {
         Statement stmt = null;
         try {
             String sql =
-                    "SELECT a.class_name, a.index_name, a.is_unique, b.key_attr_name, b.asc_desc , c.owner_name "
-                            + "FROM db_index a, db_index_key b, db_class c "
-                            + "WHERE a.class_name=b.class_name AND a.index_name=b.index_name "
-                            + "AND a.class_name=c.class_name AND c.is_system_class='NO' "
-                            + "AND a.is_primary_key='YES' AND c.class_type='CLASS' "
-                            + "ORDER BY a.class_name, b.key_order";
+                    "SELECT a.class_name, a.index_name, a.is_unique, b.key_attr_name, b.asc_desc ,"
+                        + " c.owner_name FROM db_index a, db_index_key b, db_class c WHERE"
+                        + " a.class_name=b.class_name AND a.index_name=b.index_name AND"
+                        + " a.class_name=c.class_name AND c.is_system_class='NO' AND"
+                        + " a.is_primary_key='YES' AND c.class_type='CLASS' ORDER BY a.class_name,"
+                        + " b.key_order";
             stmt = conn.createStatement();
             rs = stmt.executeQuery(sql);
 
@@ -1943,9 +1952,8 @@ public final class CUBRIDSchemaFetcher extends AbstractJDBCSchemaFetcher {
         List<String> viewNameList = new ArrayList<String>();
         try {
             String sql =
-                    "SELECT CLASS_NAME "
-                            + "FROM DB_CLASS "
-                            + "WHERE CLASS_TYPE = 'VCLASS' AND IS_SYSTEM_CLASS = 'NO' AND OWNER_NAME = ?";
+                    "SELECT CLASS_NAME FROM DB_CLASS WHERE CLASS_TYPE = 'VCLASS' AND"
+                        + " IS_SYSTEM_CLASS = 'NO' AND OWNER_NAME = ?";
 
             pstmt = conn.prepareStatement(sql);
 
@@ -2138,14 +2146,13 @@ public final class CUBRIDSchemaFetcher extends AbstractJDBCSchemaFetcher {
 
         try {
             String sql =
-                    "SELECT t.target_class_name, name, status, priority, event,"
-                            + " target_class, target_attribute, condition_type, condition, condition_time,"
-                            + " trig.action_type, action_definition, trig.action_time"
+                    "SELECT t.target_class_name, name, status, priority, event, target_class,"
+                        + " target_attribute, condition_type, condition, condition_time,"
+                        + " trig.action_type, action_definition, trig.action_time"
                             + trigUniqueName
-                            + " FROM db_class c, db_trigger trig, db_trig t"
-                            + " WHERE trig.name=t.trigger_name AND t.target_class_name=c.class_name(+)"
-                            + " AND c.is_system_class='NO'"
-                            + " ORDER BY name";
+                            + " FROM db_class c, db_trigger trig, db_trig t WHERE"
+                            + " trig.name=t.trigger_name AND t.target_class_name=c.class_name(+)"
+                            + " AND c.is_system_class='NO' ORDER BY name";
 
             stmt = conn.prepareStatement(sql);
             rs = stmt.executeQuery();
@@ -2395,6 +2402,7 @@ public final class CUBRIDSchemaFetcher extends AbstractJDBCSchemaFetcher {
             Closer.close(stmt);
         }
     }
+
     /**
      * if cubrid version >= 11.2, user name is schema. so get user name which have grant in
      * connection user
@@ -2497,7 +2505,8 @@ public final class CUBRIDSchemaFetcher extends AbstractJDBCSchemaFetcher {
             }
 
             String sql =
-                    "SELECT u.name FROM db_user AS u, TABLE(u.direct_groups) AS g(x) WHERE x.name='DBA'";
+                    "SELECT u.name FROM db_user AS u, TABLE(u.direct_groups) AS g(x) WHERE"
+                        + " x.name='DBA'";
 
             stmt = conn.prepareStatement(sql);
             rs = stmt.executeQuery();
@@ -2539,7 +2548,8 @@ public final class CUBRIDSchemaFetcher extends AbstractJDBCSchemaFetcher {
             }
 
             String sql =
-                    "SELECT u.name FROM db_user AS u, TABLE(u.direct_groups) AS g(x) WHERE x.name='DBA'";
+                    "SELECT u.name FROM db_user AS u, TABLE(u.direct_groups) AS g(x) WHERE"
+                        + " x.name='DBA'";
 
             stmt = conn.prepareStatement(sql);
             rs = stmt.executeQuery();

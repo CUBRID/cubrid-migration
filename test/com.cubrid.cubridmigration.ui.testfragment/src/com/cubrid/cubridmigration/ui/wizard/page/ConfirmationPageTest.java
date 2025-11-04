@@ -32,9 +32,11 @@ package com.cubrid.cubridmigration.ui.wizard.page;
 
 import com.cubrid.cubridmigration.core.engine.config.MigrationConfiguration;
 import com.cubrid.cubridmigration.core.engine.template.TemplateParserTest;
-import java.util.List;
+
 import org.eclipse.swt.custom.StyleRange;
 import org.junit.Test;
+
+import java.util.List;
 
 public class ConfirmationPageTest {
 

@@ -36,6 +36,7 @@ import com.cubrid.cubridmigration.core.engine.config.SourceCSVConfig;
 import com.cubrid.cubridmigration.core.engine.event.ImportCSVEvent;
 import com.cubrid.cubridmigration.core.engine.event.ImportSQLsEvent;
 import com.cubrid.cubridmigration.core.engine.event.MigrationEvent;
+
 import java.util.List;
 
 /**
@@ -45,7 +46,9 @@ import java.util.List;
  */
 public class FileMigrationProgressUIController extends MigrationProgressUIController {
 
-    /** @return File lists (CSV/SQL) */
+    /**
+     * @return File lists (CSV/SQL)
+     */
     public String[][] getProgressTableInput() {
         if (config.sourceIsSQL()) {
             List<String> sqlFiles = config.getSqlFiles();
@@ -105,7 +108,9 @@ public class FileMigrationProgressUIController extends MigrationProgressUIContro
         return new String[] {};
     }
 
-    /** @return 100 */
+    /**
+     * @return 100
+     */
     public int getTotalProgress() {
         return 100;
     }

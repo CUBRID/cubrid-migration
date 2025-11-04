@@ -76,7 +76,9 @@ public class Trigger extends DBObject {
         this.targetOwner = targetOwner;
     }
 
-    /** @return object type */
+    /**
+     * @return object type
+     */
     public String getObjType() {
         return OBJ_TYPE_TRIGGER;
     }

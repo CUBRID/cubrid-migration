@@ -34,6 +34,7 @@ import static com.cubrid.cubridmigration.core.engine.template.TemplateTags.*;
 
 import com.cubrid.cubridmigration.core.engine.config.MigrationConfiguration;
 import com.cubrid.cubridmigration.mysql.trans.MySQL2CUBRIDMigParas;
+
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 

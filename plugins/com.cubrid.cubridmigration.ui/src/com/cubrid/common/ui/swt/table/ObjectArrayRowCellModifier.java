@@ -32,6 +32,7 @@ package com.cubrid.common.ui.swt.table;
 
 import com.cubrid.common.ui.listener.KeyStateMaskAdapter;
 import com.cubrid.cubridmigration.ui.common.CompositeUtils;
+
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.jface.viewers.CellEditor;
 import org.eclipse.jface.viewers.ComboBoxCellEditor;

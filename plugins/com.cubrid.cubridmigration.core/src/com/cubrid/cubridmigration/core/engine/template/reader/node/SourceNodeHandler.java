@@ -47,13 +47,15 @@ import com.cubrid.cubridmigration.core.engine.config.SourceSQLTableConfig;
 import com.cubrid.cubridmigration.core.engine.config.SourceSequenceConfig;
 import com.cubrid.cubridmigration.core.engine.config.SourceTableConfig;
 import com.cubrid.cubridmigration.cubrid.CUBRIDDatabase;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.function.Consumer;
+
 import org.apache.commons.collections4.CollectionUtils;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.Consumer;
 
 /**
  * A SAX {@link DefaultHandler} implementation for parsing the source configuration section of a

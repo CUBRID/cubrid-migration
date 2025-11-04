@@ -30,14 +30,15 @@
  */
 package com.cubrid.cubridmigration.core.common;
 
+import org.junit.Assert;
+import org.junit.Test;
+
 import java.io.File;
 import java.math.BigDecimal;
 import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
-import org.junit.Assert;
-import org.junit.Test;
 
 /**
  * CommonToolTest Description

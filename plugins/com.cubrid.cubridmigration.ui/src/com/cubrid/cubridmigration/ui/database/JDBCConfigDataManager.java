@@ -39,16 +39,19 @@ import com.cubrid.cubridmigration.core.connection.JDBCData;
 import com.cubrid.cubridmigration.core.connection.JDBCDriverManager;
 import com.cubrid.cubridmigration.core.connection.JDBCUtil;
 import com.cubrid.cubridmigration.ui.MigrationUIPlugin;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.util.Iterator;
-import java.util.List;
-import javax.xml.parsers.ParserConfigurationException;
+
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.core.runtime.preferences.InstanceScope;
 import org.osgi.service.prefs.BackingStoreException;
 import org.osgi.service.prefs.Preferences;
 import org.slf4j.Logger;
+
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.util.Iterator;
+import java.util.List;
+
+import javax.xml.parsers.ParserConfigurationException;
 
 /**
  * JdbcConfigDataManager

@@ -31,6 +31,10 @@
 package com.cubrid.cubridmigration.core.common;
 
 import com.cubrid.common.log.LogUtil;
+
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+
 import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.net.InetAddress;
@@ -39,8 +43,6 @@ import java.text.DecimalFormat;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
 
 /**
  * CommonTool
@@ -51,11 +53,12 @@ import org.slf4j.Logger;
 public final class CommonUtils {
     private static final Logger LOG = LogUtil.getLogger(CommonUtils.class);
     private static final String LOGIN_CFG =
-            "com.sun.security.jgss.krb5.initiate'"
-                    + "{'com.sun.security.auth.module.Krb5LoginModule "
-                    + " required debug=\"false\" doNotPrompt=\"true\" useTicketCache=\"true\" ticketCache=\"{0}\";'}';\n"
-                    + "com.sun.security.jgss.initiate'{'com.sun.security.auth.module.Krb5LoginModule"
-                    + " required debug=\"false\" doNotPrompt=\"true\" useTicketCache=\"true\" ticketCache=\"{0}\";'}';";
+            "com.sun.security.jgss.krb5.initiate'{'com.sun.security.auth.module.Krb5LoginModule "
+                + " required debug=\"false\" doNotPrompt=\"true\" useTicketCache=\"true\""
+                + " ticketCache=\"{0}\";'}';\n"
+                + "com.sun.security.jgss.initiate'{'com.sun.security.auth.module.Krb5LoginModule"
+                + " required debug=\"false\" doNotPrompt=\"true\" useTicketCache=\"true\""
+                + " ticketCache=\"{0}\";'}';";
     private static final String DEFAULT_NUMERIC_FORMAT =
             "#0.######################################";
     public static String newLine = System.getProperty("line.separator");

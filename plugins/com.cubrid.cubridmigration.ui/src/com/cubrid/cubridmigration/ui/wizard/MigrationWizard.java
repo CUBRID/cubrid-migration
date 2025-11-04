@@ -58,11 +58,7 @@ import com.cubrid.cubridmigration.ui.wizard.page.SchemaMappingPage;
 import com.cubrid.cubridmigration.ui.wizard.page.SelectDestinationPage;
 import com.cubrid.cubridmigration.ui.wizard.page.SelectSourcePage;
 import com.cubrid.cubridmigration.ui.wizard.page.SelectSrcTarTypesPage;
-import java.io.File;
-import java.sql.Connection;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Set;
+
 import org.eclipse.jface.dialogs.DialogSettings;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -71,6 +67,12 @@ import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.slf4j.Logger;
+
+import java.io.File;
+import java.sql.Connection;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Migration Wizard
@@ -573,12 +575,16 @@ public class MigrationWizard extends Wizard implements IMigrationWizardStatus {
         srcOfflineMode = migrationConfig.isSourceOfflineMode();
     }
 
-    /** @return Retrieves true If source is a JDBC connection and can't be connected */
+    /**
+     * @return Retrieves true If source is a JDBC connection and can't be connected
+     */
     public boolean isSourceOfflineMode() {
         return srcOfflineMode;
     }
 
-    /** @return Retrieves true If target is a JDBC connection and can't be connected */
+    /**
+     * @return Retrieves true If target is a JDBC connection and can't be connected
+     */
     public boolean isTargetOfflineMode() {
         return tarOfflineMode;
     }

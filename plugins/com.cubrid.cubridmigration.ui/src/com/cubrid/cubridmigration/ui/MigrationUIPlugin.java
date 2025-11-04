@@ -43,8 +43,7 @@ import com.cubrid.cubridmigration.ui.preference.DataTypeMappingUtil;
 import com.cubrid.cubridmigration.ui.preference.MigrationConfigPage;
 import com.cubrid.cubridmigration.ui.preference.MigrationPreferenceUtils;
 import com.cubrid.cubridmigration.ui.script.MigrationScriptManager;
-import java.io.File;
-import java.util.List;
+
 import org.apache.hadoop.fs.FileSystem;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.resource.ImageDescriptor;
@@ -53,6 +52,9 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
 import org.slf4j.Logger;
+
+import java.io.File;
+import java.util.List;
 
 /**
  * The activator class controls the plug-in life cycle

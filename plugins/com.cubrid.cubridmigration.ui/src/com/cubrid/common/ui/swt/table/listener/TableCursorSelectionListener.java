@@ -31,13 +31,15 @@
 package com.cubrid.common.ui.swt.table.listener;
 
 import com.cubrid.cubridmigration.ui.common.CompositeUtils;
-import java.util.Iterator;
+
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.swt.custom.TableCursor;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.widgets.TableItem;
+
+import java.util.Iterator;
 
 /**
  * Let the table's selection follow the table cursor's moving. And let the cell go to editor mode

@@ -32,8 +32,7 @@ package com.cubrid.cubridmigration.ui.history.dialog;
 
 import com.cubrid.cubridmigration.core.common.CUBRIDIOUtils;
 import com.cubrid.cubridmigration.ui.message.Messages;
-import java.io.File;
-import java.io.IOException;
+
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.dialogs.TrayDialog;
@@ -45,6 +44,9 @@ import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.PlatformUI;
+
+import java.io.File;
+import java.io.IOException;
 
 /**
  * NewDBConnectionDialog

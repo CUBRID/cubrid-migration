@@ -38,11 +38,13 @@ import com.cubrid.cubridmigration.core.dbtype.DatabaseType;
 import com.cubrid.cubridmigration.core.sql.SQLHelper;
 import com.cubrid.cubridmigration.cubrid.export.CUBRIDExportHelper;
 import com.cubrid.cubridmigration.cubrid.meta.CUBRIDSchemaFetcher;
+
+import org.apache.commons.lang3.StringUtils;
+
 import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.SQLException;
 import java.util.Properties;
-import org.apache.commons.lang3.StringUtils;
 
 /**
  * CUBRID Database Description
@@ -66,7 +68,9 @@ public class CUBRIDDatabase extends DatabaseType {
                 true);
     }
 
-    /** @author Administrator */
+    /**
+     * @author Administrator
+     */
     private static class CubridConnHelper implements IConnHelper {
         /**
          * return the jdbc url to connect the database
@@ -127,7 +131,8 @@ public class CUBRIDDatabase extends DatabaseType {
                 throw new RuntimeException(e);
             }
         }
-    };
+    }
+    ;
 
     /**
      * Retrieves the databases SQL helper

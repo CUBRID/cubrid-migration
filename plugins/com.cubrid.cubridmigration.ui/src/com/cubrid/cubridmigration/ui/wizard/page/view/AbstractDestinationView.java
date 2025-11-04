@@ -30,9 +30,10 @@
  */
 package com.cubrid.cubridmigration.ui.wizard.page.view;
 
-import java.util.List;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.swt.widgets.Composite;
+
+import java.util.List;
 
 /**
  * AbstractDestinationView Description

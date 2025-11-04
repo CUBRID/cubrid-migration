@@ -60,6 +60,10 @@ import com.cubrid.cubridmigration.core.dbtype.DatabaseType;
 import com.cubrid.cubridmigration.core.export.DBExportHelper;
 import com.cubrid.cubridmigration.cubrid.CUBRIDSQLHelper;
 import com.cubrid.cubridmigration.oracle.OracleDataTypeHelper;
+
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+
 import java.io.Reader;
 import java.math.BigInteger;
 import java.sql.Connection;
@@ -76,8 +80,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.TimeZone;
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
 
 /**
  * OracleDBObjectBuilder
@@ -105,17 +107,18 @@ public final class OracleSchemaFetcher extends AbstractJDBCSchemaFetcher {
 
     // Undefined columns will not be supported.
     private static final String SQL_GET_COLUMNS =
-            "SELECT T.COLUMN_NAME, T.DATA_TYPE, T.DATA_LENGTH, T.DATA_PRECISION, T.DATA_SCALE, T.NULLABLE, T.DATA_DEFAULT, T.CHAR_LENGTH, T.CHAR_USED, T.COLUMN_ID, C.COMMENTS"
-                    + " FROM ALL_TAB_COLUMNS T, ALL_COL_COMMENTS C"
-                    + " WHERE T.OWNER=? AND T.TABLE_NAME=? AND C.COLUMN_NAME=T.COLUMN_NAME AND T.TABLE_NAME=C.TABLE_NAME"
-                    + " ORDER BY COLUMN_ID";
+            "SELECT T.COLUMN_NAME, T.DATA_TYPE, T.DATA_LENGTH, T.DATA_PRECISION, T.DATA_SCALE,"
+                + " T.NULLABLE, T.DATA_DEFAULT, T.CHAR_LENGTH, T.CHAR_USED, T.COLUMN_ID, C.COMMENTS"
+                + " FROM ALL_TAB_COLUMNS T, ALL_COL_COMMENTS C WHERE T.OWNER=? AND T.TABLE_NAME=?"
+                + " AND C.COLUMN_NAME=T.COLUMN_NAME AND T.TABLE_NAME=C.TABLE_NAME ORDER BY"
+                + " COLUMN_ID";
 
     private static final String SQL_GET_INDEX_COLUMNS =
-            "SELECT A.COLUMN_NAME, A.DESCEND, B.COLUMN_EXPRESSION "
-                    + "FROM ALL_IND_COLUMNS A LEFT JOIN ALL_IND_EXPRESSIONS B "
-                    + "ON A.TABLE_OWNER=B.TABLE_OWNER AND A.TABLE_NAME=B.TABLE_NAME AND A.INDEX_NAME=B.INDEX_NAME AND A.COLUMN_POSITION=B.COLUMN_POSITION "
-                    + " WHERE A.TABLE_OWNER=? AND A.TABLE_NAME=? "
-                    + "AND A.INDEX_NAME=? ORDER BY A.COLUMN_POSITION";
+            "SELECT A.COLUMN_NAME, A.DESCEND, B.COLUMN_EXPRESSION FROM ALL_IND_COLUMNS A LEFT JOIN"
+                + " ALL_IND_EXPRESSIONS B ON A.TABLE_OWNER=B.TABLE_OWNER AND"
+                + " A.TABLE_NAME=B.TABLE_NAME AND A.INDEX_NAME=B.INDEX_NAME AND"
+                + " A.COLUMN_POSITION=B.COLUMN_POSITION  WHERE A.TABLE_OWNER=? AND A.TABLE_NAME=?"
+                + " AND A.INDEX_NAME=? ORDER BY A.COLUMN_POSITION";
 
     private static final String SQL_GET_PART_COLUMN =
             "SELECT * FROM ALL_PART_KEY_COLUMNS WHERE OBJECT_TYPE='TABLE' AND OWNER=? "
@@ -130,18 +133,19 @@ public final class OracleSchemaFetcher extends AbstractJDBCSchemaFetcher {
                     + "ORDER BY TABLE_NAME, PARTITION_POSITION";
 
     private static final String SQL_GET_SUB_PART_TABLES =
-            "SELECT TABLE_NAME, PARTITION_NAME, SUBPARTITION_NAME, HIGH_VALUE, SUBPARTITION_POSITION "
-                    + " FROM ALL_TAB_SUBPARTITIONS WHERE TABLE_OWNER=? ORDER BY TABLE_NAME, SUBPARTITION_POSITION";
+            "SELECT TABLE_NAME, PARTITION_NAME, SUBPARTITION_NAME, HIGH_VALUE,"
+                + " SUBPARTITION_POSITION  FROM ALL_TAB_SUBPARTITIONS WHERE TABLE_OWNER=? ORDER BY"
+                + " TABLE_NAME, SUBPARTITION_POSITION";
 
     private static final String SQL_GET_SUBPART_KEY_COLUMN =
             "SELECT * FROM ALL_SUBPART_KEY_COLUMNS WHERE OBJECT_TYPE='TABLE' AND OWNER=? "
                     + " ORDER BY NAME, COLUMN_POSITION";
 
     private static final String SQL_GET_TABLE_INDEX =
-            "SELECT INDEX_NAME, INDEX_TYPE, UNIQUENESS FROM ALL_INDEXES A "
-                    + " WHERE A.TABLE_OWNER=? AND A.TABLE_NAME=? "
-                    + "AND A.INDEX_NAME NOT IN (SELECT C.CONSTRAINT_NAME FROM ALL_CONSTRAINTS C "
-                    + "WHERE C.CONSTRAINT_TYPE='P' AND C.OWNER=A.TABLE_OWNER AND C.TABLE_NAME=A.TABLE_NAME) ORDER BY A.INDEX_NAME";
+            "SELECT INDEX_NAME, INDEX_TYPE, UNIQUENESS FROM ALL_INDEXES A  WHERE A.TABLE_OWNER=?"
+                + " AND A.TABLE_NAME=? AND A.INDEX_NAME NOT IN (SELECT C.CONSTRAINT_NAME FROM"
+                + " ALL_CONSTRAINTS C WHERE C.CONSTRAINT_TYPE='P' AND C.OWNER=A.TABLE_OWNER AND"
+                + " C.TABLE_NAME=A.TABLE_NAME) ORDER BY A.INDEX_NAME";
 
     private static final String SQL_SHOW_ALL_OBJECTS =
             "SELECT NAME FROM ALL_SOURCE S "
@@ -151,9 +155,9 @@ public final class OracleSchemaFetcher extends AbstractJDBCSchemaFetcher {
     private static final String SQL_SHOW_DDL = "SELECT DBMS_METADATA.GET_DDL(?, ?, ?) FROM dual";
 
     private static final String SQL_SHOW_SEQUENCES =
-            "SELECT S.* FROM ALL_SEQUENCES S "
-                    + "WHERE S.SEQUENCE_OWNER=? AND NOT S.SEQUENCE_NAME LIKE 'BIN$%' "
-                    + "AND NOT S.SEQUENCE_NAME LIKE 'MLOG$%' AND NOT S.SEQUENCE_NAME LIKE 'RUPD$%' ";
+            "SELECT S.* FROM ALL_SEQUENCES S WHERE S.SEQUENCE_OWNER=? AND NOT S.SEQUENCE_NAME LIKE"
+                + " 'BIN$%' AND NOT S.SEQUENCE_NAME LIKE 'MLOG$%' AND NOT S.SEQUENCE_NAME LIKE"
+                + " 'RUPD$%' ";
 
     private static final String SQL_SHOW_SYNONYM =
             "SELECT SYNONYM_NAME, TABLE_OWNER, TABLE_NAME, DB_LINK FROM ALL_SYNONYMS WHERE OWNER=?";
@@ -186,27 +190,21 @@ public final class OracleSchemaFetcher extends AbstractJDBCSchemaFetcher {
                     + " AND P.GRANTEE=?";
 
     private static final String SQL_GET_ENABLED_PK =
-            "SELECT acc.COLUMN_NAME, ac.CONSTRAINT_NAME AS PK_NAME "
-                    + "FROM ALL_CONSTRAINTS ac JOIN ALL_CONS_COLUMNS acc "
-                    + "ON ac.OWNER = acc.OWNER AND ac.CONSTRAINT_NAME = acc.CONSTRAINT_NAME "
-                    + "WHERE ac.CONSTRAINT_TYPE = 'P' AND ac.STATUS = 'ENABLED' AND ac.OWNER = ? AND ac.TABLE_NAME = ? "
-                    + "ORDER BY acc.POSITION";
+            "SELECT acc.COLUMN_NAME, ac.CONSTRAINT_NAME AS PK_NAME FROM ALL_CONSTRAINTS ac JOIN"
+                + " ALL_CONS_COLUMNS acc ON ac.OWNER = acc.OWNER AND ac.CONSTRAINT_NAME ="
+                + " acc.CONSTRAINT_NAME WHERE ac.CONSTRAINT_TYPE = 'P' AND ac.STATUS = 'ENABLED'"
+                + " AND ac.OWNER = ? AND ac.TABLE_NAME = ? ORDER BY acc.POSITION";
 
     private static final String SQL_GET_ENABLED_FKS =
-            "SELECT fk.constraint_name AS FK_NAME, "
-                    + "fk.delete_rule AS DELETE_RULE, "
-                    + "fk_col.column_name AS FK_COLUMN_NAME, "
-                    + "pk_col.table_name AS PK_TABLE_NAME, "
-                    + "pk_col.column_name AS PK_COLUMN_NAME "
-                    + "FROM all_constraints fk "
-                    + "JOIN all_cons_columns fk_col "
-                    + "ON fk.owner = fk_col.owner AND fk.constraint_name = fk_col.constraint_name "
-                    + "JOIN all_cons_columns pk_col "
-                    + "ON fk.r_owner = pk_col.owner AND fk.r_constraint_name = pk_col.constraint_name "
-                    + "AND fk_col.position = pk_col.position "
-                    + "WHERE fk.owner = ? AND fk.table_name = ? "
-                    + "AND fk.constraint_type = 'R' AND fk.status = 'ENABLED' "
-                    + "ORDER BY fk.constraint_name, fk_col.position";
+            "SELECT fk.constraint_name AS FK_NAME, fk.delete_rule AS DELETE_RULE,"
+                + " fk_col.column_name AS FK_COLUMN_NAME, pk_col.table_name AS PK_TABLE_NAME,"
+                + " pk_col.column_name AS PK_COLUMN_NAME FROM all_constraints fk JOIN"
+                + " all_cons_columns fk_col ON fk.owner = fk_col.owner AND fk.constraint_name ="
+                + " fk_col.constraint_name JOIN all_cons_columns pk_col ON fk.r_owner ="
+                + " pk_col.owner AND fk.r_constraint_name = pk_col.constraint_name AND"
+                + " fk_col.position = pk_col.position WHERE fk.owner = ? AND fk.table_name = ? AND"
+                + " fk.constraint_type = 'R' AND fk.status = 'ENABLED' ORDER BY fk.constraint_name,"
+                + " fk_col.position";
 
     public OracleSchemaFetcher() {
         factory = new DBObjectFactory() {};
@@ -989,7 +987,8 @@ public final class OracleSchemaFetcher extends AbstractJDBCSchemaFetcher {
     private void getPlcsqlProcedureDDL(Connection conn, List<OraclePlsqlProcedure> procedures)
             throws SQLException {
         String SQL =
-                "SELECT TEXT FROM ALL_SOURCE WHERE OWNER = ? AND NAME = ? AND TYPE = ? ORDER BY LINE";
+                "SELECT TEXT FROM ALL_SOURCE WHERE OWNER = ? AND NAME = ? AND TYPE = ? ORDER BY"
+                    + " LINE";
 
         ResultSet rs = null;
         try (PreparedStatement stmt = conn.prepareStatement(SQL)) {
@@ -1015,7 +1014,8 @@ public final class OracleSchemaFetcher extends AbstractJDBCSchemaFetcher {
             Connection conn, String ownerName, List<OraclePlsqlProcedure> procedures)
             throws SQLException {
         String SQL =
-                "SELECT owner, object_name, authid, object_type FROM ALL_PROCEDURES WHERE OBJECT_TYPE IN ('PROCEDURE', 'FUNCTION') AND OWNER=?";
+                "SELECT owner, object_name, authid, object_type FROM ALL_PROCEDURES WHERE"
+                    + " OBJECT_TYPE IN ('PROCEDURE', 'FUNCTION') AND OWNER=?";
 
         ResultSet rs = null;
         try (PreparedStatement stmt = conn.prepareStatement(SQL)) {

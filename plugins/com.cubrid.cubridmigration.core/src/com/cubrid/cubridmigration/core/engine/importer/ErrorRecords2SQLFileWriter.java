@@ -46,6 +46,10 @@ import com.cubrid.cubridmigration.core.engine.exception.UserDefinedHandlerExcept
 import com.cubrid.cubridmigration.core.engine.task.FileMergeRunnable;
 import com.cubrid.cubridmigration.core.trans.DBTransformHelper;
 import com.cubrid.cubridmigration.cubrid.Data2StrTranslator;
+
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.RandomUtils;
+
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
@@ -54,8 +58,6 @@ import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.RandomUtils;
 
 /**
  * Records2SQLFileWriter Description

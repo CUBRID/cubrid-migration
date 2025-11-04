@@ -46,10 +46,13 @@ import com.cubrid.cubridmigration.core.engine.event.MigrationErrorEvent;
 import com.cubrid.cubridmigration.core.engine.event.MigrationEvent;
 import com.cubrid.cubridmigration.core.engine.template.TemplateParserTest;
 import com.cubrid.cubridmigration.ui.BaseUITestCase;
+
 import org.junit.Assert;
 import org.junit.Test;
 
-/** @author Kevin Cao */
+/**
+ * @author Kevin Cao
+ */
 public class MigrationProgressUIControllerTest extends BaseUITestCase {
 
     @Test

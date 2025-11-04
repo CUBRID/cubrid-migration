@@ -37,6 +37,7 @@ import com.cubrid.cubridmigration.command.handler.ScriptCommandHandler;
 import com.cubrid.cubridmigration.command.handler.StartCommandHandler;
 import com.cubrid.cubridmigration.core.common.PathUtils;
 import com.cubrid.cubridmigration.core.connection.JDBCUtil;
+
 import java.util.ArrayList;
 import java.util.List;
 

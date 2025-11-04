@@ -31,9 +31,12 @@
 package com.cubrid.cubridmigration.ui;
 
 import com.cubrid.cubridmigration.core.common.PathUtils;
+
 import java.io.File;
 
-/** @author Kevin Cao */
+/**
+ * @author Kevin Cao
+ */
 public class BaseUITestCase {
 
     protected static String testReportFilesDir;

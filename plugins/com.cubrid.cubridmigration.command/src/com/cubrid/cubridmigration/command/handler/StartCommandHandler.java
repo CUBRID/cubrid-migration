@@ -58,6 +58,11 @@ import com.cubrid.cubridmigration.core.engine.report.RecordMigrationResult;
 import com.cubrid.cubridmigration.core.engine.template.reader.MigrationTemplateReader;
 import com.cubrid.cubridmigration.cubrid.CUBRIDTimeUtil;
 import com.cubrid.cubridmigration.mysql.trans.MySQL2CUBRIDMigParas;
+
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.SystemUtils;
+import org.slf4j.Logger;
+
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
@@ -72,9 +77,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.TimeZone;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.SystemUtils;
-import org.slf4j.Logger;
 
 /**
  * StartCommandHandler Description
@@ -356,7 +358,8 @@ public class StartCommandHandler implements ConsoleCommandHandler {
                 if (confirm) {
                     outPrinter.println("Invalid path : " + tempPath);
                     outPrinter.println(
-                            "Please specify the path where you want to save exported files by parameter [-tp]");
+                            "Please specify the path where you want to save exported files by"
+                                + " parameter [-tp]");
                     outPrinter.println();
                     return false;
                 }

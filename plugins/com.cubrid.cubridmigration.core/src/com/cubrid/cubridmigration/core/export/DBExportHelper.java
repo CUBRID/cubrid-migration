@@ -55,6 +55,10 @@ import com.cubrid.cubridmigration.core.export.handler.TimeTypeHandler;
 import com.cubrid.cubridmigration.core.export.handler.TimestampTypeHandler;
 import com.cubrid.cubridmigration.core.sql.SQLHelper;
 import com.cubrid.cubridmigration.cubrid.export.CUBRIDExportHelper;
+
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+
 import java.math.BigInteger;
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -65,8 +69,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
 
 /**
  * a class help to export database data and verify database sql statement
@@ -350,7 +352,9 @@ public abstract class DBExportHelper implements IDependOnDatabaseType {
         return cleanSQL;
     }
 
-    /** @param config MigrationConfiguration */
+    /**
+     * @param config MigrationConfiguration
+     */
     protected void setAllTableRowCountTo0(MigrationConfiguration config) {
         for (SourceEntryTableConfig setc : config.getExpEntryTableCfg()) {
             if (!setc.isMigrateData()) {

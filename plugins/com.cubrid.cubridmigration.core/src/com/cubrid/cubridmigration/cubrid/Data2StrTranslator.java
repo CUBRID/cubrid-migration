@@ -61,6 +61,10 @@ import com.cubrid.cubridmigration.cubrid.format.dump.UnloadNCharToCUBRIDString;
 import com.cubrid.cubridmigration.cubrid.format.dump.UnloadNumericToCUBRIDString;
 import com.cubrid.cubridmigration.cubrid.format.dump.UnloadTimeToCUBRIDString;
 import com.cubrid.cubridmigration.cubrid.format.dump.UnloadTimestampToCUBRIDString;
+
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
@@ -71,8 +75,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
 
 /**
  * help to create load DB file

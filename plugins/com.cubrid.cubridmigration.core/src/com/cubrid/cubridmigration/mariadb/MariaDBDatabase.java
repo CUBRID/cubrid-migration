@@ -37,11 +37,13 @@ import com.cubrid.cubridmigration.core.dbtype.DatabaseType;
 import com.cubrid.cubridmigration.core.sql.SQLHelper;
 import com.cubrid.cubridmigration.mariadb.export.MariaDBExportHelper;
 import com.cubrid.cubridmigration.mariadb.meta.MariaDBSchemaFetcher;
+
+import org.apache.commons.lang3.StringUtils;
+
 import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.SQLException;
 import java.util.Properties;
-import org.apache.commons.lang3.StringUtils;
 
 /**
  * MariaDB Database Description
@@ -150,5 +152,6 @@ public class MariaDBDatabase extends DatabaseType {
      */
     public DBDataTypeHelper getDataTypeHelper(String version) {
         return MariaDBDataTypeHelper.getInstance(version);
-    };
+    }
+    ;
 }

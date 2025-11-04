@@ -47,10 +47,13 @@ import com.cubrid.cubridmigration.core.dbobject.Synonym;
 import com.cubrid.cubridmigration.core.dbobject.Table;
 import com.cubrid.cubridmigration.core.dbobject.View;
 import com.cubrid.cubridmigration.core.engine.config.MigrationConfiguration;
+
+import org.apache.commons.collections4.CollectionUtils;
+
 import java.util.List;
+
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
-import org.apache.commons.collections4.CollectionUtils;
 
 /** Writes the <target> section of the migration XML file. */
 public class TargetNodeWriter {

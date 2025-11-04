@@ -40,7 +40,7 @@ import com.cubrid.cubridmigration.ui.common.TextAppender;
 import com.cubrid.cubridmigration.ui.history.controller.FileSourceMigrationReportUIController;
 import com.cubrid.cubridmigration.ui.history.tableviewer.FileSourceMigrationResultOverviewLabelProvider;
 import com.cubrid.cubridmigration.ui.message.Messages;
-import java.util.Date;
+
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.ArrayContentProvider;
@@ -63,6 +63,8 @@ import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.part.EditorPart;
+
+import java.util.Date;
 
 /**
  * SQLImportReportEditorPart responses to monitor the migration progress.
@@ -273,7 +275,9 @@ public class CSVImportReportEditorPart extends EditorPart {
         createOverviewTableViewer(comOverview);
     }
 
-    /** @param comOverview Composite */
+    /**
+     * @param comOverview Composite
+     */
     protected void createOverviewTableViewer(Composite comOverview) {
         // Create overview table viewer
         TableViewerBuilder tvBuilder = new TableViewerBuilder();
@@ -318,7 +322,9 @@ public class CSVImportReportEditorPart extends EditorPart {
                 Messages.bind(Messages.msgReportSaved, bindings));
     }
 
-    /** @return MigrationReporter */
+    /**
+     * @return MigrationReporter
+     */
     protected MigrationReporter getMigrationReporter() {
         return (MigrationReporter) getEditorInput();
     }

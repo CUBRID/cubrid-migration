@@ -58,11 +58,7 @@ import com.cubrid.cubridmigration.ui.common.UIConstant;
 import com.cubrid.cubridmigration.ui.message.Messages;
 import com.cubrid.cubridmigration.ui.preference.MigrationConfigPage;
 import com.cubrid.cubridmigration.ui.wizard.MigrationWizard;
-import java.io.File;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+
 import org.eclipse.jface.dialogs.PageChangedEvent;
 import org.eclipse.jface.dialogs.PageChangingEvent;
 import org.eclipse.swt.SWT;
@@ -73,6 +69,12 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.ToolItem;
 import org.slf4j.Logger;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * new wizard step 5. Confirm Migration Settings
@@ -1044,7 +1046,9 @@ public class ConfirmationPage extends BaseConfirmationPage {
         super(pageName);
     }
 
-    /** @param parent Composite */
+    /**
+     * @param parent Composite
+     */
     public void createControl(Composite parent) {
         super.createControl(parent);
         new ToolItem(tbTools, SWT.SEPARATOR);

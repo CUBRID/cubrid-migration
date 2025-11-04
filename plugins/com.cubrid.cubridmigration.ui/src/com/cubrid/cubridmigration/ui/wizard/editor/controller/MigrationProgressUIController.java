@@ -52,10 +52,7 @@ import com.cubrid.cubridmigration.cubrid.CUBRIDTimeUtil;
 import com.cubrid.cubridmigration.ui.database.SchemaFetcherWithProgress;
 import com.cubrid.cubridmigration.ui.history.MigrationReporter;
 import com.cubrid.cubridmigration.ui.message.Messages;
-import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -71,7 +68,14 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.EditorPart;
 import org.slf4j.Logger;
 
-/** @author Kevin Cao */
+import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
+/**
+ * @author Kevin Cao
+ */
 public class MigrationProgressUIController {
     protected static final String NA_STRING = "--";
     protected static final Logger LOG = LogUtil.getLogger(MigrationProgressUIController.class);
@@ -123,7 +127,9 @@ public class MigrationProgressUIController {
         }
     }
 
-    /** @return ISaveablePart2.YES if migration is finished */
+    /**
+     * @return ISaveablePart2.YES if migration is finished
+     */
     public int canBeClosed() {
         return isMigrationRunning() ? ISaveablePart2.CANCEL : ISaveablePart2.YES;
     }
@@ -150,7 +156,9 @@ public class MigrationProgressUIController {
         return Long.parseLong(NA_STRING.equals(svalue) ? "0" : svalue);
     }
 
-    /** @return Migration Configuration's commit count. */
+    /**
+     * @return Migration Configuration's commit count.
+     */
     public int getCommitCount() {
         return config.getCommitCount();
     }
@@ -205,12 +213,16 @@ public class MigrationProgressUIController {
         return 0;
     }
 
-    /** @return the progress bar's style according to the config.isImplicitEstimate */
+    /**
+     * @return the progress bar's style according to the config.isImplicitEstimate
+     */
     public int getProgressBarStyle() {
         return config.isImplicitEstimate() ? SWT.INDETERMINATE : SWT.NONE;
     }
 
-    /** @return the progress table viewer's input date */
+    /**
+     * @return the progress table viewer's input date
+     */
     public String[][] getProgressTableInput() {
         List<SourceTableConfig> expStcs = new ArrayList<SourceTableConfig>();
         expStcs.addAll(config.getExpEntryTableCfg());
@@ -268,7 +280,9 @@ public class MigrationProgressUIController {
         return tableItems;
     }
 
-    /** @return the progress bar's total progress value */
+    /**
+     * @return the progress bar's total progress value
+     */
     public int getTotalProgress() {
         int value = config.getExpObjCount();
         List<SourceEntryTableConfig> allExportTables = config.getExpEntryTableCfg();
@@ -359,7 +373,9 @@ public class MigrationProgressUIController {
         return false;
     }
 
-    /** @return if the migration is running. */
+    /**
+     * @return if the migration is running.
+     */
     public boolean isMigrationRunning() {
         return mpm != null;
     }
@@ -381,7 +397,9 @@ public class MigrationProgressUIController {
         }
     }
 
-    /** @param oldEditorPart to be closed. */
+    /**
+     * @param oldEditorPart to be closed.
+     */
     public void openMigrationReport(EditorPart oldEditorPart) {
         try {
             PlatformUI.getWorkbench()

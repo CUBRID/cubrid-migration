@@ -47,6 +47,12 @@ import com.cubrid.cubridmigration.core.trans.MigrationTransFactory;
 import com.cubrid.cubridmigration.cubrid.CUBRIDDataTypeHelper;
 import com.cubrid.cubridmigration.cubrid.trans.ToCUBRIDDataConverterFacade;
 import com.cubrid.cubridmigration.mysql.meta.MySQLSchemaFetcher;
+
+import junit.framework.TestCase;
+
+import org.junit.Assert;
+import org.junit.Test;
+
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.sql.Connection;
@@ -58,9 +64,6 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.TimeZone;
-import junit.framework.TestCase;
-import org.junit.Assert;
-import org.junit.Test;
 
 public class MySQL2CUBRIDTranformHelperTest extends TestCase {
     private static final String MIGTESTFORHUDSON = "migtestforhudson";

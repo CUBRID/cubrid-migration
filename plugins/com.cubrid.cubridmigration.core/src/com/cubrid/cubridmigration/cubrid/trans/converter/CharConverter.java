@@ -35,6 +35,7 @@ import com.cubrid.cubridmigration.core.common.CommonUtils;
 import com.cubrid.cubridmigration.core.datatype.DataTypeInstance;
 import com.cubrid.cubridmigration.core.engine.config.MigrationConfiguration;
 import com.cubrid.cubridmigration.core.trans.AbstractDataConverter;
+
 import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 

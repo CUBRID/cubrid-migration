@@ -43,6 +43,7 @@ public class Messages extends NLS {
     static {
         NLS.initializeMessages(MigrationApplicationPlugin.PLUGIN_ID + ".Messages", Messages.class);
     }
+
     // ApplicationWorkbenchWindowAdvisor
     public static String workbenchWindowAdvisorTitle;
     public static String titleExitConfirm;

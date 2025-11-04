@@ -51,6 +51,7 @@ import com.cubrid.cubridmigration.ui.common.navigator.node.TriggersNode;
 import com.cubrid.cubridmigration.ui.common.navigator.node.ViewNode;
 import com.cubrid.cubridmigration.ui.common.navigator.node.ViewsNode;
 import com.cubrid.cubridmigration.ui.script.MigrationScript;
+
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.swt.graphics.Image;

@@ -39,6 +39,7 @@ import static com.cubrid.cubridmigration.core.engine.template.TemplateTags.ATTR_
 
 import com.cubrid.cubridmigration.core.engine.config.MigrationConfiguration;
 import com.cubrid.cubridmigration.mysql.trans.MySQL2CUBRIDMigParas;
+
 import org.xml.sax.Attributes;
 
 /** A SAX handler for parsing the <params> configuration section of a migration template. */

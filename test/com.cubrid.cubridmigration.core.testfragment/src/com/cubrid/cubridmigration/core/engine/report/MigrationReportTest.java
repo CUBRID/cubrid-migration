@@ -36,9 +36,12 @@ import com.cubrid.cubridmigration.core.engine.event.ExportRecordsEvent;
 import com.cubrid.cubridmigration.core.engine.event.ImportRecordsEvent;
 import com.cubrid.cubridmigration.core.engine.template.TemplateParserTest;
 import com.cubrid.cubridmigration.mysql.meta.MySQLSchemaFetcher;
-import java.util.List;
+
 import junit.framework.Assert;
+
 import org.junit.Test;
+
+import java.util.List;
 
 public class MigrationReportTest {
 

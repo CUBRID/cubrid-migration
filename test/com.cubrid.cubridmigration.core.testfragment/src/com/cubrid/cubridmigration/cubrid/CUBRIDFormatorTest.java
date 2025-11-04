@@ -31,10 +31,12 @@
 package com.cubrid.cubridmigration.cubrid;
 
 import com.cubrid.cubridmigration.core.datatype.DataTypeInstance;
-import java.text.ParseException;
-import java.util.TimeZone;
+
 import org.junit.Assert;
 import org.junit.Test;
+
+import java.text.ParseException;
+import java.util.TimeZone;
 
 public class CUBRIDFormatorTest {
 

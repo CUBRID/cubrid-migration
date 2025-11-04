@@ -32,13 +32,15 @@ package com.cubrid.cubridmigration.ui.preference;
 
 import com.cubrid.cubridmigration.core.mapping.model.MapItem;
 import com.cubrid.cubridmigration.core.mapping.model.MapObject;
-import java.util.ArrayList;
-import java.util.List;
+
 import org.eclipse.jface.viewers.ColumnViewerEditorActivationEvent;
 import org.eclipse.jface.viewers.ComboBoxCellEditor;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.swt.widgets.Table;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * ColumnTypeComboBoxCellEditor Description

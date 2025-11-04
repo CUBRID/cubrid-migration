@@ -51,16 +51,18 @@ import com.cubrid.cubridmigration.core.dbobject.View;
 import com.cubrid.cubridmigration.core.dbtype.DatabaseType;
 import com.cubrid.cubridmigration.core.engine.config.MigrationConfiguration;
 import com.cubrid.cubridmigration.cubrid.CUBRIDDataTypeHelper;
-import java.math.BigInteger;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.function.Consumer;
+
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.xml.sax.Attributes;
 import org.xml.sax.helpers.DefaultHandler;
+
+import java.math.BigInteger;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Consumer;
 
 /**
  * A SAX {@link DefaultHandler} implementation for parsing the target configuration section of a
@@ -164,7 +166,9 @@ public class TargetNodeHandler extends DefaultHandler {
 
     // startElement
 
-    /** @param attributes of node */
+    /**
+     * @param attributes of node
+     */
     private void parseTargetJDBC(Attributes attributes) {
         ConnParameters cp =
                 ConnParameters.getConParam(

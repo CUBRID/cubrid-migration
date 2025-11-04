@@ -31,11 +31,14 @@
 package com.cubrid.common.ui.swt.table.celleditor;
 
 import com.cubrid.common.ui.swt.table.CellEditorFactory;
+
 import org.eclipse.jface.viewers.CellEditor;
 import org.eclipse.jface.viewers.TextCellEditor;
 import org.eclipse.swt.widgets.Table;
 
-/** @author Kevin Cao */
+/**
+ * @author Kevin Cao
+ */
 public class TextCellEditorFactory implements CellEditorFactory {
 
     /* (non-Javadoc)

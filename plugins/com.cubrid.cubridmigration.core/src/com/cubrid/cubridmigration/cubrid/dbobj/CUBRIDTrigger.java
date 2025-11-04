@@ -31,11 +31,13 @@
 package com.cubrid.cubridmigration.cubrid.dbobj;
 
 import com.cubrid.cubridmigration.core.dbobject.Trigger;
+
+import org.apache.commons.lang3.StringUtils;
+
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.util.HashMap;
 import java.util.Map;
-import org.apache.commons.lang3.StringUtils;
 
 /**
  * CUBRIDTrigger

@@ -32,8 +32,10 @@ package com.cubrid.cubridmigration.core.dbmetadata;
 
 import com.cubrid.cubridmigration.core.engine.config.MigrationConfiguration;
 import com.cubrid.cubridmigration.core.engine.template.TemplateParserTest;
-import java.sql.SQLException;
+
 import org.junit.Test;
+
+import java.sql.SQLException;
 
 public class BuildCatalogFromJDBCTest {
 

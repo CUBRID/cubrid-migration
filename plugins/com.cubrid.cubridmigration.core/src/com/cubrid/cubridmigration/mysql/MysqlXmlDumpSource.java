@@ -33,6 +33,7 @@ package com.cubrid.cubridmigration.mysql;
 import com.cubrid.cubridmigration.core.dbmetadata.IDBSource;
 import com.cubrid.cubridmigration.core.io.IReaderEvent;
 import com.cubrid.cubridmigration.core.io.RmInvalidXMLCharReader;
+
 import java.io.FileInputStream;
 import java.io.Reader;
 import java.io.Serializable;

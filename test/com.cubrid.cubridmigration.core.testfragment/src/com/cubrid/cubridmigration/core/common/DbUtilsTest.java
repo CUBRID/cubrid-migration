@@ -36,14 +36,17 @@ import com.cubrid.cubridmigration.core.dbobject.Column;
 import com.cubrid.cubridmigration.core.dbobject.PartitionInfo;
 import com.cubrid.cubridmigration.core.dbobject.Table;
 import com.cubrid.cubridmigration.mysql.meta.MySQLSchemaFetcher;
+
+import junit.framework.Assert;
+
+import org.junit.Test;
+
 import java.io.IOException;
 import java.io.StringReader;
 import java.text.DateFormat;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import junit.framework.Assert;
-import org.junit.Test;
 
 /**
  * DbUtilTest

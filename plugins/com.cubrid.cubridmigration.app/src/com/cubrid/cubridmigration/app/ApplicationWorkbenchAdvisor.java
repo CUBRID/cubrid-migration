@@ -31,6 +31,7 @@
 package com.cubrid.cubridmigration.app;
 
 import com.cubrid.cubridmigration.ui.preference.GeneralPreferencePage;
+
 import org.eclipse.jface.preference.PreferenceManager;
 import org.eclipse.ui.IWorkbenchPreferenceConstants;
 import org.eclipse.ui.PlatformUI;

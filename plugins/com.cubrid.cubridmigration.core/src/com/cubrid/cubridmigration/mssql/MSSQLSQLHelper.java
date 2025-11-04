@@ -33,6 +33,7 @@ package com.cubrid.cubridmigration.mssql;
 import com.cubrid.cubridmigration.core.dbobject.Table;
 import com.cubrid.cubridmigration.core.sql.SQLHelper;
 import com.cubrid.cubridmigration.cubrid.CUBRIDSQLHelper;
+
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 

@@ -37,11 +37,13 @@ import com.cubrid.cubridmigration.core.engine.report.MigrationOverviewResult;
 import com.cubrid.cubridmigration.core.engine.report.MigrationReport;
 import com.cubrid.cubridmigration.core.engine.report.MigrationReportFileUtils;
 import com.cubrid.cubridmigration.core.engine.report.RecordMigrationResult;
+
+import org.apache.commons.collections4.CollectionUtils;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.List;
-import org.apache.commons.collections4.CollectionUtils;
 
 /**
  * ReportCommandHandler Description

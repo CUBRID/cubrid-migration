@@ -31,6 +31,7 @@
 package com.cubrid.common.ui.swt.table;
 
 import com.cubrid.cubridmigration.ui.common.CompositeUtils;
+
 import org.eclipse.jface.viewers.CellEditor;
 import org.eclipse.jface.viewers.ComboBoxCellEditor;
 import org.eclipse.jface.viewers.TableViewer;
