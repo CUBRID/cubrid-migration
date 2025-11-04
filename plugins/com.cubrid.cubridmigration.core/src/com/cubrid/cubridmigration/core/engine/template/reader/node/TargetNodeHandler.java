@@ -90,7 +90,6 @@ public class TargetNodeHandler extends DefaultHandler {
     }
 
     private void initializeStartTagHandlers() {
-        startTagHandlers.put(TAG_FILE_REPOSITORY, this::parseTargetFileRepository);
         startTagHandlers.put(TAG_SCHEMA, attr -> schemaCache = new StringBuffer());
         startTagHandlers.put(TAG_SCHEMA_INFO, this::parseTargetSchemaInfo);
         startTagHandlers.put(TAG_TABLE, this::parseTargetTable);
@@ -162,43 +161,6 @@ public class TargetNodeHandler extends DefaultHandler {
     }
 
     // startElement
-
-    private void parseTargetFileRepository(Attributes attributes) {
-        config.setFileRepositroyPath(attributes.getValue(ATTR_DIR));
-        config.setTargetFileTimeZone(attributes.getValue(ATTR_TIMEZONE));
-        config.setOneTableOneFile(getBoolean(attributes.getValue(ATTR_ONETABLEONEFILE), false));
-        final String fileMaxSize = attributes.getValue(ATTR_FILE_MAX_SIZE);
-        config.setMaxCountPerFile(fileMaxSize == null ? 0 : Integer.parseInt(fileMaxSize));
-        config.setTargetFilePrefix(attributes.getValue(ATTR_OUTPUT_FILE_PREFIX));
-        try {
-            config.setDestType(Integer.parseInt(attributes.getValue(ATTR_DATA_FILE_FORMAT)));
-        } catch (Exception ex) {
-            config.setDestType(MigrationConfiguration.DEST_DB_UNLOAD);
-        }
-        config.setTargetCharSet(attributes.getValue(ATTR_CHARSET));
-        if (config.targetIsCSV()) {
-            String value = attributes.getValue(ATTR_CSV_SEPARATE);
-            config.getCsvSettings()
-                    .setSeparateChar(StringUtils.isEmpty(value) ? ',' : value.charAt(0));
-            value = attributes.getValue(ATTR_CSV_QUOTE);
-            config.getCsvSettings()
-                    .setQuoteChar(
-                            StringUtils.isEmpty(value)
-                                    ? MigrationConfiguration.CSV_NO_CHAR
-                                    : value.charAt(0));
-            value = attributes.getValue(ATTR_CSV_ESCAPE);
-            config.getCsvSettings()
-                    .setEscapeChar(
-                            StringUtils.isEmpty(value)
-                                    ? MigrationConfiguration.CSV_NO_CHAR
-                                    : value.charAt(0));
-        }
-        config.setTargetLOBRootPath(attributes.getValue(ATTR_LOB_ROOT_DIR));
-        config.setAddUserSchema(getBoolean(attributes.getValue(ATTR_ADD_SCHEMA), false));
-        config.setSplitSchema(getBoolean(attributes.getValue(ATTR_SPLIT_SCHEMA), false));
-        config.setCreateUserSQL(getBoolean(attributes.getValue(ATTR_CREATE_USER_SQL), false));
-        config.createDumpfile(config.isSplitSchema(), config.isOneTableOneFile());
-    }
 
     private void parseTargetSchemaInfo(Attributes attributes) {
         Schema schema = new Schema();

@@ -36,6 +36,7 @@ import com.cubrid.cubridmigration.core.engine.config.MigrationConfiguration;
 import com.cubrid.cubridmigration.core.engine.template.reader.node.ConnectionsNodeHandler;
 import com.cubrid.cubridmigration.core.engine.template.reader.node.ParametersNodeHandler;
 import com.cubrid.cubridmigration.core.engine.template.reader.node.SourceNodeHandler;
+import com.cubrid.cubridmigration.core.engine.template.reader.node.TargetFileRepositoryNodeHandler;
 import com.cubrid.cubridmigration.core.engine.template.reader.node.TargetNodeHandler;
 
 import org.xml.sax.Attributes;
@@ -71,6 +72,9 @@ public final class MigrationTemplateHandler extends DefaultHandler {
         switch (qName) {
             case TAG_CONNECTIONS:
                 handleConnections(attributes);
+                break;
+            case TAG_FILE_REPOSITORY:
+                handleTargetFileRepository(attributes);
                 break;
             case TAG_SOURCE:
                 handleSource(attributes);
@@ -112,6 +116,11 @@ public final class MigrationTemplateHandler extends DefaultHandler {
 
     public MigrationConfiguration getResult() {
         return config;
+    }
+
+    private void handleTargetFileRepository(Attributes attributes) {
+        TargetFileRepositoryNodeHandler handler = new TargetFileRepositoryNodeHandler(config);
+        handler.processAttributes(attributes);
     }
 
     private void handleConnections(Attributes attributes) {

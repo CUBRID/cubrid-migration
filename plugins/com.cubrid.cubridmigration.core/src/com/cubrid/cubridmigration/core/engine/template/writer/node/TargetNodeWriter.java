@@ -70,8 +70,6 @@ public class TargetNodeWriter {
         }
         writer.writeAttribute(ATTR_DB_TYPE, "cubrid");
 
-        writeFileRepositoryNode(writer, config);
-
         writeTargetSchemaNodes(writer, config);
         writeTargetTableNodes(writer, config);
         writeTargetSequenceNodes(writer, config);
@@ -80,45 +78,6 @@ public class TargetNodeWriter {
         writeTargetPlcsqlProcedureNodes(writer, config);
         writeTargetPlcsqlFunctionNodes(writer, config);
         writer.writeEndElement(); // </target>
-    }
-
-    private void writeFileRepositoryNode(XMLStreamWriter writer, MigrationConfiguration config)
-            throws XMLStreamException {
-        if (!config.targetIsFile()) {
-            return;
-        }
-
-        writer.writeEmptyElement(TAG_FILE_REPOSITORY);
-        writer.writeAttribute(ATTR_DIR, config.getFileRepositroyPath());
-        writer.writeAttribute(ATTR_TIMEZONE, config.getTargetFileTimeZone());
-        writer.writeAttribute(ATTR_CHARSET, config.getTargetCharSet());
-        writer.writeAttribute(ATTR_ADD_SCHEMA, getBooleanString(config.isAddUserSchema()));
-        writer.writeAttribute(ATTR_SPLIT_SCHEMA, getBooleanString(config.isSplitSchema()));
-        writer.writeAttribute(ATTR_CREATE_USER_SQL, getBooleanString(config.isCreateUserSQL()));
-        writer.writeAttribute(ATTR_ONETABLEONEFILE, getBooleanString(config.isOneTableOneFile()));
-        writer.writeAttribute(ATTR_DATA_FILE_FORMAT, String.valueOf(config.getDestType()));
-        writer.writeAttribute(ATTR_OUTPUT_FILE_PREFIX, config.getTargetFilePrefix());
-        writer.writeAttribute(ATTR_FILE_MAX_SIZE, String.valueOf(config.getMaxCountPerFile()));
-        if (config.targetIsCSV()) {
-            writer.writeAttribute(
-                    ATTR_CSV_SEPARATE,
-                    config.getCsvSettings().getSeparateChar() == MigrationConfiguration.CSV_NO_CHAR
-                            ? ""
-                            : String.valueOf(config.getCsvSettings().getSeparateChar()));
-            writer.writeAttribute(
-                    ATTR_CSV_QUOTE,
-                    config.getCsvSettings().getQuoteChar() == MigrationConfiguration.CSV_NO_CHAR
-                            ? ""
-                            : String.valueOf(config.getCsvSettings().getQuoteChar()));
-            writer.writeAttribute(
-                    ATTR_CSV_ESCAPE,
-                    config.getCsvSettings().getEscapeChar() == MigrationConfiguration.CSV_NO_CHAR
-                            ? ""
-                            : String.valueOf(config.getCsvSettings().getEscapeChar()));
-        }
-        if (config.targetIsDBDump()) {
-            writer.writeAttribute(ATTR_LOB_ROOT_DIR, config.getTargetLOBRootPath());
-        }
     }
 
     private void writeTargetSchemaNodes(XMLStreamWriter writer, MigrationConfiguration config)
