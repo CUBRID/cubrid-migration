@@ -9,8 +9,8 @@ Available options:
     -td,     Target JDBC driver file path.
     -tp,     Export path (when exporting to files).
     -xml,    MySQL XML dump file.
-    -mm,     Monitor mode [error|info|debug]
-    -rm,     Report mode [error|info|debug]
-    -do,     Data-only migration [yes|no]
+    -mm,     Monitor mode [error|info|debug] (Default: brief-shows progress only).
+    -rm,     Report mode [error|info|debug] (Optional).
+    -do,     Data-only migration [yes|no] (Default: no).
 
 Please visit http://www.cubrid.org for more information.
