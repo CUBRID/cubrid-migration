@@ -96,6 +96,7 @@ public final class TemplateTags {
     public static final String ATTR_MAX = "max";
     public static final String ATTR_MIGRATE_DATA = "migrate_data";
     public static final String ATTR_MIN = "min";
+    public static final String ATTR_ID = "id";
     public static final String ATTR_NAME = "name";
     public static final String ATTR_NO_LOGGING = "no_logging";
     public static final String ATTR_NO_MAX = "no_max";
@@ -166,6 +167,8 @@ public final class TemplateTags {
     public static final String TAG_CMSERVER = "cmServer";
     public static final String TAG_COLUMN = "column";
     public static final String TAG_COLUMNS = "columns";
+    public static final String TAG_CONNECTION = "connection";
+    public static final String TAG_CONNECTIONS = "connections";
     public static final String TAG_CONSTRAINTS = "constraints";
     public static final String TAG_CREATEDB = "createDB";
     public static final String TAG_CREATEVIEWSQL = "createViewSQL";

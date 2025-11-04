@@ -32,7 +32,6 @@ package com.cubrid.cubridmigration.core.engine.template.writer.node;
 import static com.cubrid.cubridmigration.core.engine.template.MigrationTemplateUtils.*;
 import static com.cubrid.cubridmigration.core.engine.template.TemplateTags.*;
 
-import com.cubrid.cubridmigration.core.connection.ConnParameters;
 import com.cubrid.cubridmigration.core.dbobject.Column;
 import com.cubrid.cubridmigration.core.dbobject.FK;
 import com.cubrid.cubridmigration.core.dbobject.Index;
@@ -71,7 +70,7 @@ public class TargetNodeWriter {
         }
         writer.writeAttribute(ATTR_DB_TYPE, "cubrid");
 
-        writeTargetConInfoNode(writer, config);
+        writeFileRepositoryNode(writer, config);
 
         writeTargetSchemaNodes(writer, config);
         writeTargetTableNodes(writer, config);
@@ -83,38 +82,12 @@ public class TargetNodeWriter {
         writer.writeEndElement(); // </target>
     }
 
-    private void writeTargetConInfoNode(XMLStreamWriter writer, MigrationConfiguration config)
-            throws XMLStreamException {
-        if (config.targetIsOnline()) {
-            writeJdbcNode(writer, config);
-        } else if (config.targetIsFile()) {
-            writeFileRepositoryNode(writer, config);
-        }
-    }
-
-    private void writeJdbcNode(XMLStreamWriter writer, MigrationConfiguration config)
-            throws XMLStreamException {
-        writer.writeEmptyElement(TAG_JDBC);
-        ConnParameters tcp = config.getTargetConParams();
-        writer.writeAttribute(ATTR_HOST, tcp.getHost());
-        writer.writeAttribute(ATTR_PORT, String.valueOf(tcp.getPort()));
-        writer.writeAttribute(ATTR_DRIVER, tcp.getDriverFileName());
-        writer.writeAttribute(ATTR_NAME, tcp.getDbName());
-        writer.writeAttribute(ATTR_USER, tcp.getConUser());
-        writer.writeAttribute(ATTR_PASSWORD, tcp.getConPassword());
-        writer.writeAttribute(ATTR_CHARSET, tcp.getCharset());
-        writer.writeAttribute(ATTR_TIMEZONE, tcp.getTimeZone());
-        writer.writeAttribute(ATTR_USER_JDBC_URL, tcp.getUserJDBCURL());
-        writer.writeAttribute(
-                ATTR_CREATE_CONSTRAINT_NOW,
-                getBooleanString(config.isCreateConstrainsBeforeData()));
-        writer.writeAttribute(
-                ATTR_WRITE_ERROR_RECORDS, getBooleanString(config.isWriteErrorRecords()));
-        writer.writeAttribute(ATTR_ADD_SCHEMA, getBooleanString(config.isAddUserSchema()));
-    }
-
     private void writeFileRepositoryNode(XMLStreamWriter writer, MigrationConfiguration config)
             throws XMLStreamException {
+        if (!config.targetIsFile()) {
+            return;
+        }
+
         writer.writeEmptyElement(TAG_FILE_REPOSITORY);
         writer.writeAttribute(ATTR_DIR, config.getFileRepositroyPath());
         writer.writeAttribute(ATTR_TIMEZONE, config.getTargetFileTimeZone());

@@ -33,7 +33,6 @@ import static com.cubrid.cubridmigration.core.engine.template.MigrationTemplateU
 import static com.cubrid.cubridmigration.core.engine.template.TemplateTags.*;
 
 import com.cubrid.common.log.LogUtil;
-import com.cubrid.cubridmigration.core.connection.ConnParameters;
 import com.cubrid.cubridmigration.core.dbobject.Column;
 import com.cubrid.cubridmigration.core.dbobject.FK;
 import com.cubrid.cubridmigration.core.dbobject.Grant;
@@ -48,7 +47,6 @@ import com.cubrid.cubridmigration.core.dbobject.Sequence;
 import com.cubrid.cubridmigration.core.dbobject.Synonym;
 import com.cubrid.cubridmigration.core.dbobject.Table;
 import com.cubrid.cubridmigration.core.dbobject.View;
-import com.cubrid.cubridmigration.core.dbtype.DatabaseType;
 import com.cubrid.cubridmigration.core.engine.config.MigrationConfiguration;
 import com.cubrid.cubridmigration.cubrid.CUBRIDDataTypeHelper;
 
@@ -92,7 +90,6 @@ public class TargetNodeHandler extends DefaultHandler {
     }
 
     private void initializeStartTagHandlers() {
-        startTagHandlers.put(TAG_JDBC, this::parseTargetJDBC);
         startTagHandlers.put(TAG_FILE_REPOSITORY, this::parseTargetFileRepository);
         startTagHandlers.put(TAG_SCHEMA, attr -> schemaCache = new StringBuffer());
         startTagHandlers.put(TAG_SCHEMA_INFO, this::parseTargetSchemaInfo);
@@ -165,33 +162,6 @@ public class TargetNodeHandler extends DefaultHandler {
     }
 
     // startElement
-
-    /**
-     * @param attributes of node
-     */
-    private void parseTargetJDBC(Attributes attributes) {
-        ConnParameters cp =
-                ConnParameters.getConParam(
-                        null,
-                        attributes.getValue(ATTR_HOST),
-                        Integer.parseInt(attributes.getValue(ATTR_PORT)),
-                        attributes.getValue(ATTR_NAME),
-                        DatabaseType.CUBRID,
-                        attributes.getValue(ATTR_CHARSET),
-                        attributes.getValue(ATTR_USER),
-                        attributes.getValue(ATTR_PASSWORD),
-                        attributes.getValue(ATTR_DRIVER),
-                        attributes.getValue(ATTR_SCHEMA));
-        cp.setUserJDBCURL(attributes.getValue(ATTR_USER_JDBC_URL));
-        cp.setTimeZone(attributes.getValue(ATTR_TIMEZONE));
-
-        config.setTargetConParams(cp);
-        config.setCreateConstrainsBeforeData(
-                getBoolean(attributes.getValue(ATTR_CREATE_CONSTRAINT_NOW), false));
-        config.setWriteErrorRecords(
-                getBoolean(attributes.getValue(ATTR_WRITE_ERROR_RECORDS), false));
-        config.setAddUserSchema(getBoolean(attributes.getValue(ATTR_ADD_SCHEMA), false));
-    }
 
     private void parseTargetFileRepository(Attributes attributes) {
         config.setFileRepositroyPath(attributes.getValue(ATTR_DIR));
