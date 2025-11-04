@@ -63,8 +63,8 @@ public class SQLHelperTest {
     public void testGetQuerySpec() {
         String viewDDL1 =
                 "CREATE ALGORITHM=UNDEFINED DEFINER=`mydbadmin`@`192.168.1.175` SQL SECURITY"
-                    + " DEFINER VIEW `tgt_view` AS select `tgt`.`d` AS `d`,`tgt`.`ff` AS"
-                    + " `ff`,`tgt`.`aa` AS `aa` from `tgt` ";
+                        + " DEFINER VIEW `tgt_view` AS select `tgt`.`d` AS `d`,`tgt`.`ff` AS"
+                        + " `ff`,`tgt`.`aa` AS `aa` from `tgt` ";
         String querySpec1 = sqlHelper.getViewQuerySpec(viewDDL1);
         Assert.assertNotNull(querySpec1);
 
@@ -81,7 +81,7 @@ public class SQLHelperTest {
         Assert.assertNotNull(querySpec3);
         Assert.assertEquals(
                 "select `tgt`.`d` AS `d`,`tgt`.`gsdf` AS `gsdf`,`tgt`.`ff` AS `ff`,`tgt`.`aa` AS"
-                    + " `aa`,`tgt`.`t1` AS `t1` from `tgt`",
+                        + " `aa`,`tgt`.`t1` AS `t1` from `tgt`",
                 querySpec3);
 
         viewDDL2 =
@@ -91,7 +91,7 @@ public class SQLHelperTest {
         Assert.assertNotNull(querySpec3);
         Assert.assertEquals(
                 "select `tgt`.`d` AS `d`,`tgt`.`gsdf` AS `gsdf`,`tgt`.`ff` AS `ff`,`tgt`.`aa` AS"
-                    + " `aa`,`tgt`.`t1` AS `t1` from `tgt`",
+                        + " `aa`,`tgt`.`t1` AS `t1` from `tgt`",
                 querySpec3);
     }
 

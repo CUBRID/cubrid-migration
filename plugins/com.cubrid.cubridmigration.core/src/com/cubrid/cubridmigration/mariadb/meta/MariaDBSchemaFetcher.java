@@ -1101,7 +1101,7 @@ public final class MariaDBSchemaFetcher extends AbstractJDBCSchemaFetcher {
             rs =
                     stmt.executeQuery(
                             "SELECT EXTRACT(HOUR FROM TIMEDIFF(NOW() ,UTC_TIMESTAMP())) AS"
-                                + " TIMEZONE");
+                                    + " TIMEZONE");
 
             if (rs.next()) {
                 tzOffset = rs.getInt("TIMEZONE");

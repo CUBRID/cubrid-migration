@@ -80,8 +80,8 @@ public class UpdateAutoIncColCurrentValueTask extends ImportTask {
             rs =
                     stmt.executeQuery(
                             "select name,current_val,increment_val,class_name,att_name from"
-                                + " db_serial where class_name is not null order by"
-                                + " class_name,att_name,name");
+                                    + " db_serial where class_name is not null order by"
+                                    + " class_name,att_name,name");
             List<String[]> tobeUpdated = new ArrayList<String[]>();
             while (rs.next()) {
                 String tableName = rs.getString(4);

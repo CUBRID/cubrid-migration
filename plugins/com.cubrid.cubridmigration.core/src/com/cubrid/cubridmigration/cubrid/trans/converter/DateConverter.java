@@ -83,7 +83,7 @@ public class DateConverter extends AbstractDataConverter {
                 if (value.toString().charAt(0) == 0) {
                     throw new RuntimeException(
                             "java.sql.Date could not build date correctly (not in range 999 - 9999"
-                                + " ?): "
+                                    + " ?): "
                                     + obj,
                             ex);
                 }

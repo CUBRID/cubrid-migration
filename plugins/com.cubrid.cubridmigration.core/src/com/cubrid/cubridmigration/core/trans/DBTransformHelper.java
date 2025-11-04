@@ -718,7 +718,7 @@ public abstract class DBTransformHelper {
                         new VerifyInfo(
                                 VerifyInfo.TYPE_NOENOUGH_LENGTH,
                                 "The precision of targetColumn should equal and greater than"
-                                    + " sourceColumn's");
+                                        + " sourceColumn's");
                 return info;
             }
         } else { // verify the target scale
@@ -775,7 +775,7 @@ public abstract class DBTransformHelper {
                         new VerifyInfo(
                                 VerifyInfo.TYPE_NOENOUGH_LENGTH,
                                 "The scale of target column should be equal or greater than source"
-                                    + " column's");
+                                        + " column's");
                 return info;
             }
             // if we need verify the deta (targetPrecision - targetScale)
@@ -787,7 +787,7 @@ public abstract class DBTransformHelper {
                         new VerifyInfo(
                                 VerifyInfo.TYPE_NOENOUGH_LENGTH,
                                 "The deta (target precision - target scale) should be equal or"
-                                    + " greater than source column's");
+                                        + " greater than source column's");
                 return info;
             }
         } else {

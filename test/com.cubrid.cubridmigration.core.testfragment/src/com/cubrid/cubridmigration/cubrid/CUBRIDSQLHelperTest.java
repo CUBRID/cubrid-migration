@@ -158,7 +158,7 @@ public class CUBRIDSQLHelperTest {
         sequence.setCacheSize(0);
         Assert.assertEquals(
                 "CREATE SERIAL \"test_sequence\" START WITH 0 INCREMENT BY 1 NOMINVALUE  NOMAXVALUE"
-                    + "  CYCLE NOCACHE",
+                        + "  CYCLE NOCACHE",
                 ddl.getSequenceDDL(sequence));
 
         sequence.setNoMinValue(false);
@@ -169,7 +169,7 @@ public class CUBRIDSQLHelperTest {
         sequence.setMaxValue(new BigInteger("1000"));
         Assert.assertEquals(
                 "CREATE SERIAL \"test_sequence\" START WITH 0 INCREMENT BY 1 MINVALUE 0 MAXVALUE "
-                    + " 1000 NOCYCLE CACHE 100",
+                        + " 1000 NOCYCLE CACHE 100",
                 ddl.getSequenceDDL(sequence));
     }
 }

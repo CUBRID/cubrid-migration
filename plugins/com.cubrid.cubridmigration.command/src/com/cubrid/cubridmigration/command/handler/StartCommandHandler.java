@@ -359,7 +359,7 @@ public class StartCommandHandler implements ConsoleCommandHandler {
                     outPrinter.println("Invalid path : " + tempPath);
                     outPrinter.println(
                             "Please specify the path where you want to save exported files by"
-                                + " parameter [-tp]");
+                                    + " parameter [-tp]");
                     outPrinter.println();
                     return false;
                 }

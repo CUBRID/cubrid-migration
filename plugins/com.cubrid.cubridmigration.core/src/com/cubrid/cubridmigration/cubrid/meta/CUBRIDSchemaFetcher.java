@@ -222,7 +222,7 @@ public final class CUBRIDSchemaFetcher extends AbstractJDBCSchemaFetcher {
                 } catch (Exception ex) {
                     LOG.error(
                             "Failed to set collection element type from metadata. table={},"
-                                + " column={}, dataType={}, precision={}, scale={}",
+                                    + " column={}, dataType={}, precision={}, scale={}",
                             tableName,
                             attrName,
                             dataType,
@@ -563,7 +563,7 @@ public final class CUBRIDSchemaFetcher extends AbstractJDBCSchemaFetcher {
                 } catch (Exception ex) {
                     LOG.error(
                             "Failed to build table schema from metadata. schema={}, table={},"
-                                + " column={}",
+                                    + " column={}",
                             schema.getName(),
                             rs.getString("class_name"),
                             rs.getString("attr_name"),
@@ -743,7 +743,7 @@ public final class CUBRIDSchemaFetcher extends AbstractJDBCSchemaFetcher {
                 } catch (Exception ex) {
                     LOG.error(
                             "Failed to build table schema from metadata. schema={}, table={},"
-                                + " column={}",
+                                    + " column={}",
                             schema.getName(),
                             rs.getString("class_name"),
                             rs.getString("attr_name"),
@@ -783,7 +783,7 @@ public final class CUBRIDSchemaFetcher extends AbstractJDBCSchemaFetcher {
 
             String sql =
                     "SELECT a.class_name, a.index_name, a.is_unique, b.key_attr_name, b.asc_desc,"
-                        + " c.owner_name "
+                            + " c.owner_name "
                             + sqlFuncCol
                             + " FROM db_index a, db_index_key b, db_class c WHERE"
                             + " a.class_name=b.class_name AND c.class_type='CLASS' AND"
@@ -1953,7 +1953,7 @@ public final class CUBRIDSchemaFetcher extends AbstractJDBCSchemaFetcher {
         try {
             String sql =
                     "SELECT CLASS_NAME FROM DB_CLASS WHERE CLASS_TYPE = 'VCLASS' AND"
-                        + " IS_SYSTEM_CLASS = 'NO' AND OWNER_NAME = ?";
+                            + " IS_SYSTEM_CLASS = 'NO' AND OWNER_NAME = ?";
 
             pstmt = conn.prepareStatement(sql);
 
@@ -2147,8 +2147,8 @@ public final class CUBRIDSchemaFetcher extends AbstractJDBCSchemaFetcher {
         try {
             String sql =
                     "SELECT t.target_class_name, name, status, priority, event, target_class,"
-                        + " target_attribute, condition_type, condition, condition_time,"
-                        + " trig.action_type, action_definition, trig.action_time"
+                            + " target_attribute, condition_type, condition, condition_time,"
+                            + " trig.action_type, action_definition, trig.action_time"
                             + trigUniqueName
                             + " FROM db_class c, db_trigger trig, db_trig t WHERE"
                             + " trig.name=t.trigger_name AND t.target_class_name=c.class_name(+)"
@@ -2506,7 +2506,7 @@ public final class CUBRIDSchemaFetcher extends AbstractJDBCSchemaFetcher {
 
             String sql =
                     "SELECT u.name FROM db_user AS u, TABLE(u.direct_groups) AS g(x) WHERE"
-                        + " x.name='DBA'";
+                            + " x.name='DBA'";
 
             stmt = conn.prepareStatement(sql);
             rs = stmt.executeQuery();
@@ -2549,7 +2549,7 @@ public final class CUBRIDSchemaFetcher extends AbstractJDBCSchemaFetcher {
 
             String sql =
                     "SELECT u.name FROM db_user AS u, TABLE(u.direct_groups) AS g(x) WHERE"
-                        + " x.name='DBA'";
+                            + " x.name='DBA'";
 
             stmt = conn.prepareStatement(sql);
             rs = stmt.executeQuery();

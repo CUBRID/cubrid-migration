@@ -38,8 +38,8 @@ public class CipherUtilsTest {
 
     private static final String STR =
             "`1234567890 ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz ~!@#$%^&*()_+ |}{"
-                + " \\][ :\" ;' ?>< ,./ \r\n"
-                + "\t";
+                    + " \\][ :\" ;' ?>< ,./ \r\n"
+                    + "\t";
 
     @Test
     public void testCipherUtils() {

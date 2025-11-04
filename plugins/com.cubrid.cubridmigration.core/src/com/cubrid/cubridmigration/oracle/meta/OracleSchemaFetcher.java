@@ -143,9 +143,9 @@ public final class OracleSchemaFetcher extends AbstractJDBCSchemaFetcher {
 
     private static final String SQL_GET_TABLE_INDEX =
             "SELECT INDEX_NAME, INDEX_TYPE, UNIQUENESS FROM ALL_INDEXES A  WHERE A.TABLE_OWNER=?"
-                + " AND A.TABLE_NAME=? AND A.INDEX_NAME NOT IN (SELECT C.CONSTRAINT_NAME FROM"
-                + " ALL_CONSTRAINTS C WHERE C.CONSTRAINT_TYPE='P' AND C.OWNER=A.TABLE_OWNER AND"
-                + " C.TABLE_NAME=A.TABLE_NAME) ORDER BY A.INDEX_NAME";
+                    + " AND A.TABLE_NAME=? AND A.INDEX_NAME NOT IN (SELECT C.CONSTRAINT_NAME FROM"
+                    + " ALL_CONSTRAINTS C WHERE C.CONSTRAINT_TYPE='P' AND C.OWNER=A.TABLE_OWNER AND"
+                    + " C.TABLE_NAME=A.TABLE_NAME) ORDER BY A.INDEX_NAME";
 
     private static final String SQL_SHOW_ALL_OBJECTS =
             "SELECT NAME FROM ALL_SOURCE S "
@@ -156,8 +156,8 @@ public final class OracleSchemaFetcher extends AbstractJDBCSchemaFetcher {
 
     private static final String SQL_SHOW_SEQUENCES =
             "SELECT S.* FROM ALL_SEQUENCES S WHERE S.SEQUENCE_OWNER=? AND NOT S.SEQUENCE_NAME LIKE"
-                + " 'BIN$%' AND NOT S.SEQUENCE_NAME LIKE 'MLOG$%' AND NOT S.SEQUENCE_NAME LIKE"
-                + " 'RUPD$%' ";
+                    + " 'BIN$%' AND NOT S.SEQUENCE_NAME LIKE 'MLOG$%' AND NOT S.SEQUENCE_NAME LIKE"
+                    + " 'RUPD$%' ";
 
     private static final String SQL_SHOW_SYNONYM =
             "SELECT SYNONYM_NAME, TABLE_OWNER, TABLE_NAME, DB_LINK FROM ALL_SYNONYMS WHERE OWNER=?";
@@ -988,7 +988,7 @@ public final class OracleSchemaFetcher extends AbstractJDBCSchemaFetcher {
             throws SQLException {
         String SQL =
                 "SELECT TEXT FROM ALL_SOURCE WHERE OWNER = ? AND NAME = ? AND TYPE = ? ORDER BY"
-                    + " LINE";
+                        + " LINE";
 
         ResultSet rs = null;
         try (PreparedStatement stmt = conn.prepareStatement(SQL)) {
@@ -1015,7 +1015,7 @@ public final class OracleSchemaFetcher extends AbstractJDBCSchemaFetcher {
             throws SQLException {
         String SQL =
                 "SELECT owner, object_name, authid, object_type FROM ALL_PROCEDURES WHERE"
-                    + " OBJECT_TYPE IN ('PROCEDURE', 'FUNCTION') AND OWNER=?";
+                        + " OBJECT_TYPE IN ('PROCEDURE', 'FUNCTION') AND OWNER=?";
 
         ResultSet rs = null;
         try (PreparedStatement stmt = conn.prepareStatement(SQL)) {

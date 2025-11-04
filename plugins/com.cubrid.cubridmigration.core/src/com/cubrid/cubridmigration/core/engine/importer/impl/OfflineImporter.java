@@ -293,7 +293,7 @@ public abstract class OfflineImporter extends Importer {
                                             total,
                                             index,
                                             "Too long data (data length in xml must be less than"
-                                                + " 32768.)"));
+                                                    + " 32768.)"));
                             fail++;
                         } else {
                             sheet.addCell(new jxl.write.Label(index++, total, val));

@@ -60,7 +60,7 @@ public class CUBRIDExportHelperTest {
                 helper.getPagedSelectSQL("select * from code group by f1", 1000, 1000, null));
         Assert.assertEquals(
                 "select * from code group by f1 having f1=1 AND  GROUPBY_NUM()  BETWEEN 1001 AND"
-                    + " 2000",
+                        + " 2000",
                 helper.getPagedSelectSQL(
                         "select * from code group by f1 having f1=1", 1000, 1000, null));
         Assert.assertEquals(

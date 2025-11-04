@@ -91,11 +91,11 @@ public final class MSSQLSchemaFetcher extends AbstractJDBCSchemaFetcher {
 
     private static final String SHOW_CHARSET =
             "SELECT [DEFAULT_CHARACTER_SET_NAME] FROM [catalogName].[INFORMATION_SCHEMA].[SCHEMATA]"
-                + " WHERE [CATALOG_NAME]=? AND [SCHEMA_NAME]='dbo'";
+                    + " WHERE [CATALOG_NAME]=? AND [SCHEMA_NAME]='dbo'";
     private static final String SHOW_DDL =
             "SELECT [definition]  FROM [catalogName].[sys].[all_sql_modules] a,"
-                + " [catalogName].[sys].[all_objects] b WHERE b.[schema_id]=? and"
-                + " a.[object_id]=b.[object_id] and b.[name]=? and b.[type_desc]=? ";
+                    + " [catalogName].[sys].[all_objects] b WHERE b.[schema_id]=? and"
+                    + " a.[object_id]=b.[object_id] and b.[name]=? and b.[type_desc]=? ";
 
     private static final String SHOW_IDENTITY =
             "SELECT a.[name] tablename, b.[name] columnname, cast(b.[seed_value] as bigint)"
@@ -106,15 +106,15 @@ public final class MSSQLSchemaFetcher extends AbstractJDBCSchemaFetcher {
 
     private static final String SHOW_SCHEMA_ID =
             "SELECT [schema_id],[name] FROM [catalogName].[sys].[schemas] WHERE [name] in (SELECT"
-                + " distinct [TABLE_SCHEMA] FROM [catalogName].[INFORMATION_SCHEMA].[TABLES])";
+                    + " distinct [TABLE_SCHEMA] FROM [catalogName].[INFORMATION_SCHEMA].[TABLES])";
 
     private static final String SHOW_SYNONYM =
             "SELECT [name], [base_object_name] FROM [sys].[synonyms] WHERE [schema_id] = (SELECT"
-                + " [schema_id] FROM [sys].[schemas] WHERE [name]=?)";
+                    + " [schema_id] FROM [sys].[schemas] WHERE [name]=?)";
 
     private static final String USER_DEF_DATA_TYPE =
             "select t.name as username,t2.name as realname from sys.systypes t,sys.systypes t2"
-                + " where t.xtype<>t.xusertype and t.xtype=t2.xusertype";
+                    + " where t.xtype<>t.xusertype and t.xtype=t2.xusertype";
 
     private static final String SQL_GET_TABLE_COMMENT =
             "SELECT"
@@ -299,9 +299,9 @@ public final class MSSQLSchemaFetcher extends AbstractJDBCSchemaFetcher {
             throws SQLException {
         String sql =
                 "SELECT a.[name], a.[data_space_id], b.[type_desc], b.[fanout],"
-                    + " b.[boundary_value_on_right], a.[function_id]  FROM"
-                    + " [sys].[partition_schemes] a,[sys].[partition_functions] b WHERE"
-                    + " a.[function_id]=b.[function_id] AND a.[type]='PS' and b.[type]='R'";
+                        + " b.[boundary_value_on_right], a.[function_id]  FROM"
+                        + " [sys].[partition_schemes] a,[sys].[partition_functions] b WHERE"
+                        + " a.[function_id]=b.[function_id] AND a.[type]='PS' and b.[type]='R'";
 
         Map<Long, MSSQLPartitionSchemas> partSchemas = new HashMap<Long, MSSQLPartitionSchemas>();
         ResultSet rs = null; // NOPMD
@@ -347,8 +347,8 @@ public final class MSSQLSchemaFetcher extends AbstractJDBCSchemaFetcher {
 
             sql =
                     "SELECT a.[parameter_id], b.[name] FROM [sys].[partition_parameters] a,"
-                        + " [sys].[types] b WHERE a.[system_type_id]=b.[system_type_id] AND"
-                        + " a.[function_id]=";
+                            + " [sys].[types] b WHERE a.[system_type_id]=b.[system_type_id] AND"
+                            + " a.[function_id]=";
             try {
                 stmt = conn.createStatement();
                 rs = stmt.executeQuery(sql + ps.getFunctionId());
