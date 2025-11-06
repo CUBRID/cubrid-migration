@@ -40,6 +40,8 @@ import com.cubrid.cubridmigration.cubrid.stmt.handler.BlobHandler;
 import com.cubrid.cubridmigration.cubrid.stmt.handler.ClobHandler;
 import com.cubrid.cubridmigration.cubrid.stmt.handler.DateHandler;
 import com.cubrid.cubridmigration.cubrid.stmt.handler.DateTimeHandler;
+import com.cubrid.cubridmigration.cubrid.stmt.handler.DateTimeLTZHandler;
+import com.cubrid.cubridmigration.cubrid.stmt.handler.DateTimeTZHandler;
 import com.cubrid.cubridmigration.cubrid.stmt.handler.DefaultHandler;
 import com.cubrid.cubridmigration.cubrid.stmt.handler.DoubleHandler;
 import com.cubrid.cubridmigration.cubrid.stmt.handler.FloatHandler;
@@ -48,6 +50,8 @@ import com.cubrid.cubridmigration.cubrid.stmt.handler.NumericHandler;
 import com.cubrid.cubridmigration.cubrid.stmt.handler.SetHandler;
 import com.cubrid.cubridmigration.cubrid.stmt.handler.SetterHandler;
 import com.cubrid.cubridmigration.cubrid.stmt.handler.TimestampHandler;
+import com.cubrid.cubridmigration.cubrid.stmt.handler.TimestampLTZHandler;
+import com.cubrid.cubridmigration.cubrid.stmt.handler.TimestampTZHandler;
 import com.cubrid.cubridmigration.cubrid.stmt.handler.VarBitHandler;
 import com.cubrid.cubridmigration.cubrid.stmt.handler.VarcharHandler;
 import java.sql.PreparedStatement;
@@ -80,6 +84,10 @@ public class CUBRIDParameterSetter {
         handlerMap.put(DataTypeConstant.CUBRID_DT_DATE, new DateHandler());
         handlerMap.put(DataTypeConstant.CUBRID_DT_DATETIME, new DateTimeHandler());
         handlerMap.put(DataTypeConstant.CUBRID_DT_TIMESTAMP, new TimestampHandler());
+        handlerMap.put(DataTypeConstant.CUBRID_DT_TIMESTAMPTZ, new TimestampTZHandler());
+        handlerMap.put(DataTypeConstant.CUBRID_DT_TIMESTAMPLTZ, new TimestampLTZHandler());
+        handlerMap.put(DataTypeConstant.CUBRID_DT_DATETIMETZ, new DateTimeTZHandler());
+        handlerMap.put(DataTypeConstant.CUBRID_DT_DATETIMELTZ, new DateTimeLTZHandler());
 
         handlerMap.put(DataTypeConstant.CUBRID_DT_FLOAT, new FloatHandler());
         handlerMap.put(DataTypeConstant.CUBRID_DT_DOUBLE, new DoubleHandler());
