@@ -342,6 +342,10 @@ public final class CUBRIDDataTypeHelper extends DBDataTypeHelper {
         TYPE_BYTES_MAP.put(DataTypeConstant.CUBRID_DT_TIME, 4);
         TYPE_BYTES_MAP.put(DataTypeConstant.CUBRID_DT_TIMESTAMP, 4);
         TYPE_BYTES_MAP.put(DataTypeConstant.CUBRID_DT_DATETIME, 8);
+        TYPE_BYTES_MAP.put(DataTypeConstant.CUBRID_DT_TIMESTAMPTZ, 8);
+        TYPE_BYTES_MAP.put(DataTypeConstant.CUBRID_DT_TIMESTAMPLTZ, 8);
+        TYPE_BYTES_MAP.put(DataTypeConstant.CUBRID_DT_DATETIMETZ, 12);
+        TYPE_BYTES_MAP.put(DataTypeConstant.CUBRID_DT_DATETIMELTZ, 12);
 
         // Ignore the LOB types
         TYPE_BYTES_MAP.put(DataTypeConstant.CUBRID_DT_FBO, 0);
