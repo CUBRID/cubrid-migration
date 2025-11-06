@@ -102,7 +102,6 @@ public class SourceNodeWriter {
             writeSourceSchemaNode(writer, config);
         }
 
-        writeSourceSchemaMapping(writer, config);
         writeSourceTables(writer, config);
         writeSourceSQLTables(writer, config);
         writeSourceSequences(writer, config);
@@ -241,26 +240,6 @@ public class SourceNodeWriter {
             }
             writer.writeEndElement(); // </sql_schema>
         }
-    }
-
-    private void writeSourceSchemaMapping(XMLStreamWriter writer, MigrationConfiguration config)
-            throws XMLStreamException {
-        writer.writeStartElement(TAG_SCHEMAS);
-        Catalog srcCatalog = config.getSrcCatalog();
-        if (srcCatalog != null) {
-            for (Schema schema : srcCatalog.getSchemas()) {
-                writer.writeEmptyElement(TAG_SCHEMA_INFO);
-                writer.writeAttribute(ATTR_SCHEMA_NAME, schema.getName());
-                writer.writeAttribute(ATTR_TARGET_SCHEMA, schema.getTargetSchemaName());
-            }
-        } else {
-            for (Schema schema : config.getScriptSchemaMapping().values()) {
-                writer.writeEmptyElement(TAG_SCHEMA_INFO);
-                writer.writeAttribute(ATTR_SCHEMA_NAME, schema.getName());
-                writer.writeAttribute(ATTR_TARGET_SCHEMA, schema.getTargetSchemaName());
-            }
-        }
-        writer.writeEndElement(); // </schemas>
     }
 
     private void writeSourceTables(XMLStreamWriter writer, MigrationConfiguration config)

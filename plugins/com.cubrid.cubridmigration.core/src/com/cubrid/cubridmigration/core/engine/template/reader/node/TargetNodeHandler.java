@@ -42,7 +42,6 @@ import com.cubrid.cubridmigration.core.dbobject.PartitionInfo;
 import com.cubrid.cubridmigration.core.dbobject.PartitionTable;
 import com.cubrid.cubridmigration.core.dbobject.PlcsqlFunction;
 import com.cubrid.cubridmigration.core.dbobject.PlcsqlProcedure;
-import com.cubrid.cubridmigration.core.dbobject.Schema;
 import com.cubrid.cubridmigration.core.dbobject.Sequence;
 import com.cubrid.cubridmigration.core.dbobject.Synonym;
 import com.cubrid.cubridmigration.core.dbobject.Table;
@@ -91,7 +90,6 @@ public class TargetNodeHandler extends DefaultHandler {
 
     private void initializeStartTagHandlers() {
         startTagHandlers.put(TAG_SCHEMA, attr -> schemaCache = new StringBuffer());
-        startTagHandlers.put(TAG_SCHEMA_INFO, this::parseTargetSchemaInfo);
         startTagHandlers.put(TAG_TABLE, this::parseTargetTable);
         startTagHandlers.put(TAG_COLUMN, this::parseTargetColumn);
         startTagHandlers.put(TAG_PK, this::parseTargetPK);
@@ -161,14 +159,6 @@ public class TargetNodeHandler extends DefaultHandler {
     }
 
     // startElement
-
-    private void parseTargetSchemaInfo(Attributes attributes) {
-        Schema schema = new Schema();
-        schema.setName(attributes.getValue(ATTR_SCHEMA_NAME));
-        schema.setTargetSchemaName(attributes.getValue(ATTR_TARGET_SCHEMA));
-        schema.setMigration(true);
-        config.addTargetSchemaList(schema);
-    }
 
     private void parseTargetTable(Attributes attributes) {
         targetTable = new Table();

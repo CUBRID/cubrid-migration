@@ -38,6 +38,7 @@ import com.cubrid.cubridmigration.core.engine.config.MigrationConfiguration;
 import com.cubrid.cubridmigration.core.engine.exception.ErrorMigrationTemplateException;
 import com.cubrid.cubridmigration.core.engine.template.writer.node.ConnectionsNodeWriter;
 import com.cubrid.cubridmigration.core.engine.template.writer.node.ParametersNodeWriter;
+import com.cubrid.cubridmigration.core.engine.template.writer.node.SchemasNodeWriter;
 import com.cubrid.cubridmigration.core.engine.template.writer.node.SourceNodeWriter;
 import com.cubrid.cubridmigration.core.engine.template.writer.node.TargetFileRepositoryNodeWriter;
 import com.cubrid.cubridmigration.core.engine.template.writer.node.TargetNodeWriter;
@@ -79,6 +80,7 @@ public final class MigrationTemplateWriter {
             writer.writeAttribute(ATTR_WIZARD_START_DATE_TIME, config.getWizardStartDateTime());
 
             new ConnectionsNodeWriter().write(writer, config);
+            new SchemasNodeWriter().write(writer, config);
             new TargetFileRepositoryNodeWriter().write(writer, config);
             new SourceNodeWriter().write(writer, config, saveSchema);
             new TargetNodeWriter().write(writer, config);

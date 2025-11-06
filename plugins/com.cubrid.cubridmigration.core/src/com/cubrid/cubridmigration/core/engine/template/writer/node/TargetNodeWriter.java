@@ -40,7 +40,6 @@ import com.cubrid.cubridmigration.core.dbobject.PartitionInfo;
 import com.cubrid.cubridmigration.core.dbobject.PartitionTable;
 import com.cubrid.cubridmigration.core.dbobject.PlcsqlFunction;
 import com.cubrid.cubridmigration.core.dbobject.PlcsqlProcedure;
-import com.cubrid.cubridmigration.core.dbobject.Schema;
 import com.cubrid.cubridmigration.core.dbobject.Sequence;
 import com.cubrid.cubridmigration.core.dbobject.Synonym;
 import com.cubrid.cubridmigration.core.dbobject.Table;
@@ -70,7 +69,6 @@ public class TargetNodeWriter {
         }
         writer.writeAttribute(ATTR_DB_TYPE, "cubrid");
 
-        writeTargetSchemaNodes(writer, config);
         writeTargetTableNodes(writer, config);
         writeTargetSequenceNodes(writer, config);
         writeTargetViewNodes(writer, config);
@@ -78,21 +76,6 @@ public class TargetNodeWriter {
         writeTargetPlcsqlProcedureNodes(writer, config);
         writeTargetPlcsqlFunctionNodes(writer, config);
         writer.writeEndElement(); // </target>
-    }
-
-    private void writeTargetSchemaNodes(XMLStreamWriter writer, MigrationConfiguration config)
-            throws XMLStreamException {
-        List<Schema> schemaList = config.getTargetSchemaList();
-        if (schemaList.isEmpty()) {
-            return;
-        }
-        writer.writeStartElement(TAG_SCHEMAS);
-        for (Schema schema : schemaList) {
-            writer.writeEmptyElement(TAG_SCHEMA_INFO);
-            writer.writeAttribute(ATTR_SCHEMA_NAME, schema.getName());
-            writer.writeAttribute(ATTR_TARGET_SCHEMA, schema.getTargetSchemaName());
-        }
-        writer.writeEndElement(); // </schemas>
     }
 
     private void writeTargetTableNodes(XMLStreamWriter writer, MigrationConfiguration config)

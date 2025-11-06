@@ -131,10 +131,10 @@ public final class TemplateTags {
     public static final String ATTR_REUSE_OID = "reuse_oid";
     public static final String ATTR_REVERSE = "reverse";
     public static final String ATTR_SCHEMA = "schema";
-    public static final String ATTR_SCHEMA_NAME = "schema_name";
     public static final String ATTR_SHARED = "shared";
     public static final String ATTR_SHARED_VALUE = "shared_value";
     public static final String ATTR_SIZE = "size";
+    public static final String ATTR_SOURCE = "source";
     public static final String ATTR_SOURCE_DDL = "source_ddl";
     public static final String ATTR_SOURCE_GRANTOR_NAME = "source_grantor_name";
     public static final String ATTR_SOURCE_OBJECT_OWNER = "source_object_owner";
@@ -202,7 +202,6 @@ public final class TemplateTags {
     public static final String TAG_PROCEDURES = "procedures";
     public static final String TAG_RANGE = "range";
     public static final String TAG_SCHEMA = "schema";
-    public static final String TAG_SCHEMA_INFO = "schema_info";
     public static final String TAG_SCHEMAS = "schemas";
     public static final String TAG_SEQUENCE = "sequence";
     public static final String TAG_SEQUENCES = "sequences";

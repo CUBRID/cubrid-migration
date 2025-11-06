@@ -35,6 +35,7 @@ import static com.cubrid.cubridmigration.core.engine.template.TemplateTags.*;
 import com.cubrid.cubridmigration.core.engine.config.MigrationConfiguration;
 import com.cubrid.cubridmigration.core.engine.template.reader.node.ConnectionsNodeHandler;
 import com.cubrid.cubridmigration.core.engine.template.reader.node.ParametersNodeHandler;
+import com.cubrid.cubridmigration.core.engine.template.reader.node.SchemasNodeHandler;
 import com.cubrid.cubridmigration.core.engine.template.reader.node.SourceNodeHandler;
 import com.cubrid.cubridmigration.core.engine.template.reader.node.TargetFileRepositoryNodeHandler;
 import com.cubrid.cubridmigration.core.engine.template.reader.node.TargetNodeHandler;
@@ -73,6 +74,9 @@ public final class MigrationTemplateHandler extends DefaultHandler {
             case TAG_CONNECTIONS:
                 handleConnections(attributes);
                 break;
+            case TAG_SCHEMAS:
+                handleSchemas(attributes);
+                break;
             case TAG_FILE_REPOSITORY:
                 handleTargetFileRepository(attributes);
                 break;
@@ -98,6 +102,7 @@ public final class MigrationTemplateHandler extends DefaultHandler {
         if (delegatingHandler != null) {
             delegatingHandler.endElement(uri, localName, qName);
             if (TAG_CONNECTIONS.equals(qName)
+                    || TAG_SCHEMAS.equals(qName)
                     || TAG_SOURCE.equals(qName)
                     || TAG_TARGET.equals(qName)) {
                 delegatingHandler = null;
@@ -116,6 +121,10 @@ public final class MigrationTemplateHandler extends DefaultHandler {
 
     public MigrationConfiguration getResult() {
         return config;
+    }
+
+    private void handleSchemas(Attributes attributes) {
+        delegatingHandler = new SchemasNodeHandler(config);
     }
 
     private void handleTargetFileRepository(Attributes attributes) {
