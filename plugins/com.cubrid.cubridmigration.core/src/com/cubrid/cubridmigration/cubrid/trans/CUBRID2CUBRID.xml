@@ -228,6 +228,58 @@
 	
 	<DataTypeMapping>
 		<SourceDataType>
+			<type>timestamptz</type>
+			<precision></precision>
+			<scale></scale>
+		</SourceDataType>
+		<TargetDataType>
+			<type>timestamptz</type>
+			<precision></precision>
+			<scale></scale>
+		</TargetDataType>
+	</DataTypeMapping>
+	
+	<DataTypeMapping>
+		<SourceDataType>
+			<type>timestampltz</type>
+			<precision></precision>
+			<scale></scale>
+		</SourceDataType>
+		<TargetDataType>
+			<type>timestampltz</type>
+			<precision></precision>
+			<scale></scale>
+		</TargetDataType>
+	</DataTypeMapping>
+	
+	<DataTypeMapping>
+		<SourceDataType>
+			<type>datetimetz</type>
+			<precision></precision>
+			<scale></scale>
+		</SourceDataType>
+		<TargetDataType>
+			<type>datetimetz</type>
+			<precision></precision>
+			<scale></scale>
+		</TargetDataType>
+	</DataTypeMapping>
+	
+	<DataTypeMapping>
+		<SourceDataType>
+			<type>datetimeltz</type>
+			<precision></precision>
+			<scale></scale>
+		</SourceDataType>
+		<TargetDataType>
+			<type>datetimeltz</type>
+			<precision></precision>
+			<scale></scale>
+		</TargetDataType>
+	</DataTypeMapping>
+	
+	<DataTypeMapping>
+		<SourceDataType>
 			<type>bit</type>
 			<precision>n</precision>
 			<scale></scale>
