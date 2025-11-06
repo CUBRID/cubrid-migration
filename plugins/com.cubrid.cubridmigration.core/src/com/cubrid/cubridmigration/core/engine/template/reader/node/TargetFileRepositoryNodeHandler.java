@@ -48,7 +48,7 @@ public class TargetFileRepositoryNodeHandler {
     public void processAttributes(Attributes attributes) {
         config.setFileRepositroyPath(attributes.getValue(ATTR_DIR));
         config.setTargetFileTimeZone(attributes.getValue(ATTR_TIMEZONE));
-        config.setOneTableOneFile(getBoolean(attributes.getValue(ATTR_ONETABLEONEFILE), false));
+        config.setOneTableOneFile(getBoolean(attributes.getValue(ATTR_ONE_TABLE_ONE_FILE), false));
         final String fileMaxSize = attributes.getValue(ATTR_FILE_MAX_SIZE);
         config.setMaxCountPerFile(fileMaxSize == null ? 0 : Integer.parseInt(fileMaxSize));
         config.setTargetFilePrefix(attributes.getValue(ATTR_OUTPUT_FILE_PREFIX));

@@ -92,7 +92,7 @@ public class SourceNodeHandler extends DefaultHandler {
         startTagHandlers.put(TAG_COLUMN, this::parseSourceColumn);
         startTagHandlers.put(TAG_FK, this::parseSourceFK);
         startTagHandlers.put(TAG_INDEX, this::parseSourceIndex);
-        startTagHandlers.put(TAG_SQLTABLE, this::parseSourceSQLTable);
+        startTagHandlers.put(TAG_SQL_TABLE, this::parseSourceSQLTable);
         startTagHandlers.put(TAG_STATEMENT, attr -> sqlStatement = new StringBuffer());
         startTagHandlers.put(TAG_VIEW, this::parseSourceView);
         startTagHandlers.put(TAG_SEQUENCE, this::parseSourceSequence);
@@ -118,7 +118,7 @@ public class SourceNodeHandler extends DefaultHandler {
         endTagHandlers.put(TAG_SCHEMA, this::handleEndSchema);
         endTagHandlers.put(TAG_SQL_SCHEMA, this::handleEndSqlSchema);
         endTagHandlers.put(TAG_TABLE, this::handleEndTable);
-        endTagHandlers.put(TAG_SQLTABLE, this::handleEndTable);
+        endTagHandlers.put(TAG_SQL_TABLE, this::handleEndTable);
         endTagHandlers.put(TAG_STATEMENT, this::handleEndStatement);
         endTagHandlers.put(TAG_CSV, this::handleEndCsv);
         endTagHandlers.put(TAG_SOURCE, this::handleEndSource);
@@ -176,26 +176,26 @@ public class SourceNodeHandler extends DefaultHandler {
         srcTableCfg.setMigrateData(getBoolean(attributes.getValue(ATTR_MIGRATE_DATA), true));
         srcTableCfg.setName(attributes.getValue(ATTR_NAME));
         srcTableCfg.setReplace(getBoolean(attributes.getValue(ATTR_REPLACE), false));
-        srcTableCfg.setTarget(attributes.getValue(ATTR_TARGET));
+        srcTableCfg.setTarget(attributes.getValue(ATTR_TARGET_NAME));
         srcTableCfg.setSqlBefore(attributes.getValue(ATTR_BEFORE_SQL));
         srcTableCfg.setSqlAfter(attributes.getValue(ATTR_AFTER_SQL));
-        srcTableCfg.setOwner(attributes.getValue(ATTR_OWNER));
+        srcTableCfg.setOwner(attributes.getValue(ATTR_SCHEMA));
         srcTableCfg.setTargetOwner(attributes.getValue(ATTR_TARGET_SCHEMA));
-        srcTableCfg.setChangeTableName(getBoolean(attributes.getValue(ATTR_CHANGE_NAME), false));
+        srcTableCfg.setChangeTableName(getBoolean(attributes.getValue(ATTR_RENAME), false));
 
         SourceEntryTableConfig setc = ((SourceEntryTableConfig) srcTableCfg);
         setc.setCreatePartition(getBoolean(attributes.getValue(ATTR_PARTITION), false));
         setc.setCreatePK(getBoolean(attributes.getValue(ATTR_PK), true));
         setc.setCondition(attributes.getValue(ATTR_CONDITION));
         setc.setEnableExpOpt(getBoolean(attributes.getValue(ATTR_EXP_OPT_COL), true));
-        setc.setStartFromTargetMax(getBoolean(attributes.getValue(ATTR_START_TAR_MAX), false));
+        setc.setStartFromTargetMax(getBoolean(attributes.getValue(ATTR_START_TARGET_MAX), false));
         setc.setComment(attributes.getValue(ATTR_COMMENT));
         config.addExpEntryTableCfg(setc);
     }
 
     private void parseSourceColumn(Attributes attributes) {
         String colName = attributes.getValue(ATTR_NAME);
-        srcTableCfg.addColumnConfig(colName, attributes.getValue(ATTR_TARGET), true);
+        srcTableCfg.addColumnConfig(colName, attributes.getValue(ATTR_TARGET_NAME), true);
         SourceColumnConfig scc = srcTableCfg.getColumnConfig(colName);
         scc.setNeedTrim(getBoolean(attributes.getValue(ATTR_TRIM), false));
         scc.setReplaceExpression(attributes.getValue(ATTR_REPLACE_EXPRESSION));
@@ -206,79 +206,83 @@ public class SourceNodeHandler extends DefaultHandler {
     private void parseSourceFK(Attributes attributes) {
         ((SourceEntryTableConfig) srcTableCfg)
                 .addFKConfig(
-                        attributes.getValue(ATTR_NAME), attributes.getValue(ATTR_TARGET), true);
+                        attributes.getValue(ATTR_NAME),
+                        attributes.getValue(ATTR_TARGET_NAME),
+                        true);
     }
 
     private void parseSourceIndex(Attributes attributes) {
         ((SourceEntryTableConfig) srcTableCfg)
                 .addIndexConfig(
-                        attributes.getValue(ATTR_NAME), attributes.getValue(ATTR_TARGET), true);
+                        attributes.getValue(ATTR_NAME),
+                        attributes.getValue(ATTR_TARGET_NAME),
+                        true);
     }
 
     private void parseSourceSQLTable(Attributes attributes) {
         srcTableCfg = new SourceSQLTableConfig();
+        srcTableCfg.setOwner(attributes.getValue(ATTR_SCHEMA));
         srcTableCfg.setName(attributes.getValue(ATTR_NAME));
-        srcTableCfg.setOwner(attributes.getValue(ATTR_OWNER));
         srcTableCfg.setCreateNewTable(getBoolean(attributes.getValue(ATTR_CREATE), true));
         srcTableCfg.setMigrateData(getBoolean(attributes.getValue(ATTR_MIGRATE_DATA), true));
         srcTableCfg.setReplace(getBoolean(attributes.getValue(ATTR_REPLACE), false));
-        srcTableCfg.setTarget(attributes.getValue(ATTR_TARGET));
+        srcTableCfg.setTarget(attributes.getValue(ATTR_TARGET_NAME));
         srcTableCfg.setTargetOwner(attributes.getValue(ATTR_TARGET_SCHEMA));
         config.addExpSQLTableCfg((SourceSQLTableConfig) srcTableCfg);
     }
 
     private void parseSourceView(Attributes attributes) {
         config.addExpViewCfg(
-                attributes.getValue(ATTR_OWNER),
+                attributes.getValue(ATTR_SCHEMA),
                 attributes.getValue(ATTR_NAME),
-                attributes.getValue(ATTR_TARGET),
-                attributes.getValue(ATTR_TARGET_OWNER),
+                attributes.getValue(ATTR_TARGET_NAME),
+                attributes.getValue(ATTR_TARGET_SCHEMA),
                 attributes.getValue(ATTR_COMMENT));
     }
 
     private void parseSourceSequence(Attributes attributes) {
         SourceSequenceConfig ssc =
                 config.addExpSerialCfg(
-                        attributes.getValue(ATTR_OWNER),
+                        attributes.getValue(ATTR_SCHEMA),
                         attributes.getValue(ATTR_NAME),
-                        attributes.getValue(ATTR_TARGET));
+                        attributes.getValue(ATTR_TARGET_NAME));
         ssc.setAutoSynchronizeStartValue(
                 getBoolean(attributes.getValue(ATTR_AUTO_SYNCHRONIZE_START_VALUE), true));
     }
 
     private void parseSourceSynonym(Attributes attributes) {
         config.addExpSynonymCfg(
-                attributes.getValue(ATTR_OWNER),
+                attributes.getValue(ATTR_SCHEMA),
                 attributes.getValue(ATTR_NAME),
-                attributes.getValue(ATTR_TARGET_OWNER),
-                attributes.getValue(ATTR_TARGET),
-                attributes.getValue(ATTR_SYNONYM_OBJECT_OWNER),
-                attributes.getValue(ATTR_SYNONYM_OBJECT),
-                attributes.getValue(ATTR_SYNONYM_OBJECT_TARGET_OWNER),
-                attributes.getValue(ATTR_SYNONYM_OBJECT_TARGET));
+                attributes.getValue(ATTR_TARGET_SCHEMA),
+                attributes.getValue(ATTR_TARGET_NAME),
+                attributes.getValue(ATTR_OBJECT_SCHEMA),
+                attributes.getValue(ATTR_OBJECT_NAME),
+                attributes.getValue(ATTR_TARGET_OBJECT_SCHEMA),
+                attributes.getValue(ATTR_TARGET_OBJECT_NAME));
     }
 
     private void parseSourceGrant(Attributes attributes) {
         config.addExpGrantCfg(
-                attributes.getValue(ATTR_OWNER),
+                attributes.getValue(ATTR_SCHEMA),
                 attributes.getValue(ATTR_NAME),
                 attributes.getValue(ATTR_GRANTOR),
                 attributes.getValue(ATTR_GRANTEE),
                 attributes.getValue(ATTR_OBJECT_NAME),
-                attributes.getValue(ATTR_OBJECT_OWNER),
-                attributes.getValue(ATTR_AUTH_TYPE),
-                getBoolean(attributes.getValue(ATTR_GRANTABLE), false),
-                attributes.getValue(ATTR_TARGET_OWNER),
+                attributes.getValue(ATTR_OBJECT_SCHEMA),
+                attributes.getValue(ATTR_PRIVILEGE),
+                getBoolean(attributes.getValue(ATTR_WITH_GRANT_OPTION), false),
+                attributes.getValue(ATTR_TARGET_SCHEMA),
                 attributes.getValue(ATTR_SOURCE_GRANTOR_NAME),
-                attributes.getValue(ATTR_SOURCE_OBJECT_OWNER));
+                attributes.getValue(ATTR_SOURCE_OBJECT_SCHEMA));
     }
 
     private void parseSourcePlcsqlFunction(Attributes attributes) {
         config.addExpPlcsqlFunctionCfg(
-                attributes.getValue(ATTR_OWNER),
-                attributes.getValue(ATTR_TARGET_OWNER),
+                attributes.getValue(ATTR_SCHEMA),
+                attributes.getValue(ATTR_TARGET_SCHEMA),
                 attributes.getValue(ATTR_NAME),
-                attributes.getValue(ATTR_TARGET),
+                attributes.getValue(ATTR_TARGET_NAME),
                 attributes.getValue(ATTR_AUTH_ID),
                 getBoolean(attributes.getValue(ATTR_AUTH_ID_CHANGED), false),
                 attributes.getValue(ATTR_SOURCE_DDL),
@@ -289,10 +293,10 @@ public class SourceNodeHandler extends DefaultHandler {
 
     private void parseSourcePlcsqlProcedure(Attributes attributes) {
         config.addExpPlcsqlProcedureCfg(
-                attributes.getValue(ATTR_OWNER),
-                attributes.getValue(ATTR_TARGET_OWNER),
+                attributes.getValue(ATTR_SCHEMA),
+                attributes.getValue(ATTR_TARGET_SCHEMA),
                 attributes.getValue(ATTR_NAME),
-                attributes.getValue(ATTR_TARGET),
+                attributes.getValue(ATTR_TARGET_NAME),
                 attributes.getValue(ATTR_AUTH_ID),
                 getBoolean(attributes.getValue(ATTR_AUTH_ID_CHANGED), false),
                 attributes.getValue(ATTR_SOURCE_DDL),
@@ -336,7 +340,7 @@ public class SourceNodeHandler extends DefaultHandler {
         srcCSV.setReplace(getBoolean(attributes.getValue(ATTR_REPLACE), false));
         srcCSV.setImportFirstRow(getBoolean(attributes.getValue(ATTR_IMPORT_FIRST_ROW), false));
         srcCSV.setName(attributes.getValue(ATTR_NAME));
-        srcCSV.setTarget(attributes.getValue(ATTR_TARGET));
+        srcCSV.setTarget(attributes.getValue(ATTR_TARGET_NAME));
     }
 
     private void parseSourceCSVColumn(Attributes attributes) {
@@ -344,7 +348,7 @@ public class SourceNodeHandler extends DefaultHandler {
         sccc.setCreate(getBoolean(attributes.getValue(ATTR_CREATE), true));
         sccc.setReplace(false);
         sccc.setName(attributes.getValue(ATTR_NAME));
-        sccc.setTarget(attributes.getValue(ATTR_TARGET));
+        sccc.setTarget(attributes.getValue(ATTR_TARGET_NAME));
         srcCSV.addColumn(sccc);
     }
 

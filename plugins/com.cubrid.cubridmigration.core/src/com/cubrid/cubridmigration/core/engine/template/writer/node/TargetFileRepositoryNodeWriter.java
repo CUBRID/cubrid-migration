@@ -52,7 +52,8 @@ public class TargetFileRepositoryNodeWriter {
         writer.writeAttribute(ATTR_ADD_SCHEMA, getBooleanString(config.isAddUserSchema()));
         writer.writeAttribute(ATTR_SPLIT_SCHEMA, getBooleanString(config.isSplitSchema()));
         writer.writeAttribute(ATTR_CREATE_USER_SQL, getBooleanString(config.isCreateUserSQL()));
-        writer.writeAttribute(ATTR_ONETABLEONEFILE, getBooleanString(config.isOneTableOneFile()));
+        writer.writeAttribute(
+                ATTR_ONE_TABLE_ONE_FILE, getBooleanString(config.isOneTableOneFile()));
         writer.writeAttribute(ATTR_DATA_FILE_FORMAT, String.valueOf(config.getDestType()));
         writer.writeAttribute(ATTR_OUTPUT_FILE_PREFIX, config.getTargetFilePrefix());
         writer.writeAttribute(ATTR_FILE_MAX_SIZE, String.valueOf(config.getMaxCountPerFile()));

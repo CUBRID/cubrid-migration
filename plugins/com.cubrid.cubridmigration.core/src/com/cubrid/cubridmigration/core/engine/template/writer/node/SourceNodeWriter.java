@@ -183,7 +183,7 @@ public class SourceNodeWriter {
             throws XMLStreamException {
         writer.writeStartElement(TAG_CSV);
         writer.writeAttribute(ATTR_NAME, scc.getName());
-        writer.writeAttribute(ATTR_TARGET, scc.getTarget());
+        writer.writeAttribute(ATTR_TARGET_NAME, scc.getTarget());
         writer.writeAttribute(ATTR_CREATE, getBooleanString(scc.isCreate()));
         writer.writeAttribute(ATTR_REPLACE, getBooleanString(scc.isReplace()));
         writer.writeAttribute(ATTR_IMPORT_FIRST_ROW, getBooleanString(scc.isImportFirstRow()));
@@ -191,7 +191,7 @@ public class SourceNodeWriter {
         for (SourceCSVColumnConfig sccc : scc.getColumnConfigs()) {
             writer.writeEmptyElement(TAG_CSV_COLUMN);
             writer.writeAttribute(ATTR_NAME, sccc.getName());
-            writer.writeAttribute(ATTR_TARGET, sccc.getTarget());
+            writer.writeAttribute(ATTR_TARGET_NAME, sccc.getTarget());
             writer.writeAttribute(ATTR_CREATE, getBooleanString(sccc.isCreate()));
         }
         writer.writeEndElement(); // </csv_columns>
@@ -266,15 +266,15 @@ public class SourceNodeWriter {
 
     private void writeTableAttributes(XMLStreamWriter writer, SourceEntryTableConfig setc)
             throws XMLStreamException {
+        writer.writeAttribute(ATTR_SCHEMA, setc.getOwner());
         writer.writeAttribute(ATTR_NAME, setc.getName());
-        writer.writeAttribute(ATTR_OWNER, setc.getOwner());
-        writer.writeAttribute(ATTR_TARGET, setc.getTarget());
         writer.writeAttribute(ATTR_TARGET_SCHEMA, setc.getTargetOwner());
-        writer.writeAttribute(ATTR_CHANGE_NAME, getBooleanString(setc.isChangeTableName()));
+        writer.writeAttribute(ATTR_TARGET_NAME, setc.getTarget());
         writer.writeAttribute(ATTR_CREATE, getBooleanString(setc.isCreateNewTable()));
-        writer.writeAttribute(ATTR_MIGRATE_DATA, getBooleanString(setc.isMigrateData()));
-        writer.writeAttribute(ATTR_REPLACE, getBooleanString(setc.isReplace()));
         writer.writeAttribute(ATTR_PK, getBooleanString(setc.isCreatePK()));
+        writer.writeAttribute(ATTR_MIGRATE_DATA, getBooleanString(setc.isMigrateData()));
+        writer.writeAttribute(ATTR_RENAME, getBooleanString(setc.isChangeTableName()));
+        writer.writeAttribute(ATTR_REPLACE, getBooleanString(setc.isReplace()));
         writer.writeAttribute(ATTR_PARTITION, getBooleanString(setc.isCreatePartition()));
         writer.writeAttribute(ATTR_CONDITION, setc.getCondition());
         writer.writeAttribute(ATTR_BEFORE_SQL, setc.getSqlBefore());
@@ -282,7 +282,7 @@ public class SourceNodeWriter {
         if (setc.isEnableExpOpt()) {
             writer.writeAttribute(ATTR_EXP_OPT_COL, getBooleanString(setc.isEnableExpOpt()));
             writer.writeAttribute(
-                    ATTR_START_TAR_MAX, getBooleanString(setc.isStartFromTargetMax()));
+                    ATTR_START_TARGET_MAX, getBooleanString(setc.isStartFromTargetMax()));
         }
         writer.writeAttribute(ATTR_COMMENT, setc.getComment());
     }
@@ -294,7 +294,7 @@ public class SourceNodeWriter {
         for (SourceColumnConfig scc : columnConfigList) {
             writer.writeEmptyElement(TAG_COLUMN);
             writer.writeAttribute(ATTR_NAME, scc.getName());
-            writer.writeAttribute(ATTR_TARGET, scc.getTarget());
+            writer.writeAttribute(ATTR_TARGET_NAME, scc.getTarget());
             writer.writeAttribute(ATTR_TRIM, getBooleanString(scc.isNeedTrim()));
             writer.writeAttribute(ATTR_REPLACE_EXPRESSION, scc.getReplaceExp());
             writer.writeAttribute(ATTR_USER_DATA_HANDLER, scc.getUserDataHandler());
@@ -313,12 +313,12 @@ public class SourceNodeWriter {
             for (SourceFKConfig fkc : fkConfigList) {
                 writer.writeEmptyElement(TAG_FK);
                 writer.writeAttribute(ATTR_NAME, fkc.getName());
-                writer.writeAttribute(ATTR_TARGET, fkc.getTarget());
+                writer.writeAttribute(ATTR_TARGET_NAME, fkc.getTarget());
             }
             for (SourceIndexConfig sic : indexConfigList) {
                 writer.writeEmptyElement(TAG_INDEX);
                 writer.writeAttribute(ATTR_NAME, sic.getName());
-                writer.writeAttribute(ATTR_TARGET, sic.getTarget());
+                writer.writeAttribute(ATTR_TARGET_NAME, sic.getTarget());
             }
             writer.writeEndElement(); // </constraints>
         }
@@ -330,17 +330,16 @@ public class SourceNodeWriter {
         if (exportSQLTables.isEmpty()) {
             return;
         }
-        writer.writeStartElement(TAG_SQLTABLES);
+        writer.writeStartElement(TAG_SQL_TABLES);
         for (SourceSQLTableConfig sstc : exportSQLTables) {
-            writer.writeStartElement(TAG_SQLTABLE);
-            writer.writeAttribute(ATTR_OWNER, sstc.getOwner());
-            writer.writeAttribute(ATTR_TARGET_SCHEMA, sstc.getTargetOwner());
+            writer.writeStartElement(TAG_SQL_TABLE);
+            writer.writeAttribute(ATTR_SCHEMA, sstc.getOwner());
             writer.writeAttribute(ATTR_NAME, sstc.getName());
+            writer.writeAttribute(ATTR_TARGET_SCHEMA, sstc.getTargetOwner());
+            writer.writeAttribute(ATTR_TARGET_NAME, sstc.getTarget());
             writer.writeAttribute(ATTR_CREATE, getBooleanString(sstc.isCreateNewTable()));
             writer.writeAttribute(ATTR_REPLACE, getBooleanString(sstc.isReplace()));
             writer.writeAttribute(ATTR_MIGRATE_DATA, getBooleanString(sstc.isMigrateData()));
-            writer.writeAttribute(ATTR_TARGET, sstc.getTarget());
-
             writer.writeStartElement(TAG_STATEMENT);
             writer.writeCharacters(sstc.getSql());
             writer.writeEndElement();
@@ -349,15 +348,15 @@ public class SourceNodeWriter {
             for (SourceColumnConfig scc : sstc.getColumnConfigList()) {
                 writer.writeEmptyElement(TAG_COLUMN);
                 writer.writeAttribute(ATTR_NAME, scc.getName());
-                writer.writeAttribute(ATTR_TARGET, scc.getTarget());
+                writer.writeAttribute(ATTR_TARGET_NAME, scc.getTarget());
                 writer.writeAttribute(ATTR_TRIM, getBooleanString(scc.isNeedTrim()));
                 writer.writeAttribute(ATTR_REPLACE_EXPRESSION, scc.getReplaceExp());
                 writer.writeAttribute(ATTR_USER_DATA_HANDLER, scc.getUserDataHandler());
             }
             writer.writeEndElement(); // </columns>
-            writer.writeEndElement(); // </sqltable>
+            writer.writeEndElement(); // </sql_table>
         }
-        writer.writeEndElement(); // </sqltables>
+        writer.writeEndElement(); // </sql_tables>
     }
 
     private void writeSourceSequences(XMLStreamWriter writer, MigrationConfiguration config)
@@ -370,9 +369,9 @@ public class SourceNodeWriter {
 
         for (SourceSequenceConfig sc : exportSerials) {
             writer.writeEmptyElement(TAG_SEQUENCE);
+            writer.writeAttribute(ATTR_SCHEMA, sc.getOwner());
             writer.writeAttribute(ATTR_NAME, sc.getName());
-            writer.writeAttribute(ATTR_OWNER, sc.getOwner());
-            writer.writeAttribute(ATTR_TARGET, sc.getTarget());
+            writer.writeAttribute(ATTR_TARGET_NAME, sc.getTarget());
             writer.writeAttribute(
                     ATTR_AUTO_SYNCHRONIZE_START_VALUE,
                     getBooleanString(sc.isAutoSynchronizeStartValue()));
@@ -389,14 +388,14 @@ public class SourceNodeWriter {
         writer.writeStartElement(TAG_SYNONYMS);
         for (SourceSynonymConfig sc : exportSynonyms) {
             writer.writeEmptyElement(TAG_SYNONYM);
+            writer.writeAttribute(ATTR_SCHEMA, sc.getOwner());
             writer.writeAttribute(ATTR_NAME, sc.getName());
-            writer.writeAttribute(ATTR_OWNER, sc.getOwner());
-            writer.writeAttribute(ATTR_TARGET, sc.getTarget());
-            writer.writeAttribute(ATTR_TARGET_OWNER, sc.getTargetOwner());
-            writer.writeAttribute(ATTR_SYNONYM_OBJECT, sc.getObjectName());
-            writer.writeAttribute(ATTR_SYNONYM_OBJECT_OWNER, sc.getObjectOwner());
-            writer.writeAttribute(ATTR_SYNONYM_OBJECT_TARGET, sc.getObjectTargetName());
-            writer.writeAttribute(ATTR_SYNONYM_OBJECT_TARGET_OWNER, sc.getObjectTargetOwner());
+            writer.writeAttribute(ATTR_TARGET_SCHEMA, sc.getTargetOwner());
+            writer.writeAttribute(ATTR_TARGET_NAME, sc.getTarget());
+            writer.writeAttribute(ATTR_OBJECT_SCHEMA, sc.getObjectOwner());
+            writer.writeAttribute(ATTR_OBJECT_NAME, sc.getObjectName());
+            writer.writeAttribute(ATTR_TARGET_OBJECT_SCHEMA, sc.getObjectTargetOwner());
+            writer.writeAttribute(ATTR_TARGET_OBJECT_NAME, sc.getObjectTargetName());
         }
         writer.writeEndElement(); // </synonyms>
     }
@@ -410,10 +409,10 @@ public class SourceNodeWriter {
         writer.writeStartElement(TAG_VIEWS);
         for (SourceViewConfig sc : exportViews) {
             writer.writeEmptyElement(TAG_VIEW);
+            writer.writeAttribute(ATTR_SCHEMA, sc.getOwner());
             writer.writeAttribute(ATTR_NAME, sc.getName());
-            writer.writeAttribute(ATTR_OWNER, sc.getOwner());
-            writer.writeAttribute(ATTR_TARGET, sc.getTarget());
-            writer.writeAttribute(ATTR_TARGET_OWNER, sc.getTargetOwner());
+            writer.writeAttribute(ATTR_TARGET_SCHEMA, sc.getTargetOwner());
+            writer.writeAttribute(ATTR_TARGET_NAME, sc.getTarget());
             writer.writeAttribute(ATTR_COMMENT, sc.getComment());
         }
         writer.writeEndElement(); // </views>
@@ -428,17 +427,17 @@ public class SourceNodeWriter {
         writer.writeStartElement(TAG_GRANTS);
         for (SourceGrantConfig sc : exportGrants) {
             writer.writeEmptyElement(TAG_GRANT);
+            writer.writeAttribute(ATTR_SCHEMA, sc.getOwner());
             writer.writeAttribute(ATTR_NAME, sc.getName());
-            writer.writeAttribute(ATTR_OWNER, sc.getOwner());
+            writer.writeAttribute(ATTR_TARGET_SCHEMA, sc.getTargetOwner());
             writer.writeAttribute(ATTR_GRANTOR, sc.getGrantorName());
             writer.writeAttribute(ATTR_GRANTEE, sc.getGranteeName());
             writer.writeAttribute(ATTR_OBJECT_NAME, sc.getClassName());
-            writer.writeAttribute(ATTR_OBJECT_OWNER, sc.getClassOwner());
-            writer.writeAttribute(ATTR_AUTH_TYPE, sc.getAuthType());
-            writer.writeAttribute(ATTR_GRANTABLE, getBooleanString(sc.isGrantable()));
-            writer.writeAttribute(ATTR_TARGET_OWNER, sc.getTargetOwner());
+            writer.writeAttribute(ATTR_OBJECT_SCHEMA, sc.getClassOwner());
+            writer.writeAttribute(ATTR_PRIVILEGE, sc.getAuthType());
+            writer.writeAttribute(ATTR_WITH_GRANT_OPTION, getBooleanString(sc.isGrantable()));
             writer.writeAttribute(ATTR_SOURCE_GRANTOR_NAME, sc.getSourceGrantorName());
-            writer.writeAttribute(ATTR_SOURCE_OBJECT_OWNER, sc.getSourceObjectOwner());
+            writer.writeAttribute(ATTR_SOURCE_OBJECT_SCHEMA, sc.getSourceObjectOwner());
         }
         writer.writeEndElement(); // </grants>
     }
@@ -494,10 +493,10 @@ public class SourceNodeWriter {
         writer.writeStartElement(TAG_PLCSQL_FUNCTIONS);
         for (SourcePlcsqlFunctionConfig sfc : functions) {
             writer.writeEmptyElement(TAG_PLCSQL_FUNCTION);
+            writer.writeAttribute(ATTR_SCHEMA, sfc.getOwner());
             writer.writeAttribute(ATTR_NAME, sfc.getName());
-            writer.writeAttribute(ATTR_OWNER, sfc.getOwner());
-            writer.writeAttribute(ATTR_TARGET, sfc.getTarget());
-            writer.writeAttribute(ATTR_TARGET_OWNER, sfc.getTargetOwner());
+            writer.writeAttribute(ATTR_TARGET_SCHEMA, sfc.getTargetOwner());
+            writer.writeAttribute(ATTR_TARGET_NAME, sfc.getTarget());
             writer.writeAttribute(ATTR_AUTH_ID, sfc.getAuthid());
             writer.writeAttribute(ATTR_AUTH_ID_CHANGED, getBooleanString(sfc.isAuthidChanged()));
             writer.writeAttribute(ATTR_SOURCE_DDL, sfc.getSourceDDL());
@@ -514,10 +513,10 @@ public class SourceNodeWriter {
         writer.writeStartElement(TAG_PLCSQL_PROCEDURES);
         for (SourcePlcsqlProcedureConfig spc : procedures) {
             writer.writeEmptyElement(TAG_PLCSQL_PROCEDURE);
+            writer.writeAttribute(ATTR_SCHEMA, spc.getOwner());
             writer.writeAttribute(ATTR_NAME, spc.getName());
-            writer.writeAttribute(ATTR_OWNER, spc.getOwner());
-            writer.writeAttribute(ATTR_TARGET, spc.getTarget());
-            writer.writeAttribute(ATTR_TARGET_OWNER, spc.getTargetOwner());
+            writer.writeAttribute(ATTR_TARGET_SCHEMA, spc.getTargetOwner());
+            writer.writeAttribute(ATTR_TARGET_NAME, spc.getTarget());
             writer.writeAttribute(ATTR_AUTH_ID, spc.getAuthid());
             writer.writeAttribute(ATTR_AUTH_ID_CHANGED, getBooleanString(spc.isAuthidChagned()));
             writer.writeAttribute(ATTR_SOURCE_DDL, spc.getSourceDDL());
