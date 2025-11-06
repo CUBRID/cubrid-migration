@@ -129,6 +129,42 @@ public class XMLDataParsingTask implements Runnable {
                                     MySQL2CUBRIDMigParas.UNPARSED_TIME);
                     return MySQL2CUBRIDMigParas.getReplacedTime(timeValue, sourceTz);
                 }
+            } else if (column.getDataType().equalsIgnoreCase("TIMESTAMPTZ")) {
+                try {
+                    return data; 
+                } catch (Exception ex) {
+                    String timestampValue =
+                            MySQL2CUBRIDMigParas.getMigrationParamter(
+                                    MySQL2CUBRIDMigParas.UNPARSED_TIMESTAMP);
+                    return MySQL2CUBRIDMigParas.getReplacedTimestamp(timestampValue, sourceTz);
+                }
+            } else if (column.getDataType().equalsIgnoreCase("TIMESTAMPLTZ")) {
+                try {
+                    return new Timestamp(CUBRIDTimeUtil.parseTimestamp(data, sourceTz));
+                } catch (Exception ex) {
+                    String timestampValue =
+                            MySQL2CUBRIDMigParas.getMigrationParamter(
+                                    MySQL2CUBRIDMigParas.UNPARSED_TIMESTAMP);
+                    return MySQL2CUBRIDMigParas.getReplacedTimestamp(timestampValue, sourceTz);
+                }
+            } else if (column.getDataType().equalsIgnoreCase("DATETIMETZ")) {
+                try {
+                    return data;
+                } catch (Exception ex) {
+                    String timestampValue =
+                            MySQL2CUBRIDMigParas.getMigrationParamter(
+                                    MySQL2CUBRIDMigParas.UNPARSED_TIMESTAMP);
+                    return MySQL2CUBRIDMigParas.getReplacedTimestamp(timestampValue, sourceTz);
+                }
+            } else if (column.getDataType().equalsIgnoreCase("DATETIMELTZ")) {
+                try {
+                    return new Timestamp(CUBRIDTimeUtil.parseTimestamp(data, sourceTz));
+                } catch (Exception ex) {
+                    String timestampValue =
+                            MySQL2CUBRIDMigParas.getMigrationParamter(
+                                    MySQL2CUBRIDMigParas.UNPARSED_TIMESTAMP);
+                    return MySQL2CUBRIDMigParas.getReplacedTimestamp(timestampValue, sourceTz);
+                }
             } else {
                 return data;
             }
