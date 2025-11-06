@@ -1,0 +1,92 @@
+/*
+ * Copyright (C) 2008 Search Solution Corporation.
+ * Copyright (C) 2016 CUBRID Corporation.
+ *
+ * Redistribution and use in source and binary forms, with or without modification,
+ * are permitted provided that the following conditions are met:
+ *
+ * - Redistributions of source code must retain the above copyright notice,
+ *   this list of conditions and the following disclaimer.
+ *
+ * - Redistributions in binary form must reproduce the above copyright notice,
+ *   this list of conditions and the following disclaimer in the documentation
+ *   and/or other materials provided with the distribution.
+ *
+ * - Neither the name of the <ORGANIZATION> nor the names of its contributors
+ *   may be used to endorse or promote products derived from this software without
+ *   specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
+ * IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+ * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+ * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA,
+ * OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
+ * OF SUCH DAMAGE.
+ *
+ */
+package com.cubrid.cubridmigration.cubrid.trans.converter;
+
+import com.cubrid.cubridmigration.core.datatype.DataTypeInstance;
+import com.cubrid.cubridmigration.core.engine.config.MigrationConfiguration;
+import com.cubrid.cubridmigration.core.trans.AbstractDataConverter;
+import com.cubrid.cubridmigration.core.trans.DBUtils;
+import com.cubrid.cubridmigration.cubrid.CUBRIDTimeUtil;
+import java.sql.Timestamp;
+import java.util.Calendar;
+
+public class TimestampTZConverter extends AbstractDataConverter {
+	
+    public Object convert(Object obj, DataTypeInstance dti, MigrationConfiguration config) {
+    	
+        if (obj == null) {
+            return null;
+        }
+
+        if (obj instanceof String) {
+            String strValue = (String) obj;
+            if (strValue.matches(".*[+-]\\d{2}:\\d{2}$") || strValue.matches(".*[+-]\\d{4}$")) {
+                return strValue;
+            }
+        }
+
+        Timestamp timestamp = null;
+        int nanoTime = 0;
+        
+        if (obj instanceof Timestamp) {
+            timestamp = (Timestamp) obj;
+            nanoTime = timestamp.getNanos();
+        } else if (obj instanceof java.util.Date) {
+            timestamp = new Timestamp(((java.util.Date) obj).getTime());
+        } else if (obj instanceof Calendar) {
+            timestamp = new Timestamp(((Calendar) obj).getTime().getTime());
+        } else {
+            try {
+                timestamp = new Timestamp(DBUtils.getDateFormat().parse(obj.toString()).getTime());
+            } catch (Exception e) {
+                e.getMessage();
+            }
+        }
+        
+        if (timestamp == null) {
+            try {
+                Long time = CUBRIDTimeUtil.parseTimestamp(
+                        obj.toString(), config.getSourceDatabaseTimeZone());
+                timestamp = new Timestamp(time);
+            } catch (Exception e1) {
+                throw new RuntimeException(
+                        "ERROR: could not convert:" + obj + " to CUBRID type TIMESTAMPTZ", e1);
+            }
+        }
+        
+        if (timestamp != null && nanoTime > 0) {
+            timestamp.setNanos(nanoTime);
+        }
+        
+        return timestamp;
+    }
+}
+
