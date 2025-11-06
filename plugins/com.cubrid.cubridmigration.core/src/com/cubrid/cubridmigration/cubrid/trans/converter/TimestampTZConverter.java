@@ -30,63 +30,52 @@
  */
 package com.cubrid.cubridmigration.cubrid.trans.converter;
 
+import com.cubrid.cubridmigration.core.common.DBUtils;
 import com.cubrid.cubridmigration.core.datatype.DataTypeInstance;
 import com.cubrid.cubridmigration.core.engine.config.MigrationConfiguration;
 import com.cubrid.cubridmigration.core.trans.AbstractDataConverter;
-import com.cubrid.cubridmigration.core.trans.DBUtils;
 import com.cubrid.cubridmigration.cubrid.CUBRIDTimeUtil;
 import java.sql.Timestamp;
+import java.text.ParseException;
 import java.util.Calendar;
 
 public class TimestampTZConverter extends AbstractDataConverter {
-	
+
     public Object convert(Object obj, DataTypeInstance dti, MigrationConfiguration config) {
-    	
-        if (obj == null) {
-            return null;
-        }
-
-        if (obj instanceof String) {
-            String strValue = (String) obj;
-            if (strValue.matches(".*[+-]\\d{2}:\\d{2}$") || strValue.matches(".*[+-]\\d{4}$")) {
-                return strValue;
-            }
-        }
-
-        Timestamp timestamp = null;
         int nanoTime = 0;
+        Long srcTime = null;
         
         if (obj instanceof Timestamp) {
-            timestamp = (Timestamp) obj;
+            Timestamp timestamp = (Timestamp) obj;
+            srcTime = timestamp.getTime();
             nanoTime = timestamp.getNanos();
         } else if (obj instanceof java.util.Date) {
-            timestamp = new Timestamp(((java.util.Date) obj).getTime());
+            java.util.Date date = (java.util.Date) obj;
+            srcTime = date.getTime();
         } else if (obj instanceof Calendar) {
-            timestamp = new Timestamp(((Calendar) obj).getTime().getTime());
+            Calendar calendar = (Calendar) obj;
+            srcTime = calendar.getTime().getTime();
         } else {
+            Exception ex = null;
             try {
-                timestamp = new Timestamp(DBUtils.getDateFormat().parse(obj.toString()).getTime());
+                srcTime =
+                        CUBRIDTimeUtil.parseTimestamp(
+                                obj.toString(), config.getSourceDatabaseTimeZone());
             } catch (Exception e) {
-                e.getMessage();
+                ex = e;
+            }
+            if (ex != null) {
+                try {
+                    srcTime = DBUtils.getDateFormat().parse(obj.toString()).getTime();
+                } catch (ParseException e1) {
+                    throw new RuntimeException(
+                            "ERROR: could not convert:" + obj + " to CUBRID type TIMESTAMPTZ", e1);
+                }
             }
         }
         
-        if (timestamp == null) {
-            try {
-                Long time = CUBRIDTimeUtil.parseTimestamp(
-                        obj.toString(), config.getSourceDatabaseTimeZone());
-                timestamp = new Timestamp(time);
-            } catch (Exception e1) {
-                throw new RuntimeException(
-                        "ERROR: could not convert:" + obj + " to CUBRID type TIMESTAMPTZ", e1);
-            }
-        }
-        
-        if (timestamp != null && nanoTime > 0) {
-            timestamp.setNanos(nanoTime);
-        }
-        
+        Timestamp timestamp = new Timestamp(srcTime);
+        timestamp.setNanos(nanoTime);
         return timestamp;
     }
 }
-

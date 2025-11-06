@@ -30,22 +30,18 @@
  */
 package com.cubrid.cubridmigration.cubrid.trans.converter;
 
+import com.cubrid.cubridmigration.core.common.DBUtils;
 import com.cubrid.cubridmigration.core.datatype.DataTypeInstance;
 import com.cubrid.cubridmigration.core.engine.config.MigrationConfiguration;
 import com.cubrid.cubridmigration.core.trans.AbstractDataConverter;
-import com.cubrid.cubridmigration.core.trans.DBUtils;
 import com.cubrid.cubridmigration.cubrid.CUBRIDTimeUtil;
 import java.sql.Timestamp;
+import java.text.ParseException;
 import java.util.Calendar;
 
 public class TimestampLTZConverter extends AbstractDataConverter {
 
     public Object convert(Object obj, DataTypeInstance dti, MigrationConfiguration config) {
-    	
-        if (obj == null) {
-            return null;
-        }
-
         int nanoTime = 0;
         Long srcTime = null;
         
@@ -60,20 +56,21 @@ public class TimestampLTZConverter extends AbstractDataConverter {
             Calendar calendar = (Calendar) obj;
             srcTime = calendar.getTime().getTime();
         } else {
+            Exception ex = null;
             try {
-                srcTime = DBUtils.getDateFormat().parse(obj.toString()).getTime();
+                srcTime =
+                        CUBRIDTimeUtil.parseTimestamp(
+                                obj.toString(), config.getSourceDatabaseTimeZone());
             } catch (Exception e) {
-                e.getMessage();
+                ex = e;
             }
-        }
-        
-        if (srcTime == null) {
-            try {
-                srcTime = CUBRIDTimeUtil.parseTimestamp(
-                        obj.toString(), config.getSourceDatabaseTimeZone());
-            } catch (Exception e1) {
-                throw new RuntimeException(
-                        "ERROR: could not convert:" + obj + " to CUBRID type TIMESTAMPLTZ", e1);
+            if (ex != null) {
+                try {
+                    srcTime = DBUtils.getDateFormat().parse(obj.toString()).getTime();
+                } catch (ParseException e1) {
+                    throw new RuntimeException(
+                            "ERROR: could not convert:" + obj + " to CUBRID type TIMESTAMPLTZ", e1);
+                }
             }
         }
         
