@@ -226,15 +226,16 @@ public final class TimeZoneConverterUtils {
     }
 
     private static OffsetDateTime tryParseWithZoneId(String text) {
-        int idx = text.lastIndexOf(' ');
+        String normalized = normalizeIsoSpacing(text);
+        int idx = normalized.lastIndexOf(' ');
         if (idx <= 0 || idx + 1 >= text.length()) {
             return null;
         }
-        String zoneIdStr = text.substring(idx + 1);
+        String zoneIdStr = normalized.substring(idx + 1);
         if (!isValidZoneId(zoneIdStr)) {
             return null;
         }
-        String dateTimePart = text.substring(0, idx);
+        String dateTimePart = normalized.substring(0, idx);
         for (DateTimeFormatter formatter : LOCAL_INPUT_FORMATTERS) {
             try {
                 LocalDateTime ldt = LocalDateTime.parse(dateTimePart, formatter);
@@ -252,10 +253,11 @@ public final class TimeZoneConverterUtils {
     }
 
     private static OffsetDateTime tryParseLocalDateTime(String text, TimeZone defaultTimeZone) {
+        String normalized = normalizeIsoSpacing(text);
         ZoneId zoneId = toZoneId(defaultTimeZone);
         for (DateTimeFormatter formatter : LOCAL_INPUT_FORMATTERS) {
             try {
-                LocalDateTime ldt = LocalDateTime.parse(text, formatter);
+                LocalDateTime ldt = LocalDateTime.parse(normalized, formatter);
                 return ldt.atZone(zoneId).toOffsetDateTime();
             } catch (DateTimeParseException ignore) {
             }
@@ -264,7 +266,7 @@ public final class TimeZoneConverterUtils {
         try {
             long timestamp =
                     CUBRIDTimeUtil.parseTimestamp(
-                            text, defaultTimeZone == null ? null : defaultTimeZone);
+                            normalized, defaultTimeZone == null ? null : defaultTimeZone);
             return OffsetDateTime.ofInstant(Instant.ofEpochMilli(timestamp), zoneId);
         } catch (ParseException ex) {
         }
@@ -293,19 +295,11 @@ public final class TimeZoneConverterUtils {
     }
 
     private static String normalizeIsoSpacing(String text) {
-        if (!text.contains("T") && text.indexOf(' ') > 0) {
-            int firstSpace = text.indexOf(' ');
-            String before = text.substring(0, firstSpace);
-            String after = text.substring(firstSpace + 1);
-            if (after.length() >= 5) {
-                return before + "T" + after;
-            }
+        String normalized = text;
+        if (!normalized.contains("T")) {
+            normalized = normalized.replaceFirst(" ", "T");
         }
-        if (text.matches(".*[+-]\\d{4}$")) {
-            String base = text.substring(0, text.length() - 5);
-            String offsetPart = text.substring(text.length() - 5);
-            return base + offsetPart.substring(0, 3) + ":" + offsetPart.substring(3);
-        }
-        return text;
+        normalized = normalized.replaceAll("([+-]\\d{2})(\\d{2})$", "$1:$2");
+        return normalized;
     }
 }

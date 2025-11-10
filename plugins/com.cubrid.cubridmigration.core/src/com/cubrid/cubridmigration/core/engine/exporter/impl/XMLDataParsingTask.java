@@ -46,8 +46,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.TimeZone;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * ImportTask responses to parse data to record and import to target database.
@@ -56,7 +54,6 @@ import java.util.logging.Logger;
  * @version 1.0 - 2011-8-23 created by Kevin Cao
  */
 public class XMLDataParsingTask implements Runnable {
-    private static final Logger LOG = Logger.getLogger(XMLDataParsingTask.class.getName());
 
     private final String tableName;
     private final List<List<String[]>> recordMaps;
@@ -132,8 +129,7 @@ public class XMLDataParsingTask implements Runnable {
                 }
             } else if (column.getDataType().equalsIgnoreCase("TIMESTAMPTZ")) {
                 try {
-                    return TimeZoneConverterUtils.formatWithOffset(
-                            TimeZoneConverterUtils.parseToOffsetDateTime(data, sourceTz));
+                    return parseTzValue(data, sourceTz);
                 } catch (Exception ex) {
                     String timestampValue =
                             MySQL2CUBRIDMigParas.getMigrationParamter(
@@ -142,9 +138,7 @@ public class XMLDataParsingTask implements Runnable {
                 }
             } else if (column.getDataType().equalsIgnoreCase("TIMESTAMPLTZ")) {
                 try {
-                    return TimeZoneConverterUtils.formatWithOffset(
-                            TimeZoneConverterUtils.toUtc(
-                                    TimeZoneConverterUtils.parseToOffsetDateTime(data, sourceTz)));
+                    return parseLtzValue(data, sourceTz);
                 } catch (Exception ex) {
                     String timestampValue =
                             MySQL2CUBRIDMigParas.getMigrationParamter(
@@ -153,8 +147,7 @@ public class XMLDataParsingTask implements Runnable {
                 }
             } else if (column.getDataType().equalsIgnoreCase("DATETIMETZ")) {
                 try {
-                    return TimeZoneConverterUtils.formatWithOffset(
-                            TimeZoneConverterUtils.parseToOffsetDateTime(data, sourceTz));
+                    return parseTzValue(data, sourceTz);
                 } catch (Exception ex) {
                     String timestampValue =
                             MySQL2CUBRIDMigParas.getMigrationParamter(
@@ -163,9 +156,7 @@ public class XMLDataParsingTask implements Runnable {
                 }
             } else if (column.getDataType().equalsIgnoreCase("DATETIMELTZ")) {
                 try {
-                    return TimeZoneConverterUtils.formatWithOffset(
-                            TimeZoneConverterUtils.toUtc(
-                                    TimeZoneConverterUtils.parseToOffsetDateTime(data, sourceTz)));
+                    return parseLtzValue(data, sourceTz);
                 } catch (Exception ex) {
                     String timestampValue =
                             MySQL2CUBRIDMigParas.getMigrationParamter(
@@ -217,7 +208,18 @@ public class XMLDataParsingTask implements Runnable {
             }
             oneNewRecord.processRecords(tableName, records);
         } catch (Exception ex) {
-            LOG.log(Level.SEVERE, "", ex);
+            throw new RuntimeException(ex);
         }
+    }
+
+    private String parseTzValue(String data, TimeZone sourceTz) {
+        return TimeZoneConverterUtils.formatWithOffset(
+                TimeZoneConverterUtils.parseToOffsetDateTime(data, sourceTz));
+    }
+
+    private String parseLtzValue(String data, TimeZone sourceTz) {
+        return TimeZoneConverterUtils.formatWithOffset(
+                TimeZoneConverterUtils.toUtc(
+                        TimeZoneConverterUtils.parseToOffsetDateTime(data, sourceTz)));
     }
 }

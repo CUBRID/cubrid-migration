@@ -33,7 +33,6 @@ package com.cubrid.cubridmigration.cubrid.stmt.handler;
 import com.cubrid.cubridmigration.core.dbobject.Record.ColumnValue;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.sql.Timestamp;
 import java.sql.Types;
 
 public class DateTimeLTZHandler extends DefaultHandler {
@@ -41,14 +40,10 @@ public class DateTimeLTZHandler extends DefaultHandler {
     public void handle(PreparedStatement stmt, int idx, ColumnValue columnValue)
             throws SQLException {
         Object value = columnValue.getValue();
-        if ("".equals(value)) {
+        if (value == null || "".equals(value)) {
             stmt.setNull(idx + 1, Types.NULL);
             return;
         }
-        if (value instanceof Timestamp) {
-            stmt.setTimestamp(idx + 1, (Timestamp) value);
-            return;
-        }
-        stmt.setString(idx + 1, String.valueOf(value));
+        stmt.setString(idx + 1, value.toString());
     }
 }
