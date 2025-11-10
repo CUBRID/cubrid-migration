@@ -30,13 +30,13 @@
  */
 package com.cubrid.cubridmigration.core.engine.exporter.impl;
 
-import com.cubrid.common.log.LogUtil;
 import com.cubrid.cubridmigration.core.dbobject.Column;
 import com.cubrid.cubridmigration.core.dbobject.Record;
 import com.cubrid.cubridmigration.core.dbobject.Table;
 import com.cubrid.cubridmigration.core.engine.RecordExportedListener;
 import com.cubrid.cubridmigration.core.engine.config.MigrationConfiguration;
 import com.cubrid.cubridmigration.cubrid.CUBRIDTimeUtil;
+import com.cubrid.cubridmigration.core.common.TimeZoneConverterUtils;
 import com.cubrid.cubridmigration.mysql.MySQLDataTypeHelper;
 import com.cubrid.cubridmigration.mysql.trans.MySQL2CUBRIDMigParas;
 import java.io.UnsupportedEncodingException;
@@ -46,7 +46,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.TimeZone;
-import org.slf4j.Logger;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * ImportTask responses to parse data to record and import to target database.
@@ -55,7 +56,7 @@ import org.slf4j.Logger;
  * @version 1.0 - 2011-8-23 created by Kevin Cao
  */
 public class XMLDataParsingTask implements Runnable {
-    private static final Logger LOG = LogUtil.getLogger(XMLDataParsingTask.class);
+    private static final Logger LOG = Logger.getLogger(XMLDataParsingTask.class.getName());
 
     private final String tableName;
     private final List<List<String[]>> recordMaps;
@@ -131,7 +132,8 @@ public class XMLDataParsingTask implements Runnable {
                 }
             } else if (column.getDataType().equalsIgnoreCase("TIMESTAMPTZ")) {
                 try {
-                    return data; 
+                    return TimeZoneConverterUtils.formatWithOffset(
+                            TimeZoneConverterUtils.parseToOffsetDateTime(data, sourceTz));
                 } catch (Exception ex) {
                     String timestampValue =
                             MySQL2CUBRIDMigParas.getMigrationParamter(
@@ -140,7 +142,9 @@ public class XMLDataParsingTask implements Runnable {
                 }
             } else if (column.getDataType().equalsIgnoreCase("TIMESTAMPLTZ")) {
                 try {
-                    return new Timestamp(CUBRIDTimeUtil.parseTimestamp(data, sourceTz));
+                    return TimeZoneConverterUtils.formatWithOffset(
+                            TimeZoneConverterUtils.toUtc(
+                                    TimeZoneConverterUtils.parseToOffsetDateTime(data, sourceTz)));
                 } catch (Exception ex) {
                     String timestampValue =
                             MySQL2CUBRIDMigParas.getMigrationParamter(
@@ -149,7 +153,8 @@ public class XMLDataParsingTask implements Runnable {
                 }
             } else if (column.getDataType().equalsIgnoreCase("DATETIMETZ")) {
                 try {
-                    return data;
+                    return TimeZoneConverterUtils.formatWithOffset(
+                            TimeZoneConverterUtils.parseToOffsetDateTime(data, sourceTz));
                 } catch (Exception ex) {
                     String timestampValue =
                             MySQL2CUBRIDMigParas.getMigrationParamter(
@@ -158,7 +163,9 @@ public class XMLDataParsingTask implements Runnable {
                 }
             } else if (column.getDataType().equalsIgnoreCase("DATETIMELTZ")) {
                 try {
-                    return new Timestamp(CUBRIDTimeUtil.parseTimestamp(data, sourceTz));
+                    return TimeZoneConverterUtils.formatWithOffset(
+                            TimeZoneConverterUtils.toUtc(
+                                    TimeZoneConverterUtils.parseToOffsetDateTime(data, sourceTz)));
                 } catch (Exception ex) {
                     String timestampValue =
                             MySQL2CUBRIDMigParas.getMigrationParamter(
@@ -210,7 +217,7 @@ public class XMLDataParsingTask implements Runnable {
             }
             oneNewRecord.processRecords(tableName, records);
         } catch (Exception ex) {
-            LOG.error("", ex);
+            LOG.log(Level.SEVERE, "", ex);
         }
     }
 }
