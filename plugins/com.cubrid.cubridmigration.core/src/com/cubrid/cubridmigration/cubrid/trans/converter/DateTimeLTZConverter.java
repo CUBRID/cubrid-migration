@@ -30,49 +30,23 @@
  */
 package com.cubrid.cubridmigration.cubrid.trans.converter;
 
-import com.cubrid.cubridmigration.core.common.DBUtils;
 import com.cubrid.cubridmigration.core.datatype.DataTypeInstance;
 import com.cubrid.cubridmigration.core.engine.config.MigrationConfiguration;
 import com.cubrid.cubridmigration.core.trans.AbstractDataConverter;
-import com.cubrid.cubridmigration.cubrid.CUBRIDTimeUtil;
-import java.sql.Timestamp;
-import java.text.ParseException;
-import java.util.Calendar;
+import com.cubrid.cubridmigration.core.common.TimeZoneConverterUtils;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 
 public class DateTimeLTZConverter extends AbstractDataConverter {
 
     public Object convert(Object obj, DataTypeInstance dti, MigrationConfiguration config) {
-        if (obj instanceof Timestamp) {
-            return obj;
+        OffsetDateTime offsetDateTime =
+                TimeZoneConverterUtils.parseToOffsetDateTime(
+                        obj, config.getSourceDatabaseTimeZone());
+        if (offsetDateTime == null) {
+            return null;
         }
-
-        if (obj instanceof java.util.Date) {
-            return new Timestamp(((java.util.Date) obj).getTime());
-        }
-
-        if (obj instanceof Calendar) {
-            return new Timestamp(((Calendar) obj).getTime().getTime());
-        }
-
-        Object value = null;
-        Exception ex = null;
-        try {
-            value =
-                    new Timestamp(
-                            CUBRIDTimeUtil.parseTimestamp(
-                                    obj.toString(), config.getSourceDatabaseTimeZone()));
-        } catch (Exception e) {
-            ex = e;
-        }
-        if (ex != null) {
-            try {
-                value = new Timestamp(DBUtils.getDateFormat().parse(obj.toString()).getTime());
-            } catch (ParseException e1) {
-                throw new RuntimeException(
-                        "ERROR: could not convert:" + obj + " to CUBRID type DATETIMELTZ", e1);
-            }
-        }
-
-        return value;
+        OffsetDateTime utc = offsetDateTime.withOffsetSameInstant(ZoneOffset.UTC);
+        return TimeZoneConverterUtils.formatWithOffset(utc);
     }
 }

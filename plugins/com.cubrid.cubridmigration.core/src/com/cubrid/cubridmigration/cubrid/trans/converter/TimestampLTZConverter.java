@@ -30,54 +30,23 @@
  */
 package com.cubrid.cubridmigration.cubrid.trans.converter;
 
-import com.cubrid.cubridmigration.core.common.DBUtils;
 import com.cubrid.cubridmigration.core.datatype.DataTypeInstance;
 import com.cubrid.cubridmigration.core.engine.config.MigrationConfiguration;
 import com.cubrid.cubridmigration.core.trans.AbstractDataConverter;
-import com.cubrid.cubridmigration.cubrid.CUBRIDTimeUtil;
-import java.sql.Timestamp;
-import java.text.ParseException;
-import java.util.Calendar;
+import com.cubrid.cubridmigration.core.common.TimeZoneConverterUtils;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 
 public class TimestampLTZConverter extends AbstractDataConverter {
 
     public Object convert(Object obj, DataTypeInstance dti, MigrationConfiguration config) {
-        int nanoTime = 0;
-        Long srcTime = null;
-        
-        if (obj instanceof Timestamp) {
-            Timestamp timestamp = (Timestamp) obj;
-            srcTime = timestamp.getTime();
-            nanoTime = timestamp.getNanos();
-        } else if (obj instanceof java.util.Date) {
-            java.util.Date date = (java.util.Date) obj;
-            srcTime = date.getTime();
-        } else if (obj instanceof Calendar) {
-            Calendar calendar = (Calendar) obj;
-            srcTime = calendar.getTime().getTime();
-        } else {
-            Exception ex = null;
-            try {
-                srcTime =
-                        CUBRIDTimeUtil.parseTimestamp(
-                                obj.toString(), config.getSourceDatabaseTimeZone());
-            } catch (Exception e) {
-                ex = e;
-            }
-            if (ex != null) {
-                try {
-                    srcTime = DBUtils.getDateFormat().parse(obj.toString()).getTime();
-                } catch (ParseException e1) {
-                    throw new RuntimeException(
-                            "ERROR: could not convert:" + obj + " to CUBRID type TIMESTAMPLTZ", e1);
-                }
-            }
+        OffsetDateTime offsetDateTime =
+                TimeZoneConverterUtils.parseToOffsetDateTime(
+                        obj, config.getSourceDatabaseTimeZone());
+        if (offsetDateTime == null) {
+            return null;
         }
-        
-        long newTime = srcTime - config.getDetaRawOffset();
-        Timestamp timestamp = new Timestamp(newTime);
-        timestamp.setNanos(nanoTime);
-        
-        return timestamp;
+        OffsetDateTime utc = offsetDateTime.withOffsetSameInstant(ZoneOffset.UTC);
+        return TimeZoneConverterUtils.formatWithOffset(utc);
     }
 }

@@ -45,6 +45,10 @@ public class DateTimeLTZHandler extends DefaultHandler {
             stmt.setNull(idx + 1, Types.NULL);
             return;
         }
-        stmt.setTimestamp(idx + 1, Timestamp.valueOf(String.valueOf(value)));
+        if (value instanceof Timestamp) {
+            stmt.setTimestamp(idx + 1, (Timestamp) value);
+            return;
+        }
+        stmt.setString(idx + 1, String.valueOf(value));
     }
 }
