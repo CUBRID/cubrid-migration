@@ -37,14 +37,29 @@ import com.cubrid.cubridmigration.core.common.TimeZoneConverterUtils;
 import java.time.OffsetDateTime;
 
 public class TimestampTZConverter extends AbstractDataConverter {
-
+	
     public Object convert(Object obj, DataTypeInstance dti, MigrationConfiguration config) {
-        OffsetDateTime offsetDateTime =
-                TimeZoneConverterUtils.parseToOffsetDateTime(
-                        obj, config.getSourceDatabaseTimeZone());
-        if (offsetDateTime == null) {
-            return null;
+
+        if (obj instanceof OffsetDateTime) {
+            return TimeZoneConverterUtils.formatWithOffset((OffsetDateTime) obj);
         }
-        return TimeZoneConverterUtils.formatWithOffset(offsetDateTime);
+
+        Object value = null; 
+
+        try {
+            OffsetDateTime offsetDateTime =
+                    TimeZoneConverterUtils.parseToOffsetDateTime(
+                            obj, config.getSourceDatabaseTimeZone());
+            if (offsetDateTime == null) {
+                return null;
+            }
+
+            value = TimeZoneConverterUtils.formatWithOffset(offsetDateTime);
+        } catch (IllegalArgumentException ex) {
+            throw new RuntimeException(
+                    "ERROR: could not convert:" + obj + " to CUBRID type TIMESTAMPTZ", ex);
+        }
+
+        return value;
     }
 }

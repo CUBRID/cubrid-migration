@@ -38,15 +38,31 @@ import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 
 public class TimestampLTZConverter extends AbstractDataConverter {
-
+	
     public Object convert(Object obj, DataTypeInstance dti, MigrationConfiguration config) {
-        OffsetDateTime offsetDateTime =
-                TimeZoneConverterUtils.parseToOffsetDateTime(
-                        obj, config.getSourceDatabaseTimeZone());
-        if (offsetDateTime == null) {
-            return null;
+
+        if (obj instanceof OffsetDateTime) {
+            OffsetDateTime utc = ((OffsetDateTime) obj).withOffsetSameInstant(ZoneOffset.UTC);
+            return TimeZoneConverterUtils.formatWithOffset(utc);
         }
-        OffsetDateTime utc = offsetDateTime.withOffsetSameInstant(ZoneOffset.UTC);
-        return TimeZoneConverterUtils.formatWithOffset(utc);
+
+        Object value = null; 
+
+        try {
+            OffsetDateTime offsetDateTime =
+                    TimeZoneConverterUtils.parseToOffsetDateTime(
+                            obj, config.getSourceDatabaseTimeZone());
+            if (offsetDateTime == null) {
+                return null;
+            }
+
+            OffsetDateTime utc = offsetDateTime.withOffsetSameInstant(ZoneOffset.UTC);
+            value = TimeZoneConverterUtils.formatWithOffset(utc);
+        } catch (IllegalArgumentException ex) {
+            throw new RuntimeException(
+                    "ERROR: could not convert:" + obj + " to CUBRID type TIMESTAMPLTZ", ex);
+        }
+
+        return value;
     }
 }
