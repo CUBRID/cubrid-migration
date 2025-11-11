@@ -29,8 +29,11 @@
 package com.cubrid.cubridmigration.core.common;
 
 import com.cubrid.cubridmigration.cubrid.CUBRIDTimeUtil;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.sql.Timestamp;
 import java.text.ParseException;
+import java.time.DateTimeException;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
@@ -135,6 +138,14 @@ public final class TimeZoneConverterUtils {
         }
         if (value instanceof ZonedDateTime) {
             return ((ZonedDateTime) value).toOffsetDateTime();
+        }
+        OffsetDateTime cubridTz = tryConvertCUBRIDTimestamptz(value);
+        if (cubridTz != null) {
+            return cubridTz;
+        }
+        OffsetDateTime cubridTs = tryConvertCUBRIDTimestamp(value, defaultTimeZone);
+        if (cubridTs != null) {
+            return cubridTs;
         }
         if (value instanceof Timestamp) {
             return toOffsetDateTime(((Timestamp) value).toInstant(), defaultTimeZone);
@@ -301,5 +312,70 @@ public final class TimeZoneConverterUtils {
         }
         normalized = normalized.replaceAll("([+-]\\d{2})(\\d{2})$", "$1:$2");
         return normalized;
+    }
+
+    private static OffsetDateTime tryConvertCUBRIDTimestamptz(Object value) {
+        if (value == null) {
+            return null;
+        }
+        if (!"cubrid.sql.CUBRIDTimestamptz".equals(value.getClass().getName())) {
+            return null;
+        }
+        try {
+            Method getUnixTime = value.getClass().getMethod("getUnixTime");
+            Method getTimezone = value.getClass().getMethod("getTimezone");
+
+            long utcMillis = ((Number) getUnixTime.invoke(value)).longValue();
+            OffsetDateTime utc =
+                    OffsetDateTime.ofInstant(Instant.ofEpochMilli(utcMillis), ZoneOffset.UTC);
+
+            Object tzObj = getTimezone.invoke(value);
+            String timezone = tzObj == null ? null : tzObj.toString();
+            if (timezone == null || timezone.isEmpty()) {
+                return utc;
+            }
+
+            try {
+                ZoneOffset offset = ZoneOffset.of(timezone);
+                return utc.withOffsetSameInstant(offset);
+            } catch (DateTimeException ex) {
+                try {
+                    ZoneId zoneId = ZoneId.of(timezone);
+                    return utc.atZoneSameInstant(zoneId).toOffsetDateTime();
+                } catch (DateTimeException ignored) {
+                    return utc;
+                }
+            }
+        } catch (ReflectiveOperationException | ClassCastException ex) {
+            return null;
+        }
+    }
+
+    private static OffsetDateTime tryConvertCUBRIDTimestamp(
+            Object value, TimeZone defaultTimeZone) {
+        if (value == null) {
+            return null;
+        }
+        if (!(value instanceof Timestamp)) {
+            return null;
+        }
+        if (!"cubrid.sql.CUBRIDTimestamp".equals(value.getClass().getName())) {
+            return null;
+        }
+        OffsetDateTime result =
+                toOffsetDateTime(((Timestamp) value).toInstant(), defaultTimeZone);
+        try {
+            Field field = value.getClass().getDeclaredField("isDatetime");
+            field.setAccessible(true);
+            boolean isDatetime = field.getBoolean(value);
+            if (!isDatetime) {
+                return result.withOffsetSameInstant(ZoneOffset.UTC);
+            }
+        } catch (IllegalAccessException ignored) {
+            return result;
+        } catch (NoSuchFieldException ex) {
+            return result;
+        }
+        return result;
     }
 }
