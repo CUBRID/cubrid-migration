@@ -239,9 +239,10 @@ public final class TimeZoneConverterUtils {
     private static OffsetDateTime tryParseWithZoneId(String text) {
         String normalized = normalizeIsoSpacing(text);
         int idx = normalized.lastIndexOf(' ');
-        if (idx <= 0 || idx + 1 >= text.length()) {
+        if (idx <= 0 || idx + 1 >= normalized.length()) {
             return null;
         }
+        
         String zoneIdStr = normalized.substring(idx + 1);
         if (!isValidZoneId(zoneIdStr)) {
             return null;
