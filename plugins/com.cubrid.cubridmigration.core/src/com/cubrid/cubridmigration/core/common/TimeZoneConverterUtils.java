@@ -29,6 +29,7 @@
 package com.cubrid.cubridmigration.core.common;
 
 import com.cubrid.cubridmigration.cubrid.CUBRIDTimeUtil;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.sql.Timestamp;
@@ -126,8 +127,7 @@ public final class TimeZoneConverterUtils {
                         .toFormatter(Locale.US)
             };
 
-    private TimeZoneConverterUtils() {
-    }
+    private TimeZoneConverterUtils() {}
 
     public static OffsetDateTime parseToOffsetDateTime(Object value, TimeZone defaultTimeZone) {
         if (value == null) {
@@ -155,7 +155,8 @@ public final class TimeZoneConverterUtils {
         }
         if (value instanceof Calendar) {
             Calendar calendar = (Calendar) value;
-            return OffsetDateTime.ofInstant(calendar.toInstant(), calendar.getTimeZone().toZoneId());
+            return OffsetDateTime.ofInstant(
+                    calendar.toInstant(), calendar.getTimeZone().toZoneId());
         }
         if (value instanceof Number) {
             Instant instant = Instant.ofEpochMilli(((Number) value).longValue());
@@ -242,7 +243,7 @@ public final class TimeZoneConverterUtils {
         if (idx <= 0 || idx + 1 >= normalized.length()) {
             return null;
         }
-        
+
         String zoneIdStr = normalized.substring(idx + 1);
         if (!isValidZoneId(zoneIdStr)) {
             return null;
@@ -256,9 +257,9 @@ public final class TimeZoneConverterUtils {
             }
         }
         try {
-            long timestamp = CUBRIDTimeUtil.parseTimestamp(dateTimePart, TimeZone.getTimeZone("GMT"));
-            return OffsetDateTime.ofInstant(
-                    Instant.ofEpochMilli(timestamp), ZoneId.of(zoneIdStr));
+            long timestamp =
+                    CUBRIDTimeUtil.parseTimestamp(dateTimePart, TimeZone.getTimeZone("GMT"));
+            return OffsetDateTime.ofInstant(Instant.ofEpochMilli(timestamp), ZoneId.of(zoneIdStr));
         } catch (Exception ignore) {
         }
         return null;
@@ -363,8 +364,7 @@ public final class TimeZoneConverterUtils {
         if (!"cubrid.sql.CUBRIDTimestamp".equals(value.getClass().getName())) {
             return null;
         }
-        OffsetDateTime result =
-                toOffsetDateTime(((Timestamp) value).toInstant(), defaultTimeZone);
+        OffsetDateTime result = toOffsetDateTime(((Timestamp) value).toInstant(), defaultTimeZone);
         try {
             Field field = value.getClass().getDeclaredField("isDatetime");
             field.setAccessible(true);

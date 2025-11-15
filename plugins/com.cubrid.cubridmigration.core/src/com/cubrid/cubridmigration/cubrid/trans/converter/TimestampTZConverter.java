@@ -30,21 +30,22 @@
  */
 package com.cubrid.cubridmigration.cubrid.trans.converter;
 
+import com.cubrid.cubridmigration.core.common.TimeZoneConverterUtils;
 import com.cubrid.cubridmigration.core.datatype.DataTypeInstance;
 import com.cubrid.cubridmigration.core.engine.config.MigrationConfiguration;
 import com.cubrid.cubridmigration.core.trans.AbstractDataConverter;
-import com.cubrid.cubridmigration.core.common.TimeZoneConverterUtils;
+
 import java.time.OffsetDateTime;
 
 public class TimestampTZConverter extends AbstractDataConverter {
-	
+
     public Object convert(Object obj, DataTypeInstance dti, MigrationConfiguration config) {
 
         if (obj instanceof OffsetDateTime) {
             return TimeZoneConverterUtils.formatWithOffset((OffsetDateTime) obj);
         }
 
-        Object value = null; 
+        Object value = null;
 
         try {
             OffsetDateTime offsetDateTime =

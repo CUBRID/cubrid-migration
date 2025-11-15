@@ -30,15 +30,16 @@
  */
 package com.cubrid.cubridmigration.core.engine.exporter.impl;
 
+import com.cubrid.cubridmigration.core.common.TimeZoneConverterUtils;
 import com.cubrid.cubridmigration.core.dbobject.Column;
 import com.cubrid.cubridmigration.core.dbobject.Record;
 import com.cubrid.cubridmigration.core.dbobject.Table;
 import com.cubrid.cubridmigration.core.engine.RecordExportedListener;
 import com.cubrid.cubridmigration.core.engine.config.MigrationConfiguration;
 import com.cubrid.cubridmigration.cubrid.CUBRIDTimeUtil;
-import com.cubrid.cubridmigration.core.common.TimeZoneConverterUtils;
 import com.cubrid.cubridmigration.mysql.MySQLDataTypeHelper;
 import com.cubrid.cubridmigration.mysql.trans.MySQL2CUBRIDMigParas;
+
 import java.io.UnsupportedEncodingException;
 import java.sql.Time;
 import java.sql.Timestamp;
@@ -208,7 +209,7 @@ public class XMLDataParsingTask implements Runnable {
             }
             oneNewRecord.processRecords(tableName, records);
         } catch (Exception ex) {
-        	LOG.error("", ex);
+            LOG.error("", ex);
         }
     }
 

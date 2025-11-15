@@ -39,6 +39,10 @@ import com.cubrid.cubridmigration.core.dbobject.Catalog;
 import com.cubrid.cubridmigration.core.dbobject.Column;
 import com.cubrid.cubridmigration.core.dbtype.DatabaseType;
 import com.cubrid.cubridmigration.cubrid.exception.UnSupportCUBRIDDataTypeException;
+
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+
 import java.math.BigInteger;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -46,8 +50,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
 
 /**
  * CubridDataTypeHelper
@@ -77,6 +79,7 @@ public final class CUBRIDDataTypeHelper extends DBDataTypeHelper {
     private static final Map<Integer, Integer> TYPE_BYTES_MAP = new HashMap<Integer, Integer>();
 
     private static final CUBRIDDataTypeHelper HELPER = new CUBRIDDataTypeHelper();
+
     // init all cubrid datatype
     static {
         initTypeSpaceMap();
@@ -215,28 +218,32 @@ public final class CUBRIDDataTypeHelper extends DBDataTypeHelper {
                 new DataTypeSymbol(DataTypeConstant.CUBRID_DT_DATETIME, "datetime", "datetime");
         datetimeSymbol.getNickNames().add("datetime");
         CUBRIDDATA_TYPES.add(datetimeSymbol);
-        
+
         // timestamptz
         DataTypeSymbol timestamptzSymbol =
-                new DataTypeSymbol(DataTypeConstant.CUBRID_DT_TIMESTAMPTZ, "timestamptz", "timestamptz");
+                new DataTypeSymbol(
+                        DataTypeConstant.CUBRID_DT_TIMESTAMPTZ, "timestamptz", "timestamptz");
         timestamptzSymbol.getNickNames().add("timestamptz");
         CUBRIDDATA_TYPES.add(timestamptzSymbol);
 
         // timestampltz
         DataTypeSymbol timestampltzSymbol =
-                new DataTypeSymbol(DataTypeConstant.CUBRID_DT_TIMESTAMPLTZ, "timestampltz", "timestampltz");
+                new DataTypeSymbol(
+                        DataTypeConstant.CUBRID_DT_TIMESTAMPLTZ, "timestampltz", "timestampltz");
         timestampltzSymbol.getNickNames().add("timestampltz");
         CUBRIDDATA_TYPES.add(timestampltzSymbol);
 
         // datetimetz
         DataTypeSymbol datetimetzSymbol =
-                new DataTypeSymbol(DataTypeConstant.CUBRID_DT_DATETIMETZ, "datetimetz", "datetimetz");
+                new DataTypeSymbol(
+                        DataTypeConstant.CUBRID_DT_DATETIMETZ, "datetimetz", "datetimetz");
         datetimetzSymbol.getNickNames().add("datetimetz");
         CUBRIDDATA_TYPES.add(datetimetzSymbol);
 
         // datetimeltz
         DataTypeSymbol datetimeltzSymbol =
-                new DataTypeSymbol(DataTypeConstant.CUBRID_DT_DATETIMELTZ, "datetimeltz", "datetimeltz");
+                new DataTypeSymbol(
+                        DataTypeConstant.CUBRID_DT_DATETIMELTZ, "datetimeltz", "datetimeltz");
         datetimeltzSymbol.getNickNames().add("datetimeltz");
         CUBRIDDATA_TYPES.add(datetimeltzSymbol);
 

@@ -30,15 +30,16 @@
  */
 package com.cubrid.cubridmigration.cubrid.trans.converter;
 
+import com.cubrid.cubridmigration.core.common.TimeZoneConverterUtils;
 import com.cubrid.cubridmigration.core.datatype.DataTypeInstance;
 import com.cubrid.cubridmigration.core.engine.config.MigrationConfiguration;
 import com.cubrid.cubridmigration.core.trans.AbstractDataConverter;
-import com.cubrid.cubridmigration.core.common.TimeZoneConverterUtils;
+
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 
 public class DateTimeLTZConverter extends AbstractDataConverter {
-	
+
     public Object convert(Object obj, DataTypeInstance dti, MigrationConfiguration config) {
 
         if (obj instanceof OffsetDateTime) {
@@ -46,7 +47,7 @@ public class DateTimeLTZConverter extends AbstractDataConverter {
             return TimeZoneConverterUtils.formatWithOffset(utc);
         }
 
-        Object value = null; 
+        Object value = null;
 
         try {
             OffsetDateTime offsetDateTime =
