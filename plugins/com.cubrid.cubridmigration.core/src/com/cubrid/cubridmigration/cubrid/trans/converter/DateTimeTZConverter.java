@@ -56,7 +56,7 @@ public class DateTimeTZConverter extends AbstractDataConverter {
 
             value = TimeZoneConverterUtils.formatWithOffset(offsetDateTime);
         } catch (IllegalArgumentException ex) {
-            throw new RuntimeException(
+            throw new IllegalStateException(
                     "ERROR: could not convert:" + obj + " to CUBRID type DATETIMETZ", ex);
         }
 

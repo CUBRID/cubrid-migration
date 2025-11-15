@@ -60,7 +60,7 @@ public class DateTimeLTZConverter extends AbstractDataConverter {
             OffsetDateTime utc = offsetDateTime.withOffsetSameInstant(ZoneOffset.UTC);
             value = TimeZoneConverterUtils.formatWithOffset(utc);
         } catch (IllegalArgumentException ex) {
-            throw new RuntimeException(
+            throw new IllegalStateException(
                     "ERROR: could not convert:" + obj + " to CUBRID type DATETIMELTZ", ex);
         }
         return value;

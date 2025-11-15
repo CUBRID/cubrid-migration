@@ -30,7 +30,6 @@ package com.cubrid.cubridmigration.core.common;
 
 import com.cubrid.cubridmigration.cubrid.CUBRIDTimeUtil;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.sql.Timestamp;
 import java.text.ParseException;
@@ -130,11 +129,30 @@ public final class TimeZoneConverterUtils {
     private TimeZoneConverterUtils() {}
 
     public static OffsetDateTime parseToOffsetDateTime(Object value, TimeZone defaultTimeZone) {
+        OffsetDateTime resolved = resolveDirectValue(value, defaultTimeZone);
+        if (resolved != null || value == null) {
+            return resolved;
+        }
+
+        String text = normalizeToText(value);
+        if (text == null) {
+            return null;
+        }
+
+        OffsetDateTime parsed = parseTextualValue(text, defaultTimeZone);
+        if (parsed != null) {
+            return parsed;
+        }
+
+        throw new IllegalArgumentException("Unable to parse timezone aware value: " + text);
+    }
+
+    private static OffsetDateTime resolveDirectValue(Object value, TimeZone defaultTimeZone) {
         if (value == null) {
             return null;
         }
         if (value instanceof OffsetDateTime) {
-            return ((OffsetDateTime) value);
+            return (OffsetDateTime) value;
         }
         if (value instanceof ZonedDateTime) {
             return ((ZonedDateTime) value).toOffsetDateTime();
@@ -162,7 +180,10 @@ public final class TimeZoneConverterUtils {
             Instant instant = Instant.ofEpochMilli(((Number) value).longValue());
             return toOffsetDateTime(instant, defaultTimeZone);
         }
+        return null;
+    }
 
+    private static String normalizeToText(Object value) {
         String text = value.toString();
         if (text == null) {
             return null;
@@ -171,7 +192,10 @@ public final class TimeZoneConverterUtils {
         if (text.isEmpty()) {
             return null;
         }
+        return text;
+    }
 
+    private static OffsetDateTime parseTextualValue(String text, TimeZone defaultTimeZone) {
         OffsetDateTime parsed = tryParseOffsetDateTime(text);
         if (parsed != null) {
             return parsed;
@@ -182,12 +206,7 @@ public final class TimeZoneConverterUtils {
             return zoneIdParsed;
         }
 
-        OffsetDateTime fallback = tryParseLocalDateTime(text, defaultTimeZone);
-        if (fallback != null) {
-            return fallback;
-        }
-
-        throw new IllegalArgumentException("Unable to parse timezone aware value: " + text);
+        return tryParseLocalDateTime(text, defaultTimeZone);
     }
 
     public static String formatWithOffset(OffsetDateTime dateTime) {
@@ -330,26 +349,32 @@ public final class TimeZoneConverterUtils {
             long utcMillis = ((Number) getUnixTime.invoke(value)).longValue();
             OffsetDateTime utc =
                     OffsetDateTime.ofInstant(Instant.ofEpochMilli(utcMillis), ZoneOffset.UTC);
-
-            Object tzObj = getTimezone.invoke(value);
-            String timezone = tzObj == null ? null : tzObj.toString();
-            if (timezone == null || timezone.isEmpty()) {
-                return utc;
-            }
-
-            try {
-                ZoneOffset offset = ZoneOffset.of(timezone);
-                return utc.withOffsetSameInstant(offset);
-            } catch (DateTimeException ex) {
-                try {
-                    ZoneId zoneId = ZoneId.of(timezone);
-                    return utc.atZoneSameInstant(zoneId).toOffsetDateTime();
-                } catch (DateTimeException ignored) {
-                    return utc;
-                }
-            }
+            return applyTimezone(utc, getTimezone.invoke(value));
         } catch (ReflectiveOperationException | ClassCastException ex) {
             return null;
+        }
+    }
+
+    private static OffsetDateTime applyTimezone(OffsetDateTime utc, Object tzObj) {
+        String timezone = tzObj == null ? null : tzObj.toString();
+        if (timezone == null || timezone.isEmpty()) {
+            return utc;
+        }
+        OffsetDateTime offsetAdjusted = tryApplyOffset(utc, timezone);
+        return offsetAdjusted == null ? utc : offsetAdjusted;
+    }
+
+    private static OffsetDateTime tryApplyOffset(OffsetDateTime utc, String timezone) {
+        try {
+            ZoneOffset offset = ZoneOffset.of(timezone);
+            return utc.withOffsetSameInstant(offset);
+        } catch (DateTimeException ex) {
+            try {
+                ZoneId zoneId = ZoneId.of(timezone);
+                return utc.atZoneSameInstant(zoneId).toOffsetDateTime();
+            } catch (DateTimeException ignored) {
+                return null;
+            }
         }
     }
 
@@ -366,15 +391,12 @@ public final class TimeZoneConverterUtils {
         }
         OffsetDateTime result = toOffsetDateTime(((Timestamp) value).toInstant(), defaultTimeZone);
         try {
-            Field field = value.getClass().getDeclaredField("isDatetime");
-            field.setAccessible(true);
-            boolean isDatetime = field.getBoolean(value);
-            if (!isDatetime) {
+            Method method = value.getClass().getMethod("isDatetime");
+            Object flag = method.invoke(value);
+            if (flag instanceof Boolean && !((Boolean) flag)) {
                 return result.withOffsetSameInstant(ZoneOffset.UTC);
             }
-        } catch (IllegalAccessException ignored) {
-            return result;
-        } catch (NoSuchFieldException ex) {
+        } catch (ReflectiveOperationException ex) {
             return result;
         }
         return result;
