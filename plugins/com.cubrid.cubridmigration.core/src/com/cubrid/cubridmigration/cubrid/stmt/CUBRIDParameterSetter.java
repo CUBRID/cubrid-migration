@@ -57,6 +57,7 @@ import com.cubrid.cubridmigration.cubrid.stmt.handler.VarcharHandler;
 import java.sql.PreparedStatement;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.TimeZone;
 
 /**
  * CUBRIDParameterSetter responses to read source data value and transform it to target data value
@@ -73,6 +74,7 @@ public class CUBRIDParameterSetter {
     public CUBRIDParameterSetter(MigrationConfiguration config) {
         String sourceCharset = config.getSourceCharset();
         String targetCharset = config.getTargetCharSet();
+        TimeZone sourceTimeZone = config.getSourceDatabaseTimeZone();
         // Build data type to handler map.
         handlerMap.put(DataTypeConstant.CUBRID_DT_BIT, new BitHandler());
         handlerMap.put(DataTypeConstant.CUBRID_DT_VARBIT, new VarBitHandler());
@@ -84,10 +86,14 @@ public class CUBRIDParameterSetter {
         handlerMap.put(DataTypeConstant.CUBRID_DT_DATE, new DateHandler());
         handlerMap.put(DataTypeConstant.CUBRID_DT_DATETIME, new DateTimeHandler());
         handlerMap.put(DataTypeConstant.CUBRID_DT_TIMESTAMP, new TimestampHandler());
-        handlerMap.put(DataTypeConstant.CUBRID_DT_TIMESTAMPTZ, new TimestampTZHandler());
-        handlerMap.put(DataTypeConstant.CUBRID_DT_TIMESTAMPLTZ, new TimestampLTZHandler());
-        handlerMap.put(DataTypeConstant.CUBRID_DT_DATETIMETZ, new DateTimeTZHandler());
-        handlerMap.put(DataTypeConstant.CUBRID_DT_DATETIMELTZ, new DateTimeLTZHandler());
+        handlerMap.put(
+                DataTypeConstant.CUBRID_DT_TIMESTAMPTZ, new TimestampTZHandler(sourceTimeZone));
+        handlerMap.put(
+                DataTypeConstant.CUBRID_DT_TIMESTAMPLTZ, new TimestampLTZHandler(sourceTimeZone));
+        handlerMap.put(
+                DataTypeConstant.CUBRID_DT_DATETIMETZ, new DateTimeTZHandler(sourceTimeZone));
+        handlerMap.put(
+                DataTypeConstant.CUBRID_DT_DATETIMELTZ, new DateTimeLTZHandler(sourceTimeZone));
 
         handlerMap.put(DataTypeConstant.CUBRID_DT_FLOAT, new FloatHandler());
         handlerMap.put(DataTypeConstant.CUBRID_DT_DOUBLE, new DoubleHandler());

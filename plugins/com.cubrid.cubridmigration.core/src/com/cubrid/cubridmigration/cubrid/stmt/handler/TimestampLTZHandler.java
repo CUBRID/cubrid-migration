@@ -30,12 +30,21 @@
  */
 package com.cubrid.cubridmigration.cubrid.stmt.handler;
 
+import com.cubrid.cubridmigration.core.common.TimeZoneConverterUtils;
 import com.cubrid.cubridmigration.core.dbobject.Record.ColumnValue;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Types;
+import java.time.OffsetDateTime;
+import java.util.TimeZone;
 
 public class TimestampLTZHandler extends DefaultHandler {
+	
+    private final TimeZone sourceTimeZone;
+
+    public TimestampLTZHandler(TimeZone sourceTimeZone) {
+        this.sourceTimeZone = sourceTimeZone;
+    }
 
     public void handle(PreparedStatement stmt, int idx, ColumnValue columnValue)
             throws SQLException {
@@ -44,6 +53,22 @@ public class TimestampLTZHandler extends DefaultHandler {
             stmt.setNull(idx + 1, Types.NULL);
             return;
         }
-        stmt.setString(idx + 1, value.toString());
+        try {
+            OffsetDateTime odt =
+                    value instanceof OffsetDateTime
+                            ? (OffsetDateTime) value
+                            : TimeZoneConverterUtils.parseToOffsetDateTime(value, sourceTimeZone);
+            if (odt == null) {
+                stmt.setNull(idx + 1, Types.NULL);
+                return;
+            }
+            OffsetDateTime utc = TimeZoneConverterUtils.toUtc(odt);
+            stmt.setString(idx + 1, TimeZoneConverterUtils.formatWithOffset(utc));
+        } catch (IllegalArgumentException ex) {
+            throw new SQLException(
+                    "Failed to bind TIMESTAMPLTZ value for column "
+                            + columnValue.getColumn().getName(),
+                    ex);
+        }
     }
 }
