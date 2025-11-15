@@ -32,7 +32,9 @@ package com.cubrid.common.ui.swt;
 
 import org.eclipse.ui.IEditorInput;
 
-/** @author Kevin Cao */
+/**
+ * @author Kevin Cao
+ */
 public interface IEditorInputInitializer {
 
     /**

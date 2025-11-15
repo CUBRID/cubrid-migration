@@ -32,6 +32,7 @@ package com.cubrid.cubridmigration.command.handler;
 
 import com.cubrid.cubridmigration.command.ConsoleCommandHandler;
 import com.cubrid.cubridmigration.core.common.PathUtils;
+
 import java.io.Console;
 import java.io.File;
 import java.io.PrintStream;

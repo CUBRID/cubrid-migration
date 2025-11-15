@@ -55,9 +55,14 @@ import com.cubrid.cubridmigration.core.engine.report.MigrationOverviewResult;
 import com.cubrid.cubridmigration.core.engine.report.MigrationReport;
 import com.cubrid.cubridmigration.core.engine.report.ObjNameMigrationResult;
 import com.cubrid.cubridmigration.core.engine.report.RecordMigrationResult;
-import com.cubrid.cubridmigration.core.engine.template.MigrationTemplateParser;
+import com.cubrid.cubridmigration.core.engine.template.reader.MigrationTemplateReader;
 import com.cubrid.cubridmigration.cubrid.CUBRIDTimeUtil;
 import com.cubrid.cubridmigration.mysql.trans.MySQL2CUBRIDMigParas;
+
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.SystemUtils;
+import org.slf4j.Logger;
+
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
@@ -72,9 +77,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.TimeZone;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.SystemUtils;
-import org.slf4j.Logger;
 
 /**
  * StartCommandHandler Description
@@ -151,7 +153,7 @@ public class StartCommandHandler implements ConsoleCommandHandler {
      */
     private MigrationConfiguration getConfig(String file) {
         try {
-            MigrationConfiguration config = MigrationTemplateParser.parse(file);
+            MigrationConfiguration config = MigrationTemplateReader.parse(file);
             if (!initializeSource(config) || !initializeTarget(config)) {
                 printHelp();
                 return null;
@@ -356,7 +358,8 @@ public class StartCommandHandler implements ConsoleCommandHandler {
                 if (confirm) {
                     outPrinter.println("Invalid path : " + tempPath);
                     outPrinter.println(
-                            "Please specify the path where you want to save exported files by parameter [-tp]");
+                            "Please specify the path where you want to save exported files by"
+                                    + " parameter [-tp]");
                     outPrinter.println();
                     return false;
                 }
@@ -443,6 +446,14 @@ public class StartCommandHandler implements ConsoleCommandHandler {
 
         // print rename object report
         printRenameObjReport(migrationReporter);
+
+        // exit code
+        try {
+            MigrationReport mr = migrationReporter.getReport();
+            System.exit(mr != null && mr.hasError() ? 1 : 0);
+        } catch (Throwable t) {
+            System.exit(1);
+        }
     }
 
     /** Load db.conf configuration at the start up. */
@@ -467,6 +478,9 @@ public class StartCommandHandler implements ConsoleCommandHandler {
      */
     private void printReport(ConsoleMigrationReporter migrationReporter) {
         MigrationReport mr = migrationReporter.getReport();
+
+        outPrinter.println();
+        outPrinter.println("-------------------------------------------------------------");
         outPrinter.println("Migration Report summary:");
         outPrinter.print("    Time used: ");
         outPrinter.print(TimeZoneUtils.format(mr.getTotalEndTime() - mr.getTotalStartTime()));
@@ -499,6 +513,8 @@ public class StartCommandHandler implements ConsoleCommandHandler {
                 outPrinter.println();
             }
         }
+        outPrinter.println("-------------------------------------------------------------");
+        outPrinter.println();
         // Write report to a local text file
         String txtFile =
                 PathUtils.getReportDir()
@@ -566,11 +582,21 @@ public class StartCommandHandler implements ConsoleCommandHandler {
                     bw.append(rmr.getTarget());
                     bw.append("]");
                     bw.append(":");
-                    bw.append(" Exported:[");
-                    bw.append(Long.toString(rmr.getExpCount()));
-                    bw.append("] Imported:[");
-                    bw.append(Long.toString(rmr.getImpCount()));
-                    bw.append("]\r\n");
+                    if (!rmr.isDataMigrationSelected()) {
+                        bw.append(
+                                " Exported:["
+                                        + ConsoleUtils.EMPTY_CELL_VALUE
+                                        + "] Imported:["
+                                        + ConsoleUtils.EMPTY_CELL_VALUE
+                                        + "]");
+                    } else {
+                        bw.append(" Exported:[");
+                        bw.append(Long.toString(rmr.getExpCount()));
+                        bw.append("] Imported:[");
+                        bw.append(Long.toString(rmr.getImpCount()));
+                        bw.append("]");
+                    }
+                    bw.append("\r\n");
                 }
                 bw.flush();
             } finally {
@@ -579,6 +605,11 @@ public class StartCommandHandler implements ConsoleCommandHandler {
         } catch (IOException ex) {
             LOG.error("", ex);
         }
+
+        String finalResult = mr.hasError() ? "FAILED" : "SUCCESS";
+        outPrinter.println("=============================================================");
+        outPrinter.println("MIGRATION RESULT: " + finalResult);
+        outPrinter.println("=============================================================");
     }
 
     /**

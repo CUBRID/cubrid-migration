@@ -34,6 +34,7 @@ import com.cubrid.common.log.LogUtil;
 import com.cubrid.common.ui.swt.table.listener.CheckBoxColumnSelectionListener;
 import com.cubrid.common.ui.swt.table.listener.TextCellEditorUpDownKeyListener;
 import com.cubrid.cubridmigration.ui.MigrationUIPlugin;
+
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;

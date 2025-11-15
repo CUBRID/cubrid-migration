@@ -80,7 +80,8 @@ Export-Package:
    com.cubrid.cubridmigration.core.engine.config,
    com.cubrid.cubridmigration.core.engine.task,
    com.cubrid.cubridmigration.core.engine",
- com.cubrid.cubridmigration.core.engine.template;uses:="com.cubrid.cubridmigration.core.engine.config,org.xml.sax.helpers,org.xml.sax",
+ com.cubrid.cubridmigration.core.engine.template.reader;uses:="com.cubrid.cubridmigration.core.engine.config,org.xml.sax.helpers,org.xml.sax",
+ com.cubrid.cubridmigration.core.engine.template.writer;uses:="com.cubrid.cubridmigration.core.engine.config",
  com.cubrid.cubridmigration.core.export;
   uses:="com.cubrid.cubridmigration.core.engine.config,
    com.cubrid.cubridmigration.core.dbobject,

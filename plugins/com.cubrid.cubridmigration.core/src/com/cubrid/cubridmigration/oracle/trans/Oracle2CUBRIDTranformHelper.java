@@ -47,11 +47,13 @@ import com.cubrid.cubridmigration.cubrid.CUBRIDDataTypeHelper;
 import com.cubrid.cubridmigration.cubrid.CUBRIDTimeUtil;
 import com.cubrid.cubridmigration.cubrid.trans.ToCUBRIDDataConverterFacade;
 import com.cubrid.cubridmigration.mysql.trans.MySQL2CUBRIDMigParas;
+
+import org.apache.commons.lang3.StringUtils;
+
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
-import org.apache.commons.lang3.StringUtils;
 
 /**
  * a transform class which helps to data transform in migration of Oracle to CUBRID

@@ -36,6 +36,7 @@ import com.cubrid.cubridmigration.ui.common.CompositeUtils;
 import com.cubrid.cubridmigration.ui.common.navigator.node.GrantNode;
 import com.cubrid.cubridmigration.ui.message.Messages;
 import com.cubrid.cubridmigration.ui.wizard.utils.VerifyResultMessages;
+
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -77,7 +78,9 @@ public class GrantMappingView extends AbstractMappingView {
         CompositeUtils.hideOrShowComposite(container, false);
     }
 
-    /** @param parent of the composites */
+    /**
+     * @param parent of the composites
+     */
     protected void createControl(Composite parent) {
         container = new Composite(parent, SWT.NONE);
         GridData gd = new GridData(SWT.FILL, SWT.FILL, true, true);
@@ -105,18 +108,24 @@ public class GrantMappingView extends AbstractMappingView {
         createTargetPart(container);
     }
 
-    /** @param parent of source object */
+    /**
+     * @param parent of source object
+     */
     protected void createSourcePart(Composite parent) {
         grpSource = new GrantInfoComposite(parent, Messages.lblSource);
         grpSource.setEditable(false);
     }
 
-    /** @param parent of target object */
+    /**
+     * @param parent of target object
+     */
     protected void createTargetPart(Composite parent) {
         grpTarget = new GrantInfoComposite(parent, Messages.lblTarget);
     }
 
-    /** @param obj should be a GrantNode */
+    /**
+     * @param obj should be a GrantNode
+     */
     public void showData(Object obj) {
         if (config.targetIsOnline() && !config.isTargetDBAGroup()) {
             btnCreate.setEnabled(false);

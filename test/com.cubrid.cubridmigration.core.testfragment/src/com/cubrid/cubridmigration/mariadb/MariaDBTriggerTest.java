@@ -30,6 +30,7 @@
 package com.cubrid.cubridmigration.mariadb;
 
 import com.cubrid.cubridmigration.mysql.dbobj.MySQLTrigger;
+
 import org.junit.Test;
 
 public class MariaDBTriggerTest {

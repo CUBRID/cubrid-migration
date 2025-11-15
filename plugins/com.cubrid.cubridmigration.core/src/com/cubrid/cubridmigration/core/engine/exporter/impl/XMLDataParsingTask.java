@@ -39,7 +39,7 @@ import com.cubrid.cubridmigration.core.engine.config.MigrationConfiguration;
 import com.cubrid.cubridmigration.cubrid.CUBRIDTimeUtil;
 import com.cubrid.cubridmigration.mysql.MySQLDataTypeHelper;
 import com.cubrid.cubridmigration.mysql.trans.MySQL2CUBRIDMigParas;
-
+import org.slf4j.Logger;
 import java.io.UnsupportedEncodingException;
 import java.sql.Time;
 import java.sql.Timestamp;

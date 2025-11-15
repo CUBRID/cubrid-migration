@@ -35,6 +35,7 @@ import com.cubrid.cubridmigration.core.datatype.DataTypeInstance;
 import com.cubrid.cubridmigration.core.engine.config.MigrationConfiguration;
 import com.cubrid.cubridmigration.core.trans.AbstractDataConverter;
 import com.cubrid.cubridmigration.cubrid.CUBRIDTimeUtil;
+
 import java.text.ParseException;
 import java.util.Calendar;
 
@@ -81,7 +82,8 @@ public class DateConverter extends AbstractDataConverter {
 
                 if (value.toString().charAt(0) == 0) {
                     throw new RuntimeException(
-                            "java.sql.Date could not build date correctly (not in range 999 - 9999 ?): "
+                            "java.sql.Date could not build date correctly (not in range 999 - 9999"
+                                    + " ?): "
                                     + obj,
                             ex);
                 }

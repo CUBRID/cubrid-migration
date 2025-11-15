@@ -31,10 +31,13 @@
 package com.cubrid.cubridmigration.core.engine;
 
 import com.cubrid.cubridmigration.core.common.PathUtils;
+
+import junit.framework.Assert;
+
+import org.junit.Test;
+
 import java.util.HashMap;
 import java.util.Map;
-import junit.framework.Assert;
-import org.junit.Test;
 
 public class UserDefinedDataHandlerManagerTest {
     static {

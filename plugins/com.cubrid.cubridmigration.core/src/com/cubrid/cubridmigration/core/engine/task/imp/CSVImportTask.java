@@ -43,6 +43,10 @@ import com.cubrid.cubridmigration.core.engine.event.ImportCSVEvent;
 import com.cubrid.cubridmigration.core.engine.task.FileMergeRunnable;
 import com.cubrid.cubridmigration.core.engine.task.ImportTask;
 import com.cubrid.cubridmigration.cubrid.Data2StrTranslator;
+
+import org.apache.commons.collections4.CollectionUtils;
+import org.slf4j.Logger;
+
 import java.io.File;
 import java.io.IOException;
 import java.sql.Connection;
@@ -51,8 +55,6 @@ import java.sql.SQLException;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
-import org.apache.commons.collections4.CollectionUtils;
-import org.slf4j.Logger;
 
 /**
  * SQL Import Task Description

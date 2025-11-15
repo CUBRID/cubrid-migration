@@ -31,9 +31,11 @@
 package com.cubrid.cubridmigration.core.sql;
 
 import com.cubrid.cubridmigration.mssql.MSSQLSQLHelper;
+
+import org.apache.commons.lang3.StringUtils;
+
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.apache.commons.lang3.StringUtils;
 
 /**
  * SQLHelper Description

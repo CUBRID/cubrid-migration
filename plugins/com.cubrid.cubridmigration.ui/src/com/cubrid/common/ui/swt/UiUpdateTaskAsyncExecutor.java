@@ -32,7 +32,9 @@ package com.cubrid.common.ui.swt;
 
 import org.eclipse.swt.widgets.Display;
 
-/** @author Kevin Cao */
+/**
+ * @author Kevin Cao
+ */
 public class UiUpdateTaskAsyncExecutor {
 
     public void run(Runnable runnable) {

@@ -241,6 +241,7 @@ public class Messages extends NLS {
     public static String confirmMessage;
     public static String confirmMigrationPageDescription;
     public static String confirmMigrationPageTile;
+    public static String confirmMultipleSchemas;
     public static String confirmPath;
     public static String confirmPort;
     public static String confirmSettingsSourceDatabase;
@@ -270,6 +271,7 @@ public class Messages extends NLS {
     public static String confrimUniqueIndex;
     public static String confrimUpdateStatistic;
     public static String confrimSQLTables;
+    public static String copyButtonLabel;
     public static String cUBRID2CUBRID;
     public static String cubridNewInfoEditorName;
     public static String dBConnectCompositeBtnBrowse;
@@ -540,6 +542,8 @@ public class Messages extends NLS {
     public static String msgConnectFailed;
     public static String msgConnectingHDFS;
     public static String msgConnectSuccess;
+    public static String msgCopyJDBC;
+    public static String msgCopyJDBCDesc;
     public static String msgCSVFilesList;
     public static String msgCubridCSV;
     public static String msgCubridDump;
@@ -837,6 +841,7 @@ public class Messages extends NLS {
     public static String titleSettingCharTypeColumns;
     public static String titleWizardPageSelectSQL;
     public static String ttAnalyzXMLFile;
+    public static String ttCopyConnection;
     public static String ttCreateNewConnection;
     public static String ttCreatePKFirst;
     public static String ttCSVSettings;

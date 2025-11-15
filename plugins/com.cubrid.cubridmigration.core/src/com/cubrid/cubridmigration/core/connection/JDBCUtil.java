@@ -33,6 +33,9 @@ package com.cubrid.cubridmigration.core.connection;
 import com.cubrid.common.configuration.classloader.ClassLoaderManager;
 import com.cubrid.common.log.LogUtil;
 import com.cubrid.cubridmigration.core.dbtype.DatabaseType;
+
+import org.slf4j.Logger;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -40,7 +43,6 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
-import org.slf4j.Logger;
 
 /**
  * jdbc manager

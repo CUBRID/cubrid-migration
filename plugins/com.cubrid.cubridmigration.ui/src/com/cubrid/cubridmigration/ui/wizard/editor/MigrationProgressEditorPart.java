@@ -46,9 +46,7 @@ import com.cubrid.cubridmigration.ui.history.MigrationReportEditorPart;
 import com.cubrid.cubridmigration.ui.message.Messages;
 import com.cubrid.cubridmigration.ui.script.MigrationScriptManager;
 import com.cubrid.cubridmigration.ui.wizard.editor.controller.MigrationProgressUIController;
-import java.util.Date;
-import java.util.Timer;
-import java.util.TimerTask;
+
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.ArrayContentProvider;
@@ -70,6 +68,10 @@ import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.ISaveablePart2;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.part.EditorPart;
+
+import java.util.Date;
+import java.util.Timer;
+import java.util.TimerTask;
 
 /**
  * MigrationProgressEditorPart responses to monitor the migration progress.
@@ -253,7 +255,9 @@ public class MigrationProgressEditorPart extends EditorPart implements ISaveable
                 });
     }
 
-    /** @param pnlBackTop Composite */
+    /**
+     * @param pnlBackTop Composite
+     */
     protected void createProgressTableViewer(final Composite pnlBackTop) {
         TableViewerBuilder tvBuilder = new TableViewerBuilder();
         tvBuilder.setColumnNames(
@@ -368,7 +372,9 @@ public class MigrationProgressEditorPart extends EditorPart implements ISaveable
         setTitleImage(SWTResourceConstents.IMAGE_PROGRESS);
     }
 
-    /** @param cf MigrationConfiguration */
+    /**
+     * @param cf MigrationConfiguration
+     */
     protected void initUIController(MigrationConfiguration cf) {
         controller = new MigrationProgressUIController();
         controller.setConfig(cf);
@@ -398,7 +404,9 @@ public class MigrationProgressEditorPart extends EditorPart implements ISaveable
         return false;
     }
 
-    /** @param reporter */
+    /**
+     * @param reporter
+     */
     protected void openMigrationReport() {
         controller.openMigrationReport(this);
     }
@@ -470,7 +478,9 @@ public class MigrationProgressEditorPart extends EditorPart implements ISaveable
         tvProgress.refresh(item);
     }
 
-    /** @param event MigrationEvent */
+    /**
+     * @param event MigrationEvent
+     */
     protected void updateTotalImportedCount(MigrationEvent event) {
         ImportRecordsEvent ire = (ImportRecordsEvent) event;
         long imp = ire.getRecordCount();
@@ -500,7 +510,9 @@ public class MigrationProgressEditorPart extends EditorPart implements ISaveable
                 txtProgress, new Date(), Messages.errOtherMigrationRunning, true);
     }
 
-    /** @param event MigrationEvent */
+    /**
+     * @param event MigrationEvent
+     */
     protected void updateViewWithMigrationEvent(final MigrationEvent event) {
         if (controller.ifShouldUpdateExportStatus(event)) {
             updateExportedCountInTableViewer(event);

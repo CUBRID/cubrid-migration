@@ -215,7 +215,9 @@ public class FK extends DBObject {
     //		this.onCacheObject = onCacheObject;
     //	}
 
-    /** @return object type */
+    /**
+     * @return object type
+     */
     public String getObjType() {
         return OBJ_TYPE_FK;
     }

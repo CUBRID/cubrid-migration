@@ -39,13 +39,15 @@ import com.cubrid.cubridmigration.core.dbtype.DatabaseType;
 import com.cubrid.cubridmigration.core.sql.SQLHelper;
 import com.cubrid.cubridmigration.oracle.export.OracleExportHelper;
 import com.cubrid.cubridmigration.oracle.meta.OracleSchemaFetcher;
+
+import org.apache.commons.lang3.StringUtils;
+
 import java.lang.reflect.Method;
 import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.SQLException;
 import java.util.Properties;
 import java.util.TimeZone;
-import org.apache.commons.lang3.StringUtils;
 
 /**
  * CUBRID Database Description
@@ -178,7 +180,8 @@ public class OracleDatabase extends DatabaseType {
      */
     public DBDataTypeHelper getDataTypeHelper(String version) {
         return OracleDataTypeHelper.getInstance(version);
-    };
+    }
+    ;
 
     /**
      * The database type is supporting multi-schema.

@@ -36,12 +36,7 @@ import com.cubrid.cubridmigration.mysql.trans.MySQL2CUBRIDMigParas;
 import com.cubrid.cubridmigration.ui.common.Status;
 import com.cubrid.cubridmigration.ui.common.UICommonTool;
 import com.cubrid.cubridmigration.ui.message.Messages;
-import java.sql.Time;
-import java.sql.Timestamp;
-import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.TimeZone;
+
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.jface.preference.PreferencePage;
 import org.eclipse.swt.SWT;
@@ -62,6 +57,13 @@ import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.slf4j.Logger;
+
+import java.sql.Time;
+import java.sql.Timestamp;
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.TimeZone;
 
 /**
  * MySQLToCUBRID parameter preference page

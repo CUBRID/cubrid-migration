@@ -51,7 +51,9 @@ public class SourceIndexConfig extends SourceConfig {
         return parent;
     }
 
-    /** @param parent the parent to set */
+    /**
+     * @param parent the parent to set
+     */
     public void setParent(SourceEntryTableConfig parent) {
         this.parent = parent;
     }

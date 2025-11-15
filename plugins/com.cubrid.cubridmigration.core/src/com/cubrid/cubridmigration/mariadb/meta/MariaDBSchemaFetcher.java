@@ -57,6 +57,10 @@ import com.cubrid.cubridmigration.core.export.DBExportHelper;
 import com.cubrid.cubridmigration.core.sql.SQLHelper;
 import com.cubrid.cubridmigration.mariadb.MariaDBDataTypeHelper;
 import com.cubrid.cubridmigration.mariadb.dbobj.MariaDBTrigger;
+
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+
 import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.DriverPropertyInfo;
@@ -73,8 +77,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
 
 /**
  * ReverseEngineeringMariaDBJdbc
@@ -288,9 +290,9 @@ public final class MariaDBSchemaFetcher extends AbstractJDBCSchemaFetcher {
         }
 
         String sqlStr =
-                "SELECT * FROM INFORMATION_SCHEMA.PARTITIONS "
-                        + "WHERE TABLE_SCHEMA=? AND PARTITION_NAME IS NOT NULL "
-                        + "ORDER BY TABLE_NAME, PARTITION_ORDINAL_POSITION, SUBPARTITION_ORDINAL_POSITION";
+                "SELECT * FROM INFORMATION_SCHEMA.PARTITIONS WHERE TABLE_SCHEMA=? AND"
+                    + " PARTITION_NAME IS NOT NULL ORDER BY TABLE_NAME, PARTITION_ORDINAL_POSITION,"
+                    + " SUBPARTITION_ORDINAL_POSITION";
 
         ResultSet rs = null; // NOPMD
         PreparedStatement stmt = null; // NOPMD
@@ -1047,6 +1049,7 @@ public final class MariaDBSchemaFetcher extends AbstractJDBCSchemaFetcher {
         // MariaDB does not support view comment feature
         return null;
     }
+
     //	/**
     //	 * get table's row count by schema name
     //	 *
@@ -1097,7 +1100,8 @@ public final class MariaDBSchemaFetcher extends AbstractJDBCSchemaFetcher {
             stmt = conn.createStatement();
             rs =
                     stmt.executeQuery(
-                            "SELECT EXTRACT(HOUR FROM TIMEDIFF(NOW() ,UTC_TIMESTAMP())) AS TIMEZONE");
+                            "SELECT EXTRACT(HOUR FROM TIMEDIFF(NOW() ,UTC_TIMESTAMP())) AS"
+                                    + " TIMEZONE");
 
             if (rs.next()) {
                 tzOffset = rs.getInt("TIMEZONE");

@@ -136,7 +136,9 @@ public class Sequence extends DBObject implements Cloneable {
         return sequenceName;
     }
 
-    /** @return object type */
+    /**
+     * @return object type
+     */
     public String getObjType() {
         return OBJ_TYPE_SEQUENCE;
     }

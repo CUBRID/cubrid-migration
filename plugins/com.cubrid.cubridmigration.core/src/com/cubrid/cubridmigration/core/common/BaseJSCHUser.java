@@ -32,7 +32,9 @@ package com.cubrid.cubridmigration.core.common;
 
 import com.jcraft.jsch.UserInfo;
 
-/** @author Kevin Cao */
+/**
+ * @author Kevin Cao
+ */
 public class BaseJSCHUser implements UserInfo {
 
     /**

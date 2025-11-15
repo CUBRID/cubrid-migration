@@ -45,7 +45,7 @@ import com.cubrid.cubridmigration.ui.history.tableviewer.MigrationOverviewTableL
 import com.cubrid.cubridmigration.ui.history.tableviewer.ObjectMigrationResultTableLabelProvider;
 import com.cubrid.cubridmigration.ui.history.tableviewer.RecordMigrationResultTableLabelProvider;
 import com.cubrid.cubridmigration.ui.message.Messages;
-import java.util.Date;
+
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.ArrayContentProvider;
@@ -76,6 +76,8 @@ import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.part.EditorPart;
+
+import java.util.Date;
 
 /**
  * MigrationReportEditorPart responses to show migration report
@@ -184,7 +186,9 @@ public class MigrationReportEditorPart extends EditorPart {
         tiNonsupport.setControl(txtNonsupport);
     }
 
-    /** @param tiViews TabItem */
+    /**
+     * @param tiViews TabItem
+     */
     private void createObjectDetailTableViewer(TabItem tiViews) {
         TableViewerBuilder tvBuilder = new TableViewerBuilder();
         tvBuilder.setColumnNames(MigrationReportUIController.TABLE_HEADER_OBJ);
@@ -380,7 +384,9 @@ public class MigrationReportEditorPart extends EditorPart {
         tfReport.layout();
     }
 
-    /** @param tiTables TabItem */
+    /**
+     * @param tiTables TabItem
+     */
     private void createRecordDetailTableViewer(TabItem tiTables) {
         TableViewerBuilder tvBuilder = new TableViewerBuilder();
         tvBuilder.setColumnNames(MigrationReportUIController.TABLE_HEADER_DATA);
@@ -405,7 +411,9 @@ public class MigrationReportEditorPart extends EditorPart {
         tiTables.setControl(tvTableRecords.getTable());
     }
 
-    /** @param backGroundCom Composite */
+    /**
+     * @param backGroundCom Composite
+     */
     private void createToolbar(Composite backGroundCom) {
         ToolBar tbReport = new ToolBar(backGroundCom, SWT.WRAP | SWT.FLAT | SWT.RIGHT);
         ToolItem btnSaveAll = new ToolItem(tbReport, SWT.PUSH);
@@ -466,7 +474,9 @@ public class MigrationReportEditorPart extends EditorPart {
 
     }
 
-    /** @return MigrationReporter */
+    /**
+     * @return MigrationReporter
+     */
     private MigrationReporter getReporter() {
         return (MigrationReporter) getEditorInput();
     }

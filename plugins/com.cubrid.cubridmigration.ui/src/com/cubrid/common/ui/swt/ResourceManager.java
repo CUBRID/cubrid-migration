@@ -30,6 +30,14 @@
 package com.cubrid.common.ui.swt;
 
 import com.cubrid.common.log.LogUtil;
+
+import org.eclipse.jface.resource.CompositeImageDescriptor;
+import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.graphics.Rectangle;
+import org.slf4j.Logger;
+
 import java.io.File;
 import java.io.InputStream;
 import java.lang.reflect.Constructor;
@@ -41,12 +49,6 @@ import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Map;
-import org.eclipse.jface.resource.CompositeImageDescriptor;
-import org.eclipse.jface.resource.ImageDescriptor;
-import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.graphics.Rectangle;
-import org.slf4j.Logger;
 
 /**
  * Utility class for managing OS resources associated with SWT/JFace controls such as colors, fonts,

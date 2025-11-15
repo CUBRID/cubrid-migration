@@ -32,10 +32,7 @@ package com.cubrid.cubridmigration.ui.wizard.dialog;
 
 import com.cubrid.cubridmigration.core.hadoop.HadoopStreamFactory;
 import com.cubrid.cubridmigration.ui.message.Messages;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.fs.FileStatus;
 import org.eclipse.jface.dialogs.Dialog;
@@ -48,6 +45,11 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
 
 /**
  * CUBRIDHadoopFileDialog Description

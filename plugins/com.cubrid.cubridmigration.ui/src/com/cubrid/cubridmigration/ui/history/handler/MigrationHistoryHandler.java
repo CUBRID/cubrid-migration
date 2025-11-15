@@ -31,6 +31,7 @@
 package com.cubrid.cubridmigration.ui.history.handler;
 
 import com.cubrid.cubridmigration.ui.history.MigrationHistoryEditorPart;
+
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
@@ -49,7 +50,9 @@ import org.eclipse.ui.PlatformUI;
  */
 public class MigrationHistoryHandler extends AbstractHandler {
 
-    /** @author Kevin Cao */
+    /**
+     * @author Kevin Cao
+     */
     private final class MigrationHistoryManagerEditorInput implements IEditorInput {
 
         /**
@@ -77,7 +80,9 @@ public class MigrationHistoryHandler extends AbstractHandler {
             return null;
         }
 
-        /** @return false always be returned. */
+        /**
+         * @return false always be returned.
+         */
         public boolean exists() {
             return false;
         }

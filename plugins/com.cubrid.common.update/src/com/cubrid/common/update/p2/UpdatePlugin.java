@@ -31,6 +31,7 @@
 package com.cubrid.common.update.p2;
 
 import com.cubrid.common.update.p2.handler.UpdatePolicy;
+
 import org.eclipse.equinox.p2.ui.Policy;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;

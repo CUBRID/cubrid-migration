@@ -32,6 +32,9 @@ package com.cubrid.cubridmigration.mariadb.trans;
 import com.cubrid.cubridmigration.core.common.xml.IXMLMemento;
 import com.cubrid.cubridmigration.core.common.xml.XMLMemento;
 import com.cubrid.cubridmigration.cubrid.CUBRIDTimeUtil;
+
+import org.apache.commons.lang3.StringUtils;
+
 import java.io.ByteArrayInputStream;
 import java.sql.Date;
 import java.sql.Time;
@@ -42,7 +45,6 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.TimeZone;
-import org.apache.commons.lang3.StringUtils;
 
 /**
  * MariaDBtoCUBRIDMigrationParameters
@@ -61,7 +63,8 @@ public final class MariaDB2CUBRIDMigParas {
     public static final String DEFAULT_UNPARSED_TIMESTAMP_VALUE = "1970-01-02 01:00:00.000";
     public static final String DEFAULT_REPLAXE_CHAR0_VALUE = "' '";
 
-    private static Map<String, String> map = loadDefault();;
+    private static Map<String, String> map = loadDefault();
+    ;
 
     /**
      * return migration paramters

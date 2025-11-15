@@ -32,12 +32,15 @@ package com.cubrid.cubridmigration.mariadb.export.handler;
 import com.cubrid.cubridmigration.core.dbobject.Column;
 import com.cubrid.cubridmigration.core.export.IExportDataHandler;
 import com.cubrid.cubridmigration.mysql.trans.MySQL2CUBRIDMigParas;
+
 import java.sql.Date;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.TimeZone;
 
-/** @author rathana */
+/**
+ * @author rathana
+ */
 public class MariaDBDateTypeHandler implements IExportDataHandler {
 
     /**

@@ -50,6 +50,7 @@ public class InformixSQLHelper extends SQLHelper {
     protected InformixSQLHelper() {
         // prevent instantiate
     }
+
     /**
      * return database object name
      *

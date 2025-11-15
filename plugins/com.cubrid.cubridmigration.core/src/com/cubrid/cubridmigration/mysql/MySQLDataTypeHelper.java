@@ -35,6 +35,7 @@ import com.cubrid.cubridmigration.core.datatype.DataType;
 import com.cubrid.cubridmigration.core.dbobject.Catalog;
 import com.cubrid.cubridmigration.core.dbobject.Column;
 import com.cubrid.cubridmigration.core.dbtype.DatabaseType;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;

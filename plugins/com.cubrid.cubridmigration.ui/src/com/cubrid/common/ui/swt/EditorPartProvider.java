@@ -36,7 +36,9 @@ import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 
-/** @author Kevin Cao */
+/**
+ * @author Kevin Cao
+ */
 public class EditorPartProvider {
 
     /**

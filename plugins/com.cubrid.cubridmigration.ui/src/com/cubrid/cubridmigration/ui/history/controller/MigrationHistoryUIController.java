@@ -42,13 +42,7 @@ import com.cubrid.cubridmigration.core.engine.report.MigrationReport;
 import com.cubrid.cubridmigration.ui.history.MigrationReporter;
 import com.cubrid.cubridmigration.ui.message.Messages;
 import com.cubrid.cubridmigration.ui.wizard.MigrationWizardFactory;
-import java.io.File;
-import java.io.FilenameFilter;
-import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Locale;
+
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
@@ -59,6 +53,14 @@ import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorInput;
 import org.slf4j.Logger;
+
+import java.io.File;
+import java.io.FilenameFilter;
+import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Locale;
 
 /**
  * MigrationHistoryUIController responses to store all logic of the migration history management.
@@ -210,7 +212,9 @@ public class MigrationHistoryUIController {
         importHistory(historyFileName);
     }
 
-    /** @param historyFileName to be imported */
+    /**
+     * @param historyFileName to be imported
+     */
     protected void importHistory(String historyFileName) {
         try {
             String userDir = PathUtils.getReportDir();

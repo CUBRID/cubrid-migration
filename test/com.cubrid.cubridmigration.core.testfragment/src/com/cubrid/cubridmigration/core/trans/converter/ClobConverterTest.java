@@ -32,9 +32,12 @@ package com.cubrid.cubridmigration.core.trans.converter;
 
 import com.cubrid.cubridmigration.core.datatype.DataTypeInstance;
 import com.cubrid.cubridmigration.cubrid.trans.converter.ClobConverter;
-import java.io.StringReader;
+
 import junit.framework.Assert;
+
 import org.junit.Test;
+
+import java.io.StringReader;
 
 public class ClobConverterTest {
 

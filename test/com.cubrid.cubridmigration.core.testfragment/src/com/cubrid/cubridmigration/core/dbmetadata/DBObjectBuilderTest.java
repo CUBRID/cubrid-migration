@@ -36,10 +36,13 @@ import com.cubrid.cubridmigration.core.dbobject.Table;
 import com.cubrid.cubridmigration.core.dbobject.Version;
 import com.cubrid.cubridmigration.core.dbtype.DatabaseType;
 import com.cubrid.cubridmigration.cubrid.meta.CUBRIDSchemaFetcher;
+
+import junit.framework.Assert;
+
+import org.junit.Test;
+
 import java.sql.Connection;
 import java.sql.SQLException;
-import junit.framework.Assert;
-import org.junit.Test;
 
 /**
  * DBObjectBuilderTest

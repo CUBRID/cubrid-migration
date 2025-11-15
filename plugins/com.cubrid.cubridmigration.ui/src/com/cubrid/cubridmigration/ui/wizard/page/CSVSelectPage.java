@@ -57,11 +57,7 @@ import com.cubrid.cubridmigration.ui.wizard.dialog.CSVImportSettingDialog;
 import com.cubrid.cubridmigration.ui.wizard.dialog.CUBRIDHadoopFSExplorer;
 import com.cubrid.cubridmigration.ui.wizard.utils.MigrationCfgUtils;
 import com.cubrid.cubridmigration.ui.wizard.utils.VerifyResultMessages;
-import java.io.File;
-import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
+
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.MenuManager;
@@ -93,6 +89,12 @@ import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Text;
 import org.slf4j.Logger;
+
+import java.io.File;
+import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
 
 /**
  * New wizard step 2. choose CSV files to be executed.
@@ -164,7 +166,9 @@ public class CSVSelectPage extends MigrationWizardPage {
         }
     }
 
-    /** @author Kevin Cao */
+    /**
+     * @author Kevin Cao
+     */
     private final class CSVColumnsTableContentProvider extends StructuredContentProviderAdaptor {
         private final MigrationWizard wizard;
 
@@ -203,7 +207,9 @@ public class CSVSelectPage extends MigrationWizardPage {
         }
     }
 
-    /** @author Kevin Cao */
+    /**
+     * @author Kevin Cao
+     */
     private final class CSVFilesTableViewerCellModifier extends ObjectArrayRowCellModifier {
 
         /**
@@ -261,7 +267,9 @@ public class CSVSelectPage extends MigrationWizardPage {
         }
     }
 
-    /** @author Kevin Cao */
+    /**
+     * @author Kevin Cao
+     */
     private static final class CSVFilesTableViewerContentProvider
             extends StructuredContentProviderAdaptor {
 

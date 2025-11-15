@@ -32,9 +32,11 @@ package com.cubrid.cubridmigration.mariadb;
 import com.cubrid.cubridmigration.core.engine.config.MigrationConfiguration;
 import com.cubrid.cubridmigration.core.engine.template.TemplateParserTest;
 import com.cubrid.cubridmigration.mariadb.export.MariaDBExportHelper;
-import java.util.Locale;
+
 import org.junit.Assert;
 import org.junit.Test;
+
+import java.util.Locale;
 
 public class MariaDBExportHelperTest {
 

@@ -33,6 +33,7 @@ package com.cubrid.cubridmigration.cubrid.trans.converter;
 import com.cubrid.cubridmigration.core.datatype.DataTypeInstance;
 import com.cubrid.cubridmigration.core.engine.config.MigrationConfiguration;
 import com.cubrid.cubridmigration.core.trans.AbstractDataConverter;
+
 import java.math.BigDecimal;
 
 /**

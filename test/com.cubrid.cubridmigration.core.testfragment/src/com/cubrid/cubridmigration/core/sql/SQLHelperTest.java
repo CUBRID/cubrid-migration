@@ -31,9 +31,11 @@
 package com.cubrid.cubridmigration.core.sql;
 
 import com.cubrid.cubridmigration.core.common.json.ReadFile;
-import java.io.IOException;
+
 import org.junit.Assert;
 import org.junit.Test;
+
+import java.io.IOException;
 
 /**
  * SQLHelperTest
@@ -60,8 +62,9 @@ public class SQLHelperTest {
     @Test
     public void testGetQuerySpec() {
         String viewDDL1 =
-                "CREATE ALGORITHM=UNDEFINED DEFINER=`mydbadmin`@`192.168.1.175` SQL SECURITY DEFINER VIEW `tgt_view` AS "
-                        + "select `tgt`.`d` AS `d`,`tgt`.`ff` AS `ff`,`tgt`.`aa` AS `aa` from `tgt` ";
+                "CREATE ALGORITHM=UNDEFINED DEFINER=`mydbadmin`@`192.168.1.175` SQL SECURITY"
+                        + " DEFINER VIEW `tgt_view` AS select `tgt`.`d` AS `d`,`tgt`.`ff` AS"
+                        + " `ff`,`tgt`.`aa` AS `aa` from `tgt` ";
         String querySpec1 = sqlHelper.getViewQuerySpec(viewDDL1);
         Assert.assertNotNull(querySpec1);
 
@@ -71,21 +74,24 @@ public class SQLHelperTest {
                 "select `tgt`.`d` AS `d`,`tgt`.`ff` AS `ff`,`tgt`.`aa` AS `aa` from `tgt` ",
                 querySpec1);
         String viewDDL2 =
-                "CREATE ALGORITHM=UNDEFINED DEFINER=`mydbadmin`@`192.168.1.34` SQL SECURITY DEFINER VIEW `tgtview` AS "
-                        + "select `tgt`.`d` AS `d`,`tgt`.`gsdf` AS `gsdf`,`tgt`.`ff` AS `ff`,`tgt`.`aa` AS `aa`,`tgt`.`t1` AS `t1` from `tgt`";
+                "CREATE ALGORITHM=UNDEFINED DEFINER=`mydbadmin`@`192.168.1.34` SQL SECURITY DEFINER"
+                    + " VIEW `tgtview` AS select `tgt`.`d` AS `d`,`tgt`.`gsdf` AS `gsdf`,`tgt`.`ff`"
+                    + " AS `ff`,`tgt`.`aa` AS `aa`,`tgt`.`t1` AS `t1` from `tgt`";
         String querySpec3 = sqlHelper.getViewQuerySpec(viewDDL2);
         Assert.assertNotNull(querySpec3);
         Assert.assertEquals(
-                "select `tgt`.`d` AS `d`,`tgt`.`gsdf` AS `gsdf`,`tgt`.`ff` AS `ff`,`tgt`.`aa` AS `aa`,`tgt`.`t1` AS `t1` from `tgt`",
+                "select `tgt`.`d` AS `d`,`tgt`.`gsdf` AS `gsdf`,`tgt`.`ff` AS `ff`,`tgt`.`aa` AS"
+                        + " `aa`,`tgt`.`t1` AS `t1` from `tgt`",
                 querySpec3);
 
         viewDDL2 =
-                "create view [tgtview(c1,c2)] AS "
-                        + "select `tgt`.`d` AS `d`,`tgt`.`gsdf` AS `gsdf`,`tgt`.`ff` AS `ff`,`tgt`.`aa` AS `aa`,`tgt`.`t1` AS `t1` from `tgt`";
+                "create view [tgtview(c1,c2)] AS select `tgt`.`d` AS `d`,`tgt`.`gsdf` AS"
+                    + " `gsdf`,`tgt`.`ff` AS `ff`,`tgt`.`aa` AS `aa`,`tgt`.`t1` AS `t1` from `tgt`";
         querySpec3 = sqlHelper.getViewQuerySpec(viewDDL2);
         Assert.assertNotNull(querySpec3);
         Assert.assertEquals(
-                "select `tgt`.`d` AS `d`,`tgt`.`gsdf` AS `gsdf`,`tgt`.`ff` AS `ff`,`tgt`.`aa` AS `aa`,`tgt`.`t1` AS `t1` from `tgt`",
+                "select `tgt`.`d` AS `d`,`tgt`.`gsdf` AS `gsdf`,`tgt`.`ff` AS `ff`,`tgt`.`aa` AS"
+                        + " `aa`,`tgt`.`t1` AS `t1` from `tgt`",
                 querySpec3);
     }
 

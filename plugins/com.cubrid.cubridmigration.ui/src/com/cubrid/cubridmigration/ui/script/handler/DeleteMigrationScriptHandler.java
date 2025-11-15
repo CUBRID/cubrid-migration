@@ -33,9 +33,11 @@ package com.cubrid.cubridmigration.ui.script.handler;
 import com.cubrid.cubridmigration.ui.message.Messages;
 import com.cubrid.cubridmigration.ui.script.MigrationScript;
 import com.cubrid.cubridmigration.ui.script.MigrationScriptManager;
+
+import org.eclipse.jface.dialogs.MessageDialog;
+
 import java.text.MessageFormat;
 import java.util.List;
-import org.eclipse.jface.dialogs.MessageDialog;
 
 /**
  * Action to delete migration scripts.

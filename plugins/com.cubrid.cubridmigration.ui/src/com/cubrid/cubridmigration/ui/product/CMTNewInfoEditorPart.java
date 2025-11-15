@@ -32,7 +32,7 @@ package com.cubrid.cubridmigration.ui.product;
 
 import com.cubrid.cubridmigration.ui.common.UICommonTool;
 import com.cubrid.cubridmigration.ui.message.Messages;
-import java.net.URL;
+
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.browser.Browser;
@@ -46,6 +46,8 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.browser.IWebBrowser;
 import org.eclipse.ui.browser.IWorkbenchBrowserSupport;
 import org.eclipse.ui.part.EditorPart;
+
+import java.net.URL;
 
 /**
  * CUBRID new information editor part

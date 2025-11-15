@@ -33,10 +33,12 @@ package com.cubrid.cubridmigration.core.datatype;
 import com.cubrid.cubridmigration.core.dbobject.Catalog;
 import com.cubrid.cubridmigration.core.dbobject.Column;
 import com.cubrid.cubridmigration.core.dbtype.IDependOnDatabaseType;
+
+import org.apache.commons.lang3.StringUtils;
+
 import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.apache.commons.lang3.StringUtils;
 
 /**
  * DBDataTypeHelper Description

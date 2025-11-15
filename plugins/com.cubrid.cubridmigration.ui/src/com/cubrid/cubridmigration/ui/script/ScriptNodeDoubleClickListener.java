@@ -35,6 +35,7 @@ import com.cubrid.cubridmigration.ui.common.UICommonTool;
 import com.cubrid.cubridmigration.ui.common.navigator.node.MigrationScriptNode;
 import com.cubrid.cubridmigration.ui.message.Messages;
 import com.cubrid.cubridmigration.ui.wizard.MigrationWizardFactory;
+
 import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.widgets.Display;
@@ -50,7 +51,9 @@ import org.slf4j.Logger;
 final class ScriptNodeDoubleClickListener extends MouseAdapter {
     private static final Logger LOGGER = LogUtil.getLogger(MigrationScriptExplorerView.class);
 
-    /** @param event MouseEvent */
+    /**
+     * @param event MouseEvent
+     */
     public void mouseDoubleClick(MouseEvent event) {
         Tree tree = (Tree) event.getSource();
         if (tree.getSelectionCount() == 0) {

@@ -33,6 +33,7 @@ package com.cubrid.cubridmigration.ui.script;
 import com.cubrid.common.ui.navigator.ICUBRIDNode;
 import com.cubrid.cubridmigration.ui.MigrationUIPlugin;
 import com.cubrid.cubridmigration.ui.common.navigator.node.MigrationScriptNode;
+
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.swt.graphics.Image;

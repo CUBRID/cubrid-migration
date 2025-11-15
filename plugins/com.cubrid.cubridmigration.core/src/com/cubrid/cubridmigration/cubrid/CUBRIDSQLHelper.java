@@ -47,6 +47,10 @@ import com.cubrid.cubridmigration.core.dbobject.Synonym;
 import com.cubrid.cubridmigration.core.dbobject.Table;
 import com.cubrid.cubridmigration.core.dbobject.View;
 import com.cubrid.cubridmigration.core.sql.SQLHelper;
+
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -54,8 +58,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
 
 /**
  * CUBRIDSQLHelper
@@ -777,32 +779,7 @@ public class CUBRIDSQLHelper extends SQLHelper {
      * @return String
      */
     public String getTestSelectSQL(String sql) {
-        String cleanSql = sql.toUpperCase().trim();
-        String realSQL = sql;
-        Pattern groupbyPattern =
-                Pattern.compile("GROUP\\s+BY", Pattern.MULTILINE | Pattern.CASE_INSENSITIVE);
-        Pattern orderbyPattern =
-                Pattern.compile("ORDER\\s+BY", Pattern.MULTILINE | Pattern.CASE_INSENSITIVE);
-        realSQL = realSQL.replaceAll(LIMIT_PATTEN_1, "");
-        realSQL = realSQL.replaceAll(LIMIT_PATTEN_2, "");
-        Matcher groupbyMatcher = groupbyPattern.matcher(cleanSql);
-        Matcher orderbyMatcher = orderbyPattern.matcher(cleanSql);
-        StringBuilder buf = new StringBuilder(realSQL);
-        if (groupbyMatcher.find()) {
-            if (cleanSql.indexOf("HAVING") == -1) {
-                buf.append(" HAVING ");
-            } else {
-                buf.append(" AND ");
-            }
-            buf.append(" GROUPBY_NUM() = 1 ");
-        } else if (orderbyMatcher.find()) {
-            buf.append(" FOR ORDERBY_NUM() = 1 ");
-        } else if (cleanSql.indexOf("WHERE") != -1) {
-            buf.append(" AND ROWNUM = 1");
-        } else {
-            buf.append(" WHERE ROWNUM = 1");
-        }
-        return buf.toString();
+        return "SELECT * FROM ( " + sql + " ) WHERE 1<>1";
     }
 
     /**

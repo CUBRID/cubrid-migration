@@ -130,7 +130,9 @@ public class View extends TableOrView {
         return true;
     }
 
-    /** @return object type */
+    /**
+     * @return object type
+     */
     public String getObjType() {
         return OBJ_TYPE_VIEW;
     }

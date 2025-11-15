@@ -31,6 +31,7 @@
 package com.cubrid.cubridmigration.core.export;
 
 import com.cubrid.cubridmigration.core.dbobject.Column;
+
 import java.sql.ResultSet;
 import java.sql.SQLException;
 

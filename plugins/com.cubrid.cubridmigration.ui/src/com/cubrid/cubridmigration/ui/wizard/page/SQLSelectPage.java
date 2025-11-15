@@ -37,12 +37,7 @@ import com.cubrid.common.ui.swt.table.TableViewerBuilder;
 import com.cubrid.cubridmigration.core.common.CharsetUtils;
 import com.cubrid.cubridmigration.core.engine.config.MigrationConfiguration;
 import com.cubrid.cubridmigration.ui.message.Messages;
-import java.io.File;
-import java.text.NumberFormat;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Locale;
+
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
@@ -69,6 +64,13 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableItem;
 import org.slf4j.Logger;
 
+import java.io.File;
+import java.text.NumberFormat;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Locale;
+
 /**
  * new wizard step 1. choose SQL files to be executed.
  *
@@ -77,7 +79,9 @@ import org.slf4j.Logger;
  */
 public class SQLSelectPage extends MigrationWizardPage {
 
-    /** @author Kevin Cao */
+    /**
+     * @author Kevin Cao
+     */
     private final class SQLFilesTableLabelProvider extends TableLabelProviderAdapter {
 
         /**

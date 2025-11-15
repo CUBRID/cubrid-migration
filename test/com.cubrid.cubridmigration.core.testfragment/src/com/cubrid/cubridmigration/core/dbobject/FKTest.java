@@ -31,6 +31,7 @@
 package com.cubrid.cubridmigration.core.dbobject;
 
 import junit.framework.Assert;
+
 import org.junit.Test;
 
 public class FKTest {

@@ -30,10 +30,11 @@
  */
 package com.cubrid.cubridmigration.core.engine.config;
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
-import org.apache.commons.lang3.StringUtils;
 
 /**
  * SourceColumnConfig Description
@@ -63,7 +64,9 @@ public class SourceColumnConfig extends SourceConfig {
         return parent;
     }
 
-    /** @param parent the parent to set */
+    /**
+     * @param parent the parent to set
+     */
     public void setParent(SourceTableConfig parent) {
         this.parent = parent;
     }

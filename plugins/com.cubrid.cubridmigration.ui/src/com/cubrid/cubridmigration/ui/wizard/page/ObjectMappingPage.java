@@ -88,9 +88,7 @@ import com.cubrid.cubridmigration.ui.wizard.page.view.TableMappingView;
 import com.cubrid.cubridmigration.ui.wizard.page.view.ViewMappingView;
 import com.cubrid.cubridmigration.ui.wizard.utils.MigrationCfgUtils;
 import com.cubrid.cubridmigration.ui.wizard.utils.VerifyResultMessages;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.jface.dialogs.Dialog;
@@ -117,6 +115,10 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.ToolItem;
 import org.slf4j.Logger;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Page to set up mapping from source DB objects to target DB objects
@@ -815,7 +817,9 @@ public class ObjectMappingPage extends MigrationWizardPage implements IRefreshab
         return true;
     }
 
-    /** @return save current view result */
+    /**
+     * @return save current view result
+     */
     protected boolean saveCurrentView() {
         if (currentView != null) {
             VerifyResultMessages msg = currentView.save();

@@ -32,10 +32,12 @@ package com.cubrid.cubridmigration.ui.script.handler;
 
 import com.cubrid.cubridmigration.ui.script.MigrationScript;
 import com.cubrid.cubridmigration.ui.script.dialog.ScheduleMigrationTaskDialog;
-import java.util.List;
+
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.TreeViewer;
+
+import java.util.List;
 
 /**
  * Action to reservating migration.

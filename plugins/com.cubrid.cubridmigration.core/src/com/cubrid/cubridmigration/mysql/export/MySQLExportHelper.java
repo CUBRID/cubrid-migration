@@ -41,13 +41,15 @@ import com.cubrid.cubridmigration.core.export.handler.NumberTypeHandler;
 import com.cubrid.cubridmigration.core.export.handler.TimeTypeHandler;
 import com.cubrid.cubridmigration.core.export.handler.TimestampTypeHandler;
 import com.cubrid.cubridmigration.mysql.export.handler.MySQLYearTypeHandler;
+
+import org.slf4j.Logger;
+
 import java.lang.reflect.Method;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.slf4j.Logger;
 
 /**
  * a class help to export MySQL data and verify MySQL sql statement

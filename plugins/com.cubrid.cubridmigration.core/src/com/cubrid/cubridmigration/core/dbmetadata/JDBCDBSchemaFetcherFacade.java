@@ -34,6 +34,7 @@ import com.cubrid.cubridmigration.core.common.Closer;
 import com.cubrid.cubridmigration.core.connection.ConnParameters;
 import com.cubrid.cubridmigration.core.dbobject.Catalog;
 import com.cubrid.cubridmigration.core.dbtype.DatabaseType;
+
 import java.sql.Connection;
 import java.sql.SQLException;
 

@@ -35,6 +35,7 @@ import com.cubrid.cubridmigration.core.engine.config.MigrationConfiguration;
 import com.cubrid.cubridmigration.ui.common.UICommonTool;
 import com.cubrid.cubridmigration.ui.message.Messages;
 import com.cubrid.cubridmigration.ui.preference.MigrationConfigPage;
+
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
@@ -205,7 +206,9 @@ public class PerformanceSettingsDialog extends Dialog {
         btnOK.setEnabled(true);
     }
 
-    /** @return shell style */
+    /**
+     * @return shell style
+     */
     protected int getShellStyle() {
         return super.getShellStyle() | SWT.RESIZE | SWT.MAX;
     }

@@ -31,6 +31,7 @@
 package com.cubrid.cubridmigration.mysql.trans;
 
 import com.cubrid.cubridmigration.core.mapping.AbstractDataTypeMappingHelper;
+
 import java.util.Locale;
 
 /**

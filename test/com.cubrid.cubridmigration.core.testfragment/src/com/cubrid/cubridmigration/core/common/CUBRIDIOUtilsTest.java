@@ -30,6 +30,10 @@
  */
 package com.cubrid.cubridmigration.core.common;
 
+import junit.framework.Assert;
+
+import org.junit.Test;
+
 import java.io.File;
 import java.io.FileReader;
 import java.io.Reader;
@@ -38,8 +42,6 @@ import java.net.InetAddress;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
-import junit.framework.Assert;
-import org.junit.Test;
 
 public class CUBRIDIOUtilsTest {
 

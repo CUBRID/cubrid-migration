@@ -56,6 +56,11 @@ import com.cubrid.cubridmigration.mssql.MSSQLDataTypeHelper;
 import com.cubrid.cubridmigration.mssql.MSSQLSQLHelper;
 import com.cubrid.cubridmigration.mssql.dbobj.MSSQLPartitionSchemas;
 import com.cubrid.cubridmigration.mssql.export.MSSQLExportHelper;
+
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -69,9 +74,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
 
 /**
  * MSSQLSchemaFetcher
@@ -88,32 +90,31 @@ public final class MSSQLSchemaFetcher extends AbstractJDBCSchemaFetcher {
     private static final String OBJECT_TYPE_VIEW = "VIEW";
 
     private static final String SHOW_CHARSET =
-            "SELECT [DEFAULT_CHARACTER_SET_NAME] FROM [catalogName].[INFORMATION_SCHEMA].[SCHEMATA] "
-                    + "WHERE [CATALOG_NAME]=? AND [SCHEMA_NAME]='dbo'";
+            "SELECT [DEFAULT_CHARACTER_SET_NAME] FROM [catalogName].[INFORMATION_SCHEMA].[SCHEMATA]"
+                    + " WHERE [CATALOG_NAME]=? AND [SCHEMA_NAME]='dbo'";
     private static final String SHOW_DDL =
-            "SELECT [definition]  FROM [catalogName].[sys].[all_sql_modules] a, [catalogName].[sys].[all_objects] b"
-                    + " WHERE b.[schema_id]=? and a.[object_id]=b.[object_id] "
-                    + "and b.[name]=? and b.[type_desc]=? ";
+            "SELECT [definition]  FROM [catalogName].[sys].[all_sql_modules] a,"
+                    + " [catalogName].[sys].[all_objects] b WHERE b.[schema_id]=? and"
+                    + " a.[object_id]=b.[object_id] and b.[name]=? and b.[type_desc]=? ";
 
     private static final String SHOW_IDENTITY =
-            "SELECT a.[name] tablename, b.[name] columnname, "
-                    + "cast(b.[seed_value] as bigint) seed_value, "
-                    + "cast(b.[increment_value] as bigint) increment_value, "
-                    + "cast(b.[last_value] as bigint) last_value "
-                    + "FROM [catalogName].[sys].[tables] a, [catalogName].[sys].[identity_columns] b "
-                    + "Where a.[object_id]=b.[object_id] and a.[schema_id]=?";
+            "SELECT a.[name] tablename, b.[name] columnname, cast(b.[seed_value] as bigint)"
+                + " seed_value, cast(b.[increment_value] as bigint) increment_value,"
+                + " cast(b.[last_value] as bigint) last_value FROM [catalogName].[sys].[tables] a,"
+                + " [catalogName].[sys].[identity_columns] b Where a.[object_id]=b.[object_id] and"
+                + " a.[schema_id]=?";
 
     private static final String SHOW_SCHEMA_ID =
-            "SELECT [schema_id],[name] FROM [catalogName].[sys].[schemas] WHERE [name] in ("
-                    + "SELECT distinct [TABLE_SCHEMA] FROM [catalogName].[INFORMATION_SCHEMA].[TABLES])";
+            "SELECT [schema_id],[name] FROM [catalogName].[sys].[schemas] WHERE [name] in (SELECT"
+                    + " distinct [TABLE_SCHEMA] FROM [catalogName].[INFORMATION_SCHEMA].[TABLES])";
 
     private static final String SHOW_SYNONYM =
-            "SELECT [name], [base_object_name] FROM [sys].[synonyms] "
-                    + "WHERE [schema_id] = (SELECT [schema_id] FROM [sys].[schemas] WHERE [name]=?)";
+            "SELECT [name], [base_object_name] FROM [sys].[synonyms] WHERE [schema_id] = (SELECT"
+                    + " [schema_id] FROM [sys].[schemas] WHERE [name]=?)";
 
     private static final String USER_DEF_DATA_TYPE =
-            "select t.name as username,t2.name as realname"
-                    + " from sys.systypes t,sys.systypes t2 where t.xtype<>t.xusertype and t.xtype=t2.xusertype";
+            "select t.name as username,t2.name as realname from sys.systypes t,sys.systypes t2"
+                    + " where t.xtype<>t.xusertype and t.xtype=t2.xusertype";
 
     private static final String SQL_GET_TABLE_COMMENT =
             "SELECT"
@@ -132,46 +133,23 @@ public final class MSSQLSchemaFetcher extends AbstractJDBCSchemaFetcher {
                     + "    AND obj.name = ?";
 
     private static final String SQL_GET_TABLE_COLUMN_COMMENT =
-            "SELECT"
-                    + "    CAST(ep.value AS NVARCHAR(MAX)) AS ColumnComment "
-                    + "FROM "
-                    + "    sys.extended_properties AS ep "
-                    + "INNER JOIN "
-                    + "    sys.objects AS obj ON ep.major_id = obj.object_id "
-                    + "INNER JOIN "
-                    + "    sys.schemas AS s ON obj.schema_id = s.schema_id "
-                    + "INNER JOIN "
-                    + "    sys.columns AS col ON ep.major_id = col.object_id AND ep.minor_id = col.column_id "
-                    + "WHERE "
-                    + "    ep.name = 'MS_Description' "
-                    + "    AND obj.type = 'U' "
-                    + "    AND s.name = ? "
-                    + "    AND obj.name = ? "
-                    + "    AND col.name = ? "
-                    + "ORDER BY "
-                    + "    col.column_id; ";
+            "SELECT    CAST(ep.value AS NVARCHAR(MAX)) AS ColumnComment FROM    "
+                + " sys.extended_properties AS ep INNER JOIN     sys.objects AS obj ON ep.major_id"
+                + " = obj.object_id INNER JOIN     sys.schemas AS s ON obj.schema_id = s.schema_id"
+                + " INNER JOIN     sys.columns AS col ON ep.major_id = col.object_id AND"
+                + " ep.minor_id = col.column_id WHERE     ep.name = 'MS_Description'     AND"
+                + " obj.type = 'U'     AND s.name = ?     AND obj.name = ?     AND col.name = ?"
+                + " ORDER BY     col.column_id; ";
 
     private static final String SQL_GET_ALL_TABLE_COLUMN_COMMENTS =
-            "SELECT"
-                    + "    s.name AS SchemaName, "
-                    + "    obj.name AS TableName, "
-                    + "    col.name AS ColumnName, "
-                    + "    CAST(ep.value AS NVARCHAR(MAX)) AS ColumnComment "
-                    + "FROM "
-                    + "    sys.extended_properties AS ep "
-                    + "INNER JOIN "
-                    + "    sys.objects AS obj ON ep.major_id = obj.object_id "
-                    + "INNER JOIN "
-                    + "    sys.schemas AS s ON obj.schema_id = s.schema_id "
-                    + "INNER JOIN "
-                    + "    sys.columns AS col ON ep.major_id = col.object_id AND ep.minor_id = col.column_id "
-                    + "WHERE "
-                    + "    ep.name = 'MS_Description' "
-                    + "    AND obj.type = 'U' "
-                    + "    AND s.name = ? "
-                    + "    AND obj.name = ? "
-                    + "ORDER BY "
-                    + "    col.column_id; ";
+            "SELECT    s.name AS SchemaName,     obj.name AS TableName,     col.name AS ColumnName,"
+                + "     CAST(ep.value AS NVARCHAR(MAX)) AS ColumnComment FROM    "
+                + " sys.extended_properties AS ep INNER JOIN     sys.objects AS obj ON ep.major_id"
+                + " = obj.object_id INNER JOIN     sys.schemas AS s ON obj.schema_id = s.schema_id"
+                + " INNER JOIN     sys.columns AS col ON ep.major_id = col.object_id AND"
+                + " ep.minor_id = col.column_id WHERE     ep.name = 'MS_Description'     AND"
+                + " obj.type = 'U'     AND s.name = ?     AND obj.name = ? ORDER BY    "
+                + " col.column_id; ";
 
     private static final String SQL_GET_VIEW_COMMENT =
             "SELECT "
@@ -201,19 +179,10 @@ public final class MSSQLSchemaFetcher extends AbstractJDBCSchemaFetcher {
                     + "    )";
 
     private static final String SQL_GET_ALL_VIEW_COLUMN_COMMENTS =
-            "SELECT "
-                    + "    v.name AS ViewName, "
-                    + "    c.name AS ColumnName, "
-                    + "    ep.value AS Comment "
-                    + "FROM "
-                    + "    sys.extended_properties ep "
-                    + "JOIN "
-                    + "    sys.columns c ON ep.major_id = c.object_id AND ep.minor_id = c.column_id "
-                    + "JOIN "
-                    + "    sys.views v ON c.object_id = v.object_id "
-                    + "WHERE "
-                    + "    ep.name = 'MS_Description' "
-                    + "    AND v.name = ?";
+            "SELECT     v.name AS ViewName,     c.name AS ColumnName,     ep.value AS Comment FROM "
+                + "    sys.extended_properties ep JOIN     sys.columns c ON ep.major_id ="
+                + " c.object_id AND ep.minor_id = c.column_id JOIN     sys.views v ON c.object_id ="
+                + " v.object_id WHERE     ep.name = 'MS_Description'     AND v.name = ?";
 
     private static final Map<String, String> CHARSET_MAPPING = new HashMap<String, String>();
 
@@ -329,9 +298,10 @@ public final class MSSQLSchemaFetcher extends AbstractJDBCSchemaFetcher {
     private void buildPartitions(final Connection conn, final Catalog catalog, final Schema schema)
             throws SQLException {
         String sql =
-                "SELECT a.[name], a.[data_space_id], b.[type_desc], b.[fanout], b.[boundary_value_on_right], a.[function_id] "
-                        + " FROM [sys].[partition_schemes] a,[sys].[partition_functions] b"
-                        + " WHERE a.[function_id]=b.[function_id] AND a.[type]='PS' and b.[type]='R'";
+                "SELECT a.[name], a.[data_space_id], b.[type_desc], b.[fanout],"
+                        + " b.[boundary_value_on_right], a.[function_id]  FROM"
+                        + " [sys].[partition_schemes] a,[sys].[partition_functions] b WHERE"
+                        + " a.[function_id]=b.[function_id] AND a.[type]='PS' and b.[type]='R'";
 
         Map<Long, MSSQLPartitionSchemas> partSchemas = new HashMap<Long, MSSQLPartitionSchemas>();
         ResultSet rs = null; // NOPMD
@@ -376,8 +346,9 @@ public final class MSSQLSchemaFetcher extends AbstractJDBCSchemaFetcher {
             }
 
             sql =
-                    "SELECT a.[parameter_id], b.[name] FROM [sys].[partition_parameters] a, [sys].[types] b"
-                            + " WHERE a.[system_type_id]=b.[system_type_id] AND a.[function_id]=";
+                    "SELECT a.[parameter_id], b.[name] FROM [sys].[partition_parameters] a,"
+                            + " [sys].[types] b WHERE a.[system_type_id]=b.[system_type_id] AND"
+                            + " a.[function_id]=";
             try {
                 stmt = conn.createStatement();
                 rs = stmt.executeQuery(sql + ps.getFunctionId());
@@ -393,9 +364,10 @@ public final class MSSQLSchemaFetcher extends AbstractJDBCSchemaFetcher {
         }
 
         sql =
-                "SELECT b.[name], a.[data_space_id], a.[index_id], a.[object_id] "
-                        + " FROM [sys].[indexes] a, [sys].[tables] b,[sys].[schemas] s"
-                        + " WHERE a.[index_id ]< 2 AND a.[object_id]=b.[object_id] and b.[schema_id]=s.[schema_id] and s.[name]='"
+                "SELECT b.[name], a.[data_space_id], a.[index_id], a.[object_id]  FROM"
+                    + " [sys].[indexes] a, [sys].[tables] b,[sys].[schemas] s WHERE a.[index_id ]<"
+                    + " 2 AND a.[object_id]=b.[object_id] and b.[schema_id]=s.[schema_id] and"
+                    + " s.[name]='"
                         + schema.getName()
                         + "' order by b.[name],a.[data_space_id]";
         try {
@@ -977,7 +949,9 @@ public final class MSSQLSchemaFetcher extends AbstractJDBCSchemaFetcher {
         }
         // TO fix the jdbc's error of reading FK information
         String sql =
-                "select CONSTRAINT_NAME,DELETE_RULE,UPDATE_RULE from INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS where CONSTRAINT_SCHEMA=? and CONSTRAINT_NAME=?";
+                "select CONSTRAINT_NAME,DELETE_RULE,UPDATE_RULE from"
+                    + " INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS where CONSTRAINT_SCHEMA=? and"
+                    + " CONSTRAINT_NAME=?";
         ResultSet rs = null; // NOPMD
         PreparedStatement stmt = conn.prepareStatement(sql);
         List<FK> fks = table.getFks();

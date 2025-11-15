@@ -30,9 +30,10 @@
  */
 package com.cubrid.cubridmigration.core.dbobject;
 
+import org.apache.commons.collections4.CollectionUtils;
+
 import java.util.ArrayList;
 import java.util.List;
-import org.apache.commons.collections4.CollectionUtils;
 
 /**
  * to store a table or view information
@@ -49,6 +50,7 @@ public abstract class TableOrView extends DBObject {
     protected String name;
 
     protected String comment;
+
     /** Owner name such as SCOTT of SCOTT.EMP on Oracle. It is a null value except Oracle. */
     protected String owner;
 

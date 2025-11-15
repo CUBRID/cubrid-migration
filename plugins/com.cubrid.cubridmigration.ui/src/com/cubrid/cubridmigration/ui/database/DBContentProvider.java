@@ -30,11 +30,12 @@
  */
 package com.cubrid.cubridmigration.ui.database;
 
+import org.eclipse.jface.viewers.IStructuredContentProvider;
+import org.eclipse.jface.viewers.Viewer;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import org.eclipse.jface.viewers.IStructuredContentProvider;
-import org.eclipse.jface.viewers.Viewer;
 
 /**
  * DBContentProvider

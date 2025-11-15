@@ -35,12 +35,15 @@ import com.cubrid.cubridmigration.core.common.xml.IXMLMemento;
 import com.cubrid.cubridmigration.core.common.xml.XMLMemento;
 import com.cubrid.cubridmigration.mysql.trans.MySQL2CUBRIDMigParas;
 import com.cubrid.cubridmigration.ui.MigrationUIPlugin;
-import java.io.IOException;
-import javax.xml.parsers.ParserConfigurationException;
+
 import org.eclipse.core.runtime.preferences.InstanceScope;
 import org.osgi.service.prefs.BackingStoreException;
 import org.osgi.service.prefs.Preferences;
 import org.slf4j.Logger;
+
+import java.io.IOException;
+
+import javax.xml.parsers.ParserConfigurationException;
 
 /**
  * Load and save the migration parameter value from preference

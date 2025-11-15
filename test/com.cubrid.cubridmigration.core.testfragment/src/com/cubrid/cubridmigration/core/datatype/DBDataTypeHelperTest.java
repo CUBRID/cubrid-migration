@@ -33,6 +33,7 @@ package com.cubrid.cubridmigration.core.datatype;
 import com.cubrid.cubridmigration.core.dbobject.Catalog;
 import com.cubrid.cubridmigration.core.dbobject.Column;
 import com.cubrid.cubridmigration.core.dbtype.DatabaseType;
+
 import org.junit.Assert;
 import org.junit.Test;
 

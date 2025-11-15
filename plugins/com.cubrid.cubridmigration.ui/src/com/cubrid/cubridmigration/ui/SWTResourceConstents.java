@@ -35,7 +35,9 @@ import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Display;
 
-/** @author Kevin Cao */
+/**
+ * @author Kevin Cao
+ */
 public class SWTResourceConstents {
     public static final Image IMAGE_D = MigrationUIPlugin.getImage("icon/delete.gif");
     public static final Image IMAGE_C = MigrationUIPlugin.getImage("icon/complete_status.gif");

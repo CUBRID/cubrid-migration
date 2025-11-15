@@ -48,6 +48,9 @@ import com.cubrid.cubridmigration.core.engine.event.MigrationErrorEvent;
 import com.cubrid.cubridmigration.core.engine.exception.NormalMigrationException;
 import com.cubrid.cubridmigration.core.engine.exporter.MigrationExporter;
 import com.cubrid.cubridmigration.core.export.DBExportHelper;
+
+import org.slf4j.Logger;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -55,7 +58,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import org.slf4j.Logger;
 
 /**
  * JDBCMigrationExporter Description
@@ -264,7 +266,8 @@ public class JDBCExporter extends MigrationExporter {
                     realPageCount =
                             Math.min(sTable.getTableRowCount() - totalExported, intPageCount);
                 }
-                String pagesql = expHelper.getPagedSelectSQL(sql, realPageCount, totalExported, pk);
+                String pagesql =
+                        expHelper.getPagedSelectSQL(stc, sql, realPageCount, totalExported, pk);
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("[SQL]PAGINATED=" + pagesql);
                 }

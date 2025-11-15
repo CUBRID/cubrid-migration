@@ -30,12 +30,13 @@
  */
 package com.cubrid.common.ui.swt;
 
-import java.util.HashMap;
-import java.util.Map.Entry;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Cursor;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.widgets.Display;
+
+import java.util.HashMap;
+import java.util.Map.Entry;
 
 public class Resources {
 

@@ -1,11 +1,11 @@
 
-Usage in Windows: migration.bat script [options]
-Usage in Linux: migration.sh script [options]
+Usage in Windows: migration.bat script [options] [output directory path]
+Usage in Linux: migration.sh script [options] [output directory path]
 
 Available options:
-    -s,           Configuration Name of source in db.conf(Required).
-    -t,           Configuration Name of target in db.conf(Required).
-    -o,           The output migration script file name(Required).
-    -schema,      If 'yes', the source schema will be packeted into output file, default is 'no'.
+    -s,           Source config name in db.conf (Required).
+    -t,           Target config name in db.conf (Required).
+    -o,           Output migration script file name (Required).
+    -schema,      Include source schema [yes|no] (Default: no).
 
 Please visit http://www.cubrid.org for more information.

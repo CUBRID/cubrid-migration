@@ -51,7 +51,9 @@ public class SourceConfig {
         return name;
     }
 
-    /** @param name the name to set */
+    /**
+     * @param name the name to set
+     */
     public void setName(String name) {
         this.name = name;
     }
@@ -65,7 +67,9 @@ public class SourceConfig {
         return target;
     }
 
-    /** @param target the target to set */
+    /**
+     * @param target the target to set
+     */
     public void setTarget(String target) {
         this.target = target;
     }

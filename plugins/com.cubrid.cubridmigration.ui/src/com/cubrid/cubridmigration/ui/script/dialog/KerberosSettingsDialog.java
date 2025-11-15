@@ -34,6 +34,7 @@ import com.cubrid.common.log.LogUtil;
 import com.cubrid.cubridmigration.core.common.SSHHostBaseInfo;
 import com.cubrid.cubridmigration.ui.common.CompositeUtils;
 import com.cubrid.cubridmigration.ui.message.Messages;
+
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
@@ -178,7 +179,9 @@ public class KerberosSettingsDialog extends Dialog {
         }
     }
 
-    /** @param newShell Shell */
+    /**
+     * @param newShell Shell
+     */
     protected void configureShell(Shell newShell) {
         super.configureShell(newShell);
         CompositeUtils.centerDialog(newShell);

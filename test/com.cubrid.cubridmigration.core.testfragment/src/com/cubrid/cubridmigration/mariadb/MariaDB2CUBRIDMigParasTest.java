@@ -30,10 +30,12 @@
 package com.cubrid.cubridmigration.mariadb;
 
 import com.cubrid.cubridmigration.mariadb.trans.MariaDB2CUBRIDMigParas;
+
+import org.junit.Test;
+
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.TimeZone;
-import org.junit.Test;
 
 public class MariaDB2CUBRIDMigParasTest {
 

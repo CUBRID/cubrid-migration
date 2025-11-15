@@ -35,6 +35,7 @@ import com.cubrid.cubridmigration.core.datatype.DataTypeInstance;
 import com.cubrid.cubridmigration.core.dbobject.Column;
 import com.cubrid.cubridmigration.core.dbtype.DatabaseType;
 import com.cubrid.cubridmigration.core.trans.MigrationTransFactory;
+
 import org.junit.Assert;
 import org.junit.Test;
 

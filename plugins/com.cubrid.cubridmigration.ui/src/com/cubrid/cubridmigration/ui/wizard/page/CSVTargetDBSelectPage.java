@@ -31,6 +31,7 @@
 package com.cubrid.cubridmigration.ui.wizard.page;
 
 import com.cubrid.cubridmigration.ui.message.Messages;
+
 import org.eclipse.jface.dialogs.PageChangedEvent;
 
 /**

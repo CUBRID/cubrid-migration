@@ -35,9 +35,12 @@ import com.cubrid.cubridmigration.core.engine.config.MigrationConfiguration;
 import com.cubrid.cubridmigration.core.engine.config.SourceEntryTableConfig;
 import com.cubrid.cubridmigration.core.engine.config.SourceSequenceConfig;
 import com.cubrid.cubridmigration.core.engine.template.TemplateParserTest;
-import java.math.BigInteger;
+
 import junit.framework.Assert;
+
 import org.junit.Test;
+
+import java.math.BigInteger;
 
 public class CUBRIDExportHelperTest {
 
@@ -56,7 +59,8 @@ public class CUBRIDExportHelperTest {
                 "select * from code group by f1 HAVING  GROUPBY_NUM()  BETWEEN 1001 AND 2000",
                 helper.getPagedSelectSQL("select * from code group by f1", 1000, 1000, null));
         Assert.assertEquals(
-                "select * from code group by f1 having f1=1 AND  GROUPBY_NUM()  BETWEEN 1001 AND 2000",
+                "select * from code group by f1 having f1=1 AND  GROUPBY_NUM()  BETWEEN 1001 AND"
+                        + " 2000",
                 helper.getPagedSelectSQL(
                         "select * from code group by f1 having f1=1", 1000, 1000, null));
         Assert.assertEquals(

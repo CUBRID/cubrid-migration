@@ -34,6 +34,7 @@ import com.cubrid.common.ui.navigator.ICUBRIDNode;
 import com.cubrid.cubridmigration.ui.common.CompositeUtils;
 import com.cubrid.cubridmigration.ui.message.Messages;
 import com.cubrid.cubridmigration.ui.script.controller.MigrationScriptExplorerController;
+
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IMenuListener;
@@ -151,7 +152,9 @@ public class MigrationScriptExplorerView extends ViewPart
         addGroupManageMenusToViewMenu(menuManager);
     }
 
-    /** @param menuManager IMenuManager */
+    /**
+     * @param menuManager IMenuManager
+     */
     protected void addGroupManageMenusToViewMenu(final IMenuManager menuManager) {
         final IAction act9 =
                 new Action(Messages.menuItem, Action.AS_RADIO_BUTTON) {

@@ -36,9 +36,12 @@ import com.cubrid.cubridmigration.core.dbobject.Schema;
 import com.cubrid.cubridmigration.core.dbobject.View;
 import com.cubrid.cubridmigration.core.dbtype.DatabaseType;
 import com.cubrid.cubridmigration.core.engine.template.TemplateParserTest;
-import java.util.List;
+
 import junit.framework.Assert;
+
 import org.junit.Test;
+
+import java.util.List;
 
 public class MigrationConfigurationTest {
 

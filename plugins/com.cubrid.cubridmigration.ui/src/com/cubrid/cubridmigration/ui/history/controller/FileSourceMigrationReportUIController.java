@@ -39,18 +39,22 @@ import com.cubrid.cubridmigration.ui.history.MigrationReporter;
 import com.cubrid.cubridmigration.ui.history.tableviewer.FileSourceMigrationResultOverviewLabelProvider;
 import com.cubrid.cubridmigration.ui.message.Messages;
 import com.cubrid.cubridmigration.ui.wizard.MigrationWizardFactory;
+
+import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Shell;
+import org.slf4j.Logger;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
-import org.eclipse.jface.dialogs.MessageDialog;
-import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Shell;
-import org.slf4j.Logger;
 
-/** @author Kevin Cao */
+/**
+ * @author Kevin Cao
+ */
 public class FileSourceMigrationReportUIController {
 
     private static final Logger LOG =
@@ -67,7 +71,9 @@ public class FileSourceMigrationReportUIController {
         controller.loadLogText(reporter, textAppender);
     }
 
-    /** @param reporter MigrationReporter */
+    /**
+     * @param reporter MigrationReporter
+     */
     public void openWizardByReport(MigrationReporter reporter) {
         Shell shell = Display.getDefault().getActiveShell();
         try {

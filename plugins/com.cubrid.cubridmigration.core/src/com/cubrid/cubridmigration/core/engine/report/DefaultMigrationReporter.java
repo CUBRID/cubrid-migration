@@ -53,9 +53,12 @@ import com.cubrid.cubridmigration.core.engine.event.MigrationNoSupportEvent;
 import com.cubrid.cubridmigration.core.engine.event.MigrationStartEvent;
 import com.cubrid.cubridmigration.core.engine.event.MigrationXLSNoSupportEvent;
 import com.cubrid.cubridmigration.core.engine.event.StartExpTableEvent;
-import com.cubrid.cubridmigration.core.engine.template.MigrationTemplateParser;
+import com.cubrid.cubridmigration.core.engine.template.writer.MigrationTemplateWriter;
 import com.cubrid.cubridmigration.cubrid.CUBRIDSQLHelper;
 import com.cubrid.cubridmigration.cubrid.CUBRIDTimeUtil;
+
+import org.slf4j.Logger;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -65,7 +68,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.slf4j.Logger;
 
 /**
  * Default Migration Reporter
@@ -146,7 +148,7 @@ public abstract class DefaultMigrationReporter implements IMigrationReporter {
             renameObjFile = reObjFile.getName();
             // Configuration file
             configFile = "migration_script_" + timeTag + SCRIPT_FILE_EX;
-            MigrationTemplateParser.save(config, reportDir + configFile, false);
+            MigrationTemplateWriter.save(config, reportDir + configFile, false);
             getSummary();
         } catch (IOException e) {
             throw new RuntimeException(e);

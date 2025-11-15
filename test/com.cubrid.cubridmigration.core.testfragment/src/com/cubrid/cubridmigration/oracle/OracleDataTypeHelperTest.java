@@ -33,9 +33,12 @@ package com.cubrid.cubridmigration.oracle;
 import com.cubrid.cubridmigration.core.dbobject.Column;
 import com.cubrid.cubridmigration.core.engine.config.MigrationConfiguration;
 import com.cubrid.cubridmigration.core.engine.template.TemplateParserTest;
-import java.sql.Types;
+
 import junit.framework.Assert;
+
 import org.junit.Test;
+
+import java.sql.Types;
 
 public class OracleDataTypeHelperTest {
     OracleDataTypeHelper helper = OracleDataTypeHelper.getInstance(null);

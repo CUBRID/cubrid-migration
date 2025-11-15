@@ -32,13 +32,15 @@ package com.cubrid.cubridmigration.core.engine.task;
 
 import com.cubrid.cubridmigration.core.common.CUBRIDIOUtils;
 import com.cubrid.cubridmigration.core.common.PathUtils;
-import java.io.File;
+
 import jxl.Cell;
 import jxl.Sheet;
 import jxl.Workbook;
 import jxl.WorkbookSettings;
 import jxl.write.WritableSheet;
 import jxl.write.WritableWorkbook;
+
+import java.io.File;
 
 /**
  * Merge template files to output files in thread.

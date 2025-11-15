@@ -34,10 +34,12 @@ import com.cubrid.cubridmigration.core.TestUtil2;
 import com.cubrid.cubridmigration.core.connection.JDBCUtil;
 import com.cubrid.cubridmigration.core.engine.config.MigrationConfiguration;
 import com.cubrid.cubridmigration.core.engine.template.TemplateParserTest;
-import java.sql.Connection;
-import java.sql.SQLException;
+
 import org.junit.Assert;
 import org.junit.Test;
+
+import java.sql.Connection;
+import java.sql.SQLException;
 
 /**
  * JDBCConnectionManagerTester

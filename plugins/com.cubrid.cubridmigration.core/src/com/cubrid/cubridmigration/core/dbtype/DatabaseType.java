@@ -43,12 +43,14 @@ import com.cubrid.cubridmigration.mariadb.MariaDBDatabase;
 import com.cubrid.cubridmigration.mssql.MSSQLDatabase;
 import com.cubrid.cubridmigration.mysql.MySQLDatabase;
 import com.cubrid.cubridmigration.oracle.OracleDatabase;
+
+import org.apache.commons.lang3.StringUtils;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import org.apache.commons.lang3.StringUtils;
 
 /**
  * Base class of Database Types

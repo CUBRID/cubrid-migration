@@ -33,9 +33,12 @@ package com.cubrid.cubridmigration.mysql;
 import com.cubrid.cubridmigration.core.engine.config.MigrationConfiguration;
 import com.cubrid.cubridmigration.core.engine.template.TemplateParserTest;
 import com.cubrid.cubridmigration.mysql.export.MySQLExportHelper;
-import java.util.Locale;
+
 import junit.framework.Assert;
+
 import org.junit.Test;
+
+import java.util.Locale;
 
 public class MySQLExportHelperTest {
 

@@ -39,11 +39,13 @@ import com.cubrid.cubridmigration.core.dbtype.DatabaseType;
 import com.cubrid.cubridmigration.core.sql.SQLHelper;
 import com.cubrid.cubridmigration.mssql.export.MSSQLExportHelper;
 import com.cubrid.cubridmigration.mssql.meta.MSSQLSchemaFetcher;
+
+import org.apache.commons.lang3.StringUtils;
+
 import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.SQLException;
 import java.util.Properties;
-import org.apache.commons.lang3.StringUtils;
 
 /**
  * MSSQL Database Description
@@ -75,7 +77,9 @@ public class MSSQLDatabase extends DatabaseType {
         return MSSQLSQLHelper.getInstance(version);
     }
 
-    /** @author Administrator */
+    /**
+     * @author Administrator
+     */
     private static class ConnHelper implements IConnHelper {
         /**
          * return the jdbc url to connect the database
@@ -148,7 +152,8 @@ public class MSSQLDatabase extends DatabaseType {
      */
     public DBDataTypeHelper getDataTypeHelper(String version) {
         return MSSQLDataTypeHelper.getInstance(version);
-    };
+    }
+    ;
 
     /**
      * The database type is supporting multi-schema.

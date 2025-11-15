@@ -187,7 +187,9 @@ public class DetailMessageDialog extends IconAndMessageDialog {
                         false);
     }
 
-    /** @return image on the left. */
+    /**
+     * @return image on the left.
+     */
     protected Image getImage() {
         switch (dlgStyle) {
             case MessageDialog.CONFIRM:

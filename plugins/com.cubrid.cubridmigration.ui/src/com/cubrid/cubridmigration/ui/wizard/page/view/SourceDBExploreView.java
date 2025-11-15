@@ -43,8 +43,7 @@ import com.cubrid.cubridmigration.ui.common.navigator.node.SQLTableNode;
 import com.cubrid.cubridmigration.ui.common.navigator.node.SQLTablesNode;
 import com.cubrid.cubridmigration.ui.common.navigator.node.SchemaNode;
 import com.cubrid.cubridmigration.ui.message.Messages;
-import java.util.ArrayList;
-import java.util.List;
+
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.MenuManager;
@@ -61,6 +60,9 @@ import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeItem;
 import org.eclipse.swt.widgets.Widget;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Show source DB objects including DB objects and user defined SQLs.

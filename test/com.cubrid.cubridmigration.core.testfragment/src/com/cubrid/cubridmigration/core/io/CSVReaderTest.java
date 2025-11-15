@@ -31,10 +31,13 @@
 package com.cubrid.cubridmigration.core.io;
 
 import au.com.bytecode.opencsv.CSVReader;
+
+import junit.framework.Assert;
+
+import org.junit.Test;
+
 import java.io.StringReader;
 import java.util.List;
-import junit.framework.Assert;
-import org.junit.Test;
 
 public class CSVReaderTest {
 

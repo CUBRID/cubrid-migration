@@ -37,11 +37,13 @@ import com.cubrid.cubridmigration.core.engine.report.MigrationOverviewResult;
 import com.cubrid.cubridmigration.core.engine.report.MigrationReport;
 import com.cubrid.cubridmigration.core.engine.report.MigrationReportFileUtils;
 import com.cubrid.cubridmigration.core.engine.report.RecordMigrationResult;
+
+import org.apache.commons.collections4.CollectionUtils;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.List;
-import org.apache.commons.collections4.CollectionUtils;
 
 /**
  * ReportCommandHandler Description
@@ -136,9 +138,15 @@ public class ReportCommandHandler extends HistoryCommandHandler {
         pageCount = 1;
         for (RecordMigrationResult rmr : recMigResults) {
             outPrinter.println("    [" + rmr.getSource() + "] >> [" + rmr.getTarget() + "]");
-            outPrinter.println("           Total:[" + rmr.getTotalCount() + "]");
-            outPrinter.println("        Exported:[" + rmr.getExpCount() + "]");
-            outPrinter.println("        Imported:[" + rmr.getImpCount() + "]");
+            if (!rmr.isDataMigrationSelected()) {
+                outPrinter.println("           Total:[" + ConsoleUtils.EMPTY_CELL_VALUE + "]");
+                outPrinter.println("        Exported:[" + ConsoleUtils.EMPTY_CELL_VALUE + "]");
+                outPrinter.println("        Imported:[" + ConsoleUtils.EMPTY_CELL_VALUE + "]");
+            } else {
+                outPrinter.println("           Total:[" + rmr.getTotalCount() + "]");
+                outPrinter.println("        Exported:[" + rmr.getExpCount() + "]");
+                outPrinter.println("        Imported:[" + rmr.getImpCount() + "]");
+            }
             if (pageCount >= pageSize) {
                 pageCount = 1;
                 if (!waitForEnter(atOnceMode)) {

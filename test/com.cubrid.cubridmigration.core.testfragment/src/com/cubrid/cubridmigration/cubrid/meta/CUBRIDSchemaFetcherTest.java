@@ -42,13 +42,15 @@ import com.cubrid.cubridmigration.core.dbobject.View;
 import com.cubrid.cubridmigration.core.dbtype.DatabaseType;
 import com.cubrid.cubridmigration.core.engine.config.MigrationConfiguration;
 import com.cubrid.cubridmigration.core.engine.template.TemplateParserTest;
+
+import org.junit.Assert;
+import org.junit.Test;
+
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
-import org.junit.Assert;
-import org.junit.Test;
 
 /**
  * CUBRIDDBObjectBuilderTest

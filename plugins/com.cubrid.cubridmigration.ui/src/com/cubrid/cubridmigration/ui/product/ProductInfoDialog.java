@@ -31,11 +31,7 @@
 package com.cubrid.cubridmigration.ui.product;
 
 import com.cubrid.common.log.LogUtil;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.StringTokenizer;
+
 import org.eclipse.jface.dialogs.TrayDialog;
 import org.eclipse.jface.resource.JFaceColors;
 import org.eclipse.swt.SWT;
@@ -57,6 +53,12 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.browser.IWebBrowser;
 import org.eclipse.ui.browser.IWorkbenchBrowserSupport;
 import org.slf4j.Logger;
+
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.StringTokenizer;
 
 /**
  * The CUBRID Migration information dialog

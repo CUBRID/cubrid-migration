@@ -56,7 +56,9 @@ public class PlcsqlFunction extends Function {
         this.bodyDDL = bodyDDL;
     }
 
-    /** @return column */
+    /**
+     * @return column
+     */
     public String getObjType() {
         return OBJ_TYPE_PLCSQL_FUNCTION;
     }

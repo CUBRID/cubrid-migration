@@ -41,8 +41,7 @@ import com.cubrid.cubridmigration.core.engine.config.SourceEntryTableConfig;
 import com.cubrid.cubridmigration.core.engine.config.SourceIndexConfig;
 import com.cubrid.cubridmigration.ui.common.CompositeUtils;
 import com.cubrid.cubridmigration.ui.message.Messages;
-import java.util.ArrayList;
-import java.util.List;
+
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.viewers.TableViewer;
@@ -55,6 +54,9 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.TableItem;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * TableSelectorDialog Description
  *
@@ -63,7 +65,9 @@ import org.eclipse.swt.widgets.TableItem;
  */
 public class TableIndexSelectorDialog extends Dialog {
 
-    /** @author Kevin Cao */
+    /**
+     * @author Kevin Cao
+     */
     private final class IndexSelectionTableContentProvider
             extends StructuredContentProviderAdaptor {
 
@@ -91,7 +95,9 @@ public class TableIndexSelectorDialog extends Dialog {
         }
     }
 
-    /** @author Kevin Cao */
+    /**
+     * @author Kevin Cao
+     */
     private final class IndexSelectionCellModifier extends ObjectArrayRowCellModifier {
 
         /**
@@ -212,7 +218,9 @@ public class TableIndexSelectorDialog extends Dialog {
         getButton(IDialogConstants.OK_ID).setEnabled(true);
     }
 
-    /** @return shell style */
+    /**
+     * @return shell style
+     */
     protected int getShellStyle() {
         return super.getShellStyle() | SWT.RESIZE | SWT.MAX;
     }

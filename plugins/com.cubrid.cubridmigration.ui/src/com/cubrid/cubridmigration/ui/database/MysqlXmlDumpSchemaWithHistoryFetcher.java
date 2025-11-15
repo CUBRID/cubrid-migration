@@ -43,12 +43,14 @@ import com.cubrid.cubridmigration.core.dbobject.Schema;
 import com.cubrid.cubridmigration.core.dbobject.Table;
 import com.cubrid.cubridmigration.core.dbtype.DatabaseType;
 import com.cubrid.cubridmigration.mysql.MysqlXmlDumpSource;
+
+import org.slf4j.Logger;
+
 import java.beans.XMLDecoder;
 import java.beans.XMLEncoder;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import org.slf4j.Logger;
 
 /**
  * catalog generator from database dump file

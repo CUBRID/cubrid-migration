@@ -35,10 +35,12 @@ import com.cubrid.cubridmigration.ui.common.navigator.node.PKNode;
 import com.cubrid.cubridmigration.ui.common.navigator.node.SchemaNode;
 import com.cubrid.cubridmigration.ui.common.navigator.node.StoredProceduresNode;
 import com.cubrid.cubridmigration.ui.common.navigator.node.TriggersNode;
-import java.util.Iterator;
-import java.util.List;
+
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.Viewer;
+
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * DBTreeContentProvider Description

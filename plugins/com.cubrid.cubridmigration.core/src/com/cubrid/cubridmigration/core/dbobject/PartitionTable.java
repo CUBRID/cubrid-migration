@@ -77,7 +77,9 @@ public class PartitionTable extends DBObject {
         this.partitionDesc = partitionDesc;
     }
 
-    /** @return object type */
+    /**
+     * @return object type
+     */
     public String getObjType() {
         return OBJ_TYPE_PARTITION;
     }

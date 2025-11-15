@@ -46,12 +46,14 @@ import com.cubrid.cubridmigration.cubrid.stmt.handler.FloatHandler;
 import com.cubrid.cubridmigration.cubrid.stmt.handler.SetterHandler;
 import com.cubrid.cubridmigration.cubrid.stmt.handler.TimestampHandler;
 import com.cubrid.cubridmigration.cubrid.stmt.handler.VarcharHandler;
+
+import org.junit.Test;
+
 import java.sql.Connection;
 import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.Statement;
 import java.sql.Timestamp;
-import org.junit.Test;
 
 public class DataTypeHandlerTest {
 

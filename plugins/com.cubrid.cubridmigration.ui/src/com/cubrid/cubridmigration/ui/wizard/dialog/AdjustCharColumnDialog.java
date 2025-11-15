@@ -41,10 +41,7 @@ import com.cubrid.cubridmigration.core.engine.config.SourceColumnConfig;
 import com.cubrid.cubridmigration.core.engine.config.SourceTableConfig;
 import com.cubrid.cubridmigration.ui.message.Messages;
 import com.cubrid.cubridmigration.ui.wizard.utils.MigrationCfgUtils;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
+
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -66,6 +63,11 @@ import org.eclipse.swt.widgets.Spinner;
 import org.eclipse.swt.widgets.TabFolder;
 import org.eclipse.swt.widgets.TabItem;
 import org.eclipse.swt.widgets.TableItem;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 
 /**
  * A dialog which can make changing the length of the columns which data type are char more
@@ -412,7 +414,9 @@ public class AdjustCharColumnDialog extends Dialog {
         getButton(IDialogConstants.OK_ID).setEnabled(true);
     }
 
-    /** @return shell style */
+    /**
+     * @return shell style
+     */
     protected int getShellStyle() {
         return super.getShellStyle() | SWT.RESIZE | SWT.MAX;
     }

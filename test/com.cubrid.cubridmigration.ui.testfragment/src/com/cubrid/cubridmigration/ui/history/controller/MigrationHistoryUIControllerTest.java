@@ -42,16 +42,20 @@ import com.cubrid.cubridmigration.core.common.PathUtils;
 import com.cubrid.cubridmigration.core.engine.report.MigrationBriefReport;
 import com.cubrid.cubridmigration.ui.BaseUITestCase;
 import com.cubrid.cubridmigration.ui.history.MigrationReporter;
-import java.io.File;
-import java.io.IOException;
-import java.util.List;
+
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-/** @author Kevin Cao */
+import java.io.File;
+import java.io.IOException;
+import java.util.List;
+
+/**
+ * @author Kevin Cao
+ */
 public class MigrationHistoryUIControllerTest extends BaseUITestCase {
 
     private MigrationHistoryUIController controller =

@@ -32,6 +32,7 @@ package com.cubrid.cubridmigration.informix.trans;
 
 import com.cubrid.cubridmigration.core.mapping.AbstractDataTypeMappingHelper;
 import com.cubrid.cubridmigration.core.mapping.model.MapObject;
+
 import java.util.Locale;
 
 /**

@@ -31,11 +31,14 @@
 package com.cubrid.cubridmigration.ui.history.tableviewer;
 
 import com.cubrid.cubridmigration.core.engine.report.MigrationBriefReport;
+
 import org.eclipse.swt.SWT;
 import org.junit.Assert;
 import org.junit.Test;
 
-/** @author Kevin Cao */
+/**
+ * @author Kevin Cao
+ */
 public class MigrationHistoryBriefComparatorTest {
 
     @Test

@@ -31,13 +31,15 @@
 package com.cubrid.cubridmigration.ui.product;
 
 import com.cubrid.cubridmigration.ui.message.Messages;
-import java.net.URL;
+
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.browser.IWebBrowser;
 import org.eclipse.ui.browser.IWorkbenchBrowserSupport;
+
+import java.net.URL;
 
 /**
  * HelpAction

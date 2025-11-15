@@ -31,6 +31,7 @@
 package com.cubrid.cubridmigration.ui.wizard.handler;
 
 import com.cubrid.cubridmigration.ui.wizard.MigrationWizardFactory;
+
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;

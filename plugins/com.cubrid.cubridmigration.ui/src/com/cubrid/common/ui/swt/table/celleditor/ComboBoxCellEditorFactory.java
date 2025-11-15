@@ -31,12 +31,15 @@
 package com.cubrid.common.ui.swt.table.celleditor;
 
 import com.cubrid.common.ui.swt.table.CellEditorFactory;
+
 import org.eclipse.jface.viewers.CellEditor;
 import org.eclipse.jface.viewers.ComboBoxCellEditor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Table;
 
-/** @author Kevin Cao */
+/**
+ * @author Kevin Cao
+ */
 public class ComboBoxCellEditorFactory implements CellEditorFactory {
 
     private String[] items;

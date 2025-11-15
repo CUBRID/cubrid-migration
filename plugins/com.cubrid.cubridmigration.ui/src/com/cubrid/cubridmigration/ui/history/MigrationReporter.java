@@ -38,10 +38,12 @@ import com.cubrid.cubridmigration.ui.message.Messages;
 import com.cubrid.cubridmigration.ui.wizard.page.CSVImportConfirmPage;
 import com.cubrid.cubridmigration.ui.wizard.page.ConfirmationPage;
 import com.cubrid.cubridmigration.ui.wizard.page.SQLMigrationConfirmPage;
-import java.io.File;
+
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IPersistableElement;
+
+import java.io.File;
 
 /**
  * MigrationReporter can be an editor input.
@@ -123,7 +125,9 @@ public class MigrationReporter extends DefaultMigrationReporter implements IEdit
         return false;
     }
 
-    /** @return fileName.hashCode() */
+    /**
+     * @return fileName.hashCode()
+     */
     public int hashCode() {
         return fileName.hashCode();
     }

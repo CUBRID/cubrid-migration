@@ -67,12 +67,16 @@ public class MigrationScriptNode extends DefaultCUBRIDNode {
         return (MigrationScript) getAdapter(MigrationScript.class);
     }
 
-    /** @return Script's name */
+    /**
+     * @return Script's name
+     */
     public String getLabel() {
         return getScript() == null ? super.getLabel() : getScript().getName();
     }
 
-    /** @return script's file name */
+    /**
+     * @return script's file name
+     */
     public String getId() {
         return getScript() == null ? super.getId() : getScript().getConfigFileName();
     }

@@ -31,6 +31,7 @@
 package com.cubrid.cubridmigration.ui.common.navigator.event;
 
 import com.cubrid.common.ui.navigator.ICUBRIDNode;
+
 import java.util.EventObject;
 
 /**

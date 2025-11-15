@@ -32,8 +32,10 @@ package com.cubrid.cubridmigration.ui.history.tableviewer;
 
 import com.cubrid.common.ui.swt.table.BaseTableLabelProvider;
 import com.cubrid.cubridmigration.core.engine.report.DataFileImportResult;
-import java.text.NumberFormat;
+
 import org.eclipse.swt.graphics.Color;
+
+import java.text.NumberFormat;
 
 /**
  * Migration overview provider

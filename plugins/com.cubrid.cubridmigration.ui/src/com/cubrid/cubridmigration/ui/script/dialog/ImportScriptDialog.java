@@ -38,7 +38,7 @@ import com.cubrid.cubridmigration.ui.common.dialog.DetailMessageDialog;
 import com.cubrid.cubridmigration.ui.message.Messages;
 import com.cubrid.cubridmigration.ui.script.MigrationScriptManager;
 import com.jcraft.jsch.Session;
-import java.io.File;
+
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.SWT;
@@ -49,6 +49,8 @@ import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Shell;
 import org.osgi.service.prefs.BackingStoreException;
 import org.slf4j.Logger;
+
+import java.io.File;
 
 /**
  * Import migration script dialog, supports exporting to local file system and remote file system by

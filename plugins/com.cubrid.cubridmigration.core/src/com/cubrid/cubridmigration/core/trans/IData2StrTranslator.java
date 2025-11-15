@@ -32,6 +32,7 @@ package com.cubrid.cubridmigration.core.trans;
 
 import com.cubrid.cubridmigration.core.dbobject.Column;
 import com.cubrid.cubridmigration.core.dbobject.Record.ColumnValue;
+
 import java.util.List;
 
 /**

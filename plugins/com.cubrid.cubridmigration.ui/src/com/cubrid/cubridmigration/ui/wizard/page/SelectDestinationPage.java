@@ -47,8 +47,7 @@ import com.cubrid.cubridmigration.ui.wizard.MigrationWizard;
 import com.cubrid.cubridmigration.ui.wizard.dialog.CSVSettingsDialog;
 import com.cubrid.cubridmigration.ui.wizard.page.view.AbstractDestinationView;
 import com.cubrid.cubridmigration.ui.wizard.utils.MigrationCfgUtils;
-import java.io.File;
-import java.util.List;
+
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -70,6 +69,9 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.PlatformUI;
+
+import java.io.File;
+import java.util.List;
 
 /**
  * new wizard step 3. Select target database connection or choose OFF Line model. database

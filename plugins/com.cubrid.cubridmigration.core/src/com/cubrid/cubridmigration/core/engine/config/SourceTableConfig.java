@@ -42,6 +42,7 @@ import java.util.List;
 public class SourceTableConfig {
 
     private String name;
+
     /** Owner name such as SCOTT of SCOTT.EMP on Oracle. It is a null value except Oracle. */
     private String owner;
 
@@ -160,6 +161,10 @@ public class SourceTableConfig {
         return owner;
     }
 
+    public String getPathID() {
+        return getOwner();
+    }
+
     public String getComment() {
         return comment;
     }
@@ -244,7 +249,9 @@ public class SourceTableConfig {
         this.createNewSchema = createNewSchema;
     }
 
-    /** @param createNewTable the createNewTable to set */
+    /**
+     * @param createNewTable the createNewTable to set
+     */
     public void setCreateNewTable(boolean createNewTable) {
         if (!this.createNewTable && createNewTable && !hasColumn2Exp()) {
             for (SourceColumnConfig scc : columns) {
@@ -254,7 +261,9 @@ public class SourceTableConfig {
         this.createNewTable = createNewTable;
     }
 
-    /** @param migrationData the migrationData to set */
+    /**
+     * @param migrationData the migrationData to set
+     */
     public void setMigrateData(boolean migrationData) {
         if (!this.migrateData && migrationData && !hasColumn2Exp()) {
             for (SourceColumnConfig scc : columns) {
@@ -264,7 +273,9 @@ public class SourceTableConfig {
         this.migrateData = migrationData;
     }
 
-    /** @param name the name to set */
+    /**
+     * @param name the name to set
+     */
     public void setName(String name) {
         this.name = name;
     }
@@ -277,7 +288,9 @@ public class SourceTableConfig {
         this.comment = comment;
     }
 
-    /** @param replace the replace to set */
+    /**
+     * @param replace the replace to set
+     */
     public void setReplace(boolean replace) {
         this.replace = replace;
     }
@@ -290,7 +303,9 @@ public class SourceTableConfig {
         this.sqlBefore = sqlBefore;
     }
 
-    /** @param target the target to set */
+    /**
+     * @param target the target to set
+     */
     public void setTarget(String target) {
         this.target = target;
     }

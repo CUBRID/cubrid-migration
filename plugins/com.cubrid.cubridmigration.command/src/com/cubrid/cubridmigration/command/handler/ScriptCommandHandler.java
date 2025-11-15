@@ -46,8 +46,13 @@ import com.cubrid.cubridmigration.core.dbobject.Table;
 import com.cubrid.cubridmigration.core.dbtype.DatabaseType;
 import com.cubrid.cubridmigration.core.engine.config.MigrationConfiguration;
 import com.cubrid.cubridmigration.core.engine.config.SourceEntryTableConfig;
-import com.cubrid.cubridmigration.core.engine.template.MigrationTemplateParser;
+import com.cubrid.cubridmigration.core.engine.template.reader.MigrationTemplateReader;
+import com.cubrid.cubridmigration.core.engine.template.writer.MigrationTemplateWriter;
 import com.cubrid.cubridmigration.cubrid.CUBRIDTimeUtil;
+
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.PrintStream;
@@ -57,8 +62,6 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
 
 /**
  * LogCommandHandler Description
@@ -160,7 +163,7 @@ public class ScriptCommandHandler implements ConsoleCommandHandler {
         String tpFile = getParameter(tmpArgs, "-template");
         if (StringUtils.isNotBlank(tpFile)) {
             try {
-                config = MigrationTemplateParser.parse(tpFile);
+                config = MigrationTemplateReader.parse(tpFile);
             } catch (Exception ex) {
                 config = null;
             }
@@ -257,7 +260,7 @@ public class ScriptCommandHandler implements ConsoleCommandHandler {
             configObjectMapping(config);
             String outputFileName = config.getName() + ".xml";
             File outputFile = new File(outputDir, outputFileName);
-            MigrationTemplateParser.save(
+            MigrationTemplateWriter.save(
                     config,
                     outputFile.getAbsolutePath(),
                     "yes".equalsIgnoreCase(getParameter(tmpArgs, "-schema")));

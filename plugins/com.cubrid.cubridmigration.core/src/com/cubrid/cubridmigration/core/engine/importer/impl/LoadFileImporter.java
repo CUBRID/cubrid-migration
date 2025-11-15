@@ -40,16 +40,18 @@ import com.cubrid.cubridmigration.core.engine.MigrationDirAndFilesManager;
 import com.cubrid.cubridmigration.core.engine.MigrationStatusManager;
 import com.cubrid.cubridmigration.core.engine.config.SourceTableConfig;
 import com.cubrid.cubridmigration.core.engine.event.ImportRecordsEvent;
+import com.cubrid.cubridmigration.core.engine.exception.BreakMigrationException;
 import com.cubrid.cubridmigration.core.engine.exception.NormalMigrationException;
 import com.cubrid.cubridmigration.core.engine.task.FileMergeRunnable;
 import com.cubrid.cubridmigration.core.engine.task.RunnableResultHandler;
 import com.cubrid.cubridmigration.cubrid.Data2StrTranslator;
+
+import org.slf4j.Logger;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.Locale;
 import java.util.Map;
-import org.slf4j.Logger;
 
 /**
  * LoadDBImporter : Use LoadDB and CSQL commands to import database objects.
@@ -77,7 +79,8 @@ public class LoadFileImporter extends OfflineImporter {
                 String prefix,
                 String owner,
                 String name,
-                String ext) {
+                String ext,
+                String pathID) {
             this.fileHeader = header;
             this.fileExt = ext;
             this.fileTableFullName =
@@ -89,7 +92,7 @@ public class LoadFileImporter extends OfflineImporter {
                             + File.separator
                             + prefix
                             + "_"
-                            + owner
+                            + pathID
                             + "_"
                             + name
                             + ext;
@@ -163,6 +166,26 @@ public class LoadFileImporter extends OfflineImporter {
                         isSchemaFile || !config.targetIsXLS()));
     }
 
+    /** Ensure header exists at the top of a target data file. */
+    private void ensureHeaderPresent(String fileFullName, SourceTableConfig stc) {
+        if (config.targetIsCSV() || config.targetIsXLS() || config.targetIsSQL()) {
+            return;
+        }
+        File target = new File(fileFullName);
+        try {
+            if (!target.exists()) {
+                PathUtils.createFile(target);
+            } else if (target.length() > 0L) {
+                return;
+            }
+            String header = getDataFileHeader(stc);
+            CUBRIDIOUtils.writeLines(
+                    target, new String[] {header}, config.getTargetCharSet(), false);
+        } catch (IOException ex) {
+            throw new BreakMigrationException(ex);
+        }
+    }
+
     /**
      * Send schema file and data file to server for loadDB command.
      *
@@ -175,23 +198,26 @@ public class LoadFileImporter extends OfflineImporter {
             String fileName, final SourceTableConfig stc, final int impCount, final int expCount) {
         synchronized (lockObj) {
             MigrationDirAndFilesManager mdfm = mrManager.getDirAndFilesMgr();
-            String schemaName =
+            String schemaName;
+            String mergeDir;
+
+            schemaName =
                     config.getSrcCatalog().getDatabaseType().isSupportMultiSchema()
-                                    && stc.getOwner() != null
                             ? stc.getOwner()
                             : config.getSrcConnOwner();
+            mergeDir = mdfm.getMergeFilesDir();
 
-            if (!tableFiles.containsKey(schemaName + stc.getName())) {
-                tableFiles.put(
-                        schemaName + stc.getName(),
-                        new CurrentDataFileInfo(
-                                config.getTargetDataFileName(schemaName.toUpperCase(Locale.US)),
-                                mdfm.getMergeFilesDir(),
-                                config.getTargetFilePrefix(),
-                                schemaName,
-                                stc.getName(),
-                                config.getDataFileExt()));
-            }
+            tableFiles.computeIfAbsent(
+                    schemaName + stc.getName(),
+                    key ->
+                            new CurrentDataFileInfo(
+                                    config.getTargetDataFileName(schemaName),
+                                    mergeDir,
+                                    config.getTargetFilePrefix(),
+                                    schemaName,
+                                    stc.getName(),
+                                    config.getDataFileExt(),
+                                    stc.getPathID()));
 
             CurrentDataFileInfo es = tableFiles.get(schemaName + stc.getName());
 
@@ -202,6 +228,7 @@ public class LoadFileImporter extends OfflineImporter {
             }
             final String fileTableFullName = es.fileTableFullName;
             final String fileFullName = es.fileFullName;
+            ensureHeaderPresent(fileTableFullName, stc);
             mdfm.addDataFile(fileTableFullName, impCount);
             executeTask(
                     fileName,
@@ -212,11 +239,9 @@ public class LoadFileImporter extends OfflineImporter {
                             eventHandler.handleEvent(new ImportRecordsEvent(stc, impCount));
                             final MigrationStatusManager sm = mrManager.getStatusMgr();
                             sm.addImpCount(stc.getOwner(), stc.getName(), expCount);
-                            // CSV, XLS file will not be merged into one data file.
-                            if (config.targetIsCSV() || config.targetIsXLS()) {
-                                return;
-                            }
-                            if (config.isOneTableOneFile()) {
+                            if (config.targetIsCSV()
+                                    || config.targetIsXLS()
+                                    || config.isOneTableOneFile()) {
                                 return;
                             }
                             final Table st =

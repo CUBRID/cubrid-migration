@@ -34,7 +34,9 @@ import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.PartInitException;
 
-/** @author Kevin Cao */
+/**
+ * @author Kevin Cao
+ */
 public class EditorPartProviderMock extends EditorPartProvider {
 
     /**

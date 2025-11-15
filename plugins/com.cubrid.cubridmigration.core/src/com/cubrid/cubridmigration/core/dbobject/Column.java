@@ -32,6 +32,7 @@ package com.cubrid.cubridmigration.core.dbobject;
 
 import com.cubrid.cubridmigration.core.datatype.DataTypeInstance;
 import com.cubrid.cubridmigration.core.dbtype.DBConstant;
+
 import org.apache.commons.lang3.StringUtils;
 
 /**
@@ -68,6 +69,7 @@ public class Column extends DBObject {
     private boolean isAutoIncrement;
     private long autoIncSeedVal;
     private long autoIncIncrVal = 1;
+
     // private long autoIncMaxVal;
     /** CUBRID column supports element data type */
     protected String subDataType = null;
@@ -75,6 +77,7 @@ public class Column extends DBObject {
     protected Integer jdbcIDOfSubDataType;
 
     private boolean defaultIsExpression = false;
+
     /** MySQL column supports column char set */
     private String charset = null;
 
@@ -185,7 +188,9 @@ public class Column extends DBObject {
         return name;
     }
 
-    /** @return column */
+    /**
+     * @return column
+     */
     public String getObjType() {
         return OBJ_TYPE_COLUMN;
     }
@@ -278,7 +283,9 @@ public class Column extends DBObject {
         this.defaultIsExpression = defaultIsExpression;
     }
 
-    /** @param defaultValue if value == 'NULL', null will be set. */
+    /**
+     * @param defaultValue if value == 'NULL', null will be set.
+     */
     public void setDefaultValue(String defaultValue) {
         if (DBConstant.DB_NULL_VALUE.equalsIgnoreCase(defaultValue)) {
             this.defaultValue = null;

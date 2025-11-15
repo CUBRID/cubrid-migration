@@ -32,6 +32,7 @@ package com.cubrid.cubridmigration.ui.script;
 
 import com.cubrid.common.ui.navigator.ICUBRIDNode;
 import com.cubrid.common.ui.navigator.node.AbstractGroupNode;
+
 import org.eclipse.swt.dnd.DND;
 import org.eclipse.swt.dnd.DropTargetAdapter;
 import org.eclipse.swt.dnd.DropTargetEvent;
@@ -132,7 +133,9 @@ public abstract class CubridNodeDropTargetListener extends DropTargetAdapter {
         }
     }
 
-    /** @param event DropTargetEvent */
+    /**
+     * @param event DropTargetEvent
+     */
     public void drop(DropTargetEvent event) {
         if (event.data == null) {
             setDetailToNone(event);
@@ -175,7 +178,9 @@ public abstract class CubridNodeDropTargetListener extends DropTargetAdapter {
         return Display.getCurrent().map(null, tree, event.x, event.y);
     }
 
-    /** @return selected tree items */
+    /**
+     * @return selected tree items
+     */
     protected TreeItem[] getTreeSelection() {
         return tree.getSelection();
     }
@@ -208,12 +213,16 @@ public abstract class CubridNodeDropTargetListener extends DropTargetAdapter {
      */
     protected abstract void moveNodes(ICUBRIDNode targetNode, boolean isBefore);
 
-    /** @param event DropTargetEvent */
+    /**
+     * @param event DropTargetEvent
+     */
     protected void setBeedbackToNone(DropTargetEvent event) {
         event.feedback = DND.FEEDBACK_NONE;
     }
 
-    /** @param event DropTargetEvent */
+    /**
+     * @param event DropTargetEvent
+     */
     protected void setDetailToNone(DropTargetEvent event) {
         event.detail = DND.DROP_NONE;
     }

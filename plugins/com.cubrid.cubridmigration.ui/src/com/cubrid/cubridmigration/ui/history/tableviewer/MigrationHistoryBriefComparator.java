@@ -31,10 +31,12 @@
 package com.cubrid.cubridmigration.ui.history.tableviewer;
 
 import com.cubrid.cubridmigration.core.engine.report.MigrationBriefReport;
-import java.util.Comparator;
+
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerSorter;
 import org.eclipse.swt.SWT;
+
+import java.util.Comparator;
 
 /**
  * BriefComparator compares names and start time.

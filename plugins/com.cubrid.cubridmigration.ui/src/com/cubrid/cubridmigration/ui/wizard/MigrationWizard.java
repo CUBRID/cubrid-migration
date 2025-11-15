@@ -34,7 +34,8 @@ import com.cubrid.common.log.LogUtil;
 import com.cubrid.cubridmigration.core.dbobject.Catalog;
 import com.cubrid.cubridmigration.core.dbtype.DatabaseType;
 import com.cubrid.cubridmigration.core.engine.config.MigrationConfiguration;
-import com.cubrid.cubridmigration.core.engine.template.MigrationTemplateParser;
+import com.cubrid.cubridmigration.core.engine.template.reader.MigrationTemplateReader;
+import com.cubrid.cubridmigration.core.engine.template.writer.MigrationTemplateWriter;
 import com.cubrid.cubridmigration.cubrid.CUBRIDTimeUtil;
 import com.cubrid.cubridmigration.ui.common.UICommonTool;
 import com.cubrid.cubridmigration.ui.common.navigator.event.CubridNodeManager;
@@ -57,11 +58,7 @@ import com.cubrid.cubridmigration.ui.wizard.page.SchemaMappingPage;
 import com.cubrid.cubridmigration.ui.wizard.page.SelectDestinationPage;
 import com.cubrid.cubridmigration.ui.wizard.page.SelectSourcePage;
 import com.cubrid.cubridmigration.ui.wizard.page.SelectSrcTarTypesPage;
-import java.io.File;
-import java.sql.Connection;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Set;
+
 import org.eclipse.jface.dialogs.DialogSettings;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -70,6 +67,12 @@ import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.slf4j.Logger;
+
+import java.io.File;
+import java.sql.Connection;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Migration Wizard
@@ -161,7 +164,7 @@ public class MigrationWizard extends Wizard implements IMigrationWizardStatus {
             throw new RuntimeException("File(" + migrationFileName + ") does not exist");
         }
         this.migrationConfigFileName = migrationFileName;
-        migrationConfig = MigrationTemplateParser.parse(migrationConfigFileName);
+        migrationConfig = MigrationTemplateReader.parse(migrationConfigFileName);
         autoSetUniqueNameOfConfiguration();
     }
 
@@ -430,7 +433,7 @@ public class MigrationWizard extends Wizard implements IMigrationWizardStatus {
         if (isLoadMigrationScript()) {
             // Reload the migration configuration file
             MigrationConfiguration tempConfig = migrationConfig;
-            migrationConfig = MigrationTemplateParser.parse(migrationConfigFileName);
+            migrationConfig = MigrationTemplateReader.parse(migrationConfigFileName);
             migrationConfig.setName(tempConfig.getName());
             // Copy target DB information to new migration configuration object
             migrationConfig.setDestType(tempConfig.getDestType());
@@ -459,7 +462,7 @@ public class MigrationWizard extends Wizard implements IMigrationWizardStatus {
                     MigrationScriptManager.getInstance().newScript(migrationConfig, saveSchema);
         } else {
             migrationScript.setName(migrationConfig.getName());
-            MigrationTemplateParser.save(
+            MigrationTemplateWriter.save(
                     migrationConfig, migrationScript.getAbstractConfigFileName(), saveSchema);
             MigrationScriptManager.getInstance().save();
         }
@@ -572,12 +575,16 @@ public class MigrationWizard extends Wizard implements IMigrationWizardStatus {
         srcOfflineMode = migrationConfig.isSourceOfflineMode();
     }
 
-    /** @return Retrieves true If source is a JDBC connection and can't be connected */
+    /**
+     * @return Retrieves true If source is a JDBC connection and can't be connected
+     */
     public boolean isSourceOfflineMode() {
         return srcOfflineMode;
     }
 
-    /** @return Retrieves true If target is a JDBC connection and can't be connected */
+    /**
+     * @return Retrieves true If target is a JDBC connection and can't be connected
+     */
     public boolean isTargetOfflineMode() {
         return tarOfflineMode;
     }

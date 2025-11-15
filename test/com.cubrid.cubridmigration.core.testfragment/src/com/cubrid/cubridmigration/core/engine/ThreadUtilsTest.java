@@ -31,7 +31,9 @@
 package com.cubrid.cubridmigration.core.engine;
 
 import com.cubrid.cubridmigration.core.engine.event.MigrationEvent;
+
 import junit.framework.Assert;
+
 import org.junit.Test;
 
 public class ThreadUtilsTest {

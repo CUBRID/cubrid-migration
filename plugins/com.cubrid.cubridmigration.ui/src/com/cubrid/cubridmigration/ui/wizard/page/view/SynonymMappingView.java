@@ -38,7 +38,7 @@ import com.cubrid.cubridmigration.ui.common.navigator.node.SynonymNode;
 import com.cubrid.cubridmigration.ui.message.Messages;
 import com.cubrid.cubridmigration.ui.wizard.utils.MigrationCfgUtils;
 import com.cubrid.cubridmigration.ui.wizard.utils.VerifyResultMessages;
-import java.util.Locale;
+
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -50,6 +50,8 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
+
+import java.util.Locale;
 
 /**
  * SynonymMappingView response to show entry synonym configuration
@@ -83,7 +85,9 @@ public class SynonymMappingView extends AbstractMappingView {
         CompositeUtils.hideOrShowComposite(container, false);
     }
 
-    /** @param parent of the composites */
+    /**
+     * @param parent of the composites
+     */
     protected void createControl(Composite parent) {
         container = new Composite(parent, SWT.NONE);
         GridData gd = new GridData(SWT.FILL, SWT.FILL, true, true);
@@ -111,18 +115,24 @@ public class SynonymMappingView extends AbstractMappingView {
         createTargetPart(container);
     }
 
-    /** @param parent of source object */
+    /**
+     * @param parent of source object
+     */
     protected void createSourcePart(Composite parent) {
         grpSource = new SynonymInfoComposite(parent, Messages.lblSource);
         grpSource.setEditable(false);
     }
 
-    /** @param parent of target object */
+    /**
+     * @param parent of target object
+     */
     protected void createTargetPart(Composite parent) {
         grpTarget = new SynonymInfoComposite(parent, Messages.lblTarget);
     }
 
-    /** @param obj should be a SynonymNode */
+    /**
+     * @param obj should be a SynonymNode
+     */
     public void showData(Object obj) {
         super.showData(obj);
         if (!(obj instanceof SynonymNode)) {

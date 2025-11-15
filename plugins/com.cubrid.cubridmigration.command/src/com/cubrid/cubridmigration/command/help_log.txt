@@ -2,7 +2,8 @@
 Usage in Windows: migration.bat log [options] [migration history file(*.mh)]
 Usage in Linux: migration.sh log [options] [migration history file(*.mh)]
 
-Available [options]:
-    -l,    To show the latest migration log automatically.
-    -ps,   An integer value. Lines of text to be shown in a page.    
+Available options:
+    -l,    Show latest log automatically.
+    -ps,   Lines of text per page (integer).
+
 Please visit http://www.cubrid.org for more information.
