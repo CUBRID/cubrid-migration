@@ -208,7 +208,7 @@ public class XMLDataParsingTask implements Runnable {
             }
             oneNewRecord.processRecords(tableName, records);
         } catch (Exception ex) {
-            throw new RuntimeException(ex);
+        	LOG.error("", ex);
         }
     }
 
