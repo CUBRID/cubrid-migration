@@ -29,11 +29,6 @@
  */
 package com.cubrid.common.ui.swt;
 
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.HashMap;
-import java.util.Iterator;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Cursor;
@@ -50,6 +45,12 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.CoolBar;
 import org.eclipse.swt.widgets.CoolItem;
 import org.eclipse.swt.widgets.Display;
+
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Iterator;
 
 /**
  * Utility class for managing OS resources associated with SWT controls such as colors, fonts,
@@ -248,10 +249,13 @@ public abstract class SWTResourceManager {
 
     /** Style constant for placing decorator image in top left corner of base image. */
     public static final int TOP_LEFT = 1;
+
     /** Style constant for placing decorator image in top right corner of base image. */
     public static final int TOP_RIGHT = 2;
+
     /** Style constant for placing decorator image in bottom left corner of base image. */
     public static final int BOTTOM_LEFT = 3;
+
     /** Style constant for placing decorator image in bottom right corner of base image. */
     public static final int BOTTOM_RIGHT = 4;
 

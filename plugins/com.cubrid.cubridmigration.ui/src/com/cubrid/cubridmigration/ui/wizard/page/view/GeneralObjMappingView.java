@@ -68,13 +68,7 @@ import com.cubrid.cubridmigration.ui.message.Messages;
 import com.cubrid.cubridmigration.ui.wizard.IMigrationWizardStatus;
 import com.cubrid.cubridmigration.ui.wizard.utils.MigrationCfgUtils;
 import com.cubrid.cubridmigration.ui.wizard.utils.VerifyResultMessages;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Objects;
-import java.util.TreeMap;
+
 import org.eclipse.jface.viewers.ICellEditorValidator;
 import org.eclipse.jface.viewers.IDoubleClickListener;
 import org.eclipse.jface.viewers.TableViewer;
@@ -89,6 +83,14 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Text;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Objects;
+import java.util.TreeMap;
 
 /**
  * GeneralObjMappingView is response to change source database's objects exporting settings.
@@ -265,7 +267,7 @@ public class GeneralObjMappingView extends AbstractMappingView {
                             data.add(
                                     new Object[] {
                                         setc.getName(),
-                                        setc.getTargetOwner(),
+                                        Objects.requireNonNullElse(setc.getTargetOwner(), "-"),
                                         setc.getTarget(),
                                         setc.isMigrateData(),
                                         setc.getCondition(),
@@ -1048,7 +1050,9 @@ public class GeneralObjMappingView extends AbstractMappingView {
         this.sqlMgrView.setMigrationConfig(config);
     }
 
-    /** @param wizardStatus IMigrationWizardStatus */
+    /**
+     * @param wizardStatus IMigrationWizardStatus
+     */
     public void setWizardStatus(IMigrationWizardStatus wizardStatus) {
         super.setWizardStatus(wizardStatus);
         this.sqlMgrView.setWizardStatus(wizardStatus);

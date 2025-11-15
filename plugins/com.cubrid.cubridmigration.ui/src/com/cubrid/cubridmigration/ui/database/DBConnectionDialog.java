@@ -35,7 +35,7 @@ import com.cubrid.cubridmigration.core.dbtype.DatabaseType;
 import com.cubrid.cubridmigration.ui.common.Status;
 import com.cubrid.cubridmigration.ui.common.dialog.DetailMessageDialog;
 import com.cubrid.cubridmigration.ui.message.Messages;
-import java.sql.Connection;
+
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.jface.dialogs.IDialogConstants;
@@ -46,6 +46,8 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
 
+import java.sql.Connection;
+
 /**
  * Add or edit a JDBC connection dialog.
  *
@@ -53,6 +55,12 @@ import org.eclipse.swt.widgets.Shell;
  * @version 1.0 - 2009-10-12
  */
 public class DBConnectionDialog extends TitleAreaDialog {
+
+    public static enum Mode {
+        NEW,
+        EDIT,
+        COPY
+    };
 
     /**
      * Get catalog from dialog
@@ -67,7 +75,24 @@ public class DBConnectionDialog extends TitleAreaDialog {
         if (databaseTypes == null || databaseTypes.length == 0) {
             throw new IllegalArgumentException("Database type can't be empty");
         }
-        DBConnectionDialog dialog = new DBConnectionDialog(parentShell, databaseTypes, oldParam);
+        DBConnectionDialog dialog =
+                new DBConnectionDialog(
+                        parentShell,
+                        databaseTypes,
+                        oldParam,
+                        oldParam == null ? Mode.NEW : Mode.EDIT);
+        if (dialog.open() != IDialogConstants.OK_ID) {
+            return null;
+        }
+        return dialog.resultParam;
+    }
+
+    public static ConnParameters getCatalog(
+            Shell parentShell, DatabaseType[] databaseTypes, ConnParameters param, Mode mode) {
+        if (databaseTypes == null || databaseTypes.length == 0) {
+            throw new IllegalArgumentException("Database type can't be empty");
+        }
+        DBConnectionDialog dialog = new DBConnectionDialog(parentShell, databaseTypes, param, mode);
         if (dialog.open() != IDialogConstants.OK_ID) {
             return null;
         }
@@ -77,11 +102,18 @@ public class DBConnectionDialog extends TitleAreaDialog {
     private final ConnParameters oldParam;
     private ConnParameters resultParam;
     private final JDBCConnectEditView dbConnectView;
+    private final Mode mode;
 
     public DBConnectionDialog(
             Shell parentShell, DatabaseType[] databaseTypes, ConnParameters oldParam) {
+        this(parentShell, databaseTypes, oldParam, oldParam == null ? Mode.NEW : Mode.EDIT);
+    }
+
+    public DBConnectionDialog(
+            Shell parentShell, DatabaseType[] databaseTypes, ConnParameters oldParam, Mode mode) {
         super(parentShell);
         this.oldParam = oldParam;
+        this.mode = mode == null ? ((oldParam == null) ? Mode.NEW : Mode.EDIT) : mode;
         dbConnectView = new JDBCConnectEditView(databaseTypes);
         setHelpAvailable(false);
     }
@@ -117,12 +149,19 @@ public class DBConnectionDialog extends TitleAreaDialog {
         Composite area = (Composite) super.createDialogArea(parent);
         dbConnectView.createConstrols(parent);
         dbConnectView.setConParameters(oldParam);
-        if (oldParam == null) {
-            setTitle(Messages.newDBConnDialogTitle);
-            setMessage(Messages.newDBConnDialogMessage);
-        } else {
-            setTitle(Messages.msgEditJDBC);
-            setMessage(Messages.msgEditJDBCDesc);
+        switch (mode) {
+            case NEW:
+                setTitle(Messages.newDBConnDialogTitle);
+                setMessage(Messages.newDBConnDialogMessage);
+                break;
+            case EDIT:
+                setTitle(Messages.msgEditJDBC);
+                setMessage(Messages.msgEditJDBCDesc);
+                break;
+            case COPY:
+                setTitle(Messages.msgCopyJDBC);
+                setMessage(Messages.msgCopyJDBCDesc);
+                break;
         }
         return area;
     }

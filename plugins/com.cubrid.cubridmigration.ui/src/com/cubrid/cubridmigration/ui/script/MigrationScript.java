@@ -31,6 +31,7 @@
 package com.cubrid.cubridmigration.ui.script;
 
 import com.cubrid.cubridmigration.core.common.PathUtils;
+
 import java.io.File;
 import java.io.Serializable;
 

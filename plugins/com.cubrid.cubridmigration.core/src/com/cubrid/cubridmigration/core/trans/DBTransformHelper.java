@@ -55,14 +55,16 @@ import com.cubrid.cubridmigration.core.mapping.model.MapObject;
 import com.cubrid.cubridmigration.core.mapping.model.VerifyInfo;
 import com.cubrid.cubridmigration.cubrid.CUBRIDDataTypeHelper;
 import com.cubrid.cubridmigration.cubrid.trans.ToCUBRIDDataConverterFacade;
+
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
 
 /**
  * a class help to transform database data
@@ -715,7 +717,8 @@ public abstract class DBTransformHelper {
                 info =
                         new VerifyInfo(
                                 VerifyInfo.TYPE_NOENOUGH_LENGTH,
-                                "The precision of targetColumn should equal and greater than sourceColumn's");
+                                "The precision of targetColumn should equal and greater than"
+                                        + " sourceColumn's");
                 return info;
             }
         } else { // verify the target scale
@@ -771,7 +774,8 @@ public abstract class DBTransformHelper {
                 info =
                         new VerifyInfo(
                                 VerifyInfo.TYPE_NOENOUGH_LENGTH,
-                                "The scale of target column should be equal or greater than source column's");
+                                "The scale of target column should be equal or greater than source"
+                                        + " column's");
                 return info;
             }
             // if we need verify the deta (targetPrecision - targetScale)
@@ -782,7 +786,8 @@ public abstract class DBTransformHelper {
                 info =
                         new VerifyInfo(
                                 VerifyInfo.TYPE_NOENOUGH_LENGTH,
-                                "The deta (target precision - target scale) should be equal or greater than source column's");
+                                "The deta (target precision - target scale) should be equal or"
+                                        + " greater than source column's");
                 return info;
             }
         } else {

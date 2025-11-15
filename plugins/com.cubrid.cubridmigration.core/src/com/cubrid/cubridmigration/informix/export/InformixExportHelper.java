@@ -40,6 +40,7 @@ import com.cubrid.cubridmigration.informix.export.handler.InformixBooleanTypeHan
 import com.cubrid.cubridmigration.informix.export.handler.InformixJSONTypeHandler;
 import com.cubrid.cubridmigration.informix.export.handler.InformixListTypeHandler;
 import com.cubrid.cubridmigration.informix.export.handler.InformixSetTypeHandler;
+
 import java.sql.ResultSet;
 import java.sql.SQLException;
 

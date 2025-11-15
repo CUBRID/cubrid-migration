@@ -46,6 +46,13 @@ import com.cubrid.cubridmigration.ui.history.tableviewer.ObjectMigrationResultTa
 import com.cubrid.cubridmigration.ui.history.tableviewer.RecordMigrationResultTableLabelProvider;
 import com.cubrid.cubridmigration.ui.message.Messages;
 import com.cubrid.cubridmigration.ui.wizard.MigrationWizardFactory;
+
+import org.apache.commons.lang3.StringUtils;
+import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Shell;
+import org.slf4j.Logger;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -55,11 +62,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
-import org.apache.commons.lang3.StringUtils;
-import org.eclipse.jface.dialogs.MessageDialog;
-import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Shell;
-import org.slf4j.Logger;
 
 /**
  * MigrationReportUIController.
@@ -311,7 +313,9 @@ public class MigrationReportUIController {
         }
     }
 
-    /** @param reporter MigrationReporter */
+    /**
+     * @param reporter MigrationReporter
+     */
     public void openMigrationWizardByHistory(MigrationReporter reporter) {
         Shell shell = Display.getDefault().getActiveShell();
         try {

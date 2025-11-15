@@ -46,6 +46,11 @@ import com.cubrid.cubridmigration.core.dbobject.Table;
 import com.cubrid.cubridmigration.core.dbobject.View;
 import com.cubrid.cubridmigration.core.dbtype.DatabaseType;
 import com.cubrid.cubridmigration.mysql.meta.MySQLSchemaFetcherTest;
+
+import junit.framework.Assert;
+
+import org.junit.Test;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -55,8 +60,6 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Properties;
-import junit.framework.Assert;
-import org.junit.Test;
 
 public class TestUtil2 {
 

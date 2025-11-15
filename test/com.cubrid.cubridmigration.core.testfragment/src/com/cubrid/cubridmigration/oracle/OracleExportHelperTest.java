@@ -34,9 +34,12 @@ import com.cubrid.cubridmigration.core.engine.config.MigrationConfiguration;
 import com.cubrid.cubridmigration.core.engine.config.SourceSequenceConfig;
 import com.cubrid.cubridmigration.core.engine.template.TemplateParserTest;
 import com.cubrid.cubridmigration.core.export.DBExportHelper;
-import java.math.BigInteger;
+
 import junit.framework.Assert;
+
 import org.junit.Test;
+
+import java.math.BigInteger;
 
 public class OracleExportHelperTest {
 

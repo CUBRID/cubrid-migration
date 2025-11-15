@@ -43,6 +43,12 @@ import com.cubrid.cubridmigration.core.mapping.model.VerifyInfo;
 import com.cubrid.cubridmigration.core.trans.MigrationTransFactory;
 import com.cubrid.cubridmigration.cubrid.CUBRIDDataTypeHelper;
 import com.cubrid.cubridmigration.cubrid.trans.ToCUBRIDDataConverterFacade;
+
+import junit.framework.TestCase;
+
+import org.junit.Assert;
+import org.junit.Test;
+
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.sql.SQLException;
@@ -54,9 +60,6 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Locale;
 import java.util.TimeZone;
-import junit.framework.TestCase;
-import org.junit.Assert;
-import org.junit.Test;
 
 public class Oracle2CUBRIDTranformHelperTest extends TestCase {
     static ToCUBRIDDataConverterFacade convertFactory = ToCUBRIDDataConverterFacade.getIntance();

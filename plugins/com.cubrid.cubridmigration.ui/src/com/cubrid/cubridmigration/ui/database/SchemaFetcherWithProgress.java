@@ -40,13 +40,15 @@ import com.cubrid.cubridmigration.core.engine.ThreadUtils;
 import com.cubrid.cubridmigration.ui.common.CompositeUtils;
 import com.cubrid.cubridmigration.ui.common.dialog.DetailMessageDialog;
 import com.cubrid.cubridmigration.ui.message.Messages;
-import java.lang.reflect.InvocationTargetException;
-import java.sql.SQLException;
+
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
 import org.slf4j.Logger;
+
+import java.lang.reflect.InvocationTargetException;
+import java.sql.SQLException;
 
 /**
  * Running fetching schema of database by JDBC driver, a progress dialog is shown for users

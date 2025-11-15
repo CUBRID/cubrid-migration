@@ -30,9 +30,10 @@
  */
 package com.cubrid.cubridmigration.core.dbobject;
 
+import org.apache.commons.collections4.CollectionUtils;
+
 import java.util.ArrayList;
 import java.util.List;
-import org.apache.commons.collections4.CollectionUtils;
 
 /**
  * Primary key object
@@ -71,7 +72,9 @@ public class PK extends DBObject {
         this.table = table;
     }
 
-    /** @return object type */
+    /**
+     * @return object type
+     */
     public String getObjType() {
         return OBJ_TYPE_PK;
     }

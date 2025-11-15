@@ -39,6 +39,9 @@ import com.cubrid.cubridmigration.core.common.xml.IXMLMemento;
 import com.cubrid.cubridmigration.core.common.xml.XMLMemento;
 import com.cubrid.cubridmigration.core.dbobject.Catalog;
 import com.cubrid.cubridmigration.core.dbtype.DatabaseType;
+
+import org.slf4j.Logger;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -48,8 +51,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import javax.xml.parsers.ParserConfigurationException;
-import org.slf4j.Logger;
 
 /**
  * JDBCConnectionManager is response for managing local JDBC connection information. The connection

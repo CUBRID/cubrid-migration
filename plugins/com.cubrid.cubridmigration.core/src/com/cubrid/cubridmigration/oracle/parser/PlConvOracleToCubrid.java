@@ -32,10 +32,12 @@ package com.cubrid.cubridmigration.oracle.parser;
 
 import com.cubrid.common.log.LogUtil;
 import com.cubrid.cubridmigration.oracle.parser.antlr4gen.*;
-import java.util.List;
+
 import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.tree.*;
 import org.slf4j.Logger;
+
+import java.util.List;
 
 public class PlConvOracleToCubrid {
 

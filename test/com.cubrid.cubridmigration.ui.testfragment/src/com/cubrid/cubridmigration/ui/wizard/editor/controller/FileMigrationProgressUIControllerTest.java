@@ -37,10 +37,13 @@ import com.cubrid.cubridmigration.core.engine.event.ImportCSVEvent;
 import com.cubrid.cubridmigration.core.engine.event.ImportSQLsEvent;
 import com.cubrid.cubridmigration.core.engine.template.TemplateParserTest;
 import com.cubrid.cubridmigration.ui.BaseUITestCase;
+
 import org.junit.Assert;
 import org.junit.Test;
 
-/** @author Kevin Cao */
+/**
+ * @author Kevin Cao
+ */
 public class FileMigrationProgressUIControllerTest extends BaseUITestCase {
 
     @Test

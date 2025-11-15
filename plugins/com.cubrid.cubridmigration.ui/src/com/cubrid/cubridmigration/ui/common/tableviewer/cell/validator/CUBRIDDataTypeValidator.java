@@ -31,6 +31,7 @@
 package com.cubrid.cubridmigration.ui.common.tableviewer.cell.validator;
 
 import com.cubrid.cubridmigration.cubrid.CUBRIDDataTypeHelper;
+
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.jface.viewers.ICellEditorValidator;
 

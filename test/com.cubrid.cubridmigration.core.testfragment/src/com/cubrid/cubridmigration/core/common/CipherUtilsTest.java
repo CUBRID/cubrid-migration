@@ -31,12 +31,15 @@
 package com.cubrid.cubridmigration.core.common;
 
 import junit.framework.Assert;
+
 import org.junit.Test;
 
 public class CipherUtilsTest {
 
     private static final String STR =
-            "`1234567890 ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz ~!@#$%^&*()_+ |}{ \\][ :\" ;' ?>< ,./ \r\n\t";
+            "`1234567890 ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz ~!@#$%^&*()_+ |}{"
+                    + " \\][ :\" ;' ?>< ,./ \r\n"
+                    + "\t";
 
     @Test
     public void testCipherUtils() {

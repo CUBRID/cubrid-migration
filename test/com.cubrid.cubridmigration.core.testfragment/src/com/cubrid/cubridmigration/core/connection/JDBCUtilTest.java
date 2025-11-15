@@ -32,10 +32,12 @@ package com.cubrid.cubridmigration.core.connection;
 
 import com.cubrid.cubridmigration.BaseTestCaseWithPath;
 import com.cubrid.cubridmigration.core.common.PathUtils;
-import java.io.File;
-import java.util.List;
+
 import org.junit.Assert;
 import org.junit.Test;
+
+import java.io.File;
+import java.util.List;
 
 public class JDBCUtilTest extends BaseTestCaseWithPath {
 

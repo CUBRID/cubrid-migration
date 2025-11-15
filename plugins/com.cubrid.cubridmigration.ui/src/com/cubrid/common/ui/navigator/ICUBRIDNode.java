@@ -31,10 +31,12 @@
 package com.cubrid.common.ui.navigator;
 
 import com.cubrid.cubridmigration.ui.common.navigator.node.CubridNodeType;
-import java.util.List;
+
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.ui.IEditorInput;
+
+import java.util.List;
 
 /**
  * ICubridNode

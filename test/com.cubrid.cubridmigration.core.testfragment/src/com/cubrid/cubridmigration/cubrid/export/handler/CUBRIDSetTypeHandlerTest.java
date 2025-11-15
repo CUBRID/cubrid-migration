@@ -32,13 +32,16 @@ package com.cubrid.cubridmigration.cubrid.export.handler;
 
 import com.cubrid.cubridmigration.core.TestUtil2;
 import com.cubrid.cubridmigration.core.dbobject.Column;
+
+import junit.framework.Assert;
+
+import org.junit.Test;
+
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
-import junit.framework.Assert;
-import org.junit.Test;
 
 /**
  * Test Class CUBRIDSetTypeHandler

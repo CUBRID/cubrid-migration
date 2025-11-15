@@ -37,6 +37,8 @@ package com.cubrid.cubridmigration.ui.common;
  */
 public interface TextAppender {
 
-    /** @param text to be appended */
+    /**
+     * @param text to be appended
+     */
     public void append(String text);
 }

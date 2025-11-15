@@ -65,7 +65,9 @@ public class ColumnNode extends DefaultCUBRIDNode {
         setEditorId(null);
     }
 
-    /** @return node is PK column */
+    /**
+     * @return node is PK column
+     */
     public boolean isColumnNodePK() {
         Column column = this.getColumn();
         TableNode tableNode = (TableNode) (this.getParent().getParent());

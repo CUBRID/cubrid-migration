@@ -30,9 +30,11 @@
  */
 package com.cubrid.cubridmigration.core.engine.config;
 
-import java.util.ArrayList;
 import junit.framework.Assert;
+
 import org.junit.Test;
+
+import java.util.ArrayList;
 
 public class CSVSettingsTest {
 

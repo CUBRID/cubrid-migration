@@ -41,11 +41,7 @@ import com.cubrid.cubridmigration.ui.common.CompositeUtils;
 import com.cubrid.cubridmigration.ui.common.UICommonTool;
 import com.cubrid.cubridmigration.ui.database.JDBCConfigDataManager;
 import com.cubrid.cubridmigration.ui.message.Messages;
-import java.io.File;
-import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
+
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
@@ -75,6 +71,12 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
+
+import java.io.File;
+import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 
 /**
  * JDBCDriverManagePage is response for managing local JDBC driver files
@@ -359,7 +361,9 @@ public class JDBCDriverManagePage extends PreferencePage implements IWorkbenchPr
         tvDrivers.setInput(jdbcDatas);
     }
 
-    /** @author Kevin Cao */
+    /**
+     * @author Kevin Cao
+     */
     private final class JDBCDriverTableLabelProvider extends TableLabelProviderAdapter {
 
         /**

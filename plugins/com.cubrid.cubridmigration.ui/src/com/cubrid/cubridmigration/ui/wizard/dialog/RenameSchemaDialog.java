@@ -34,10 +34,7 @@ import com.cubrid.common.ui.swt.table.CellEditorFactory;
 import com.cubrid.common.ui.swt.table.TableViewerBuilder;
 import com.cubrid.common.ui.swt.table.celleditor.ComboBoxCellEditorFactory;
 import com.cubrid.cubridmigration.ui.message.Messages;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.MenuManager;
@@ -56,6 +53,11 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.TableItem;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * A dialog which can make changing the length of the columns which data type are char more
@@ -265,7 +267,9 @@ public class RenameSchemaDialog extends TitleAreaDialog {
         createButton(parent, IDialogConstants.CANCEL_ID, Messages.btnCancel, false);
     }
 
-    /** @return shell style */
+    /**
+     * @return shell style
+     */
     protected int getShellStyle() {
         return super.getShellStyle() | SWT.RESIZE;
     }

@@ -38,6 +38,7 @@ import com.cubrid.cubridmigration.core.engine.config.MigrationConfiguration;
 import com.cubrid.cubridmigration.core.engine.config.SourceEntryTableConfig;
 import com.cubrid.cubridmigration.core.engine.template.TemplateParserTest;
 import com.cubrid.cubridmigration.core.mapping.model.MapObject;
+
 import org.junit.Assert;
 import org.junit.Test;
 

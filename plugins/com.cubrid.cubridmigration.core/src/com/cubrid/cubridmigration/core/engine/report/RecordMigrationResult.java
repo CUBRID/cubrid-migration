@@ -54,6 +54,8 @@ public class RecordMigrationResult implements Serializable {
     private long expCount;
     private long impCount;
 
+    private boolean isDataMigrationSelected = false;
+
     public String getSource() {
         return source;
     }
@@ -134,8 +136,18 @@ public class RecordMigrationResult implements Serializable {
         this.srcSchema = srcSchema;
     }
 
-    /** @return true if the migration has error */
+    /**
+     * @return true if the migration has error
+     */
     public boolean isDataMigrationHasError() {
         return getTotalCount() != getExpCount() || getExpCount() != getImpCount();
+    }
+
+    public boolean isDataMigrationSelected() {
+        return isDataMigrationSelected;
+    }
+
+    public void setDataMigrationSelected(boolean isDataMigrationSelected) {
+        this.isDataMigrationSelected = isDataMigrationSelected;
     }
 }

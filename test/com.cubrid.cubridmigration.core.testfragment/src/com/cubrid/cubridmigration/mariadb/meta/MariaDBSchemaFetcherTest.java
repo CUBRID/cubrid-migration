@@ -40,6 +40,10 @@ import com.cubrid.cubridmigration.core.dbobject.Table;
 import com.cubrid.cubridmigration.core.dbobject.Trigger;
 import com.cubrid.cubridmigration.core.dbobject.Version;
 import com.cubrid.cubridmigration.mariadb.export.MariaDBExportHelper;
+
+import org.junit.Assert;
+import org.junit.Test;
+
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -47,8 +51,6 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.List;
-import org.junit.Assert;
-import org.junit.Test;
 
 /**
  * DbUtilTest

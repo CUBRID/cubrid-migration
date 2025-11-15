@@ -106,7 +106,9 @@ public class MultiQueueExecutor implements IRunnableExecutor {
         }
     }
 
-    /** @return true if executors are busy. */
+    /**
+     * @return true if executors are busy.
+     */
     public boolean isBusy() {
         if (interrupted) {
             return false;

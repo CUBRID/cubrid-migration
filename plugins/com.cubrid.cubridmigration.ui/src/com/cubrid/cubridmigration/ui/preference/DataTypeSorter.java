@@ -31,6 +31,7 @@
 package com.cubrid.cubridmigration.ui.preference;
 
 import com.cubrid.cubridmigration.core.mapping.model.MapItem;
+
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerSorter;
 import org.eclipse.swt.SWT;

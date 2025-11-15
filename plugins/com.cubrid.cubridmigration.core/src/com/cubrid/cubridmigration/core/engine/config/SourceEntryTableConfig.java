@@ -30,9 +30,10 @@
  */
 package com.cubrid.cubridmigration.core.engine.config;
 
+import org.apache.commons.collections4.CollectionUtils;
+
 import java.util.ArrayList;
 import java.util.List;
-import org.apache.commons.collections4.CollectionUtils;
 
 /**
  * SourceTableConfig
@@ -65,7 +66,9 @@ public class SourceEntryTableConfig extends SourceTableConfig {
         return createPK;
     }
 
-    /** @param createPK the createPK to set */
+    /**
+     * @param createPK the createPK to set
+     */
     public void setCreatePK(boolean createPK) {
         this.createPK = createPK;
     }
@@ -79,7 +82,9 @@ public class SourceEntryTableConfig extends SourceTableConfig {
         return createPartition;
     }
 
-    /** @param createPartition the createPartition to set */
+    /**
+     * @param createPartition the createPartition to set
+     */
     public void setCreatePartition(boolean createPartition) {
         this.createPartition = createPartition;
     }
@@ -224,7 +229,9 @@ public class SourceEntryTableConfig extends SourceTableConfig {
         indexes.addAll(sics);
     }
 
-    /** @param createNewTable the createNewTable to set */
+    /**
+     * @param createNewTable the createNewTable to set
+     */
     public void setCreateNewTable(boolean createNewTable) {
         boolean old = this.isCreateNewTable();
         super.setCreateNewTable(createNewTable);

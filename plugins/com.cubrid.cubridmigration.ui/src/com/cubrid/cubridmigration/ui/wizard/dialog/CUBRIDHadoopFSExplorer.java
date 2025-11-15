@@ -39,12 +39,7 @@ import com.cubrid.cubridmigration.cubrid.CUBRIDTimeUtil;
 import com.cubrid.cubridmigration.ui.MigrationUIPlugin;
 import com.cubrid.cubridmigration.ui.common.CompositeUtils;
 import com.cubrid.cubridmigration.ui.message.Messages;
-import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.List;
-import java.util.Locale;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.Path;
@@ -80,6 +75,13 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Text;
+
+import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.List;
+import java.util.Locale;
 
 /**
  * CUBRIDHadoopFSExplorer
@@ -162,7 +164,9 @@ public class CUBRIDHadoopFSExplorer extends Dialog {
             tvFiles.refresh();
         }
 
-        /** @param event SelectionEvent */
+        /**
+         * @param event SelectionEvent
+         */
         public void widgetSelected(SelectionEvent event) {
             up = !up;
             sortColumn((TableColumn) event.getSource());

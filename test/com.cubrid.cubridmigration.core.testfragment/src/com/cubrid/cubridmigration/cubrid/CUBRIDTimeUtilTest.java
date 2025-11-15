@@ -31,14 +31,16 @@
 package com.cubrid.cubridmigration.cubrid;
 
 import com.cubrid.cubridmigration.core.common.log.LogUtil;
+
+import org.junit.Assert;
+import org.junit.Test;
+
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.util.Date;
 import java.util.Locale;
 import java.util.SimpleTimeZone;
 import java.util.TimeZone;
-import org.junit.Assert;
-import org.junit.Test;
 
 public class CUBRIDTimeUtilTest {
 

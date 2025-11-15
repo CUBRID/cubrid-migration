@@ -31,6 +31,7 @@
 package com.cubrid.cubridmigration.ui.preference;
 
 import com.cubrid.cubridmigration.ui.common.UICommonTool;
+
 import org.eclipse.jface.preference.IPreferenceNode;
 import org.eclipse.jface.preference.PreferenceManager;
 import org.eclipse.swt.SWT;
@@ -75,7 +76,9 @@ public class ConfigurationDialog extends WorkbenchPreferenceDialog {
         getShell().setText(title);
     }
 
-    /** @return dialog's shell style : resize and max */
+    /**
+     * @return dialog's shell style : resize and max
+     */
     protected int getShellStyle() {
         return super.getShellStyle() | SWT.RESIZE | SWT.MAX;
     }

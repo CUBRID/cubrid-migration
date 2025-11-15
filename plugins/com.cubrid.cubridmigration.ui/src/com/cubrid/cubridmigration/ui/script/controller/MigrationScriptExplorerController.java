@@ -41,9 +41,7 @@ import com.cubrid.cubridmigration.ui.script.MigrationScript;
 import com.cubrid.cubridmigration.ui.script.MigrationScriptGroupAndItemNodeFactory;
 import com.cubrid.cubridmigration.ui.script.MigrationScriptManager;
 import com.cubrid.cubridmigration.ui.script.dialog.GroupSettingDialog;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.core.runtime.preferences.InstanceScope;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -51,6 +49,10 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.osgi.service.prefs.BackingStoreException;
 import org.slf4j.Logger;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * MigrationScriptExplorerController
@@ -88,7 +90,9 @@ public class MigrationScriptExplorerController {
         }
     }
 
-    /** @return display group node */
+    /**
+     * @return display group node
+     */
     public boolean getShowGroupPreference() {
         return node.getBoolean("script.group.display", false);
     }
@@ -129,7 +133,9 @@ public class MigrationScriptExplorerController {
         }
     }
 
-    /** @return current shell */
+    /**
+     * @return current shell
+     */
     private Shell getShell() {
         return Display.getDefault().getActiveShell();
     }
@@ -139,14 +145,18 @@ public class MigrationScriptExplorerController {
         groupNodeManager.reloadGroups();
     }
 
-    /** @return the script tree view input */
+    /**
+     * @return the script tree view input
+     */
     public List<? extends ICUBRIDNode> getTreeInput() {
         return getShowGroupPreference()
                 ? groupNodeManager.getAllGroupNodes()
                 : groupNodeManager.getAllGroupItems();
     }
 
-    /** @return ICUBRIDGroupNodeManager */
+    /**
+     * @return ICUBRIDGroupNodeManager
+     */
     protected ICUBRIDGroupNodeManager getGgroupNodeManager() {
         return groupNodeManager;
     }

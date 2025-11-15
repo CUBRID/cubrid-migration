@@ -41,6 +41,12 @@ import com.cubrid.cubridmigration.core.mapping.model.MapItem;
 import com.cubrid.cubridmigration.core.mapping.model.MapObject;
 import com.cubrid.cubridmigration.core.trans.MigrationTransFactory;
 import com.cubrid.cubridmigration.ui.MigrationUIPlugin;
+
+import org.eclipse.core.runtime.preferences.InstanceScope;
+import org.osgi.service.prefs.BackingStoreException;
+import org.osgi.service.prefs.Preferences;
+import org.slf4j.Logger;
+
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
@@ -48,11 +54,8 @@ import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.Iterator;
 import java.util.Map;
+
 import javax.xml.parsers.ParserConfigurationException;
-import org.eclipse.core.runtime.preferences.InstanceScope;
-import org.osgi.service.prefs.BackingStoreException;
-import org.osgi.service.prefs.Preferences;
-import org.slf4j.Logger;
 
 /**
  * Load and save the value from preference

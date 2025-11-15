@@ -45,13 +45,17 @@ import com.cubrid.cubridmigration.core.engine.config.SourceSQLTableConfig;
 import com.cubrid.cubridmigration.core.engine.template.TemplateParserTest;
 import com.cubrid.cubridmigration.cubrid.CUBRIDDataTypeHelper;
 import com.cubrid.cubridmigration.ui.wizard.IMigrationWizardStatus;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
+
 import org.junit.Assert;
 import org.junit.Test;
 
-/** @author Kevin Cao */
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
+
+/**
+ * @author Kevin Cao
+ */
 public class MigrationCfgUtilsTest {
 
     private static final class MigrationWizardStatusMock implements IMigrationWizardStatus {
@@ -77,7 +81,9 @@ public class MigrationCfgUtilsTest {
 
     private static final String CODE = "code";
 
-    /** @param config */
+    /**
+     * @param config
+     */
     protected Catalog getFakeTargetCatalog(MigrationConfiguration config) {
         Catalog catalog = new Catalog();
         ConnParameters targetConParams = config.getTargetConParams();

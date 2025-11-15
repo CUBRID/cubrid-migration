@@ -40,9 +40,7 @@ import com.cubrid.cubridmigration.ui.MigrationUIPlugin;
 import com.cubrid.cubridmigration.ui.common.dialog.DetailMessageDialog;
 import com.cubrid.cubridmigration.ui.message.Messages;
 import com.cubrid.cubridmigration.ui.wizard.MigrationWizard;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.MenuManager;
@@ -66,6 +64,10 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.ui.PlatformUI;
 import org.slf4j.Logger;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
 /**
  * JDBCConnectionMgrView Description
  *
@@ -74,7 +76,9 @@ import org.slf4j.Logger;
  */
 public class JDBCConnectionMgrView {
 
-    /** @author fulei */
+    /**
+     * @author fulei
+     */
     private class DeleteAction extends Action {
         public DeleteAction() {
             setText(Messages.removeButtonLabel);
@@ -87,7 +91,9 @@ public class JDBCConnectionMgrView {
         }
     }
 
-    /** @author fulei */
+    /**
+     * @author fulei
+     */
     private class RefreshAction extends Action {
         /** constructor */
         public RefreshAction() {
@@ -99,6 +105,17 @@ public class JDBCConnectionMgrView {
         /** run */
         public void run() {
             refreshCon();
+        }
+    }
+
+    private class CopyAction extends Action {
+        public CopyAction() {
+            setText(Messages.copyButtonLabel);
+            setImageDescriptor(MigrationUIPlugin.getImageDescriptor("icon/copy.png"));
+        }
+
+        public void run() {
+            copyDBConInfo();
         }
     }
 
@@ -244,6 +261,7 @@ public class JDBCConnectionMgrView {
         Table table = dbTableViewer.getTable();
         MenuManager menuManager = new MenuManager();
         menuManager.add(new RefreshAction());
+        menuManager.add(new CopyAction());
         menuManager.add(new DeleteAction());
         Menu menu = menuManager.createContextMenu(table);
         table.setMenu(menu);
@@ -291,6 +309,18 @@ public class JDBCConnectionMgrView {
                 new SelectionAdapter() {
                     public void widgetSelected(final SelectionEvent event) {
                         editDBConInfo();
+                    }
+                });
+
+        Button btnCopyDb = new Button(buttonContainer, SWT.NONE);
+        btnCopyDb.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+        btnCopyDb.setText(Messages.copyButtonLabel);
+        btnCopyDb.setToolTipText(Messages.ttCopyConnection);
+        btnCopyDb.setAlignment(SWT.CENTER);
+        btnCopyDb.addSelectionListener(
+                new SelectionAdapter() {
+                    public void widgetSelected(final SelectionEvent event) {
+                        copyDBConInfo();
                     }
                 });
 
@@ -424,7 +454,9 @@ public class JDBCConnectionMgrView {
         return grpOnline;
     }
 
-    /** @return DatabaseType[] */
+    /**
+     * @return DatabaseType[]
+     */
     private DatabaseType[] getDBTypeArray() {
         DatabaseType[] result = new DatabaseType[supportedDBType.size()];
         int i = 0;
@@ -527,7 +559,98 @@ public class JDBCConnectionMgrView {
         dbID = null;
     }
 
-    /** @param cp ConnParameters */
+    /** Copy selected database connection info */
+    private void copyDBConInfo() {
+        CMTConParamManager cpm = CMTConParamManager.getInstance();
+        DatabaseConnectionInfo selDci = getSelectedDCI();
+        if (selDci == null) {
+            MessageDialog.openError(
+                    getActiveShell(), Messages.msgWarning, Messages.sourceDBPageErrNoSelectedItem);
+            return;
+        }
+        try {
+            ConnParameters edited =
+                    DBConnectionDialog.getCatalog(
+                            getActiveShell(),
+                            getDBTypeArray(),
+                            getSuggestedParamsForCopy(selDci.getConnParameters(), cpm),
+                            DBConnectionDialog.Mode.COPY);
+            if (edited == null) {
+                return;
+            }
+            String validationError = validateNewConnection(edited, cpm);
+            if (validationError != null) {
+                MessageDialog.openError(getActiveShell(), Messages.msgWarning, validationError);
+                return;
+            }
+            addConnectionAndSelect(edited, cpm);
+        } catch (Exception ex) {
+            LOG.error("Failed to copy connection.", ex);
+            DetailMessageDialog.openError(
+                    getActiveShell(),
+                    Messages.msgError,
+                    "Failed to copy connection",
+                    ex.getMessage());
+        }
+    }
+
+    private ConnParameters getSuggestedParamsForCopy(
+            ConnParameters original, CMTConParamManager cpm) {
+        ConnParameters newCp = original.clone();
+        String base = original.getConName();
+        newCp.setName(makeUniqueName(base, cpm));
+        return newCp;
+    }
+
+    private String validateNewConnection(ConnParameters edited, CMTConParamManager cpm) {
+        if (edited.getConName() == null || edited.getConName().isBlank()) {
+            return Messages.dBConnectCompositeErrEmptyConnNm;
+        }
+        if (cpm.isNameUsed(edited.getConName())) {
+            return Messages.bind(Messages.dBConnectCompositeLblConnNm, edited.getConName());
+        }
+        if (cpm.isConnectionExists(edited)) {
+            return Messages.bind(Messages.dBConnectCompositeErrDupConnParam, edited.getConName());
+        }
+        return null;
+    }
+
+    private void addConnectionAndSelect(ConnParameters edited, CMTConParamManager cpm) {
+        dbDataList.forEach(d -> d.setSelected(false));
+
+        DatabaseConnectionInfo info = new DatabaseConnectionInfo(edited, true);
+        dbDataList.add(info);
+        cpm.addConnection(edited, false);
+
+        dbID = edited.getConName();
+        dbTableViewer.refresh();
+    }
+
+    private String makeUniqueName(String baseName, CMTConParamManager cpm) {
+        final String suffix = " - Copy";
+
+        if (!cpm.isNameUsed(baseName)) {
+            return baseName;
+        }
+
+        String firstCopyName = baseName + suffix;
+        if (!cpm.isNameUsed(firstCopyName)) {
+            return firstCopyName;
+        }
+
+        int i = 2;
+        while (true) {
+            String candidate = String.format("%s%s (%d)", baseName, suffix, i);
+            if (!cpm.isNameUsed(candidate)) {
+                return candidate;
+            }
+            i++;
+        }
+    }
+
+    /**
+     * @param cp ConnParameters
+     */
     private void selectSameDB(ConnParameters cp) {
         for (DatabaseConnectionInfo dci : dbDataList) {
             if (dci.getConnParameters().isSameDB(cp)) {

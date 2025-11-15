@@ -33,6 +33,7 @@ package com.cubrid.cubridmigration.oracle.trans;
 import com.cubrid.common.log.LogUtil;
 import com.cubrid.cubridmigration.core.mapping.AbstractDataTypeMappingHelper;
 import com.cubrid.cubridmigration.oracle.OracleDataTypeHelper;
+
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 

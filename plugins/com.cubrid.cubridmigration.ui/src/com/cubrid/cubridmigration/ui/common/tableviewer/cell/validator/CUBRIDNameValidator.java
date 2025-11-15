@@ -31,6 +31,7 @@
 package com.cubrid.cubridmigration.ui.common.tableviewer.cell.validator;
 
 import com.cubrid.cubridmigration.ui.wizard.utils.MigrationCfgUtils;
+
 import org.eclipse.jface.viewers.ICellEditorValidator;
 
 /**

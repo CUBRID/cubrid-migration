@@ -31,10 +31,13 @@
 package com.cubrid.cubridmigration.core.dbobject;
 
 import com.cubrid.cubridmigration.core.dbobject.Record.ColumnValue;
+
+import junit.framework.Assert;
+
+import org.junit.Test;
+
 import java.util.ArrayList;
 import java.util.List;
-import junit.framework.Assert;
-import org.junit.Test;
 
 public class RecordTest {
 

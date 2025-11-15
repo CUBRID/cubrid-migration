@@ -36,9 +36,7 @@ import com.cubrid.cubridmigration.ui.message.Messages;
 import com.cubrid.cubridmigration.ui.script.MigrationScript;
 import com.cubrid.cubridmigration.ui.script.MigrationScriptExplorerView;
 import com.cubrid.cubridmigration.ui.wizard.MigrationWizardFactory;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
@@ -51,6 +49,10 @@ import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * BaseMigrationScriptHandler
@@ -157,7 +159,9 @@ public class BaseMigrationScriptHandler extends AbstractHandler {
         return false;
     }
 
-    /** @return true if only one script selected */
+    /**
+     * @return true if only one script selected
+     */
     protected boolean isSingleScriptSelected() {
         IStructuredSelection selection = getSelection();
         if (selection.isEmpty()) {

@@ -33,6 +33,7 @@ package com.cubrid.cubridmigration.ui.history;
 import com.cubrid.common.ui.swt.table.TableViewerBuilder;
 import com.cubrid.cubridmigration.ui.history.tableviewer.FileSourceMigrationResultOverviewLabelProvider;
 import com.cubrid.cubridmigration.ui.message.Messages;
+
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
@@ -58,7 +59,9 @@ public class SQLImportReportEditorPart extends CSVImportReportEditorPart {
                 Messages.colProgress
             };
 
-    /** @param comOverview parent */
+    /**
+     * @param comOverview parent
+     */
     protected void createOverviewTableViewer(Composite comOverview) {
         // Create overview table viewer
         TableViewerBuilder tvBuilder = new TableViewerBuilder();

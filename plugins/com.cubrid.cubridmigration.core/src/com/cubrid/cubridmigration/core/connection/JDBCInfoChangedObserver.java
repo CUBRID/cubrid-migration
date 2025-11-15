@@ -33,6 +33,7 @@ package com.cubrid.cubridmigration.core.connection;
 import com.cubrid.common.configuration.jdbc.IJDBCConnecInfo;
 import com.cubrid.common.configuration.jdbc.IJDBCConnectionChangedObserver;
 import com.cubrid.common.configuration.jdbc.IJDBCInfoChangedSubject;
+
 import java.util.List;
 
 /**

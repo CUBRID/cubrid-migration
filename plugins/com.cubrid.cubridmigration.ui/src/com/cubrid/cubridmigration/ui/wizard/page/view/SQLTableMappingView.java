@@ -47,9 +47,7 @@ import com.cubrid.cubridmigration.ui.common.tableviewer.cell.validator.CUBRIDNam
 import com.cubrid.cubridmigration.ui.message.Messages;
 import com.cubrid.cubridmigration.ui.wizard.utils.MigrationCfgUtils;
 import com.cubrid.cubridmigration.ui.wizard.utils.VerifyResultMessages;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
+
 import org.eclipse.jface.viewers.ICellEditorValidator;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.osgi.util.NLS;
@@ -64,6 +62,10 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
 
 /**
  * SQLTableMappingView response to show SQL table configuration

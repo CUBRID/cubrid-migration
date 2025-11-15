@@ -35,9 +35,16 @@ import com.cubrid.common.ui.navigator.IItemModelOfGroupProvider;
 import com.cubrid.cubridmigration.core.common.CUBRIDIOUtils;
 import com.cubrid.cubridmigration.core.common.PathUtils;
 import com.cubrid.cubridmigration.core.engine.config.MigrationConfiguration;
-import com.cubrid.cubridmigration.core.engine.template.MigrationTemplateParser;
+import com.cubrid.cubridmigration.core.engine.template.reader.MigrationTemplateReader;
+import com.cubrid.cubridmigration.core.engine.template.writer.MigrationTemplateWriter;
 import com.cubrid.cubridmigration.ui.message.Messages;
 import com.cubrid.cubridmigration.ui.script.dialog.EditScriptDialog;
+
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.eclipse.swt.widgets.Display;
+import org.slf4j.Logger;
+
 import java.beans.XMLDecoder;
 import java.beans.XMLEncoder;
 import java.io.File;
@@ -47,10 +54,6 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.eclipse.swt.widgets.Display;
-import org.slf4j.Logger;
 
 /**
  * MigrationScriptManager with Singleton, it responses to manage migration scripts.
@@ -156,10 +159,10 @@ public final class MigrationScriptManager implements IItemModelOfGroupProvider, 
             PathUtils.deleteFile(file);
         }
         MigrationConfiguration config =
-                MigrationTemplateParser.parse(script.getAbstractConfigFileName());
+                MigrationTemplateReader.parse(script.getAbstractConfigFileName());
         // synchronized configuration name with script name
         config.setName(script.getName());
-        MigrationTemplateParser.save(config, configFile, false);
+        MigrationTemplateWriter.save(config, configFile, false);
     }
 
     /**
@@ -188,7 +191,7 @@ public final class MigrationScriptManager implements IItemModelOfGroupProvider, 
      * @return is successfully
      */
     public boolean importScript(String configFile) {
-        MigrationConfiguration config = MigrationTemplateParser.parse(configFile);
+        MigrationConfiguration config = MigrationTemplateReader.parse(configFile);
         if (nameExists(config.getName(), null)) {
             String name =
                     EditScriptDialog.getMigrationScriptName(
@@ -265,7 +268,7 @@ public final class MigrationScriptManager implements IItemModelOfGroupProvider, 
         ms.setName(config.getName());
         String configFile = getConfigFileName(String.valueOf(System.currentTimeMillis()));
         ms.setConfigFileName(configFile);
-        MigrationTemplateParser.save(config, ms.getAbstractConfigFileName(), saveSchema);
+        MigrationTemplateWriter.save(config, ms.getAbstractConfigFileName(), saveSchema);
         addScript(ms);
         save();
         return ms;
@@ -329,7 +332,9 @@ public final class MigrationScriptManager implements IItemModelOfGroupProvider, 
         return null;
     }
 
-    /** @return copy of scripts list */
+    /**
+     * @return copy of scripts list
+     */
     public List<Object> getItems() {
         return new ArrayList<Object>(scripts);
     }

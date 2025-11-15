@@ -39,9 +39,7 @@ import com.cubrid.cubridmigration.ui.common.UrlConnUtils;
 import com.cubrid.cubridmigration.ui.preference.GeneralPreference;
 import com.cubrid.cubridmigration.ui.product.CopyrightDialog;
 import com.cubrid.cubridmigration.ui.product.Version;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.core.runtime.preferences.InstanceScope;
 import org.eclipse.jface.action.IContributionItem;
@@ -58,6 +56,10 @@ import org.eclipse.ui.application.IWorkbenchWindowConfigurer;
 import org.eclipse.ui.application.WorkbenchWindowAdvisor;
 import org.eclipse.ui.internal.WorkbenchWindow;
 import org.slf4j.Logger;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 
 /**
  * ApplicationWorkbenchWindowAdvisor

@@ -43,13 +43,15 @@ import com.cubrid.cubridmigration.ui.common.CompositeUtils;
 import com.cubrid.cubridmigration.ui.common.tableviewer.cell.validator.CUBRIDNameValidator;
 import com.cubrid.cubridmigration.ui.wizard.IMigrationWizardStatus;
 import com.cubrid.cubridmigration.ui.wizard.utils.VerifyResultMessages;
-import java.util.ArrayList;
-import java.util.List;
+
 import org.eclipse.jface.viewers.ICellEditorValidator;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.TableItem;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * AbstractMappingView Description

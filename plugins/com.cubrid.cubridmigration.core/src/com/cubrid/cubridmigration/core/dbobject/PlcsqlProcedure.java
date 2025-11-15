@@ -56,7 +56,9 @@ public class PlcsqlProcedure extends Procedure {
         this.bodyDDL = bodyDDL;
     }
 
-    /** @return object type */
+    /**
+     * @return object type
+     */
     public String getObjType() {
         return OBJ_TYPE_PLCSQL_PROCEDURE;
     }

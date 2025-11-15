@@ -31,6 +31,7 @@
 package com.cubrid.cubridmigration.core.common.json;
 
 import com.cubrid.cubridmigration.core.common.Closer;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;

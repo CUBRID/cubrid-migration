@@ -33,6 +33,7 @@ package com.cubrid.cubridmigration.ui.wizard.editor;
 import com.cubrid.cubridmigration.core.engine.config.MigrationConfiguration;
 import com.cubrid.cubridmigration.core.engine.report.MigrationBriefReport;
 import com.cubrid.cubridmigration.ui.script.MigrationScript;
+
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IPersistableElement;
@@ -76,7 +77,9 @@ public class MigrationProgressEditorInput implements IEditorInput {
         return null;
     }
 
-    /** @return false */
+    /**
+     * @return false
+     */
     public boolean exists() {
         return false;
     }
@@ -99,12 +102,16 @@ public class MigrationProgressEditorInput implements IEditorInput {
         return "Migration from " + config.getSourceTypeName();
     }
 
-    /** @return null */
+    /**
+     * @return null
+     */
     public IPersistableElement getPersistable() {
         return null;
     }
 
-    /** @return tool tip text */
+    /**
+     * @return tool tip text
+     */
     public String getToolTipText() {
         return this.getName();
     }

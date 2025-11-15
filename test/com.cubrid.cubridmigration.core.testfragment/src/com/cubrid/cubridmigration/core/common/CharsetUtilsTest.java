@@ -31,12 +31,15 @@
 package com.cubrid.cubridmigration.core.common;
 
 import com.cubrid.cubridmigration.core.common.json.ReadFile;
+
+import junit.framework.Assert;
+
+import org.junit.Test;
+
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.Iterator;
 import java.util.Map;
-import junit.framework.Assert;
-import org.junit.Test;
 
 public class CharsetUtilsTest {
     @Test

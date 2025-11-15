@@ -33,9 +33,12 @@ package com.cubrid.cubridmigration.mssql.meta;
 import com.cubrid.cubridmigration.core.TestUtil2;
 import com.cubrid.cubridmigration.core.connection.ConnParameters;
 import com.cubrid.cubridmigration.core.dbobject.Catalog;
-import java.sql.Connection;
+
 import junit.framework.Assert;
+
 import org.junit.Test;
+
+import java.sql.Connection;
 
 /**
  * MSSQLSchemaFetcherTest Description

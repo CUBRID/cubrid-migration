@@ -49,12 +49,19 @@ public class SourceSQLTableConfig extends SourceTableConfig {
         return sql;
     }
 
-    /** @param sql the sql to set */
+    /**
+     * @param sql the sql to set
+     */
     public void setSql(String sql) {
         String cleanSQL = sql == null ? "" : sql;
         if (cleanSQL.endsWith(";")) {
             cleanSQL = cleanSQL.substring(0, cleanSQL.length() - 1);
         }
         this.sql = cleanSQL;
+    }
+
+    @Override
+    public String getPathID() {
+        return MigrationConfiguration.SQLTABLE;
     }
 }

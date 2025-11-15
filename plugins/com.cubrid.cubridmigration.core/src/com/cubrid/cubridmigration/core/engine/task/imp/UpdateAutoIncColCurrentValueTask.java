@@ -37,13 +37,15 @@ import com.cubrid.cubridmigration.core.dbobject.Column;
 import com.cubrid.cubridmigration.core.dbobject.Table;
 import com.cubrid.cubridmigration.core.engine.config.MigrationConfiguration;
 import com.cubrid.cubridmigration.core.engine.task.ImportTask;
+
+import org.slf4j.Logger;
+
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
-import org.slf4j.Logger;
 
 /**
  * UpdateAutoIncColCurrentValueTask Description
@@ -77,7 +79,9 @@ public class UpdateAutoIncColCurrentValueTask extends ImportTask {
             // Fetch which serial should be updated after migration.
             rs =
                     stmt.executeQuery(
-                            "select name,current_val,increment_val,class_name,att_name from db_serial where class_name is not null order by class_name,att_name,name");
+                            "select name,current_val,increment_val,class_name,att_name from"
+                                    + " db_serial where class_name is not null order by"
+                                    + " class_name,att_name,name");
             List<String[]> tobeUpdated = new ArrayList<String[]>();
             while (rs.next()) {
                 String tableName = rs.getString(4);

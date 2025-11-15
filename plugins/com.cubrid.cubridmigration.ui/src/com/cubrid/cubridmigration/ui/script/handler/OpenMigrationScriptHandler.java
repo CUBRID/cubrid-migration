@@ -35,6 +35,7 @@ import com.cubrid.cubridmigration.ui.common.dialog.DetailMessageDialog;
 import com.cubrid.cubridmigration.ui.message.Messages;
 import com.cubrid.cubridmigration.ui.script.MigrationScript;
 import com.cubrid.cubridmigration.ui.wizard.MigrationWizardFactory;
+
 import java.util.List;
 
 /**

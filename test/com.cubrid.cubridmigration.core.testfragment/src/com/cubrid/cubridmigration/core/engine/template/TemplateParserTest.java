@@ -42,6 +42,10 @@ import com.cubrid.cubridmigration.mariadb.meta.MariaDBSchemaFetcher;
 import com.cubrid.cubridmigration.mssql.meta.MSSQLSchemaFetcher;
 import com.cubrid.cubridmigration.mysql.meta.MySQLSchemaFetcher;
 import com.cubrid.cubridmigration.oracle.meta.OracleSchemaFetcher;
+
+import org.junit.Assert;
+import org.junit.Test;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -49,8 +53,6 @@ import java.net.URL;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import org.junit.Assert;
-import org.junit.Test;
 
 /**
  * TemplateParserTest Description

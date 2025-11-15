@@ -30,10 +30,11 @@
  */
 package com.cubrid.common.ui.listener;
 
-import java.math.BigInteger;
 import org.eclipse.swt.events.VerifyEvent;
 import org.eclipse.swt.events.VerifyListener;
 import org.eclipse.swt.widgets.Text;
+
+import java.math.BigInteger;
 
 /**
  * IntegerVerifyListener verify that is the text input an integer.

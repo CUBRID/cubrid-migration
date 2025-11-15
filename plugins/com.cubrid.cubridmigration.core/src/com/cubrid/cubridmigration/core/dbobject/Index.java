@@ -201,17 +201,23 @@ public class Index extends DBObject {
     //		this.migrationPrefix = migrationPrefix;
     //	}
 
-    /** @return the reverse */
+    /**
+     * @return the reverse
+     */
     public boolean isReverse() {
         return reverse;
     }
 
-    /** @param reverse the reverse to set */
+    /**
+     * @param reverse the reverse to set
+     */
     public void setReverse(boolean reverse) {
         this.reverse = reverse;
     }
 
-    /** @return object type */
+    /**
+     * @return object type
+     */
     public String getObjType() {
         return OBJ_TYPE_INDEX;
     }

@@ -41,12 +41,14 @@ import com.cubrid.cubridmigration.core.dbobject.Table;
 import com.cubrid.cubridmigration.core.dbobject.View;
 import com.cubrid.cubridmigration.core.dbtype.DatabaseType;
 import com.cubrid.cubridmigration.mysql.MySQLDataTypeHelper;
-import java.sql.DatabaseMetaData;
-import java.util.Locale;
+
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 import org.xml.sax.helpers.DefaultHandler;
+
+import java.sql.DatabaseMetaData;
+import java.util.Locale;
 
 /**
  * get database meta data from Mysql xml file

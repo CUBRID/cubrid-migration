@@ -34,10 +34,13 @@ import com.cubrid.cubridmigration.core.common.PathUtils;
 import com.cubrid.cubridmigration.core.dbobject.Catalog;
 import com.cubrid.cubridmigration.core.engine.config.MigrationConfiguration;
 import com.cubrid.cubridmigration.core.engine.template.TemplateParserTest;
+
+import junit.framework.Assert;
+
+import org.junit.Test;
+
 import java.io.File;
 import java.net.URL;
-import junit.framework.Assert;
-import org.junit.Test;
 
 /**
  * ConnectionParamManager Test cases.

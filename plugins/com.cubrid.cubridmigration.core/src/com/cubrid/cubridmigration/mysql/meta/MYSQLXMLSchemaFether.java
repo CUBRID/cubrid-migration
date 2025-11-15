@@ -36,11 +36,14 @@ import com.cubrid.cubridmigration.core.dbmetadata.IDBSchemaInfoFetcher;
 import com.cubrid.cubridmigration.core.dbmetadata.IDBSource;
 import com.cubrid.cubridmigration.core.dbobject.Catalog;
 import com.cubrid.cubridmigration.mysql.MysqlXmlDumpSource;
+
+import org.xml.sax.InputSource;
+
 import java.io.IOException;
 import java.io.Reader;
+
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
-import org.xml.sax.InputSource;
 
 /**
  * Build MySQL meta data from a XML file

@@ -38,9 +38,12 @@ import com.cubrid.cubridmigration.core.dbobject.PartitionInfo;
 import com.cubrid.cubridmigration.core.dbobject.PartitionInfoTest;
 import com.cubrid.cubridmigration.core.dbobject.Sequence;
 import com.cubrid.cubridmigration.core.dbobject.Table;
-import java.math.BigInteger;
+
 import junit.framework.Assert;
+
 import org.junit.Test;
+
+import java.math.BigInteger;
 
 public class CUBRIDSQLHelperTest {
     CUBRIDSQLHelper ddl = CUBRIDSQLHelper.getInstance(null);
@@ -154,7 +157,8 @@ public class CUBRIDSQLHelperTest {
         sequence.setCycleFlag(true);
         sequence.setCacheSize(0);
         Assert.assertEquals(
-                "CREATE SERIAL \"test_sequence\" START WITH 0 INCREMENT BY 1 NOMINVALUE  NOMAXVALUE  CYCLE NOCACHE",
+                "CREATE SERIAL \"test_sequence\" START WITH 0 INCREMENT BY 1 NOMINVALUE  NOMAXVALUE"
+                        + "  CYCLE NOCACHE",
                 ddl.getSequenceDDL(sequence));
 
         sequence.setNoMinValue(false);
@@ -164,7 +168,8 @@ public class CUBRIDSQLHelperTest {
         sequence.setMinValue(new BigInteger("0"));
         sequence.setMaxValue(new BigInteger("1000"));
         Assert.assertEquals(
-                "CREATE SERIAL \"test_sequence\" START WITH 0 INCREMENT BY 1 MINVALUE 0 MAXVALUE  1000 NOCYCLE CACHE 100",
+                "CREATE SERIAL \"test_sequence\" START WITH 0 INCREMENT BY 1 MINVALUE 0 MAXVALUE "
+                        + " 1000 NOCYCLE CACHE 100",
                 ddl.getSequenceDDL(sequence));
     }
 }

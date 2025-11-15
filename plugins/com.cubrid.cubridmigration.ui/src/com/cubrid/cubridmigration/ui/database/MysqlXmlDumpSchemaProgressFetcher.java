@@ -36,10 +36,12 @@ import com.cubrid.cubridmigration.core.dbobject.Catalog;
 import com.cubrid.cubridmigration.core.io.IReaderEvent;
 import com.cubrid.cubridmigration.mysql.MysqlXmlDumpSource;
 import com.cubrid.cubridmigration.ui.message.Messages;
-import java.io.File;
-import java.text.MessageFormat;
+
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.swt.widgets.Display;
+
+import java.io.File;
+import java.text.MessageFormat;
 
 /**
  * Fetch MYSQL XML dump file's schema in a progress dialog. Users can check the parsing progress and

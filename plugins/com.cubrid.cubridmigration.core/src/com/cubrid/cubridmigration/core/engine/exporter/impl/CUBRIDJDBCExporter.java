@@ -41,6 +41,9 @@ import com.cubrid.cubridmigration.core.engine.config.SourceTableConfig;
 import com.cubrid.cubridmigration.core.engine.exception.NormalMigrationException;
 import com.cubrid.cubridmigration.core.export.DBExportHelper;
 import com.cubrid.cubridmigration.cubrid.CUBRIDSQLHelper;
+
+import org.apache.commons.lang3.StringUtils;
+
 import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.ResultSet;
@@ -50,7 +53,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
-import org.apache.commons.lang3.StringUtils;
 
 /**
  * CUBRIDJDBCExporter: export data by paging.

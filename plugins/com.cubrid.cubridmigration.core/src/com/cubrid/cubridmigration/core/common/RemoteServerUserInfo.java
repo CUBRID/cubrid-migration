@@ -49,12 +49,16 @@ public class RemoteServerUserInfo extends BaseJSCHUser {
         }
     }
 
-    /** @return Public key's pass phrase */
+    /**
+     * @return Public key's pass phrase
+     */
     public String getPassphrase() {
         return passPhrase;
     }
 
-    /** @return user's password */
+    /**
+     * @return user's password
+     */
     public String getPassword() {
         return passwd;
     }

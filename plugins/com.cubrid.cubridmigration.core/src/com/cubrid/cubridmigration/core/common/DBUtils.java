@@ -35,6 +35,9 @@ import com.cubrid.cubridmigration.core.dbobject.Index;
 import com.cubrid.cubridmigration.core.dbobject.PK;
 import com.cubrid.cubridmigration.core.dbobject.PartitionInfo;
 import com.cubrid.cubridmigration.core.dbobject.Table;
+
+import org.apache.commons.lang3.StringUtils;
+
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringWriter;
@@ -50,7 +53,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import org.apache.commons.lang3.StringUtils;
 
 /**
  * about DB operation method

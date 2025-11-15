@@ -36,14 +36,13 @@ import com.cubrid.cubridmigration.core.common.PathUtils;
 import com.cubrid.cubridmigration.core.common.SSHConnectFailedException;
 import com.cubrid.cubridmigration.core.common.SSHUtils;
 import com.cubrid.cubridmigration.core.engine.config.MigrationConfiguration;
-import com.cubrid.cubridmigration.core.engine.template.MigrationTemplateParser;
+import com.cubrid.cubridmigration.core.engine.template.reader.MigrationTemplateReader;
+import com.cubrid.cubridmigration.core.engine.template.writer.MigrationTemplateWriter;
 import com.cubrid.cubridmigration.ui.common.dialog.DetailMessageDialog;
 import com.cubrid.cubridmigration.ui.message.Messages;
 import com.cubrid.cubridmigration.ui.script.MigrationScript;
 import com.jcraft.jsch.Session;
-import java.io.File;
-import java.util.Locale;
-import java.util.UUID;
+
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.SWT;
@@ -54,6 +53,10 @@ import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Shell;
 import org.osgi.service.prefs.BackingStoreException;
 import org.slf4j.Logger;
+
+import java.io.File;
+import java.util.Locale;
+import java.util.UUID;
 
 /**
  * Export migration script dialog, supports exporting to local file system and remote file system by
@@ -89,7 +92,7 @@ public class ExportScriptDialog extends TransFileBySSHDialog {
             throw new IllegalArgumentException("Script can't be null.");
         }
         MigrationConfiguration config =
-                MigrationTemplateParser.parse(script.getAbstractConfigFileName());
+                MigrationTemplateReader.parse(script.getAbstractConfigFileName());
         // synchronized configuration name with script name
         config.setName(script.getName());
         exportScript(config, config.getOfflineSrcCatalog() != null);
@@ -117,7 +120,9 @@ public class ExportScriptDialog extends TransFileBySSHDialog {
         newShell.setText(Messages.titleExportScript);
     }
 
-    /** @return type button style */
+    /**
+     * @return type button style
+     */
     protected int getTypeButtonStyle() {
         return SWT.CHECK;
     }
@@ -127,7 +132,7 @@ public class ExportScriptDialog extends TransFileBySSHDialog {
         btnEnableLocal.setText(Messages.btnExportScript2Local);
         btnEnableLocal.setSelection(prefers.getBoolean(EXPORT_LOCAL, true));
         String rf = getDefaultScriptFileName();
-        txtLocal.setText(PathUtils.getUserHomeDir() + rf);
+        txtLocal.setText(PathUtils.getInstallPath() + rf);
         btnBrowseLocal.addSelectionListener(
                 new SelectionAdapter() {
 
@@ -242,7 +247,7 @@ public class ExportScriptDialog extends TransFileBySSHDialog {
             changeSourceJDBCDriverDirectory();
             changeTargetJDBCDriverDirectory();
             changeOutputDirectory();
-            MigrationTemplateParser.save(config, tmpFile, isSaveSchema);
+            MigrationTemplateWriter.save(config, tmpFile, isSaveSchema);
         } finally {
             // Restore config for the migration step that runs after export
             config.setName(originalName);

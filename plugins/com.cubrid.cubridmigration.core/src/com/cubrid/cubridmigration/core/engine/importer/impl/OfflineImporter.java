@@ -65,6 +65,16 @@ import com.cubrid.cubridmigration.core.trans.DBTransformHelper;
 import com.cubrid.cubridmigration.cubrid.CUBRIDSQLHelper;
 import com.cubrid.cubridmigration.cubrid.Data2StrTranslator;
 import com.opencsv.CSVWriter;
+
+import jxl.Workbook;
+import jxl.WorkbookSettings;
+import jxl.write.WritableSheet;
+import jxl.write.WritableWorkbook;
+
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -77,13 +87,6 @@ import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import jxl.Workbook;
-import jxl.WorkbookSettings;
-import jxl.write.WritableSheet;
-import jxl.write.WritableWorkbook;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
 
 /**
  * LoadDBImporter : Use LoadDB and CSQL commands to import database objects.
@@ -160,11 +163,6 @@ public abstract class OfflineImporter extends Importer {
                             new PrintWriter(file, config.getTargetCharSet()),
                             CUBRIDIOUtils.DEFAULT_MEMORY_CACHE_SIZE);
             try {
-                String header = getDataFileHeader(stc);
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("[VAR]header=" + header);
-                }
-                pw.write(header);
                 // The template LOB files path in local.
                 List<String> lobFiles = new ArrayList<String>();
                 int total = 0;
@@ -294,7 +292,8 @@ public abstract class OfflineImporter extends Importer {
                                             tt.getName(),
                                             total,
                                             index,
-                                            "Too long data (data length in xml must be less than 32768.)"));
+                                            "Too long data (data length in xml must be less than"
+                                                    + " 32768.)"));
                             fail++;
                         } else {
                             sheet.addCell(new jxl.write.Label(index++, total, val));
@@ -571,7 +570,7 @@ public abstract class OfflineImporter extends Importer {
             sb.append(spliter).append("[").append(col.getTarget()).append("]");
             spliter = " ";
         }
-        sb.append(")\n");
+        sb.append(")");
         return sb.toString();
     }
 

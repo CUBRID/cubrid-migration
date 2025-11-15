@@ -35,6 +35,10 @@ import com.cubrid.cubridmigration.core.dbobject.Record.ColumnValue;
 import com.cubrid.cubridmigration.core.dbobject.Table;
 import com.cubrid.cubridmigration.core.engine.config.MigrationConfiguration;
 import com.cubrid.cubridmigration.core.engine.template.TemplateParserTest;
+
+import org.junit.Assert;
+import org.junit.Test;
+
 import java.sql.Date;
 import java.sql.Time;
 import java.sql.Timestamp;
@@ -44,8 +48,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
-import org.junit.Assert;
-import org.junit.Test;
 
 /**
  * CUBRIDDataTypeTest

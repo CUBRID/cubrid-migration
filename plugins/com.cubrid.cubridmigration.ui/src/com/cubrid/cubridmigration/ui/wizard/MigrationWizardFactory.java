@@ -44,7 +44,8 @@ import com.cubrid.cubridmigration.core.engine.report.DataFileImportResult;
 import com.cubrid.cubridmigration.core.engine.report.MigrationReport;
 import com.cubrid.cubridmigration.core.engine.report.MigrationReportFileUtils;
 import com.cubrid.cubridmigration.core.engine.report.RecordMigrationResult;
-import com.cubrid.cubridmigration.core.engine.template.MigrationTemplateParser;
+import com.cubrid.cubridmigration.core.engine.template.reader.MigrationTemplateReader;
+import com.cubrid.cubridmigration.core.engine.template.writer.MigrationTemplateWriter;
 import com.cubrid.cubridmigration.ui.common.UICommonTool;
 import com.cubrid.cubridmigration.ui.history.CSVImportReportEditorPart;
 import com.cubrid.cubridmigration.ui.history.MigrationReportEditorPart;
@@ -57,10 +58,7 @@ import com.cubrid.cubridmigration.ui.wizard.dialog.MigrationWizardDialog;
 import com.cubrid.cubridmigration.ui.wizard.editor.CSVProgressEditorPart;
 import com.cubrid.cubridmigration.ui.wizard.editor.MigrationProgressEditorPart;
 import com.cubrid.cubridmigration.ui.wizard.editor.SQLProgressEditorPart;
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -68,6 +66,11 @@ import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.PlatformUI;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * MigrationWizardFactory is a factory class to create migration wizard dialog
@@ -246,7 +249,7 @@ public final class MigrationWizardFactory {
             }
         }
         final String fileName = PathUtils.getBaseTempDir() + System.currentTimeMillis() + ".xml";
-        MigrationTemplateParser.save(config, fileName, false);
+        MigrationTemplateWriter.save(config, fileName, false);
         openMigrationScript(fileName);
         new File(fileName).deleteOnExit();
     }
@@ -309,7 +312,7 @@ public final class MigrationWizardFactory {
             }
         }
         final String fileName = PathUtils.getBaseTempDir() + System.currentTimeMillis() + ".xml";
-        MigrationTemplateParser.save(config, fileName, false);
+        MigrationTemplateWriter.save(config, fileName, false);
         openMigrationScript(fileName);
         new File(fileName).deleteOnExit();
     }
@@ -363,7 +366,7 @@ public final class MigrationWizardFactory {
         } catch (IOException e) {
             throw new RuntimeException(Messages.msgErrMigrationHistoryTooOld);
         }
-        MigrationConfiguration config = MigrationTemplateParser.parse(scriptFile);
+        MigrationConfiguration config = MigrationTemplateReader.parse(scriptFile);
         // Get open mode
         int handlingMode = 0;
         if (rpt.hasError()) {
@@ -416,7 +419,7 @@ public final class MigrationWizardFactory {
                     Messages.errErrorFileNotFound);
         }
         final String fileName = PathUtils.getBaseTempDir() + System.currentTimeMillis() + ".xml";
-        MigrationTemplateParser.save(config, fileName, false);
+        MigrationTemplateWriter.save(config, fileName, false);
         openMigrationScript(fileName);
         new File(fileName).deleteOnExit();
     }

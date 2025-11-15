@@ -32,16 +32,18 @@ package com.cubrid.cubridmigration.oracle.parser;
 
 import com.cubrid.cubridmigration.oracle.parser.antlr4gen.PloParser;
 import com.cubrid.cubridmigration.oracle.parser.antlr4gen.PloParserBaseListener;
+
+import org.antlr.v4.runtime.Token;
+import org.antlr.v4.runtime.tree.ParseTree;
+import org.antlr.v4.runtime.tree.RuleNode;
+import org.antlr.v4.runtime.tree.TerminalNode;
+
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import org.antlr.v4.runtime.Token;
-import org.antlr.v4.runtime.tree.ParseTree;
-import org.antlr.v4.runtime.tree.RuleNode;
-import org.antlr.v4.runtime.tree.TerminalNode;
 
 public class OffsetCollector extends PloParserBaseListener {
 

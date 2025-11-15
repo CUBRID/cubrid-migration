@@ -40,6 +40,7 @@ import com.cubrid.cubridmigration.ui.common.navigator.node.DatabaseNode;
 import com.cubrid.cubridmigration.ui.common.navigator.node.FKNode;
 import com.cubrid.cubridmigration.ui.common.navigator.node.IndexNode;
 import com.cubrid.cubridmigration.ui.common.navigator.node.PKNode;
+
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.jface.viewers.CellLabelProvider;
 import org.eclipse.jface.viewers.ViewerCell;

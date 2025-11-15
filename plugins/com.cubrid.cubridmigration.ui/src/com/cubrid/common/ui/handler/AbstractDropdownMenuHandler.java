@@ -32,6 +32,7 @@
 package com.cubrid.common.ui.handler;
 
 import com.cubrid.cubridmigration.ui.MigrationUIPlugin;
+
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;

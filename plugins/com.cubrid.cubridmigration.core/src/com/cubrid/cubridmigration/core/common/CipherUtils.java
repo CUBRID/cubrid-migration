@@ -31,10 +31,12 @@
 package com.cubrid.cubridmigration.core.common;
 
 import com.cubrid.common.log.LogUtil;
-import java.security.SecureRandom;
-import java.util.Random;
+
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
+
+import java.security.SecureRandom;
+import java.util.Random;
 
 /**
  * Cipher utility class

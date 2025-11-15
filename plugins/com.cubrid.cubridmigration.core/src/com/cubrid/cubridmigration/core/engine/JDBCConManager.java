@@ -36,6 +36,7 @@ import com.cubrid.cubridmigration.core.connection.IConnHelper;
 import com.cubrid.cubridmigration.core.dbtype.DatabaseType;
 import com.cubrid.cubridmigration.core.engine.config.MigrationConfiguration;
 import com.cubrid.cubridmigration.core.engine.exception.JDBCConnectErrorException;
+
 import java.sql.Connection;
 
 /**

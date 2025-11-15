@@ -31,6 +31,11 @@
 package com.cubrid.cubridmigration.ui.preference;
 
 import com.cubrid.common.log.LogUtil;
+
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.osgi.util.NLS;
+import org.slf4j.Logger;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -41,9 +46,6 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.osgi.util.NLS;
-import org.slf4j.Logger;
 
 /**
  * get JDBC driver list and download JDBC driver

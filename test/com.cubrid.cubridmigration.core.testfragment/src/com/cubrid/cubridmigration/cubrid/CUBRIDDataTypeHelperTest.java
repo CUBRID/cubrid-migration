@@ -32,6 +32,7 @@ package com.cubrid.cubridmigration.cubrid;
 
 import com.cubrid.cubridmigration.core.datatype.DataTypeInstance;
 import com.cubrid.cubridmigration.core.dbobject.Column;
+
 import org.junit.Assert;
 import org.junit.Test;
 

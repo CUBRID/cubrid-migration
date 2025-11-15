@@ -38,11 +38,13 @@ import com.cubrid.cubridmigration.core.dbtype.DatabaseType;
 import com.cubrid.cubridmigration.core.sql.SQLHelper;
 import com.cubrid.cubridmigration.mysql.export.MySQLExportHelper;
 import com.cubrid.cubridmigration.mysql.meta.MySQLSchemaFetcher;
+
+import org.apache.commons.lang3.StringUtils;
+
 import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.SQLException;
 import java.util.Properties;
-import org.apache.commons.lang3.StringUtils;
 
 /**
  * CUBRID Database Description
@@ -150,5 +152,6 @@ public class MySQLDatabase extends DatabaseType {
      */
     public DBDataTypeHelper getDataTypeHelper(String version) {
         return MySQLDataTypeHelper.getInstance(version);
-    };
+    }
+    ;
 }

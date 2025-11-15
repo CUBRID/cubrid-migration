@@ -39,11 +39,13 @@ import com.cubrid.cubridmigration.core.dbtype.DatabaseType;
 import com.cubrid.cubridmigration.core.sql.SQLHelper;
 import com.cubrid.cubridmigration.informix.export.InformixExportHelper;
 import com.cubrid.cubridmigration.informix.meta.InformixSchemaFetcher;
+
+import org.apache.commons.lang3.StringUtils;
+
 import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.SQLException;
 import java.util.Properties;
-import org.apache.commons.lang3.StringUtils;
 
 /**
  * InformixDatabase Description

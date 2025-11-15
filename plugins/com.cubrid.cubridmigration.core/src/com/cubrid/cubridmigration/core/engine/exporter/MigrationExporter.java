@@ -39,6 +39,7 @@ import com.cubrid.cubridmigration.core.dbobject.Trigger;
 import com.cubrid.cubridmigration.core.engine.ICanInterrupt;
 import com.cubrid.cubridmigration.core.engine.IMigrationEventHandler;
 import com.cubrid.cubridmigration.core.engine.config.MigrationConfiguration;
+
 import org.apache.commons.lang3.StringUtils;
 
 /**

@@ -30,7 +30,9 @@
  */
 package com.cubrid.cubridmigration.core.common;
 
-/** @author Kevin Cao */
+/**
+ * @author Kevin Cao
+ */
 public class SSHHost extends SSHHostBaseInfo {
 
     private boolean isUseProxy;

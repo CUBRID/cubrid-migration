@@ -30,9 +30,10 @@
  */
 package com.cubrid.common.ui;
 
-import java.util.Collection;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.Viewer;
+
+import java.util.Collection;
 
 /**
  * StructuredContentProviderAdaptor Description

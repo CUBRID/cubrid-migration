@@ -31,9 +31,11 @@
 package com.cubrid.cubridmigration.ui.script;
 
 import com.cubrid.common.ui.navigator.ICUBRIDNode;
-import java.util.List;
+
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.Viewer;
+
+import java.util.List;
 
 /**
  * MigrationScriptContentProvider

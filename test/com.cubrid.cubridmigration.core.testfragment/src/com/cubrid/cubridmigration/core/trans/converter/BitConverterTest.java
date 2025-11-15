@@ -32,7 +32,9 @@ package com.cubrid.cubridmigration.core.trans.converter;
 
 import com.cubrid.cubridmigration.core.datatype.DataTypeInstance;
 import com.cubrid.cubridmigration.cubrid.trans.converter.BitConverter;
+
 import junit.framework.Assert;
+
 import org.junit.Test;
 
 public class BitConverterTest {

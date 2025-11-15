@@ -75,21 +75,27 @@ jobs:
     name: code-style
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v2
-      - id: files
-        uses: jitterbit/get-changed-files@v1
-        continue-on-error: true
-      - uses: axel-op/googlejavaformat-action@v3
+      - uses: actions/checkout@v4
         with:
-          skipCommit: true
-          version: 1.7
-          args: "--aosp --replace --set-exit-if-changed"
-          run: |
-            for f in ${{ steps.files.outputs.added_modified }}; do
-              files: $f
-            done
+          fetch-depth: 0
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - id: changed
+        uses: tj-actions/changed-files@24d32ffd492484c1d75e0c0b894501ddb9d30d62
+        with:
+          files: "**/*.java"
+          write_output_files: true
+      - uses: axel-op/googlejavaformat-action@c1134ebd196c4cbffb077f9476585b0be8b6afcd
+        if: ${{ steps.changed.outputs.any_changed == 'true' }}
+        with:
+          release-name: v1.32.0
+          args: "--aosp --replace --set-exit-if-changed @.github/outputs/all_changed_files.txt"
+          files-excluded: "**/*"
+          skip-commit: true
       - name: Suggest code changes
         if: ${{ failure() }}
-        uses: reviewdog/action-suggester@v1
+        uses: reviewdog/action-suggester@aa38384ceb608d00f84b4690cacc83a5aba307ff
         with:
           tool_name: code-style (indent, googlejavaformat)

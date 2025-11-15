@@ -34,8 +34,7 @@ import com.cubrid.cubridmigration.core.common.CharsetUtils;
 import com.cubrid.cubridmigration.core.engine.config.CSVSettings;
 import com.cubrid.cubridmigration.core.engine.config.MigrationConfiguration;
 import com.cubrid.cubridmigration.ui.message.Messages;
-import java.util.ArrayList;
-import java.util.List;
+
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
@@ -53,6 +52,9 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * CSVImportSettingDialog Description

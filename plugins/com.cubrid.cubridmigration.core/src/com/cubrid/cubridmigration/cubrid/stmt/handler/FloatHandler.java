@@ -31,10 +31,12 @@
 package com.cubrid.cubridmigration.cubrid.stmt.handler;
 
 import com.cubrid.cubridmigration.core.dbobject.Record.ColumnValue;
+
+import org.apache.commons.lang3.StringUtils;
+
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Types;
-import org.apache.commons.lang3.StringUtils;
 
 /**
  * FloatHandler Description

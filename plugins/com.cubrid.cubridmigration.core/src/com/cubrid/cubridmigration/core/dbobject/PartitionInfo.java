@@ -31,6 +31,7 @@
 package com.cubrid.cubridmigration.core.dbobject;
 
 import com.cubrid.cubridmigration.core.common.DBUtils;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;

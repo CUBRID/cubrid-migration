@@ -71,6 +71,7 @@ public class MigrationTransFactory {
     private static final Informix2CUBRIDTransformHelper INFORMIX2CUBRID_TRANSFORM_HELPER =
             new Informix2CUBRIDTransformHelper(
                     new InformixDataTypeMappingHelper(), ToCUBRIDDataConverterFacade.getIntance());
+
     /**
      * getTransformHelper of source to target migration
      *

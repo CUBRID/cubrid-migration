@@ -31,10 +31,12 @@
 package com.cubrid.cubridmigration.mysql;
 
 import com.cubrid.cubridmigration.mysql.trans.MySQL2CUBRIDMigParas;
+
+import org.junit.Test;
+
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.TimeZone;
-import org.junit.Test;
 
 public class MySQL2CUBRIDMigParasTest {
 

@@ -32,9 +32,11 @@ package com.cubrid.cubridmigration.ui.common.navigator;
 
 import com.cubrid.common.ui.navigator.ICUBRIDNode;
 import com.cubrid.cubridmigration.ui.common.navigator.node.TableNode;
-import java.util.List;
+
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.Viewer;
+
+import java.util.List;
 
 /**
  * DBObjectContentProvider

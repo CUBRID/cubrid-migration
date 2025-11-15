@@ -33,6 +33,7 @@ package com.cubrid.cubridmigration.mysql;
 import com.cubrid.cubridmigration.core.dbobject.Column;
 import com.cubrid.cubridmigration.core.engine.config.MigrationConfiguration;
 import com.cubrid.cubridmigration.core.engine.template.TemplateParserTest;
+
 import org.junit.Assert;
 import org.junit.Test;
 

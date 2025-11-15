@@ -37,9 +37,11 @@ import com.cubrid.cubridmigration.core.engine.event.MigrationEvent;
 import com.cubrid.cubridmigration.core.engine.exception.NormalMigrationException;
 import com.cubrid.cubridmigration.core.engine.template.TemplateParserTest;
 import com.cubrid.cubridmigration.core.io.SQLParser;
+
+import org.junit.Test;
+
 import java.io.IOException;
 import java.util.List;
-import org.junit.Test;
 
 /**
  * SQLExportTaskTest Description

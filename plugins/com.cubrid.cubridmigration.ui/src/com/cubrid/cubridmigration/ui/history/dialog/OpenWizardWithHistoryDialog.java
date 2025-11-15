@@ -31,6 +31,7 @@
 package com.cubrid.cubridmigration.ui.history.dialog;
 
 import com.cubrid.cubridmigration.ui.message.Messages;
+
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;

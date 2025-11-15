@@ -32,13 +32,15 @@ package com.cubrid.cubridmigration.ui.script;
 
 import com.cubrid.cubridmigration.ui.common.navigator.node.MigrationScriptNode;
 import com.cubrid.cubridmigration.ui.message.Messages;
-import java.text.MessageFormat;
+
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.events.KeyAdapter;
 import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeItem;
+
+import java.text.MessageFormat;
 
 /**
  * ScriptNodeDeleteKey
@@ -47,7 +49,9 @@ import org.eclipse.swt.widgets.TreeItem;
  */
 final class ScriptNodeDeleteKeyListener extends KeyAdapter {
 
-    /** @param ev key event */
+    /**
+     * @param ev key event
+     */
     public void keyPressed(KeyEvent ev) {
         Tree tree = (Tree) ev.getSource();
         // Delete key

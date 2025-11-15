@@ -40,6 +40,7 @@ import com.cubrid.cubridmigration.core.engine.event.MigrationEvent;
 import com.cubrid.cubridmigration.core.engine.event.MigrationFinishedEvent;
 import com.cubrid.cubridmigration.core.engine.event.MigrationStartEvent;
 import com.cubrid.cubridmigration.cubrid.CUBRIDTimeUtil;
+
 import java.io.PrintStream;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -101,7 +102,7 @@ public class CmdMigrationMonitor implements IMigrationMonitor, Runnable {
 
         if (event instanceof MigrationFinishedEvent) {
             finalEvent = (MigrationFinishedEvent) event;
-            displayManager.printFinalProgress(progressTracker, hasError.get(), finalEvent);
+            displayManager.printProgressIfChanged(progressTracker);
             requestStop();
             return;
         }

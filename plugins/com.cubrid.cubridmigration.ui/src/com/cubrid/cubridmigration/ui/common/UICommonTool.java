@@ -31,6 +31,7 @@
 package com.cubrid.cubridmigration.ui.common;
 
 import com.cubrid.cubridmigration.ui.message.Messages;
+
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.graphics.Rectangle;

@@ -35,15 +35,17 @@ import com.cubrid.cubridmigration.core.engine.config.MigrationConfiguration;
 import com.cubrid.cubridmigration.core.mapping.model.MapItem;
 import com.cubrid.cubridmigration.core.mapping.model.MapObject;
 import com.cubrid.cubridmigration.core.trans.MigrationTransFactory;
+
+import org.dom4j.DocumentException;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.List;
-import org.dom4j.DocumentException;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
 
 /**
  * DbUtilTest

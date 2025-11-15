@@ -31,8 +31,10 @@
 package com.cubrid.cubridmigration;
 
 import com.cubrid.cubridmigration.core.TestUtil2;
-import java.sql.Connection;
+
 import org.junit.Test;
+
+import java.sql.Connection;
 
 public class JDBCConfigurationTest {
     @Test
