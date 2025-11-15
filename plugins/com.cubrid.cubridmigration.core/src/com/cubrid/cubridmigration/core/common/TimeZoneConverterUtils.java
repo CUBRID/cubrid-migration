@@ -151,19 +151,23 @@ public final class TimeZoneConverterUtils {
         if (value == null) {
             return null;
         }
+        OffsetDateTime directTemporal = resolveTemporalInstances(value, defaultTimeZone);
+        if (directTemporal != null) {
+            return directTemporal;
+        }
+        OffsetDateTime cubridTemporal = resolveCubridTemporal(value, defaultTimeZone);
+        if (cubridTemporal != null) {
+            return cubridTemporal;
+        }
+        return resolveNumericInstant(value, defaultTimeZone);
+    }
+
+    private static OffsetDateTime resolveTemporalInstances(Object value, TimeZone defaultTimeZone) {
         if (value instanceof OffsetDateTime) {
             return (OffsetDateTime) value;
         }
         if (value instanceof ZonedDateTime) {
             return ((ZonedDateTime) value).toOffsetDateTime();
-        }
-        OffsetDateTime cubridTz = tryConvertCUBRIDTimestamptz(value);
-        if (cubridTz != null) {
-            return cubridTz;
-        }
-        OffsetDateTime cubridTs = tryConvertCUBRIDTimestamp(value, defaultTimeZone);
-        if (cubridTs != null) {
-            return cubridTs;
         }
         if (value instanceof Timestamp) {
             return toOffsetDateTime(((Timestamp) value).toInstant(), defaultTimeZone);
@@ -176,11 +180,23 @@ public final class TimeZoneConverterUtils {
             return OffsetDateTime.ofInstant(
                     calendar.toInstant(), calendar.getTimeZone().toZoneId());
         }
-        if (value instanceof Number) {
-            Instant instant = Instant.ofEpochMilli(((Number) value).longValue());
-            return toOffsetDateTime(instant, defaultTimeZone);
-        }
         return null;
+    }
+
+    private static OffsetDateTime resolveCubridTemporal(Object value, TimeZone defaultTimeZone) {
+        OffsetDateTime cubridTz = tryConvertCUBRIDTimestamptz(value);
+        if (cubridTz != null) {
+            return cubridTz;
+        }
+        return tryConvertCUBRIDTimestamp(value, defaultTimeZone);
+    }
+
+    private static OffsetDateTime resolveNumericInstant(Object value, TimeZone defaultTimeZone) {
+        if (!(value instanceof Number)) {
+            return null;
+        }
+        Instant instant = Instant.ofEpochMilli(((Number) value).longValue());
+        return toOffsetDateTime(instant, defaultTimeZone);
     }
 
     private static String normalizeToText(Object value) {
