@@ -30,6 +30,7 @@
  */
 package com.cubrid.cubridmigration.core.engine.exporter.impl;
 
+import com.cubrid.common.log.LogUtil;
 import com.cubrid.cubridmigration.core.common.TimeZoneConverterUtils;
 import com.cubrid.cubridmigration.core.dbobject.Column;
 import com.cubrid.cubridmigration.core.dbobject.Record;
@@ -39,7 +40,9 @@ import com.cubrid.cubridmigration.core.engine.config.MigrationConfiguration;
 import com.cubrid.cubridmigration.cubrid.CUBRIDTimeUtil;
 import com.cubrid.cubridmigration.mysql.MySQLDataTypeHelper;
 import com.cubrid.cubridmigration.mysql.trans.MySQL2CUBRIDMigParas;
+
 import org.slf4j.Logger;
+
 import java.io.UnsupportedEncodingException;
 import java.sql.Time;
 import java.sql.Timestamp;
@@ -61,6 +64,7 @@ public class XMLDataParsingTask implements Runnable {
     private final RecordExportedListener oneNewRecord;
     private final MigrationConfiguration config;
     private final MySQLDataTypeHelper dtHelper = MySQLDataTypeHelper.getInstance(null);
+    private static final Logger LOG = LogUtil.getLogger(XMLDataParsingTask.class);
 
     public XMLDataParsingTask(
             MigrationConfiguration config,

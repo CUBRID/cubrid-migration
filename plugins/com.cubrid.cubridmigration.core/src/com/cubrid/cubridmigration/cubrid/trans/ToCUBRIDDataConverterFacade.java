@@ -55,6 +55,7 @@ import com.cubrid.cubridmigration.cubrid.trans.converter.TimeConverter;
 import com.cubrid.cubridmigration.cubrid.trans.converter.TimeStampConverter;
 import com.cubrid.cubridmigration.cubrid.trans.converter.TimestampLTZConverter;
 import com.cubrid.cubridmigration.cubrid.trans.converter.TimestampTZConverter;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -165,7 +166,7 @@ public final class ToCUBRIDDataConverterFacade implements IDataConvertorFacade {
         if (obj != null && obj.getClass().isArray()) {
             return obj;
         }
-        if (obj instanceof Collection || obj instanceof byte[][]) {
+        if (obj instanceof Collection) {
             Collection<?> c = (Collection<?>) obj;
             List<Object> newCollection = new ArrayList<Object>();
 

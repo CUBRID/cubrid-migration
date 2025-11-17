@@ -60,12 +60,6 @@ public final class TimeZoneConverterUtils {
                     .appendOffset("+HH:MM", "+00:00")
                     .toFormatter(Locale.US);
 
-    private static final DateTimeFormatter OUTPUT_WITHOUT_OFFSET =
-            new DateTimeFormatterBuilder()
-                    .appendPattern("yyyy-MM-dd HH:mm:ss")
-                    .appendFraction(ChronoField.NANO_OF_SECOND, 0, 6, true)
-                    .toFormatter(Locale.US);
-
     private static final DateTimeFormatter[] OFFSET_INPUT_FORMATTERS =
             new DateTimeFormatter[] {
                 DateTimeFormatter.ISO_OFFSET_DATE_TIME,
@@ -202,9 +196,6 @@ public final class TimeZoneConverterUtils {
 
     private static String normalizeToText(Object value) {
         String text = value.toString();
-        if (text == null) {
-            return null;
-        }
         text = text.trim();
         if (text.isEmpty()) {
             return null;
@@ -233,27 +224,11 @@ public final class TimeZoneConverterUtils {
         return OUTPUT_WITH_OFFSET.format(dateTime);
     }
 
-    public static String formatWithoutOffset(OffsetDateTime dateTime) {
-        if (dateTime == null) {
-            return null;
-        }
-        return OUTPUT_WITHOUT_OFFSET.format(dateTime);
-    }
-
     public static OffsetDateTime toUtc(OffsetDateTime dateTime) {
         if (dateTime == null) {
             return null;
         }
         return dateTime.withOffsetSameInstant(ZoneOffset.UTC);
-    }
-
-    public static OffsetDateTime applyTargetTimeZone(
-            OffsetDateTime dateTime, TimeZone targetTimeZone) {
-        if (dateTime == null) {
-            return null;
-        }
-        ZoneId zoneId = toZoneId(targetTimeZone);
-        return dateTime.atZoneSameInstant(zoneId).toOffsetDateTime();
     }
 
     private static OffsetDateTime tryParseOffsetDateTime(String text) {
@@ -296,7 +271,7 @@ public final class TimeZoneConverterUtils {
             long timestamp =
                     CUBRIDTimeUtil.parseTimestamp(dateTimePart, TimeZone.getTimeZone("GMT"));
             return OffsetDateTime.ofInstant(Instant.ofEpochMilli(timestamp), ZoneId.of(zoneIdStr));
-        } catch (Exception ignore) {
+        } catch (ParseException ignore) {
         }
         return null;
     }
@@ -317,7 +292,7 @@ public final class TimeZoneConverterUtils {
                     CUBRIDTimeUtil.parseTimestamp(
                             normalized, defaultTimeZone == null ? null : defaultTimeZone);
             return OffsetDateTime.ofInstant(Instant.ofEpochMilli(timestamp), zoneId);
-        } catch (ParseException ex) {
+        } catch (ParseException ignored) {
         }
         return null;
     }
@@ -338,7 +313,7 @@ public final class TimeZoneConverterUtils {
         try {
             ZoneId.of(zoneId);
             return true;
-        } catch (Exception ex) {
+        } catch (DateTimeException ex) {
             return false;
         }
     }
@@ -367,7 +342,7 @@ public final class TimeZoneConverterUtils {
             OffsetDateTime utc =
                     OffsetDateTime.ofInstant(Instant.ofEpochMilli(utcMillis), ZoneOffset.UTC);
             return applyTimezone(utc, getTimezone.invoke(value));
-        } catch (ReflectiveOperationException | ClassCastException ex) {
+        } catch (ReflectiveOperationException | ClassCastException ignored) {
             return null;
         }
     }
@@ -413,7 +388,7 @@ public final class TimeZoneConverterUtils {
             if (flag instanceof Boolean && !((Boolean) flag)) {
                 return result.withOffsetSameInstant(ZoneOffset.UTC);
             }
-        } catch (ReflectiveOperationException ex) {
+        } catch (ReflectiveOperationException ignored) {
             return result;
         }
         return result;
