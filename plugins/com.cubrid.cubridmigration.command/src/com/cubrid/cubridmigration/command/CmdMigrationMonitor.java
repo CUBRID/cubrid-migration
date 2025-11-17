@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Copyright (C) 2008 Search Solution Corporation.
  * Copyright (C) 2016 CUBRID Corporation.
  *
