@@ -57,6 +57,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.PrintStream;
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
@@ -448,6 +449,11 @@ public class ScriptCommandHandler implements ConsoleCommandHandler {
             }
             try {
                 Connection con = tcp.createConnection();
+                DatabaseMetaData metaData = con.getMetaData();
+                int version =
+                        metaData.getDatabaseMajorVersion() * 10
+                                + metaData.getDatabaseMinorVersion();
+                config.setTargetDBVersion(String.valueOf(version));
                 con.close();
             } catch (Exception e) {
                 outPrinter.println("Can't connect database:" + tvalue);
