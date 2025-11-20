@@ -1,5 +1,4 @@
 /*
- * Copyright (C) 2008 Search Solution Corporation.
  * Copyright (C) 2016 CUBRID Corporation.
  *
  * Redistribution and use in source and binary forms, with or without modification,
@@ -36,8 +35,11 @@ import com.cubrid.cubridmigration.core.connection.ConnParameters;
 import com.cubrid.cubridmigration.core.datatype.DataTypeConstant;
 import com.cubrid.cubridmigration.core.dbobject.PK;
 import com.cubrid.cubridmigration.core.dbtype.DatabaseType;
+import com.cubrid.cubridmigration.core.engine.config.SourceColumnConfig;
 import com.cubrid.cubridmigration.core.engine.config.SourceEntryTableConfig;
+import com.cubrid.cubridmigration.core.engine.config.SourceSQLTableConfig;
 import com.cubrid.cubridmigration.core.engine.config.SourceSequenceConfig;
+import com.cubrid.cubridmigration.core.engine.config.SourceTableConfig;
 import com.cubrid.cubridmigration.core.export.DBExportHelper;
 import com.cubrid.cubridmigration.core.export.handler.BytesTypeHandler;
 import com.cubrid.cubridmigration.core.export.handler.CharTypeHandler;
@@ -46,9 +48,11 @@ import com.cubrid.cubridmigration.core.export.handler.DateTypeHandler;
 import com.cubrid.cubridmigration.core.export.handler.DefaultHandler;
 import com.cubrid.cubridmigration.core.export.handler.NumberTypeHandler;
 import com.cubrid.cubridmigration.core.export.handler.TimeTypeHandler;
+import com.cubrid.cubridmigration.core.export.handler.TimestampTZTypeHandler;
 import com.cubrid.cubridmigration.core.export.handler.TimestampTypeHandler;
 import com.cubrid.cubridmigration.cubrid.export.handler.CUBRIDSetTypeHandler;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 
 import java.math.BigInteger;
@@ -56,6 +60,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.List;
+import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -94,6 +100,9 @@ public class CUBRIDExportHelper extends DBExportHelper {
         handlerMap1.put(DataTypeConstant.CUBRID_DT_TIME, new TimeTypeHandler());
         handlerMap1.put(DataTypeConstant.CUBRID_DT_TIMESTAMP, new TimestampTypeHandler());
 
+        handlerMap1.put(DataTypeConstant.CUBRID_DT_TIMESTAMPTZ, new TimestampTZTypeHandler());
+        handlerMap1.put(DataTypeConstant.CUBRID_DT_DATETIMETZ, new TimestampTZTypeHandler());
+
         handlerMap1.put(DataTypeConstant.CUBRID_DT_SET, new CUBRIDSetTypeHandler());
         handlerMap1.put(DataTypeConstant.CUBRID_DT_MULTISET, new CUBRIDSetTypeHandler());
         handlerMap1.put(DataTypeConstant.CUBRID_DT_SEQUENCE, new CUBRIDSetTypeHandler());
@@ -107,6 +116,68 @@ public class CUBRIDExportHelper extends DBExportHelper {
      */
     public String getQuotedObjName(String objectName) {
         return DatabaseType.CUBRID.getSQLHelper(null).getQuotedObjName(objectName);
+    }
+
+    @Override
+    public String getSelectSQL(final SourceTableConfig stc) {
+
+        if (stc instanceof SourceSQLTableConfig) {
+            return ((SourceSQLTableConfig) stc).getSql();
+        }
+
+        SourceEntryTableConfig setc = (SourceEntryTableConfig) stc;
+        StringBuffer buf = new StringBuffer(256);
+        buf.append("SELECT ");
+        final List<SourceColumnConfig> columnList = setc.getColumnConfigList();
+        for (int i = 0; i < columnList.size(); i++) {
+            if (i > 0) {
+                buf.append(',');
+            }
+            SourceColumnConfig colConfig = columnList.get(i);
+            String colName = colConfig.getName();
+
+            if (isTimestamptzColumn(setc, colName)) {
+                buf.append("TO_CHAR(")
+                        .append(getQuotedObjName(colName))
+                        .append(", 'YYYY-MM-DD HH24:MI:SS TZH:TZM') AS ")
+                        .append(getQuotedObjName(colName));
+            } else {
+                buf.append(getQuotedObjName(colName));
+            }
+        }
+        buf.append(" FROM ");
+        addSchemaPrefix(setc, buf);
+        buf.append(getQuotedObjName(setc.getName()));
+
+        String condition = setc.getCondition();
+        if (StringUtils.isNotBlank(condition)) {
+            condition = condition.trim();
+            if (!condition.toLowerCase(Locale.US).startsWith("where")) {
+                buf.append(" WHERE ");
+            }
+            if (condition.trim().endsWith(";")) {
+                condition = condition.substring(0, condition.length() - 1);
+            }
+            buf.append(" ").append(condition);
+        }
+        return buf.toString();
+    }
+
+    private boolean isTimestamptzColumn(SourceEntryTableConfig setc, String colName) {
+
+        String lowerName = colName.toLowerCase();
+
+        if (lowerName.contains("timestamptz") || lowerName.contains("datetimetz")) {
+            return true;
+        }
+
+        if (lowerName.endsWith("_tz")
+                || lowerName.endsWith("_tstz")
+                || lowerName.endsWith("_dttz")) {
+            return true;
+        }
+
+        return false;
     }
 
     /**
@@ -207,7 +278,7 @@ public class CUBRIDExportHelper extends DBExportHelper {
      * @param buf StringBuffer
      */
     protected void addSchemaPrefix(SourceEntryTableConfig setc, StringBuffer buf) {
-        if (setc.getOwner() != null) {
+        if (StringUtils.isNotBlank(setc.getOwner())) {
             buf.append(getQuotedObjName(setc.getOwner())).append(".");
         }
     }
