@@ -104,7 +104,6 @@ public class Data2StrTranslator implements IData2StrTranslator {
 
     private final int targetDataFileFormat;
     private final MigrationDirAndFilesManager dirAndFilesManager;
-    private final TimeZone sourceTimeZone;
 
     public Data2StrTranslator(
             String dataFilePath,
@@ -114,7 +113,7 @@ public class Data2StrTranslator implements IData2StrTranslator {
         this.lobFilePath = dataFilePath;
         this.targetDataFileFormat = targetDataFileFormat;
         this.dirAndFilesManager = dirAndFilesManager;
-        this.sourceTimeZone = config.getSourceDatabaseTimeZone();
+        TimeZone sourceTimeZone = config.getSourceDatabaseTimeZone();
         // Initialize formaters mapping
         formaters.put(DataTypeConstant.CUBRID_DT_MONETARY, new IntegerToCUBRIDString());
         formaters.put(DataTypeConstant.CUBRID_DT_INTEGER, new IntegerToCUBRIDString());
@@ -124,9 +123,9 @@ public class Data2StrTranslator implements IData2StrTranslator {
         formaters.put(DataTypeConstant.CUBRID_DT_DOUBLE, new DoubleToCUBRIDString());
 
         TimeZoneValueToCUBRIDString tzFormatter =
-                new TimeZoneValueToCUBRIDString(this.sourceTimeZone, false);
+                new TimeZoneValueToCUBRIDString(sourceTimeZone, false);
         TimeZoneValueToCUBRIDString ltzFormatter =
-                new TimeZoneValueToCUBRIDString(this.sourceTimeZone, true);
+                new TimeZoneValueToCUBRIDString(sourceTimeZone, true);
 
         if (targetDataFileFormat == MigrationConfiguration.DEST_CSV
                 || targetDataFileFormat == MigrationConfiguration.DEST_XLS) {

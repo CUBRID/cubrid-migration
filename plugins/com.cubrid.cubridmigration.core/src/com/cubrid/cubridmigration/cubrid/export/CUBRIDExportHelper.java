@@ -174,45 +174,63 @@ public class CUBRIDExportHelper extends DBExportHelper {
 
     private boolean isTimestamptzColumn(
             SourceEntryTableConfig setc, String colName, MigrationConfiguration config) {
-        // Try to get actual column type from schema if config is available
-        if (config != null) {
-            Table table = config.getSrcTableSchema(setc.getOwner(), setc.getName());
-            if (table != null) {
-                Column column = table.getColumnByName(colName);
-                if (column != null) {
-                    Integer jdbcID = column.getJdbcIDOfDataType();
-                    if (jdbcID != null) {
-                        return jdbcID == DataTypeConstant.CUBRID_DT_TIMESTAMPTZ
-                                || jdbcID == DataTypeConstant.CUBRID_DT_DATETIMETZ
-                                || jdbcID == DataTypeConstant.CUBRID_DT_TIMESTAMPLTZ
-                                || jdbcID == DataTypeConstant.CUBRID_DT_DATETIMELTZ;
-                    }
-                    // Fallback to data type name check
-                    String dataType = column.getDataType();
-                    if (dataType != null) {
-                        String lowerType = dataType.toLowerCase();
-                        return lowerType.contains("timestamptz")
-                                || lowerType.contains("datetimetz")
-                                || lowerType.contains("timestampltz")
-                                || lowerType.contains("datetimeltz");
-                    }
-                }
-            }
+        if (hasTimeZoneDataType(setc, colName, config)) {
+            return true;
         }
-        // Fallback to column name pattern check
-        String lowerName = colName.toLowerCase();
-        boolean isNamePattern =
-                lowerName.contains("timestamptz")
-                        || lowerName.contains("datetimetz")
-                        || lowerName.contains("timestampltz")
-                        || lowerName.contains("datetimeltz");
-        boolean isSuffixPattern =
-                lowerName.endsWith("_tz")
-                        || lowerName.endsWith("_tstz")
-                        || lowerName.endsWith("_dttz")
-                        || lowerName.endsWith("_ltz");
+        return matchTimeZoneColumnName(colName);
+    }
 
-        return isNamePattern || isSuffixPattern;
+    private boolean hasTimeZoneDataType(
+            SourceEntryTableConfig setc, String colName, MigrationConfiguration config) {
+        if (config == null) {
+            return false;
+        }
+        Table table = config.getSrcTableSchema(setc.getOwner(), setc.getName());
+        if (table == null) {
+            return false;
+        }
+        Column column = table.getColumnByName(colName);
+        if (column == null) {
+            return false;
+        }
+        Integer jdbcID = column.getJdbcIDOfDataType();
+        if (isTimeZoneJdbcId(jdbcID)) {
+            return true;
+        }
+        return isTimeZoneDataTypeName(column.getDataType());
+    }
+
+    private boolean isTimeZoneJdbcId(Integer jdbcID) {
+        if (jdbcID == null) {
+            return false;
+        }
+        return jdbcID == DataTypeConstant.CUBRID_DT_TIMESTAMPTZ
+                || jdbcID == DataTypeConstant.CUBRID_DT_DATETIMETZ
+                || jdbcID == DataTypeConstant.CUBRID_DT_TIMESTAMPLTZ
+                || jdbcID == DataTypeConstant.CUBRID_DT_DATETIMELTZ;
+    }
+
+    private boolean isTimeZoneDataTypeName(String dataType) {
+        if (dataType == null) {
+            return false;
+        }
+        String lowerType = dataType.toLowerCase();
+        return lowerType.contains("timestamptz")
+                || lowerType.contains("datetimetz")
+                || lowerType.contains("timestampltz")
+                || lowerType.contains("datetimeltz");
+    }
+
+    private boolean matchTimeZoneColumnName(String colName) {
+        String lowerName = colName.toLowerCase();
+        return lowerName.contains("timestamptz")
+                || lowerName.contains("datetimetz")
+                || lowerName.contains("timestampltz")
+                || lowerName.contains("datetimeltz")
+                || lowerName.endsWith("_tz")
+                || lowerName.endsWith("_tstz")
+                || lowerName.endsWith("_dttz")
+                || lowerName.endsWith("_ltz");
     }
 
     /**
