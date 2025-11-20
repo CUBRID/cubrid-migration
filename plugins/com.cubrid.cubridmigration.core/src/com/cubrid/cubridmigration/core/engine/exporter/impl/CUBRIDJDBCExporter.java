@@ -392,23 +392,31 @@ public class CUBRIDJDBCExporter extends JDBCExporter {
      */
     private String getPagingSQL(SourceEntryTableConfig setc, String[] spCols, boolean isFirstPage) {
         final DBExportHelper expHelper = getSrcDBExportHelper();
-        StringBuffer sql = new StringBuffer(expHelper.getSelectSQL(setc));
+        String sql;
+        if (expHelper instanceof com.cubrid.cubridmigration.cubrid.export.CUBRIDExportHelper) {
+            sql =
+                    ((com.cubrid.cubridmigration.cubrid.export.CUBRIDExportHelper) expHelper)
+                            .getSelectSQL(setc, config);
+        } else {
+            sql = expHelper.getSelectSQL(setc);
+        }
+        StringBuffer sqlBuf = new StringBuffer(sql);
         final String[] quotedObjNames = getQuotedCols(spCols);
         if (StringUtils.isBlank(setc.getCondition())) {
-            sql.append(" WHERE (");
+            sqlBuf.append(" WHERE (");
         } else {
-            sql.append(" AND (");
+            sqlBuf.append(" AND (");
         }
-        sql.append(getPageCondition(quotedObjNames, isFirstPage));
-        sql.append(") ORDER BY ");
+        sqlBuf.append(getPageCondition(quotedObjNames, isFirstPage));
+        sqlBuf.append(") ORDER BY ");
         for (int i = 0; i < spCols.length; i++) {
             if (i > 0) {
-                sql.append(",");
+                sqlBuf.append(",");
             }
-            sql.append(quotedObjNames[i]);
+            sqlBuf.append(quotedObjNames[i]);
         }
-        sql.append(" FOR ORDERBY_NUM() BETWEEN 1 AND ?");
-        return sql.toString();
+        sqlBuf.append(" FOR ORDERBY_NUM() BETWEEN 1 AND ?");
+        return sqlBuf.toString();
     }
 
     /**

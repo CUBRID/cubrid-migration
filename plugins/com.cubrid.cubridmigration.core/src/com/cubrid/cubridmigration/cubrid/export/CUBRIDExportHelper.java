@@ -33,8 +33,11 @@ import com.cubrid.common.log.LogUtil;
 import com.cubrid.cubridmigration.core.common.Closer;
 import com.cubrid.cubridmigration.core.connection.ConnParameters;
 import com.cubrid.cubridmigration.core.datatype.DataTypeConstant;
+import com.cubrid.cubridmigration.core.dbobject.Column;
 import com.cubrid.cubridmigration.core.dbobject.PK;
+import com.cubrid.cubridmigration.core.dbobject.Table;
 import com.cubrid.cubridmigration.core.dbtype.DatabaseType;
+import com.cubrid.cubridmigration.core.engine.config.MigrationConfiguration;
 import com.cubrid.cubridmigration.core.engine.config.SourceColumnConfig;
 import com.cubrid.cubridmigration.core.engine.config.SourceEntryTableConfig;
 import com.cubrid.cubridmigration.core.engine.config.SourceSQLTableConfig;
@@ -102,6 +105,8 @@ public class CUBRIDExportHelper extends DBExportHelper {
 
         handlerMap1.put(DataTypeConstant.CUBRID_DT_TIMESTAMPTZ, new TimestampTZTypeHandler());
         handlerMap1.put(DataTypeConstant.CUBRID_DT_DATETIMETZ, new TimestampTZTypeHandler());
+        handlerMap1.put(DataTypeConstant.CUBRID_DT_TIMESTAMPLTZ, new TimestampTZTypeHandler());
+        handlerMap1.put(DataTypeConstant.CUBRID_DT_DATETIMELTZ, new TimestampTZTypeHandler());
 
         handlerMap1.put(DataTypeConstant.CUBRID_DT_SET, new CUBRIDSetTypeHandler());
         handlerMap1.put(DataTypeConstant.CUBRID_DT_MULTISET, new CUBRIDSetTypeHandler());
@@ -120,6 +125,10 @@ public class CUBRIDExportHelper extends DBExportHelper {
 
     @Override
     public String getSelectSQL(final SourceTableConfig stc) {
+        return getSelectSQL(stc, null);
+    }
+
+    public String getSelectSQL(final SourceTableConfig stc, final MigrationConfiguration config) {
 
         if (stc instanceof SourceSQLTableConfig) {
             return ((SourceSQLTableConfig) stc).getSql();
@@ -136,7 +145,7 @@ public class CUBRIDExportHelper extends DBExportHelper {
             SourceColumnConfig colConfig = columnList.get(i);
             String colName = colConfig.getName();
 
-            if (isTimestamptzColumn(setc, colName)) {
+            if (isTimestamptzColumn(setc, colName, config)) {
                 buf.append("TO_CHAR(")
                         .append(getQuotedObjName(colName))
                         .append(", 'YYYY-MM-DD HH24:MI:SS TZH:TZM') AS ")
@@ -163,14 +172,45 @@ public class CUBRIDExportHelper extends DBExportHelper {
         return buf.toString();
     }
 
-    private boolean isTimestamptzColumn(SourceEntryTableConfig setc, String colName) {
+    private boolean isTimestamptzColumn(
+            SourceEntryTableConfig setc, String colName, MigrationConfiguration config) {
+        // Try to get actual column type from schema if config is available
+        if (config != null) {
+            Table table = config.getSrcTableSchema(setc.getOwner(), setc.getName());
+            if (table != null) {
+                Column column = table.getColumnByName(colName);
+                if (column != null) {
+                    Integer jdbcID = column.getJdbcIDOfDataType();
+                    if (jdbcID != null) {
+                        return jdbcID == DataTypeConstant.CUBRID_DT_TIMESTAMPTZ
+                                || jdbcID == DataTypeConstant.CUBRID_DT_DATETIMETZ
+                                || jdbcID == DataTypeConstant.CUBRID_DT_TIMESTAMPLTZ
+                                || jdbcID == DataTypeConstant.CUBRID_DT_DATETIMELTZ;
+                    }
+                    // Fallback to data type name check
+                    String dataType = column.getDataType();
+                    if (dataType != null) {
+                        String lowerType = dataType.toLowerCase();
+                        return lowerType.contains("timestamptz")
+                                || lowerType.contains("datetimetz")
+                                || lowerType.contains("timestampltz")
+                                || lowerType.contains("datetimeltz");
+                    }
+                }
+            }
+        }
+        // Fallback to column name pattern check
         String lowerName = colName.toLowerCase();
         boolean isNamePattern =
-                lowerName.contains("timestamptz") || lowerName.contains("datetimetz");
+                lowerName.contains("timestamptz")
+                        || lowerName.contains("datetimetz")
+                        || lowerName.contains("timestampltz")
+                        || lowerName.contains("datetimeltz");
         boolean isSuffixPattern =
                 lowerName.endsWith("_tz")
                         || lowerName.endsWith("_tstz")
-                        || lowerName.endsWith("_dttz");
+                        || lowerName.endsWith("_dttz")
+                        || lowerName.endsWith("_ltz");
 
         return isNamePattern || isSuffixPattern;
     }

@@ -256,7 +256,14 @@ public class JDBCExporter extends MigrationExporter {
             List<SourceColumnConfig> expColConfs = stc.getColumnConfigList();
             long totalExported = 0L;
             long intPageCount = config.getPageFetchCount();
-            String sql = expHelper.getSelectSQL(stc);
+            String sql;
+            if (expHelper instanceof com.cubrid.cubridmigration.cubrid.export.CUBRIDExportHelper) {
+                sql =
+                        ((com.cubrid.cubridmigration.cubrid.export.CUBRIDExportHelper) expHelper)
+                                .getSelectSQL(stc, config);
+            } else {
+                sql = expHelper.getSelectSQL(stc);
+            }
             while (true) {
                 if (interrupted) {
                     return;
