@@ -43,10 +43,6 @@ public class UnloadTimeZoneToCUBRIDString extends AbstracFormaterDecorator {
 
     @Override
     public String format(Object value) {
-        return new StringBuilder(literalName)
-                .append("'")
-                .append(formater.format(value))
-                .append("'")
-                .toString();
+        return literalName + "'" + formater.format(value) + "'";
     }
 }

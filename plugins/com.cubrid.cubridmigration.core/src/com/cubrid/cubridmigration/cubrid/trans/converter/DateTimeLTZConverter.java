@@ -42,11 +42,9 @@ public class DateTimeLTZConverter extends AbstractDataConverter {
     public Object convert(Object obj, DataTypeInstance dti, MigrationConfiguration config) {
 
         if (obj instanceof OffsetDateTime) {
-            OffsetDateTime utc = ((OffsetDateTime) obj).withOffsetSameInstant(ZoneOffset.UTC);
-            return TimeZoneConverterUtils.formatWithOffset(utc);
+            return TimeZoneConverterUtils.formatWithOffset(
+                    ((OffsetDateTime) obj).withOffsetSameInstant(ZoneOffset.UTC));
         }
-
-        Object value = null;
 
         try {
             OffsetDateTime offsetDateTime =
@@ -56,12 +54,11 @@ public class DateTimeLTZConverter extends AbstractDataConverter {
                 return null;
             }
 
-            OffsetDateTime utc = offsetDateTime.withOffsetSameInstant(ZoneOffset.UTC);
-            value = TimeZoneConverterUtils.formatWithOffset(utc);
+            return TimeZoneConverterUtils.formatWithOffset(
+                    offsetDateTime.withOffsetSameInstant(ZoneOffset.UTC));
         } catch (IllegalArgumentException ex) {
             throw new IllegalStateException(
                     "ERROR: could not convert:" + obj + " to CUBRID type DATETIMELTZ", ex);
         }
-        return value;
     }
 }

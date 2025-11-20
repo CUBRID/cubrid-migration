@@ -62,8 +62,9 @@ public class TimestampLTZHandler extends DefaultHandler {
                 stmt.setNull(idx + 1, Types.NULL);
                 return;
             }
-            OffsetDateTime utc = TimeZoneConverterUtils.toUtc(odt);
-            stmt.setString(idx + 1, TimeZoneConverterUtils.formatWithOffset(utc));
+            stmt.setString(
+                    idx + 1,
+                    TimeZoneConverterUtils.formatWithOffset(TimeZoneConverterUtils.toUtc(odt)));
         } catch (IllegalArgumentException ex) {
             throw new SQLException(
                     "Failed to bind TIMESTAMPLTZ value for column "

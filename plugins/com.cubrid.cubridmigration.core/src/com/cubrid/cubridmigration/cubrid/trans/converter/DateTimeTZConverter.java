@@ -43,8 +43,6 @@ public class DateTimeTZConverter extends AbstractDataConverter {
             return TimeZoneConverterUtils.formatWithOffset((OffsetDateTime) obj);
         }
 
-        Object value = null;
-
         try {
             OffsetDateTime offsetDateTime =
                     TimeZoneConverterUtils.parseToOffsetDateTime(
@@ -53,12 +51,10 @@ public class DateTimeTZConverter extends AbstractDataConverter {
                 return null;
             }
 
-            value = TimeZoneConverterUtils.formatWithOffset(offsetDateTime);
+            return TimeZoneConverterUtils.formatWithOffset(offsetDateTime);
         } catch (IllegalArgumentException ex) {
             throw new IllegalStateException(
                     "ERROR: could not convert:" + obj + " to CUBRID type DATETIMETZ", ex);
         }
-
-        return value;
     }
 }

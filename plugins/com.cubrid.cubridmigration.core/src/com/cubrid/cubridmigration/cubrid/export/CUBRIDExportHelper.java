@@ -174,10 +174,7 @@ public class CUBRIDExportHelper extends DBExportHelper {
 
     private boolean isTimestamptzColumn(
             SourceEntryTableConfig setc, String colName, MigrationConfiguration config) {
-        if (hasTimeZoneDataType(setc, colName, config)) {
-            return true;
-        }
-        return matchTimeZoneColumnName(colName);
+        return hasTimeZoneDataType(setc, colName, config) || matchTimeZoneColumnName(colName);
     }
 
     private boolean hasTimeZoneDataType(
@@ -194,20 +191,15 @@ public class CUBRIDExportHelper extends DBExportHelper {
             return false;
         }
         Integer jdbcID = column.getJdbcIDOfDataType();
-        if (isTimeZoneJdbcId(jdbcID)) {
-            return true;
-        }
-        return isTimeZoneDataTypeName(column.getDataType());
+        return isTimeZoneJdbcId(jdbcID) || isTimeZoneDataTypeName(column.getDataType());
     }
 
     private boolean isTimeZoneJdbcId(Integer jdbcID) {
-        if (jdbcID == null) {
-            return false;
-        }
-        return jdbcID == DataTypeConstant.CUBRID_DT_TIMESTAMPTZ
-                || jdbcID == DataTypeConstant.CUBRID_DT_DATETIMETZ
-                || jdbcID == DataTypeConstant.CUBRID_DT_TIMESTAMPLTZ
-                || jdbcID == DataTypeConstant.CUBRID_DT_DATETIMELTZ;
+        return jdbcID != null
+                && (jdbcID == DataTypeConstant.CUBRID_DT_TIMESTAMPTZ
+                        || jdbcID == DataTypeConstant.CUBRID_DT_DATETIMETZ
+                        || jdbcID == DataTypeConstant.CUBRID_DT_TIMESTAMPLTZ
+                        || jdbcID == DataTypeConstant.CUBRID_DT_DATETIMELTZ);
     }
 
     private boolean isTimeZoneDataTypeName(String dataType) {

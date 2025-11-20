@@ -53,12 +53,8 @@ public class TimeZoneValueToCUBRIDString implements IFormatValueToString {
             throw new IllegalArgumentException("Timezone value cannot be null.");
         }
         if (convertToUTC) {
-            dateTime = TimeZoneConverterUtils.toUtc(dateTime);
+            return TimeZoneConverterUtils.formatWithOffset(TimeZoneConverterUtils.toUtc(dateTime));
         }
-        String formatted = TimeZoneConverterUtils.formatWithOffset(dateTime);
-        if (formatted == null) {
-            throw new IllegalArgumentException("Unable to format timezone value: " + value);
-        }
-        return formatted;
+        return TimeZoneConverterUtils.formatWithOffset(dateTime);
     }
 }
