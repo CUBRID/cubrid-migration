@@ -164,20 +164,15 @@ public class CUBRIDExportHelper extends DBExportHelper {
     }
 
     private boolean isTimestamptzColumn(SourceEntryTableConfig setc, String colName) {
-
         String lowerName = colName.toLowerCase();
+        boolean isNamePattern =
+                lowerName.contains("timestamptz") || lowerName.contains("datetimetz");
+        boolean isSuffixPattern =
+                lowerName.endsWith("_tz")
+                        || lowerName.endsWith("_tstz")
+                        || lowerName.endsWith("_dttz");
 
-        if (lowerName.contains("timestamptz") || lowerName.contains("datetimetz")) {
-            return true;
-        }
-
-        if (lowerName.endsWith("_tz")
-                || lowerName.endsWith("_tstz")
-                || lowerName.endsWith("_dttz")) {
-            return true;
-        }
-
-        return false;
+        return isNamePattern || isSuffixPattern;
     }
 
     /**
