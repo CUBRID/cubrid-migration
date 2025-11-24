@@ -174,7 +174,7 @@ public class CUBRIDExportHelper extends DBExportHelper {
 
     private boolean isTimestamptzColumn(
             SourceEntryTableConfig setc, String colName, MigrationConfiguration config) {
-        return hasTimeZoneDataType(setc, colName, config) || matchTimeZoneColumnName(colName);
+        return hasTimeZoneDataType(setc, colName, config);
     }
 
     private boolean hasTimeZoneDataType(
@@ -211,18 +211,6 @@ public class CUBRIDExportHelper extends DBExportHelper {
                 || lowerType.contains("datetimetz")
                 || lowerType.contains("timestampltz")
                 || lowerType.contains("datetimeltz");
-    }
-
-    private boolean matchTimeZoneColumnName(String colName) {
-        String lowerName = colName.toLowerCase();
-        return lowerName.contains("timestamptz")
-                || lowerName.contains("datetimetz")
-                || lowerName.contains("timestampltz")
-                || lowerName.contains("datetimeltz")
-                || lowerName.endsWith("_tz")
-                || lowerName.endsWith("_tstz")
-                || lowerName.endsWith("_dttz")
-                || lowerName.endsWith("_ltz");
     }
 
     /**
