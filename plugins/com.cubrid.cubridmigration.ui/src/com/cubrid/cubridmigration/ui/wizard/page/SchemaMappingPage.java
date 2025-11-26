@@ -366,70 +366,83 @@ public class SchemaMappingPage extends MigrationWizardPage {
                         : config.getSrcConnOwner();
 
         if (splitSchema) {
-            pathContext.tableFullName.put(
-                    schemaName, config.buildLocalFileFullPath(schemaName, "class", null));
-            pathContext.viewFullName.put(
-                    schemaName, config.buildLocalFileFullPath(schemaName, "vclass", null));
-            pathContext.viewQuerySpecFullName.put(
-                    schemaName,
-                    config.buildLocalFileFullPath(schemaName, "vclass_query_spec", null));
-            pathContext.pkFullName.put(
-                    schemaName, config.buildLocalFileFullPath(schemaName, "pk", null));
-            pathContext.fkFullName.put(
-                    schemaName, config.buildLocalFileFullPath(schemaName, "fk", null));
-            pathContext.uniqueIndexFullName.put(
-                    schemaName, config.buildLocalFileFullPath(schemaName, "uk", null));
-            pathContext.serialFullName.put(
-                    schemaName, config.buildLocalFileFullPath(schemaName, "serial", null));
-            pathContext.schemaFileListFullName.put(
-                    schemaName, config.buildLocalFileFullPath(schemaName, "info", null));
-            pathContext.synonymFileListFullName.put(
-                    schemaName, config.buildLocalFileFullPath(schemaName, "synonym", null));
-
-            for (Grant grant : schema.getGrantList()) {
-                pathContext.grantFileListFullName.putIfAbsent(schemaName, new HashMap<>());
-                Map<String, String> grantMap = pathContext.grantFileListFullName.get(schemaName);
-                grantMap.putIfAbsent(
-                        grant.getSourceObjectOwner(),
-                        config.buildLocalFileFullPath(
-                                schemaName, "grant", grant.getSourceObjectOwner()));
-            }
-
-            pathContext.plcsqlProcedureHeaderFullName.put(
-                    schemaName,
-                    config.buildLocalFileFullPath(schemaName, "procedure_header", null));
-            pathContext.plcsqlFunctionHeaderFullName.put(
-                    schemaName, config.buildLocalFileFullPath(schemaName, "function_header", null));
-
-            pathContext.plcsqlProcedureFullName.put(
-                    schemaName, config.buildLocalFileFullPath(schemaName, "procedure", null));
-            pathContext.plcsqlFunctionFullName.put(
-                    schemaName, config.buildLocalFileFullPath(schemaName, "function", null));
-
-            Map<String, String> procedureFiles = new HashMap<>();
-            schema.getPlcsqlProcedures()
-                    .forEach(
-                            proc ->
-                                    procedureFiles.put(
-                                            proc.getName(),
-                                            config.buildPlcsqlProcedureFileFullPath(
-                                                    schemaName, proc.getName(), "procedure")));
-            pathContext.plcsqlProcedureFileListFullName.put(schemaName, procedureFiles);
-
-            Map<String, String> functionFiles = new HashMap<>();
-            schema.getPlcsqlFunctions()
-                    .forEach(
-                            func ->
-                                    functionFiles.put(
-                                            func.getName(),
-                                            config.buildPlcsqlProcedureFileFullPath(
-                                                    schemaName, func.getName(), "function")));
-            pathContext.plcsqlFunctionFileListFullName.put(schemaName, functionFiles);
-
+            populateSplitSchemaPaths(schema, schemaName, pathContext);
         } else {
             pathContext.schemaFullName.put(
                     schemaName, config.buildLocalFileFullPath(schemaName, "schema", null));
         }
+
+        populateDataAndIndexPaths(schema, schemaName, pathContext);
+    }
+
+    private void populateSplitSchemaPaths(
+            Schema schema, String schemaName, OfflineFilePathContext pathContext) {
+        pathContext.tableFullName.put(
+                schemaName, config.buildLocalFileFullPath(schemaName, "class", null));
+        pathContext.viewFullName.put(
+                schemaName, config.buildLocalFileFullPath(schemaName, "vclass", null));
+        pathContext.viewQuerySpecFullName.put(
+                schemaName, config.buildLocalFileFullPath(schemaName, "vclass_query_spec", null));
+        pathContext.pkFullName.put(
+                schemaName, config.buildLocalFileFullPath(schemaName, "pk", null));
+        pathContext.fkFullName.put(
+                schemaName, config.buildLocalFileFullPath(schemaName, "fk", null));
+        pathContext.uniqueIndexFullName.put(
+                schemaName, config.buildLocalFileFullPath(schemaName, "uk", null));
+        pathContext.serialFullName.put(
+                schemaName, config.buildLocalFileFullPath(schemaName, "serial", null));
+        pathContext.schemaFileListFullName.put(
+                schemaName, config.buildLocalFileFullPath(schemaName, "info", null));
+        pathContext.synonymFileListFullName.put(
+                schemaName, config.buildLocalFileFullPath(schemaName, "synonym", null));
+
+        for (Grant grant : schema.getGrantList()) {
+            pathContext.grantFileListFullName.putIfAbsent(schemaName, new HashMap<>());
+            Map<String, String> grantMap = pathContext.grantFileListFullName.get(schemaName);
+            grantMap.putIfAbsent(
+                    grant.getSourceObjectOwner(),
+                    config.buildLocalFileFullPath(
+                            schemaName, "grant", grant.getSourceObjectOwner()));
+        }
+
+        populatePlcsqlPaths(schema, schemaName, pathContext);
+    }
+
+    private void populatePlcsqlPaths(
+            Schema schema, String schemaName, OfflineFilePathContext pathContext) {
+        pathContext.plcsqlProcedureHeaderFullName.put(
+                schemaName, config.buildLocalFileFullPath(schemaName, "procedure_header", null));
+        pathContext.plcsqlFunctionHeaderFullName.put(
+                schemaName, config.buildLocalFileFullPath(schemaName, "function_header", null));
+
+        pathContext.plcsqlProcedureFullName.put(
+                schemaName, config.buildLocalFileFullPath(schemaName, "procedure", null));
+        pathContext.plcsqlFunctionFullName.put(
+                schemaName, config.buildLocalFileFullPath(schemaName, "function", null));
+
+        Map<String, String> procedureFiles = new HashMap<>();
+        schema.getPlcsqlProcedures()
+                .forEach(
+                        proc ->
+                                procedureFiles.put(
+                                        proc.getName(),
+                                        config.buildPlcsqlProcedureFileFullPath(
+                                                schemaName, proc.getName(), "procedure")));
+        pathContext.plcsqlProcedureFileListFullName.put(schemaName, procedureFiles);
+
+        Map<String, String> functionFiles = new HashMap<>();
+        schema.getPlcsqlFunctions()
+                .forEach(
+                        func ->
+                                functionFiles.put(
+                                        func.getName(),
+                                        config.buildPlcsqlProcedureFileFullPath(
+                                                schemaName, func.getName(), "function")));
+        pathContext.plcsqlFunctionFileListFullName.put(schemaName, functionFiles);
+    }
+
+    private void populateDataAndIndexPaths(
+            Schema schema, String schemaName, OfflineFilePathContext pathContext) {
         if (config.isOneTableOneFile()) {
             List<String> tableList = new ArrayList<>();
             schema.getTables()
