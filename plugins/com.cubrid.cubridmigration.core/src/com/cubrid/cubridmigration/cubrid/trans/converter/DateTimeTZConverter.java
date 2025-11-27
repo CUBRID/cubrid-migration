@@ -53,8 +53,20 @@ public class DateTimeTZConverter extends AbstractDataConverter {
 
             return TimeZoneConverterUtils.formatWithOffset(offsetDateTime);
         } catch (IllegalArgumentException ex) {
-            throw new IllegalStateException(
-                    "ERROR: could not convert:" + obj + " to CUBRID type DATETIMETZ", ex);
+            String valueStr = obj != null ? obj.toString() : null;
+            if (isZeroDatePattern(valueStr)) {
+                return valueStr;
+            } else {
+                throw new IllegalStateException(
+                        "ERROR: could not convert:" + obj + " to CUBRID type DATETIMETZ", ex);
+            }
         }
+    }
+
+    private boolean isZeroDatePattern(String value) {
+        if (value == null) {
+            return false;
+        }
+        return value.matches(".*0{2,4}[/-]0{1,2}[/-]0{2,4}.*");
     }
 }

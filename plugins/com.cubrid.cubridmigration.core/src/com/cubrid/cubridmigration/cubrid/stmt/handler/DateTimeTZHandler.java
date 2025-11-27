@@ -64,10 +64,22 @@ public class DateTimeTZHandler extends DefaultHandler {
             }
             stmt.setString(idx + 1, TimeZoneConverterUtils.formatWithOffset(odt));
         } catch (IllegalArgumentException ex) {
-            throw new SQLException(
-                    "Failed to bind DATETIMETZ value for column "
-                            + columnValue.getColumn().getName(),
-                    ex);
+            String valueStr = value.toString();
+            if (isZeroDatePattern(valueStr)) {
+                stmt.setString(idx + 1, valueStr);
+            } else {
+                throw new SQLException(
+                        "Failed to bind DATETIMETZ value for column "
+                                + columnValue.getColumn().getName(),
+                        ex);
+            }
         }
+    }
+
+    private boolean isZeroDatePattern(String value) {
+        if (value == null) {
+            return false;
+        }
+        return value.matches(".*0{2,4}[/-]0{1,2}[/-]0{2,4}.*");
     }
 }
