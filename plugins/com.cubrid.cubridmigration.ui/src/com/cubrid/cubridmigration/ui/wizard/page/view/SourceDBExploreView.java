@@ -63,6 +63,7 @@ import org.eclipse.swt.widgets.Widget;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Show source DB objects including DB objects and user defined SQLs.
@@ -204,12 +205,22 @@ public class SourceDBExploreView implements ISQLTableChangedListener {
             DatabaseNode input, MigrationConfiguration config) {
         this.config = config;
         List<ICUBRIDNode> tvContent = new ArrayList<ICUBRIDNode>();
-        // Database/schema/tables|views|sequences/.....
-        // If one one schema in the source database, don't show schema node
-        if (input.getChildren().size() == 1) {
-            tvContent.addAll(input.getChildren().get(0).getChildren());
+        Set<String> selectedSchemas = config.getSelectedSrcSchemas();
+        boolean hasFilter = !selectedSchemas.isEmpty();
+        List<ICUBRIDNode> schemaNodes = input.getChildren();
+        if (schemaNodes.size() == 1) {
+            ICUBRIDNode schemaNode = schemaNodes.get(0);
+            if (!hasFilter || selectedSchemas.contains(schemaNode.getName())) {
+                tvContent.addAll(schemaNode.getChildren());
+            }
         } else {
-            tvContent.addAll(input.getChildren());
+            for (ICUBRIDNode schemaNode : schemaNodes) {
+                String schemaName = schemaNode.getName();
+                if (hasFilter && !selectedSchemas.contains(schemaName)) {
+                    continue;
+                }
+                tvContent.add(schemaNode);
+            }
         }
 
         // Build SQL table nodes

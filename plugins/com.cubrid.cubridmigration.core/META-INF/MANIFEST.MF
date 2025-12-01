@@ -22,6 +22,7 @@ Export-Package:
  com.cubrid.cubridmigration.core.datatype,
  com.cubrid.cubridmigration.core.dbmetadata;uses:="com.cubrid.cubridmigration.core.dbobject,com.cubrid.cubridmigration.core.connection,com.cubrid.cubridmigration.core.export",
  com.cubrid.cubridmigration.core.dbobject;uses:="com.cubrid.cubridmigration.core.dbtype,com.cubrid.cubridmigration.core.connection,com.cubrid.cubridmigration.core.datatype",
+ com.cubrid.cubridmigration.core.dbobject.mapper,
  com.cubrid.cubridmigration.core.dbtype;
   uses:="com.cubrid.cubridmigration.core.dbmetadata,
    com.cubrid.cubridmigration.core.connection,

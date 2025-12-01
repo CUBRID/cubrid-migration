@@ -40,6 +40,7 @@ import com.cubrid.cubridmigration.core.dbmetadata.IDBSource;
 import com.cubrid.cubridmigration.core.dbobject.Catalog;
 import com.cubrid.cubridmigration.core.dbobject.Column;
 import com.cubrid.cubridmigration.core.dbobject.Schema;
+import com.cubrid.cubridmigration.core.dbobject.SchemaCatalog;
 import com.cubrid.cubridmigration.core.dbobject.Table;
 import com.cubrid.cubridmigration.core.dbtype.DatabaseType;
 import com.cubrid.cubridmigration.mysql.MysqlXmlDumpSource;
@@ -51,6 +52,7 @@ import java.beans.XMLEncoder;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.util.List;
 
 /**
  * catalog generator from database dump file
@@ -178,5 +180,19 @@ public class MysqlXmlDumpSchemaWithHistoryFetcher implements IDBSchemaInfoFetche
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         }
+    }
+
+    /** Names-only mode is not supported for history-based XML fetcher yet. */
+    @Override
+    public SchemaCatalog fetchSchemaNames(IDBSource ds) {
+        // Names-only mode is not supported right now.
+        // If needed, we can add logic later to create a SchemaCatalog based on history.
+        return null;
+    }
+
+    /** For XML history, always returns the full Catalog (no schema filtering). */
+    @Override
+    public Catalog fetchSchemaObjects(IDBSource ds, SchemaCatalog sc, List<String> schemas) {
+        return fetchSchema(ds, null);
     }
 }

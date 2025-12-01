@@ -85,6 +85,7 @@ import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -92,6 +93,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.TimeZone;
 import java.util.TreeMap;
 
@@ -231,6 +233,7 @@ public class MigrationConfiguration {
     private int destType;
     private ConnParameters targetConParams;
 
+    private SchemaSelection selectedSrcSchemas = SchemaSelection.empty();
     private List<String> newTargetSchema = new ArrayList<String>();
     private List<Schema> targetSchemaList = new ArrayList<Schema>();
 
@@ -2543,6 +2546,49 @@ public class MigrationConfiguration {
      */
     public String getDataFileExt() {
         return DATA_FORMAT_EXT[destType];
+    }
+
+    public Set<String> getSelectedSrcSchemas() {
+        return selectedSrcSchemas.asSet();
+    }
+
+    public void setSelectedSrcSchemas(Collection<String> schemas) {
+        this.selectedSrcSchemas = SchemaSelection.of(schemas);
+    }
+
+    public void addSelectedSrcSchema(String schemaName) {
+        if (schemaName == null || schemaName.trim().isEmpty()) {
+            return;
+        }
+        List<String> merged = new ArrayList<String>(selectedSrcSchemas.asSet());
+        merged.add(schemaName.trim());
+        this.selectedSrcSchemas = SchemaSelection.of(merged);
+    }
+
+    public void removeSelectedSrcSchema(String schemaName) {
+        if (schemaName == null || selectedSrcSchemas.isEmpty()) {
+            return;
+        }
+        String trimmed = schemaName.trim();
+        List<String> remaining = new ArrayList<String>();
+        for (String s : selectedSrcSchemas.asSet()) {
+            if (!s.equals(trimmed)) {
+                remaining.add(s);
+            }
+        }
+        this.selectedSrcSchemas = SchemaSelection.of(remaining);
+    }
+
+    public boolean isSrcSchemaSelected(String schemaName) {
+        return selectedSrcSchemas.contains(schemaName);
+    }
+
+    public boolean hasSelectedSrcSchemas() {
+        return !selectedSrcSchemas.isEmpty();
+    }
+
+    public void clearSelectedSrcSchemas() {
+        this.selectedSrcSchemas = SchemaSelection.empty();
     }
 
     /**

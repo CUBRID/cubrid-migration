@@ -35,12 +35,15 @@ import com.cubrid.cubridmigration.core.dbmetadata.IBuildSchemaFilter;
 import com.cubrid.cubridmigration.core.dbmetadata.IDBSchemaInfoFetcher;
 import com.cubrid.cubridmigration.core.dbmetadata.IDBSource;
 import com.cubrid.cubridmigration.core.dbobject.Catalog;
+import com.cubrid.cubridmigration.core.dbobject.SchemaCatalog;
+import com.cubrid.cubridmigration.core.dbobject.mapper.SchemaCatalogMapper;
 import com.cubrid.cubridmigration.mysql.MysqlXmlDumpSource;
 
 import org.xml.sax.InputSource;
 
 import java.io.IOException;
 import java.io.Reader;
+import java.util.List;
 
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
@@ -104,6 +107,22 @@ public class MYSQLXMLSchemaFether implements IDBSchemaInfoFetcher {
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         }
+    }
+
+    /** Parses full XML dump and exposes a names-only SchemaCatalog view. */
+    @Override
+    public SchemaCatalog fetchSchemaNames(IDBSource ds) {
+        Catalog catalog = fetchSchema(ds, null);
+        if (catalog == null) {
+            return null;
+        }
+        return SchemaCatalogMapper.toSchemaCatalog(catalog);
+    }
+
+    /** XML dump already has all objects; returns the full Catalog. */
+    @Override
+    public Catalog fetchSchemaObjects(IDBSource ds, SchemaCatalog sc, List<String> schemas) {
+        return fetchSchema(ds, null);
     }
 
     /** Cancel parsing progress */

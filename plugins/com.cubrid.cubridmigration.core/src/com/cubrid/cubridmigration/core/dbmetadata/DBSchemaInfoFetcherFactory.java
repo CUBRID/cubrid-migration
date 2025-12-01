@@ -32,8 +32,11 @@ package com.cubrid.cubridmigration.core.dbmetadata;
 
 import com.cubrid.cubridmigration.core.connection.ConnParameters;
 import com.cubrid.cubridmigration.core.dbobject.Catalog;
+import com.cubrid.cubridmigration.core.dbobject.SchemaCatalog;
 import com.cubrid.cubridmigration.mysql.MysqlXmlDumpSource;
 import com.cubrid.cubridmigration.mysql.meta.MYSQLXMLSchemaFether;
+
+import java.util.List;
 
 /**
  * DBSchemaInfoFetcherFactory build data source's schema information.
@@ -47,6 +50,15 @@ public final class DBSchemaInfoFetcherFactory {
             new IDBSchemaInfoFetcher() {
 
                 public Catalog fetchSchema(IDBSource ds, IBuildSchemaFilter filter) {
+                    return null;
+                }
+
+                public SchemaCatalog fetchSchemaNames(IDBSource ds) {
+                    return null;
+                }
+
+                public Catalog fetchSchemaObjects(
+                        IDBSource ds, SchemaCatalog sc, List<String> schemas) {
                     return null;
                 }
 

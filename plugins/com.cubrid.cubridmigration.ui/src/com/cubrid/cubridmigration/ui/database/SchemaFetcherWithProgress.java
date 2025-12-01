@@ -36,6 +36,7 @@ import com.cubrid.cubridmigration.core.dbmetadata.DBSchemaInfoFetcherFactory;
 import com.cubrid.cubridmigration.core.dbmetadata.IDBSchemaInfoFetcher;
 import com.cubrid.cubridmigration.core.dbmetadata.IDBSource;
 import com.cubrid.cubridmigration.core.dbobject.Catalog;
+import com.cubrid.cubridmigration.core.dbobject.SchemaCatalog;
 import com.cubrid.cubridmigration.core.engine.ThreadUtils;
 import com.cubrid.cubridmigration.ui.common.CompositeUtils;
 import com.cubrid.cubridmigration.ui.common.dialog.DetailMessageDialog;
@@ -49,6 +50,7 @@ import org.slf4j.Logger;
 
 import java.lang.reflect.InvocationTargetException;
 import java.sql.SQLException;
+import java.util.List;
 
 /**
  * Running fetching schema of database by JDBC driver, a progress dialog is shown for users
@@ -61,6 +63,7 @@ public class SchemaFetcherWithProgress implements IRunnableWithProgress {
 
     protected IDBSource dbSource;
     protected Catalog catalog;
+    protected SchemaCatalog schemaCatalog;
     protected boolean isFinished;
     protected Exception exception;
     protected String errorMessage;
@@ -157,6 +160,127 @@ public class SchemaFetcherWithProgress implements IRunnableWithProgress {
      */
     public Catalog fetch() {
         CompositeUtils.runMethodInProgressBar(true, true, this);
+        return catalog;
+    }
+
+    /** Runs fetchSchemaNames(...) with a progress dialog (Lazy Step 1). */
+    public SchemaCatalog fetchNames() {
+        CompositeUtils.runMethodInProgressBar(
+                true,
+                true,
+                new IRunnableWithProgress() {
+                    public void run(final IProgressMonitor pm)
+                            throws InvocationTargetException, InterruptedException {
+                        if (pm == null) {
+                            return;
+                        }
+                        isFinished = false;
+                        exception = null;
+                        schemaCatalog = null;
+                        errorMessage = null;
+                        try {
+                            final IDBSchemaInfoFetcher fetcher = createFetcher();
+                            pm.beginTask(Messages.progressMetadata, IProgressMonitor.UNKNOWN);
+                            Thread thread =
+                                    new Thread("Fetch Names") {
+                                        public void run() {
+                                            try {
+                                                schemaCatalog = fetcher.fetchSchemaNames(dbSource);
+                                            } catch (Exception ex) {
+                                                exception = ex;
+                                                LOG.error("", ex);
+                                            } finally {
+                                                isFinished = true;
+                                            }
+                                        }
+                                    };
+                            thread.start();
+                            while (!isFinished) {
+                                if (pm.isCanceled()) {
+                                    thread.interrupt();
+                                    fetcher.cancel();
+                                    return;
+                                }
+                                ThreadUtils.threadSleep(500, null);
+                            }
+                            if (exception != null) {
+                                if (dbSource instanceof ConnParameters) {
+                                    errorMessage = Messages.errConnectDatabase;
+                                    Throwable cause = exception.getCause();
+                                    if (cause instanceof SQLException) {
+                                        errorMessage = Messages.errMsgLoadSchemaFailed;
+                                    }
+                                } else {
+                                    errorMessage = Messages.errInvalidMysqlDumpFile;
+                                }
+                            }
+                        } catch (Exception e) {
+                            LOG.error("", e);
+                        } finally {
+                            pm.done();
+                        }
+                    }
+                });
+        if (schemaCatalog == null && exception != null) {
+            openErrorDialog(errorMessage, exception.getMessage());
+        }
+        return schemaCatalog;
+    }
+
+    /** Runs fetchSchemaObjects(...) with a progress dialog (Lazy Step 2). */
+    public Catalog fetchDetails(final SchemaCatalog sc, final List<String> selectedSchemas) {
+        CompositeUtils.runMethodInProgressBar(
+                true,
+                true,
+                new IRunnableWithProgress() {
+                    public void run(final IProgressMonitor pm)
+                            throws InvocationTargetException, InterruptedException {
+                        if (pm == null) {
+                            return;
+                        }
+                        isFinished = false;
+                        exception = null;
+                        errorMessage = null;
+                        try {
+                            final IDBSchemaInfoFetcher fetcher = createFetcher();
+                            pm.beginTask(Messages.progressMetadata, IProgressMonitor.UNKNOWN);
+                            Thread thread =
+                                    new Thread("Fetch Details") {
+                                        public void run() {
+                                            try {
+                                                catalog =
+                                                        fetcher.fetchSchemaObjects(
+                                                                dbSource, sc, selectedSchemas);
+                                            } catch (Exception ex) {
+                                                exception = ex;
+                                                LOG.error("", ex);
+                                            } finally {
+                                                isFinished = true;
+                                            }
+                                        }
+                                    };
+                            thread.start();
+                            while (!isFinished) {
+                                if (pm.isCanceled()) {
+                                    thread.interrupt();
+                                    fetcher.cancel();
+                                    return;
+                                }
+                                ThreadUtils.threadSleep(500, null);
+                            }
+                            if (exception != null) {
+                                errorMessage = Messages.errMsgLoadSchemaFailed;
+                            }
+                        } catch (Exception e) {
+                            LOG.error("", e);
+                        } finally {
+                            pm.done();
+                        }
+                    }
+                });
+        if (exception != null) {
+            openErrorDialog(errorMessage, exception.getMessage());
+        }
         return catalog;
     }
 

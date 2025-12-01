@@ -36,6 +36,7 @@ import com.cubrid.cubridmigration.core.common.PathUtils;
 import com.cubrid.cubridmigration.core.common.TimeZoneUtils;
 import com.cubrid.cubridmigration.core.connection.ConnParameters;
 import com.cubrid.cubridmigration.core.dbobject.Catalog;
+import com.cubrid.cubridmigration.core.dbobject.SchemaCatalog;
 import com.cubrid.cubridmigration.core.engine.config.MigrationConfiguration;
 import com.cubrid.cubridmigration.ui.common.Status;
 import com.cubrid.cubridmigration.ui.common.TooltipLabel;
@@ -753,16 +754,13 @@ public class SelectDestinationPage extends MigrationWizardPage {
             setDescription(Messages.msgDestOutputFilesSettingDes);
 
             MigrationConfiguration config = getMigrationWizard().getMigrationConfig();
+            SchemaCatalog schemaCatalog = getMigrationWizard().getSourceSchemaCatalog();
 
             String dbName = "";
             if (config.sourceIsXMLDump()) {
-                dbName = getMigrationWizard().getOriginalSourceCatalog().getName();
+                dbName = schemaCatalog.getName();
             } else {
-                dbName =
-                        getMigrationWizard()
-                                .getOriginalSourceCatalog()
-                                .getConnectionParameters()
-                                .getDbName();
+                dbName = schemaCatalog.getConnectionParameters().getDbName();
             }
 
             btnCSVSetting.setVisible(config.targetIsCSV());

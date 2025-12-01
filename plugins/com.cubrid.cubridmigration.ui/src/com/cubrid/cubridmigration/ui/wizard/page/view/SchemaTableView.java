@@ -32,6 +32,7 @@ package com.cubrid.cubridmigration.ui.wizard.page.view;
 import com.cubrid.common.ui.swt.table.celleditor.CheckboxCellEditorFactory;
 import com.cubrid.common.ui.swt.table.listener.CheckBoxColumnSelectionListener;
 import com.cubrid.cubridmigration.core.dbobject.Catalog;
+import com.cubrid.cubridmigration.core.dbobject.SchemaCatalog;
 import com.cubrid.cubridmigration.core.engine.config.MigrationConfiguration;
 import com.cubrid.cubridmigration.ui.common.CompositeUtils;
 import com.cubrid.cubridmigration.ui.message.Messages;
@@ -77,7 +78,7 @@ public class SchemaTableView {
     };
     private String[] tarSchemaNameArray;
     private final MigrationConfiguration config;
-    private Catalog srcCatalog;
+    private SchemaCatalog srcSchemaCatalog;
     private Catalog tarCatalog;
     private SchemaLabelProvider labelProvider;
 
@@ -356,7 +357,8 @@ public class SchemaTableView {
                                 .getSchemas()
                                 .forEach(schema -> dropDownSchemaList.add(schema.getName())));
 
-        final Optional<Catalog> srcCatalogOptional = Optional.ofNullable(this.srcCatalog);
+        final Optional<SchemaCatalog> srcCatalogOptional =
+                Optional.ofNullable(this.srcSchemaCatalog);
         srcCatalogOptional.ifPresent(
                 srcCatalog ->
                         srcCatalog
@@ -364,7 +366,7 @@ public class SchemaTableView {
                                 .forEach(
                                         schema -> {
                                             final String schemaName =
-                                                    schema.getName().toUpperCase(Locale.US);
+                                                    schema.name().toUpperCase(Locale.US);
                                             if (!dropDownSchemaList.contains(schemaName)) {
                                                 dropDownSchemaList.add(schemaName);
                                             }
@@ -375,8 +377,8 @@ public class SchemaTableView {
                 : new String[] {config.getTargetConParams().getConUser().toUpperCase(Locale.US)};
     }
 
-    public void setSrcCatalog(Catalog srcCatalog) {
-        this.srcCatalog = srcCatalog;
+    public void setSrcSchemaCatalog(SchemaCatalog srcSchemaCatalog) {
+        this.srcSchemaCatalog = srcSchemaCatalog;
     }
 
     public void setTarCatalog(Catalog tarCatalog) {

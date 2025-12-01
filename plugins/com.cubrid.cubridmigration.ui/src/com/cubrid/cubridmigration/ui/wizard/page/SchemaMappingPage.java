@@ -31,10 +31,15 @@
 package com.cubrid.cubridmigration.ui.wizard.page;
 
 import com.cubrid.common.log.LogUtil;
+import com.cubrid.cubridmigration.core.connection.CMTConParamManager;
+import com.cubrid.cubridmigration.core.connection.ConnParameters;
 import com.cubrid.cubridmigration.core.dbobject.Catalog;
 import com.cubrid.cubridmigration.core.dbobject.Grant;
 import com.cubrid.cubridmigration.core.dbobject.Schema;
+import com.cubrid.cubridmigration.core.dbobject.SchemaCatalog;
+import com.cubrid.cubridmigration.core.dbobject.SchemaEntry;
 import com.cubrid.cubridmigration.core.engine.config.MigrationConfiguration;
+import com.cubrid.cubridmigration.ui.database.SchemaFetcherWithProgress;
 import com.cubrid.cubridmigration.ui.message.Messages;
 import com.cubrid.cubridmigration.ui.wizard.MigrationWizard;
 import com.cubrid.cubridmigration.ui.wizard.page.view.SchemaTableView;
@@ -55,6 +60,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 public class SchemaMappingPage extends MigrationWizardPage {
     private static final Logger LOG = LogUtil.getLogger(SchemaMappingPage.class);
@@ -91,10 +97,19 @@ public class SchemaMappingPage extends MigrationWizardPage {
     }
 
     private void setOfflineData() {
-        final Catalog catalog = wizard.getOriginalSourceCatalog().createCatalog();
+        final SchemaCatalog sourceSchemaCatalog = wizard.getSourceSchemaCatalog();
 
-        for (Schema schema : catalog.getSchemas()) {
-            SrcTable srcTable = createSrcTable(catalog, schema);
+        Set<String> selected = config.getSelectedSrcSchemas();
+        for (SchemaEntry schemaEntry : sourceSchemaCatalog.getSchemas()) {
+            SrcTable srcTable = createSrcTable(sourceSchemaCatalog, schemaEntry);
+            String schemaName = schemaEntry.name();
+            boolean isSelected;
+            if (!selected.isEmpty()) {
+                isSelected = selected.contains(schemaName);
+            } else {
+                isSelected = !schemaEntry.grantorSchema();
+            }
+            srcTable.setSelected(isSelected);
 
             if (config.targetIsSQL()) {
                 srcTable.setTarDBType(Messages.msgCubridSQL);
@@ -105,11 +120,11 @@ public class SchemaMappingPage extends MigrationWizardPage {
             } else {
                 srcTable.setTarDBType(Messages.msgCubridDump);
             }
-            setOfflineTargetSchema(srcTable, schema);
+            setOfflineTargetSchema(srcTable, schemaEntry);
         }
     }
 
-    private void setOfflineTargetSchema(SrcTable srcTable, Schema schema) {
+    private void setOfflineTargetSchema(SrcTable srcTable, SchemaEntry schema) {
         final Map<String, Schema> scriptSchemaMap = config.getScriptSchemaMapping();
         final List<Schema> targetSchemaList = config.getTargetSchemaList();
 
@@ -124,7 +139,7 @@ public class SchemaMappingPage extends MigrationWizardPage {
         } else if (config.isAddUserSchema() && !targetSchemaList.isEmpty()) {
             Optional<String> result =
                     targetSchemaList.stream()
-                            .filter(ts -> ts.getName().equals(schema.getName()))
+                            .filter(ts -> ts.getName().equals(schema.name()))
                             .map(Schema::getTargetSchemaName)
                             .findFirst();
             if (result.isPresent()) {
@@ -136,13 +151,13 @@ public class SchemaMappingPage extends MigrationWizardPage {
                 StringUtils.isEmpty(tarSchemaName) ? srcTable.getSrcSchema() : tarSchemaName);
     }
 
-    private SrcTable createSrcTable(Catalog catalog, Schema schema) {
+    private SrcTable createSrcTable(SchemaCatalog schemaCatalog, SchemaEntry schema) {
         SrcTable srcTable = new SrcTable();
-        srcTable.setSrcDBType(catalog.getDatabaseType().getName());
-        srcTable.setSrcSchema(schema.getName());
-        srcTable.setNote(schema.isGrantorSchema());
+        srcTable.setSrcDBType(schemaCatalog.getDatabaseType().getName());
+        srcTable.setSrcSchema(schema.name());
+        srcTable.setNote(schema.grantorSchema());
 
-        if (!schema.isGrantorSchema()) {
+        if (!schema.grantorSchema()) {
             srcTableList.add(0, srcTable);
         } else {
             srcTableList.add(srcTable);
@@ -151,12 +166,20 @@ public class SchemaMappingPage extends MigrationWizardPage {
     }
 
     private void setOnlineData() {
-        final Catalog catalog = wizard.getOriginalSourceCatalog().createCatalog();
+        final SchemaCatalog sourceSchemaCatalog = wizard.getSourceSchemaCatalog();
         final Catalog tarCatalog = wizard.getTargetCatalog();
 
-        for (Schema schema : catalog.getSchemas()) {
-            SrcTable srcTable = createSrcTable(catalog, schema);
-            srcTable.setTarDBType(tarCatalog.getDatabaseType().getName());
+        Set<String> selected = config.getSelectedSrcSchemas();
+        for (SchemaEntry schemaEntry : sourceSchemaCatalog.getSchemas()) {
+            SrcTable srcTable = createSrcTable(sourceSchemaCatalog, schemaEntry);
+            String schemaName = schemaEntry.name();
+            boolean isSelected;
+            if (!selected.isEmpty()) {
+                isSelected = selected.contains(schemaName);
+            } else {
+                isSelected = !schemaEntry.grantorSchema();
+            }
+            srcTable.setSelected(isSelected);
             setOnlineTargetSchema(srcTable, tarCatalog);
         }
     }
@@ -209,7 +232,7 @@ public class SchemaMappingPage extends MigrationWizardPage {
             setDescription(Messages.schemaMappingPageDescription);
         }
 
-        schemaTableView.setSrcCatalog(wizard.getOriginalSourceCatalog());
+        schemaTableView.setSrcSchemaCatalog(wizard.getSourceSchemaCatalog());
         schemaTableView.setTarCatalog(wizard.getTargetCatalog());
         schemaTableView.updateCellEditors();
 
@@ -224,36 +247,33 @@ public class SchemaMappingPage extends MigrationWizardPage {
 
     @Override
     protected void handlePageLeaving(PageChangingEvent event) {
-        if (!isPageComplete()) {
-            return;
+        if (!isPageComplete()) return;
+        if (!isGotoNextPage(event)) return;
+
+        List<SrcTable> currentSrcTables = schemaTableView.getSrcTableList();
+        List<String> selectedSchemas = new ArrayList<>();
+        for (SrcTable srcTable : currentSrcTables) {
+            if (srcTable.isSelected()) {
+                selectedSchemas.add(srcTable.getSrcSchema());
+            }
         }
-        if (isGotoNextPage(event)) {
-            srcCatalog = wizard.getOriginalSourceCatalog().createCatalog();
-            List<SrcTable> currentSrcTables = schemaTableView.getSrcTableList();
-
-            for (SrcTable srcTable : currentSrcTables) {
-                if (!srcTable.isSelected()) {
-                    Schema srcSchema = srcCatalog.getSchemaByName(srcTable.getSrcSchema());
-                    srcCatalog.removeOneSchema(srcSchema);
-                }
-            }
-            wizard.setSourceCatalog(srcCatalog);
-
-            if (config.targetIsOnline()) {
-                event.doit = saveOnlineData(currentSrcTables);
-            } else {
-                event.doit =
-                        saveOfflineData(
-                                config.isAddUserSchema(), config.isSplitSchema(), currentSrcTables);
-            }
+        if (config.targetIsOnline()) {
+            event.doit = saveOnlineData(currentSrcTables, selectedSchemas);
+        } else {
+            event.doit =
+                    saveOfflineData(
+                            config.isAddUserSchema(),
+                            config.isSplitSchema(),
+                            currentSrcTables,
+                            selectedSchemas);
         }
     }
 
-    private boolean saveOnlineData(final List<SrcTable> currentSrcTables) {
+    private boolean saveOnlineData(
+            final List<SrcTable> currentSrcTables, final List<String> selectedSchemas) {
         final Catalog tarCatalog = wizard.getTargetCatalog();
-        if (currentSrcTables.stream().noneMatch(SrcTable::isSelected)) {
-            MessageDialog.openError(
-                    getShell(), Messages.msgError, Messages.msgErrEmptySchemaCheckbox);
+
+        if (!ensureDetailedSrcCatalog(selectedSchemas)) {
             return false;
         }
 
@@ -276,6 +296,7 @@ public class SchemaMappingPage extends MigrationWizardPage {
 
             Schema targetSchema = tarCatalog.getSchemaByName(srcTable.getTarSchema());
             final Schema srcSchema = srcCatalog.getSchemaByName(srcTable.getSrcSchema());
+            if (srcSchema == null) continue;
             if (targetSchema != null) {
                 srcSchema.setTargetSchemaName(targetSchema.getName());
             } else {
@@ -293,6 +314,51 @@ public class SchemaMappingPage extends MigrationWizardPage {
         }
         wizard.setSourceDBNode(srcCatalog);
         return true;
+    }
+
+    /**
+     * Ensures that srcCatalog has detailed objects for the selected schemas using cache first, then
+     * lazy loading if needed.
+     */
+    private boolean ensureDetailedSrcCatalog(List<String> selectedSchemas) {
+        if (selectedSchemas == null || selectedSchemas.isEmpty()) {
+            MessageDialog.openError(
+                    getShell(), Messages.msgError, Messages.msgErrEmptySchemaCheckbox);
+            return false;
+        }
+        config.setSelectedSrcSchemas(selectedSchemas);
+        SchemaCatalog schemaCatalog = wizard.getSourceSchemaCatalog();
+        ConnParameters cp = config.getSourceConParams();
+        if (cp == null
+                || schemaCatalog == null
+                || schemaCatalog.getConnectionParameters() == null) {
+            return srcCatalog != null;
+        }
+        Catalog cached =
+                CMTConParamManager.getInstance().getSelectedSourceCatalog(cp, selectedSchemas);
+        if (cached != null) {
+            srcCatalog = cached;
+            wizard.setSourceCatalog(srcCatalog);
+            return true;
+        }
+        try {
+            SchemaFetcherWithProgress fetcher =
+                    SchemaFetcherWithProgress.getInstance(schemaCatalog.getConnectionParameters());
+            Catalog detailed = fetcher.fetchDetails(schemaCatalog, selectedSchemas);
+            if (fetcher.getError() != null) {
+                throw fetcher.getError();
+            }
+            if (detailed == null) {
+                return false;
+            }
+            srcCatalog = detailed;
+            wizard.setSourceCatalog(srcCatalog);
+            CMTConParamManager.getInstance()
+                    .updateSelectedSourceCatalog(cp, selectedSchemas, detailed);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
     }
 
     private static class OfflineFilePathContext {
@@ -320,10 +386,11 @@ public class SchemaMappingPage extends MigrationWizardPage {
     }
 
     private boolean saveOfflineData(
-            boolean addUserSchema, boolean splitSchema, List<SrcTable> currentSrcTables) {
-        if (currentSrcTables.stream().noneMatch(SrcTable::isSelected)) {
-            MessageDialog.openError(
-                    getShell(), Messages.msgError, Messages.msgErrEmptySchemaCheckbox);
+            boolean addUserSchema,
+            boolean splitSchema,
+            List<SrcTable> currentSrcTables,
+            List<String> selectedSchemas) {
+        if (!ensureDetailedSrcCatalog(selectedSchemas)) {
             return false;
         }
 

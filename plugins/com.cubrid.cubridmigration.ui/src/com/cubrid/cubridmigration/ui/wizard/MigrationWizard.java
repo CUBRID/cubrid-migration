@@ -32,6 +32,7 @@ package com.cubrid.cubridmigration.ui.wizard;
 
 import com.cubrid.common.log.LogUtil;
 import com.cubrid.cubridmigration.core.dbobject.Catalog;
+import com.cubrid.cubridmigration.core.dbobject.SchemaCatalog;
 import com.cubrid.cubridmigration.core.dbtype.DatabaseType;
 import com.cubrid.cubridmigration.core.engine.config.MigrationConfiguration;
 import com.cubrid.cubridmigration.core.engine.template.reader.MigrationTemplateReader;
@@ -129,8 +130,8 @@ public class MigrationWizard extends Wizard implements IMigrationWizardStatus {
     protected MigrationConfiguration migrationConfig;
 
     protected Catalog sourceCatalog;
-    protected Catalog originalSourceCatalog;
     protected Catalog targetCatalog;
+    protected SchemaCatalog sourceSchemaCatalog;
 
     protected DatabaseNode sourceDBNode;
 
@@ -307,8 +308,8 @@ public class MigrationWizard extends Wizard implements IMigrationWizardStatus {
         return sourceCatalog;
     }
 
-    public Catalog getOriginalSourceCatalog() {
-        return originalSourceCatalog;
+    public SchemaCatalog getSourceSchemaCatalog() {
+        return sourceSchemaCatalog;
     }
 
     /**
@@ -430,6 +431,9 @@ public class MigrationWizard extends Wizard implements IMigrationWizardStatus {
     /** Source DB changed, rebuild target database schema */
     public void resetBySourceDBChanged() {
         objMapPage.setFirstVisible(true);
+        if (migrationConfig != null) {
+            migrationConfig.clearSelectedSrcSchemas();
+        }
         if (isLoadMigrationScript()) {
             // Reload the migration configuration file
             MigrationConfiguration tempConfig = migrationConfig;
@@ -482,12 +486,12 @@ public class MigrationWizard extends Wizard implements IMigrationWizardStatus {
     }
 
     /**
-     * setOriginalSourceCatalog
+     * setSourceSchemaCatalog
      *
-     * @param originalSourceCatalog
+     * @param SchemaCatalog
      */
-    public void setOriginalSourceCatalog(Catalog originalSourceCatalog) {
-        this.originalSourceCatalog = originalSourceCatalog;
+    public void setSourceSchemaCatalog(SchemaCatalog sourceSchemaCatalog) {
+        this.sourceSchemaCatalog = sourceSchemaCatalog;
     }
 
     /**

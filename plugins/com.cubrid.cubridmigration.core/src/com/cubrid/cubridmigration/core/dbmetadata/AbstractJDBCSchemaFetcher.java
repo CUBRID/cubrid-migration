@@ -41,9 +41,12 @@ import com.cubrid.cubridmigration.core.dbobject.FK;
 import com.cubrid.cubridmigration.core.dbobject.Index;
 import com.cubrid.cubridmigration.core.dbobject.PK;
 import com.cubrid.cubridmigration.core.dbobject.Schema;
+import com.cubrid.cubridmigration.core.dbobject.SchemaCatalog;
+import com.cubrid.cubridmigration.core.dbobject.SchemaEntry;
 import com.cubrid.cubridmigration.core.dbobject.Table;
 import com.cubrid.cubridmigration.core.dbobject.Version;
 import com.cubrid.cubridmigration.core.dbobject.View;
+import com.cubrid.cubridmigration.core.dbobject.mapper.SchemaCatalogMapper;
 import com.cubrid.cubridmigration.core.dbtype.DatabaseType;
 import com.cubrid.cubridmigration.core.dbtype.IDependOnDatabaseType;
 import com.cubrid.cubridmigration.core.engine.exception.JDBCConnectErrorException;
@@ -118,6 +121,94 @@ public abstract class AbstractJDBCSchemaFetcher implements IDependOnDatabaseType
         }
         for (String schema : schemas) {
             buildSchema(conn, catalog, schema, filter);
+        }
+        return catalog;
+    }
+
+    /** Builds SchemaCatalog (DB info + schema names) from JDBC metadata. */
+    public SchemaCatalog buildSchemaCatalog(final Connection conn, ConnParameters cp)
+            throws SQLException {
+        String dbName = cp.getDbName();
+        String catalogName;
+        DatabaseType databaseType = cp.getDatabaseType();
+        if (DatabaseType.ORACLE == databaseType) {
+            // If DB name is SID/schemaName pattern
+            if (dbName.startsWith("/")) {
+                dbName = dbName.substring(1, dbName.length());
+            }
+            String[] strs = dbName.toUpperCase(Locale.ENGLISH).split("/");
+            catalogName = strs[0];
+        } else {
+            catalogName = cp.getDbName();
+        }
+        Version version = getVersion(conn);
+        Map<String, List<DataType>> supportedDataType = getSupportedSqlTypes(conn);
+        SchemaCatalog schemaCatalog =
+                new SchemaCatalog(catalogName, databaseType, cp, version, supportedDataType);
+        List<String> schemas = getSchemaNames(conn, cp);
+        if (schemas.isEmpty()) {
+            throw new IllegalArgumentException("Invalid schema or no schema specified.");
+        }
+        boolean hasUserSchema = databaseType.isSupportMultiSchema();
+        String conUser = cp.getConUser();
+        for (String schemaName : schemas) {
+            boolean grantorSchema;
+            if (hasUserSchema) {
+                grantorSchema = !schemaName.equalsIgnoreCase(conUser);
+            } else {
+                grantorSchema = false;
+            }
+            schemaCatalog.getSchemas().add(new SchemaEntry(schemaName, grantorSchema));
+        }
+        return schemaCatalog;
+    }
+
+    /** Builds a Catalog with objects only for the given schemas using the given SchemaCatalog. */
+    public Catalog buildSchemaObjects(
+            final Connection conn, final SchemaCatalog sc, List<String> schemaNames)
+            throws SQLException {
+        Catalog catalog = SchemaCatalogMapper.createEmptyCatalogFromSchemaCatalog(sc, schemaNames);
+        for (String schemaName : schemaNames) {
+            Schema schema = catalog.getSchemaByName(schemaName);
+            if (schema == null) {
+                continue;
+            }
+            // Load objects
+            try {
+                buildTables(conn, catalog, schema, null);
+            } catch (Exception e) {
+                LOG.error("buildTables", e);
+            }
+            try {
+                buildViews(conn, catalog, schema, null);
+            } catch (Exception e) {
+                LOG.error("buildViews", e);
+            }
+            try {
+                buildProcedures(conn, catalog, schema, null);
+            } catch (Exception e) {
+                LOG.error("buildProcedures", e);
+            }
+            try {
+                buildTriggers(conn, catalog, schema, null);
+            } catch (Exception e) {
+                LOG.error("buildTriggers", e);
+            }
+            try {
+                buildSequence(conn, catalog, schema, null);
+            } catch (Exception e) {
+                LOG.error("buildSequence", e);
+            }
+            try {
+                buildSynonym(conn, catalog, schema, null);
+            } catch (Exception e) {
+                LOG.error("buildSynonym", e);
+            }
+            try {
+                buildGrant(conn, catalog, schema, null);
+            } catch (Exception e) {
+                LOG.error("buildGrant", e);
+            }
         }
         return catalog;
     }
