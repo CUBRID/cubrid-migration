@@ -712,6 +712,9 @@ public class Messages extends NLS {
     public static String objectMapPageTabFolderTables;
     public static String objectMapPageTabFolderViews;
     public static String objectMapPageTitle;
+    public static String objectMappingRefreshLabel;
+    public static String objectMappingRefreshDescription;
+    public static String objectMappingRefreshActionMessage;
     public static String oldScriptMigration;
     public static String onlineCUBRIDCommitCount;
     public static String openConfActionTitle;
@@ -721,13 +724,13 @@ public class Messages extends NLS {
     public static String prefTitleGeneral;
     public static String productName;
     public static String progressMetadata;
-    public static String refreshButtonLabel;
-    public static String refreshButtonDescription;
-    public static String refreshDBConnActionMessage;
     public static String removeButtonLabel;
     public static String schemaMappingPageTitle;
     public static String schemaMappingPageDescription;
     public static String schemaMappingPageDescriptionUncorrectable;
+    public static String schemaMappingRefreshLabel;
+    public static String schemaMappingRefreshDescription;
+    public static String schemaMappingRefreshActionMessage;
     public static String setOptionPageOKMsg;
     public static String sourceDBPageErrNoSelectedItem;
     public static String sourceDBPageErrNoSelectedXMLFile;

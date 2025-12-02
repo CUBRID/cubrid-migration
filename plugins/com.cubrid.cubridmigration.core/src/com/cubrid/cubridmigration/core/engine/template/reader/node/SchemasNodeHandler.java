@@ -59,6 +59,7 @@ public class SchemasNodeHandler extends DefaultHandler {
 
                 config.addScriptSchemaMapping(src, schema);
                 config.addTargetSchemaList(schema);
+                config.addSelectedSrcSchema(src);
             }
         }
     }

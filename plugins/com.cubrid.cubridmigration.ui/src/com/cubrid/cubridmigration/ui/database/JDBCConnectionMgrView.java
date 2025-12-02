@@ -99,8 +99,8 @@ public class JDBCConnectionMgrView {
     private class RefreshAction extends Action {
         /** constructor */
         public RefreshAction() {
-            setText(Messages.refreshButtonLabel);
-            setToolTipText(Messages.refreshButtonDescription);
+            setText(Messages.schemaMappingRefreshLabel);
+            setToolTipText(Messages.schemaMappingRefreshDescription);
             setImageDescriptor(MigrationUIPlugin.getImageDescriptor("icon/refresh.gif"));
         }
 
@@ -340,8 +340,8 @@ public class JDBCConnectionMgrView {
 
         Button btnRefresh = new Button(buttonContainer, SWT.NONE);
         btnRefresh.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
-        btnRefresh.setText(Messages.refreshButtonLabel);
-        btnRefresh.setToolTipText(Messages.refreshButtonDescription);
+        btnRefresh.setText(Messages.schemaMappingRefreshLabel);
+        btnRefresh.setToolTipText(Messages.schemaMappingPageDescription);
         btnRefresh.addSelectionListener(
                 new SelectionAdapter() {
 
@@ -564,7 +564,9 @@ public class JDBCConnectionMgrView {
             return;
         }
         if (!MessageDialog.openConfirm(
-                getActiveShell(), Messages.msgConfirmation, Messages.refreshDBConnActionMessage)) {
+                getActiveShell(),
+                Messages.msgConfirmation,
+                Messages.schemaMappingRefreshActionMessage)) {
             return;
         }
         updateConParamCatalog(dci.getConnParameters());
@@ -727,6 +729,7 @@ public class JDBCConnectionMgrView {
         // If fetch schema catalog successfully, update cache and return.
         if (sc != null) {
             cpm.updateSourceSchemaCatalog(cp, sc);
+            cpm.clearSelectedSourceCatalog(cp);
             return;
         }
         // Cache schema catalog for mapping
