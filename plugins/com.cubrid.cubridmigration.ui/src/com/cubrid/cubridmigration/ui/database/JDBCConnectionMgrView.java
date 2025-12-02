@@ -417,19 +417,21 @@ public class JDBCConnectionMgrView {
             Catalog catalog = instance.getCatalog(dbID);
             // If no cached
             if (null == catalog) {
-                updateConParamCatalog(cp);
-                catalog = instance.getCatalog(dbID);
-            } else {
-                // Cache found, newer catalog information should replace the old catalog.
-                if (scriptCatalog != null
-                        && cp.isSameDB(scriptCatalog.getConnectionParameters())
-                        && scriptCatalog.getCreateTime() > catalog.getCreateTime()) {
-                    if (MessageDialog.openQuestion(
-                            getActiveShell(),
-                            Messages.msgConfirmation,
-                            Messages.msgIsUseNewerScriptCatalog)) {
-                        instance.updateCatalog(dbID, scriptCatalog);
-                    }
+                SchemaFetcherWithProgress fetcher = SchemaFetcherWithProgress.getInstance(cp);
+                catalog = fetcher.fetch();
+                if (catalog == null) {
+                    return null;
+                }
+                instance.updateCatalog(dbID, catalog);
+            } else if (scriptCatalog != null
+                    && cp.isSameDB(scriptCatalog.getConnectionParameters())
+                    && scriptCatalog.getCreateTime() > catalog.getCreateTime()) {
+                if (MessageDialog.openQuestion(
+                        getActiveShell(),
+                        Messages.msgConfirmation,
+                        Messages.msgIsUseNewerScriptCatalog)) {
+                    instance.updateCatalog(dbID, scriptCatalog);
+                    catalog = scriptCatalog;
                 }
             }
             if (catalog != null) {
@@ -438,8 +440,8 @@ public class JDBCConnectionMgrView {
             return catalog;
         } catch (Exception ignored) {
             LOG.error(LogUtil.getExceptionString(ignored));
+            return null;
         }
-        return null;
     }
 
     /** Returns SchemaCatalog for the current connection, loading it lazily if needed. */
