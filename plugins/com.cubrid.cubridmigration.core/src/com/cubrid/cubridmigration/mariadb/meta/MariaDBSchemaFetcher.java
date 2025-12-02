@@ -48,6 +48,7 @@ import com.cubrid.cubridmigration.core.dbobject.PartitionInfo;
 import com.cubrid.cubridmigration.core.dbobject.PartitionTable;
 import com.cubrid.cubridmigration.core.dbobject.Procedure;
 import com.cubrid.cubridmigration.core.dbobject.Schema;
+import com.cubrid.cubridmigration.core.dbobject.SchemaCatalog;
 import com.cubrid.cubridmigration.core.dbobject.Table;
 import com.cubrid.cubridmigration.core.dbobject.Trigger;
 import com.cubrid.cubridmigration.core.dbobject.Version;
@@ -218,60 +219,46 @@ public final class MariaDBSchemaFetcher extends AbstractJDBCSchemaFetcher {
     public Catalog buildCatalog(final Connection conn, ConnParameters cp, IBuildSchemaFilter filter)
             throws SQLException {
         final Catalog catalog = super.buildCatalog(conn, cp, filter);
+        final SQLHelper sqlHelper = cp.getDatabaseType().getSQLHelper(null);
+        loadMariaDBCatalogDetails(conn, catalog, sqlHelper);
+        return catalog;
+    }
 
-        final String charset = getCharSetByDBVariables(conn);
+    @Override
+    public Catalog buildSchemaObjects(Connection conn, SchemaCatalog sc, List<String> schemaNames)
+            throws SQLException {
+        Catalog catalog = super.buildSchemaObjects(conn, sc, schemaNames);
+        SQLHelper sqlHelper = sc.getDatabaseType().getSQLHelper(null);
+        loadMariaDBCatalogDetails(conn, catalog, sqlHelper);
+        return catalog;
+    }
+
+    private void loadMariaDBCatalogDetails(Connection conn, Catalog catalog, SQLHelper sqlHelper)
+            throws SQLException {
+        String charset = getCharSetByDBVariables(conn);
         catalog.setCharset(charset);
         catalog.setDatabaseType(DatabaseType.MARIADB);
 
-        final String dbDDL = getDBDDL(conn, catalog.getName());
+        String dbDDL = getDBDDL(conn, catalog.getName());
         catalog.setCreateSql(dbDDL);
 
-        final List<Schema> schemaList = catalog.getSchemas();
-        final SQLHelper sqlHelper = cp.getDatabaseType().getSQLHelper(null);
+        List<Schema> schemaList = catalog.getSchemas();
         for (Schema schema : schemaList) {
-            // get tables
-            final List<Table> tableList = schema.getTables();
-
+            List<Table> tableList = schema.getTables();
             for (Table table : tableList) {
                 table.setDDL(getTableDDL(conn, table.getName()));
                 table.setComment(getTableComment(conn, catalog.getName(), table.getName()));
             }
 
-            // get views
-            final List<View> viewList = schema.getViews();
-
+            List<View> viewList = schema.getViews();
             for (View view : viewList) {
                 view.setDDL(getViewDDL(conn, view.getName()));
                 view.setQuerySpec(sqlHelper.getViewQuerySpec(view.getDDL()));
             }
         }
-
         catalog.setTimezone(getTimezone(conn));
-
-        // get partitions
         buildPartitions(conn, catalog, catalog.getSchemas().get(0));
-
-        return catalog;
     }
-
-    //	/**
-    //	 * getCharset
-    //	 *
-    //	 * @param databaseDDL String
-    //	 * @return database Charset
-    //	 */
-    //	public static String getCharset(String databaseDDL) {
-    //		String patternCharset = "CREATE DATABASE .* DEFAULT CHARACTER SET (.*) ..";
-    //		Pattern pattern = Pattern.compile(patternCharset);
-    //		Matcher matcher = pattern.matcher(databaseDDL);
-    //		boolean matchFound = matcher.find();
-    //
-    //		if (matchFound) {
-    //			return matcher.group(1);
-    //		}
-    //
-    //		return null;
-    //	}
 
     /**
      * build Partitions MariadB support Partition

@@ -45,6 +45,7 @@ import com.cubrid.cubridmigration.core.dbobject.PK;
 import com.cubrid.cubridmigration.core.dbobject.PartitionInfo;
 import com.cubrid.cubridmigration.core.dbobject.PartitionTable;
 import com.cubrid.cubridmigration.core.dbobject.Schema;
+import com.cubrid.cubridmigration.core.dbobject.SchemaCatalog;
 import com.cubrid.cubridmigration.core.dbobject.Synonym;
 import com.cubrid.cubridmigration.core.dbobject.Table;
 import com.cubrid.cubridmigration.core.dbobject.View;
@@ -222,11 +223,32 @@ public final class MSSQLSchemaFetcher extends AbstractJDBCSchemaFetcher {
     public Catalog buildCatalog(final Connection conn, ConnParameters cp, IBuildSchemaFilter filter)
             throws SQLException {
         final Catalog catalog = super.buildCatalog(conn, cp, filter);
-        final String catalogName = cp.getDbName();
+        String catalogName = cp.getDbName();
+        SQLHelper sqlHelper = cp.getDatabaseType().getSQLHelper(null);
+
+        loadMSSQLCatalogDetails(conn, catalog, sqlHelper, catalogName);
+        return catalog;
+    }
+
+    @Override
+    public Catalog buildSchemaObjects(Connection conn, SchemaCatalog sc, List<String> schemaNames)
+            throws SQLException {
+        Catalog catalog = super.buildSchemaObjects(conn, sc, schemaNames);
+        String catalogName = catalog.getName();
+        SQLHelper sqlHelper = sc.getDatabaseType().getSQLHelper(null);
+
+        loadMSSQLCatalogDetails(conn, catalog, sqlHelper, catalogName);
+        return catalog;
+    }
+
+    private void loadMSSQLCatalogDetails(
+            Connection conn, Catalog catalog, SQLHelper sqlHelper, String catalogName)
+            throws SQLException {
+
         String charset = getCatalogCharset(conn, catalog);
         catalog.setCharset(charset);
-        final List<Schema> schemaList = catalog.getSchemas();
-        final SQLHelper sqlHelper = cp.getDatabaseType().getSQLHelper(null);
+
+        List<Schema> schemaList = catalog.getSchemas();
         for (Schema schema : schemaList) {
             ResultSet rs = null; // NOPMD
             PreparedStatement stmt = null; // NOPMD
@@ -252,7 +274,7 @@ public final class MSSQLSchemaFetcher extends AbstractJDBCSchemaFetcher {
                     incrementValue = incrementValue == null ? 1 : incrementValue;
                     column.setAutoIncIncrVal(incrementValue);
                     Long lastValue = rs.getLong("last_value");
-                    if (null == lastValue) {
+                    if (lastValue == null) {
                         column.setAutoIncSeedVal(rs.getLong("seed_value"));
                     } else {
                         column.setAutoIncSeedVal(lastValue + incrementValue);
@@ -263,9 +285,7 @@ public final class MSSQLSchemaFetcher extends AbstractJDBCSchemaFetcher {
                 Closer.close(stmt);
             }
 
-            // get views
-            final List<View> viewList = schema.getViews();
-
+            List<View> viewList = schema.getViews();
             for (View view : viewList) {
                 String viewDDL =
                         getObjectDDL(
@@ -277,14 +297,13 @@ public final class MSSQLSchemaFetcher extends AbstractJDBCSchemaFetcher {
                 view.setDDL(viewDDL);
                 view.setQuerySpec(sqlHelper.getViewQuerySpec(viewDDL));
                 view.setOwner(schema.getName());
-
                 view.setComment(getViewComment(conn, schema.getName(), view.getName()));
             }
-            // get partitions
+
             buildPartitions(conn, catalog, schema);
         }
+
         catalog.setTimezone(getTimezone(conn));
-        return catalog;
     }
 
     /**

@@ -50,6 +50,7 @@ import com.cubrid.cubridmigration.core.dbobject.PartitionTable;
 import com.cubrid.cubridmigration.core.dbobject.PlcsqlFunction;
 import com.cubrid.cubridmigration.core.dbobject.PlcsqlProcedure;
 import com.cubrid.cubridmigration.core.dbobject.Schema;
+import com.cubrid.cubridmigration.core.dbobject.SchemaCatalog;
 import com.cubrid.cubridmigration.core.dbobject.Sequence;
 import com.cubrid.cubridmigration.core.dbobject.Synonym;
 import com.cubrid.cubridmigration.core.dbobject.Table;
@@ -258,6 +259,31 @@ public final class OracleSchemaFetcher extends AbstractJDBCSchemaFetcher {
             }
             buildPartitions(conn, catalog, schema);
         }
+        return catalog;
+    }
+
+    @Override
+    public Catalog buildSchemaObjects(
+            final Connection conn, final SchemaCatalog sc, List<String> schemaNames)
+            throws SQLException {
+        Catalog catalog = super.buildSchemaObjects(conn, sc, schemaNames);
+        if (catalog == null) {
+            return null;
+        }
+
+        for (Schema schema : catalog.getSchemas()) {
+            String schemaName = schema.getName();
+            for (Table table : schema.getTables()) {
+                table.setComment(getTableComment(conn, schemaName, table.getName()));
+            }
+
+            for (View view : schema.getViews()) {
+                view.setQuerySpec(getQueryText(conn, schemaName, view.getName(), view));
+                view.setComment(getViewComment(conn, schemaName, view.getName()));
+            }
+            buildPartitions(conn, catalog, schema);
+        }
+
         return catalog;
     }
 
