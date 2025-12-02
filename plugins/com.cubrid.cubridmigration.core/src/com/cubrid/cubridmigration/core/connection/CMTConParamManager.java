@@ -38,7 +38,9 @@ import com.cubrid.cubridmigration.core.common.CipherUtils;
 import com.cubrid.cubridmigration.core.common.xml.IXMLMemento;
 import com.cubrid.cubridmigration.core.common.xml.XMLMemento;
 import com.cubrid.cubridmigration.core.dbobject.Catalog;
+import com.cubrid.cubridmigration.core.dbobject.SchemaCatalog;
 import com.cubrid.cubridmigration.core.dbtype.DatabaseType;
+import com.cubrid.cubridmigration.core.engine.config.SchemaSelection;
 
 import org.slf4j.Logger;
 
@@ -48,6 +50,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -78,6 +81,9 @@ public final class CMTConParamManager implements IJDBCInfoChangedSubject {
 
     private List<ConnParameters> connections = new ArrayList<ConnParameters>();
     private Map<ConnParameters, Catalog> catalogs = new HashMap<ConnParameters, Catalog>();
+    private final Map<ConnParameters, SchemaCatalog> sourceSchemaCatalogCache = new HashMap<>();
+    private final SourceSelectedCatalogCache sourceSelectedCatalogCache =
+            new SourceSelectedCatalogCache();
 
     private File defaultFile = null;
 
@@ -221,29 +227,45 @@ public final class CMTConParamManager implements IJDBCInfoChangedSubject {
     }
 
     /**
-     * Update a connection by name
+     * Update a saved connection and keep related caches in sync.
      *
      * @param conName old connection name
      * @param newcp new ConnParameters
      * @param silence if true, the event will not be triggered.
      */
-    public void updateConnection(String conName, ConnParameters newcp, boolean silence) {
-        ConnParameters cp = getInternalConParameter(conName);
-        if (cp == null || newcp == null) {
-            return;
+    public void updateConnection(String oldName, ConnParameters newcp, boolean silence) {
+        ConnParameters oldStored = getInternalConParameter(oldName);
+        if (oldStored == null || newcp == null) return;
+        boolean identityChanged = !oldStored.isSameDB(newcp);
+        if (identityChanged && isConnectionExists(newcp)) return;
+        ConnParameters newStored = newcp.clone();
+        int index = connections.indexOf(oldStored);
+        if (index != -1) {
+            connections.set(index, newStored);
+        } else {
+            connections.add(newStored);
         }
-        if (!cp.isSameDB(newcp) && isConnectionExists(newcp)) {
-            return;
+        Catalog fullCatalog = catalogs.remove(oldStored);
+        if (!identityChanged && fullCatalog != null) {
+            catalogs.put(newStored, fullCatalog);
         }
-        ConnParameters oldCP = cp.clone();
-        cp.copy(newcp);
+        if (identityChanged) {
+            sourceSelectedCatalogCache.clear(oldStored);
+        } else {
+            sourceSelectedCatalogCache.rekey(oldStored, newStored);
+        }
+        SchemaCatalog sc = sourceSchemaCatalogCache.remove(oldStored);
+        if (!identityChanged && sc != null) {
+            sourceSchemaCatalogCache.put(newStored, sc);
+        }
         save2File();
         if (silence) {
             return;
         }
+        ConnParameters oldSnapshot = oldStored.clone();
         for (IJDBCConnectionChangedObserver ob : observers) {
             try {
-                ob.afterModify(this, oldCP, newcp);
+                ob.afterModify(this, oldSnapshot, newStored.clone());
             } catch (Exception ex) {
                 LOG.error("", ex);
             }
@@ -264,6 +286,19 @@ public final class CMTConParamManager implements IJDBCInfoChangedSubject {
         catalogs.put(cp, catalog);
     }
 
+    /** Update SchemaCatalog cache for the given source connection. */
+    public void updateSourceSchemaCatalog(ConnParameters cp, SchemaCatalog sc) {
+        sourceSchemaCatalogCache.put(cp, sc);
+    }
+
+    /** Cache a detailed source Catalog for the given connection and schema selection. */
+    public void updateSelectedSourceCatalog(
+            ConnParameters cp, Collection<String> selectedSchemas, Catalog catalog) {
+        if (cp == null || catalog == null) return;
+        SchemaSelection sel = SchemaSelection.of(selectedSchemas);
+        sourceSelectedCatalogCache.put(cp, sel, catalog);
+    }
+
     /**
      * Retrieves a cached catalog by connection name
      *
@@ -276,6 +311,18 @@ public final class CMTConParamManager implements IJDBCInfoChangedSubject {
             return null;
         }
         return catalogs.get(cp);
+    }
+
+    /** Get cached SchemaCatalog for the given connection, or null if none. */
+    public SchemaCatalog getSourceSchemaCatalog(ConnParameters cp) {
+        return sourceSchemaCatalogCache.get(cp);
+    }
+
+    /** Get cached detailed Catalog for the given connection and schema selection. */
+    public Catalog getSelectedSourceCatalog(ConnParameters cp, Collection<String> selectedSchemas) {
+        if (cp == null) return null;
+        SchemaSelection sel = SchemaSelection.of(selectedSchemas);
+        return sourceSelectedCatalogCache.get(cp, sel);
     }
 
     /**
@@ -322,30 +369,43 @@ public final class CMTConParamManager implements IJDBCInfoChangedSubject {
     }
 
     /**
-     * Remove the connection by name.
+     * Remove a connection and clear all related caches.
      *
      * @param conName String
      * @param silence if true,no event will be triggered.
      */
     public void removeConnection(String conName, boolean silence) {
+        ConnParameters target = null;
         for (ConnParameters cp : connections) {
             if (cp.getConName().equals(conName)) {
-                connections.remove(cp);
-                catalogs.remove(cp);
-                save2File();
-                if (silence) {
-                    return;
-                }
-                for (IJDBCConnectionChangedObserver ob : observers) {
-                    try {
-                        ob.afterDelete(this, cp);
-                    } catch (Exception ex) {
-                        LOG.error("", ex);
-                    }
-                }
+                target = cp;
+                break;
+            }
+        }
+
+        if (target != null) {
+            connections.remove(target);
+            catalogs.remove(target);
+            sourceSchemaCatalogCache.remove(target);
+            sourceSelectedCatalogCache.clear(target);
+            save2File();
+            if (silence) {
                 return;
             }
         }
+
+        for (IJDBCConnectionChangedObserver ob : observers) {
+            try {
+                ob.afterDelete(this, target);
+            } catch (Exception ex) {
+                LOG.error("", ex);
+            }
+        }
+    }
+
+    /** Clear detailed source Catalog cache for the given connection. */
+    public void clearSelectedSourceCatalog(ConnParameters cp) {
+        sourceSelectedCatalogCache.clear(cp);
     }
 
     /**

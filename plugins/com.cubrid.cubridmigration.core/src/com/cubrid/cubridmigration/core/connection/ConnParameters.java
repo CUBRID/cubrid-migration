@@ -323,40 +323,28 @@ public final class ConnParameters implements Serializable, IDBSource, IJDBCConne
      * @return true if ip,port,db name and user are same.
      */
     public boolean isSameDB(Object value) {
-        if (!(value instanceof ConnParameters)) {
-            return false;
-        }
+        if (!(value instanceof ConnParameters)) return false;
         ConnParameters cp = (ConnParameters) value;
-        if (dbType != cp.dbType) {
-            return false;
+
+        if (dbType != cp.dbType) return false;
+        if (port != cp.port) return false;
+
+        String h1 = host == null ? "" : host;
+        String h2 = cp.host == null ? "" : cp.host;
+        if (!h1.equals(h2)) return false;
+
+        String d1 = dbName == null ? "" : dbName;
+        String d2 = cp.dbName == null ? "" : cp.dbName;
+        if (dbType == DatabaseType.CUBRID.getID()) {
+            if (!d1.equalsIgnoreCase(d2)) return false;
+        } else {
+            if (!d1.equals(d2)) return false;
         }
 
-        String ip = host == null ? "" : host;
-        if (!ip.equals(cp.getHost())) {
-            return false;
-        }
-        if (port != cp.getPort()) {
-            return false;
-        }
-        String dname = dbName == null ? "" : dbName;
-        // CUBRID DB name isn't case sensitive.
-        if (dbType == DatabaseType.CUBRID.getID()) {
-            if (!dname.equalsIgnoreCase(cp.getDbName())) {
-                return false;
-            }
-        } else {
-            if (!dname.equals(cp.getDbName())) {
-                return false;
-            }
-        }
-        String usr = conUser == null ? "" : conUser;
-        if (!usr.equalsIgnoreCase(cp.getConUser())) {
-            return false;
-        }
-        //		String sch = schema == null ? "" : schema;
-        //		if (!sch.equalsIgnoreCase(cp.getSchema())) {
-        //			return false;
-        //		}
+        String u1 = conUser == null ? "" : conUser;
+        String u2 = cp.conUser == null ? "" : cp.conUser;
+        if (!u1.equalsIgnoreCase(u2)) return false;
+
         return true;
     }
 
@@ -493,5 +481,26 @@ public final class ConnParameters implements Serializable, IDBSource, IJDBCConne
      */
     public String getSchema() {
         return "";
+    }
+
+    /** Logical equality based on database identity (same as {@link #isSameDB(Object)}). */
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (!(obj instanceof ConnParameters)) return false;
+        return isSameDB(obj);
+    }
+
+    /** Hash code consistent with isSameDB/equals (dbType, host, port, dbName, conUser). */
+    @Override
+    public int hashCode() {
+        String h = this.host == null ? "" : this.host;
+        String d = this.dbName == null ? "" : this.dbName;
+        if (this.dbType == DatabaseType.CUBRID.getID()) {
+            d = d.toLowerCase();
+        }
+        String u = this.conUser == null ? "" : this.conUser;
+        u = u.toLowerCase();
+        return Objects.hash(dbType, h, port, d, u);
     }
 }
