@@ -80,6 +80,19 @@ public abstract class AbstractJDBCSchemaFetcher implements IDependOnDatabaseType
 
     protected DBObjectFactory factory = null;
 
+    @FunctionalInterface
+    private interface SchemaTask {
+        void run() throws Exception;
+    }
+
+    private void runSchemaTask(String label, SchemaTask task) {
+        try {
+            task.run();
+        } catch (Exception e) {
+            LOG.error(label, e);
+        }
+    }
+
     /**
      * buildCatalog
      *
@@ -173,42 +186,14 @@ public abstract class AbstractJDBCSchemaFetcher implements IDependOnDatabaseType
             if (schema == null) {
                 continue;
             }
-            // Load objects
-            try {
-                buildTables(conn, catalog, schema, null);
-            } catch (Exception e) {
-                LOG.error("buildTables", e);
-            }
-            try {
-                buildViews(conn, catalog, schema, null);
-            } catch (Exception e) {
-                LOG.error("buildViews", e);
-            }
-            try {
-                buildProcedures(conn, catalog, schema, null);
-            } catch (Exception e) {
-                LOG.error("buildProcedures", e);
-            }
-            try {
-                buildTriggers(conn, catalog, schema, null);
-            } catch (Exception e) {
-                LOG.error("buildTriggers", e);
-            }
-            try {
-                buildSequence(conn, catalog, schema, null);
-            } catch (Exception e) {
-                LOG.error("buildSequence", e);
-            }
-            try {
-                buildSynonym(conn, catalog, schema, null);
-            } catch (Exception e) {
-                LOG.error("buildSynonym", e);
-            }
-            try {
-                buildGrant(conn, catalog, schema, null);
-            } catch (Exception e) {
-                LOG.error("buildGrant", e);
-            }
+
+            runSchemaTask("buildTables", () -> buildTables(conn, catalog, schema, null));
+            runSchemaTask("buildViews", () -> buildViews(conn, catalog, schema, null));
+            runSchemaTask("buildProcedures", () -> buildProcedures(conn, catalog, schema, null));
+            runSchemaTask("buildTriggers", () -> buildTriggers(conn, catalog, schema, null));
+            runSchemaTask("buildSequence", () -> buildSequence(conn, catalog, schema, null));
+            runSchemaTask("buildSynonym", () -> buildSynonym(conn, catalog, schema, null));
+            runSchemaTask("buildGrant", () -> buildGrant(conn, catalog, schema, null));
         }
         return catalog;
     }
@@ -305,52 +290,13 @@ public abstract class AbstractJDBCSchemaFetcher implements IDependOnDatabaseType
             schema.setGrantorSchema(false);
         }
 
-        // Get Tables
-        try {
-            buildTables(conn, catalog, schema, filter);
-        } catch (SQLException e) {
-            throw e;
-        } catch (Exception e) {
-            LOG.error("buildTables", e);
-        }
-
-        try {
-            buildViews(conn, catalog, schema, filter);
-        } catch (Exception e) {
-            LOG.error("buildViews", e);
-        }
-
-        // get procedures
-        try {
-            buildProcedures(conn, catalog, schema, filter);
-        } catch (Exception e) {
-            LOG.error("buildProcedures", e);
-        }
-
-        // get triggers
-        try {
-            buildTriggers(conn, catalog, schema, filter);
-        } catch (Exception e) {
-            LOG.error("buildTriggers", e);
-        }
-
-        try {
-            buildSequence(conn, catalog, schema, filter);
-        } catch (Exception e) {
-            LOG.error("buildSequence", e);
-        }
-
-        try {
-            buildSynonym(conn, catalog, schema, filter);
-        } catch (Exception e) {
-            LOG.error("buildSynonym", e);
-        }
-
-        try {
-            buildGrant(conn, catalog, schema, filter);
-        } catch (Exception e) {
-            LOG.error("buildGrant", e);
-        }
+        runSchemaTask("buildTables", () -> buildTables(conn, catalog, schema, null));
+        runSchemaTask("buildViews", () -> buildViews(conn, catalog, schema, null));
+        runSchemaTask("buildProcedures", () -> buildProcedures(conn, catalog, schema, null));
+        runSchemaTask("buildTriggers", () -> buildTriggers(conn, catalog, schema, null));
+        runSchemaTask("buildSequence", () -> buildSequence(conn, catalog, schema, null));
+        runSchemaTask("buildSynonym", () -> buildSynonym(conn, catalog, schema, null));
+        runSchemaTask("buildGrant", () -> buildGrant(conn, catalog, schema, null));
     }
 
     protected void buildGrant(

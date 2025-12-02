@@ -152,12 +152,7 @@ public class SchemaMappingPage extends MigrationWizardPage {
         if (!isGotoNextPage(event)) return;
 
         List<SrcTable> currentSrcTables = schemaTableView.getSrcTableList();
-        List<String> selectedSchemas = new ArrayList<>();
-        for (SrcTable srcTable : currentSrcTables) {
-            if (srcTable.isSelected()) {
-                selectedSchemas.add(srcTable.getSrcSchema());
-            }
-        }
+        List<String> selectedSchemas = collectSelectedSchemas(currentSrcTables);
         if (config.targetIsOnline()) {
             event.doit = saveOnlineData(currentSrcTables, selectedSchemas);
         } else {
@@ -175,13 +170,7 @@ public class SchemaMappingPage extends MigrationWizardPage {
         final MigrationConfiguration cfg = wizard.getMigrationConfig();
 
         List<SrcTable> currentSrcTables = schemaTableView.getSrcTableList();
-        List<String> selectedSchemas = new ArrayList<>();
-        for (SrcTable srcTable : currentSrcTables) {
-            if (srcTable.isSelected()) {
-                selectedSchemas.add(srcTable.getSrcSchema());
-            }
-        }
-
+        List<String> selectedSchemas = collectSelectedSchemas(currentSrcTables);
         if (selectedSchemas.isEmpty()) {
             MessageDialog.openError(
                     getShell(), Messages.msgError, Messages.msgErrEmptySchemaCheckbox);
@@ -230,6 +219,16 @@ public class SchemaMappingPage extends MigrationWizardPage {
             return;
         }
         wizard.setSourceDBNode(srcCatalog);
+    }
+
+    private List<String> collectSelectedSchemas(List<SrcTable> tables) {
+        List<String> selected = new ArrayList<>();
+        for (SrcTable srcTable : tables) {
+            if (srcTable.isSelected()) {
+                selected.add(srcTable.getSrcSchema());
+            }
+        }
+        return selected;
     }
 
     private void setOfflineSchemaMappingPage() {
