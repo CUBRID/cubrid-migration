@@ -68,6 +68,8 @@ public class SchemaFetcherWithProgress implements IRunnableWithProgress {
     protected Exception exception;
     protected String errorMessage;
 
+    protected boolean canceled;
+
     protected SchemaFetcherWithProgress() {
         //
     }
@@ -87,12 +89,14 @@ public class SchemaFetcherWithProgress implements IRunnableWithProgress {
         exception = null;
         catalog = null;
         errorMessage = null;
+        canceled = false;
         try {
             final IDBSchemaInfoFetcher fetcher = createFetcher();
             Thread thread = startFetchingThread(fetcher, pm);
 
             while (!isFinished) {
                 if (pm.isCanceled()) {
+                    canceled = true;
                     thread.interrupt();
                     fetcher.cancel();
                     return;
@@ -178,6 +182,7 @@ public class SchemaFetcherWithProgress implements IRunnableWithProgress {
                         exception = null;
                         schemaCatalog = null;
                         errorMessage = null;
+                        canceled = false;
                         try {
                             final IDBSchemaInfoFetcher fetcher = createFetcher();
                             pm.beginTask(Messages.progressMetadata, IProgressMonitor.UNKNOWN);
@@ -197,6 +202,7 @@ public class SchemaFetcherWithProgress implements IRunnableWithProgress {
                             thread.start();
                             while (!isFinished) {
                                 if (pm.isCanceled()) {
+                                    canceled = true;
                                     thread.interrupt();
                                     fetcher.cancel();
                                     return;
@@ -221,6 +227,9 @@ public class SchemaFetcherWithProgress implements IRunnableWithProgress {
                         }
                     }
                 });
+        if (canceled) {
+            return null;
+        }
         if (schemaCatalog == null && exception != null) {
             openErrorDialog(errorMessage, exception.getMessage());
         }
@@ -241,6 +250,8 @@ public class SchemaFetcherWithProgress implements IRunnableWithProgress {
                         isFinished = false;
                         exception = null;
                         errorMessage = null;
+                        canceled = false;
+                        catalog = null;
                         try {
                             final IDBSchemaInfoFetcher fetcher = createFetcher();
                             pm.beginTask(Messages.progressMetadata, IProgressMonitor.UNKNOWN);
@@ -262,6 +273,7 @@ public class SchemaFetcherWithProgress implements IRunnableWithProgress {
                             thread.start();
                             while (!isFinished) {
                                 if (pm.isCanceled()) {
+                                    canceled = true;
                                     thread.interrupt();
                                     fetcher.cancel();
                                     return;
@@ -278,6 +290,9 @@ public class SchemaFetcherWithProgress implements IRunnableWithProgress {
                         }
                     }
                 });
+        if (canceled) {
+            return null;
+        }
         if (exception != null) {
             openErrorDialog(errorMessage, exception.getMessage());
         }
@@ -319,6 +334,10 @@ public class SchemaFetcherWithProgress implements IRunnableWithProgress {
 
     public Exception getError() {
         return exception;
+    }
+
+    public boolean isCanceled() {
+        return canceled;
     }
 
     /**

@@ -213,6 +213,9 @@ public class SchemaMappingPage extends MigrationWizardPage {
                     SchemaFetcherWithProgress.getInstance(
                             sourceSchemaCatalog.getConnectionParameters());
             Catalog detailed = fetcher.fetchDetails(sourceSchemaCatalog, selectedSchemas);
+            if (fetcher.isCanceled()) {
+                return;
+            }
             if (fetcher.getError() != null) {
                 throw fetcher.getError();
             }
@@ -458,6 +461,10 @@ public class SchemaMappingPage extends MigrationWizardPage {
             SchemaFetcherWithProgress fetcher =
                     SchemaFetcherWithProgress.getInstance(schemaCatalog.getConnectionParameters());
             Catalog detailed = fetcher.fetchDetails(schemaCatalog, selectedSchemas);
+
+            if (fetcher.isCanceled()) {
+                return false;
+            }
             if (fetcher.getError() != null) {
                 throw fetcher.getError();
             }

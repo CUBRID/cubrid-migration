@@ -728,6 +728,10 @@ public class JDBCConnectionMgrView {
         SchemaFetcherWithProgress fetcher = SchemaFetcherWithProgress.getInstance(cp);
         SchemaCatalog sc = fetcher.fetchNames();
 
+        if (fetcher.isCanceled()) {
+            return;
+        }
+
         // If fetch schema catalog successfully, update cache and return.
         if (sc != null) {
             cpm.updateSourceSchemaCatalog(cp, sc);
