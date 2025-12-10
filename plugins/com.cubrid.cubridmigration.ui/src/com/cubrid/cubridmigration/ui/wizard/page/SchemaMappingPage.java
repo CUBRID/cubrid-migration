@@ -418,13 +418,27 @@ public class SchemaMappingPage extends MigrationWizardPage {
             return false;
         }
         config.setSelectedSrcSchemas(selectedSchemas);
+        if (config.sourceIsOnline()) {
+            return ensureDetailedSrcCatalogOnline(selectedSchemas);
+        } else {
+            return ensureDetailedSrcCatalogOffline();
+        }
+    }
+
+    /**
+     * Logic to get the detailed catalog for online sources. Extracted the online-specific logic
+     * from the existing ensureDetailedSrcCatalog.
+     */
+    private boolean ensureDetailedSrcCatalogOnline(List<String> selectedSchemas) {
         SchemaCatalog schemaCatalog = wizard.getSourceSchemaCatalog();
         ConnParameters cp = config.getSourceConParams();
+
         if (cp == null
                 || schemaCatalog == null
                 || schemaCatalog.getConnectionParameters() == null) {
             return srcCatalog != null;
         }
+
         Catalog cached =
                 CMTConParamManager.getInstance().getSelectedSourceCatalog(cp, selectedSchemas);
         if (cached != null) {
@@ -432,6 +446,7 @@ public class SchemaMappingPage extends MigrationWizardPage {
             wizard.setSourceCatalog(srcCatalog);
             return true;
         }
+
         try {
             SchemaFetcherWithProgress fetcher =
                     SchemaFetcherWithProgress.getInstance(schemaCatalog.getConnectionParameters());
@@ -442,14 +457,44 @@ public class SchemaMappingPage extends MigrationWizardPage {
             if (detailed == null) {
                 return false;
             }
+
             srcCatalog = detailed;
             wizard.setSourceCatalog(srcCatalog);
             CMTConParamManager.getInstance()
                     .updateSelectedSourceCatalog(cp, selectedSchemas, detailed);
             return true;
         } catch (Exception e) {
+            LOG.error("Failed to fetch detailed source catalog in SchemaMappingPage", e);
             return false;
         }
+    }
+
+    /**
+     * Logic to get the detailed catalog for offline sources. Uses the catalog pre-loaded via
+     * config.setSrcCatalog.
+     */
+    private boolean ensureDetailedSrcCatalogOffline() {
+        if (srcCatalog == null) {
+            Catalog wizardCatalog = wizard.getSourceCatalog();
+            if (wizardCatalog != null) {
+                srcCatalog = wizardCatalog;
+            } else {
+                srcCatalog = config.getSrcCatalog();
+            }
+            if (srcCatalog != null) {
+                wizard.setSourceCatalog(srcCatalog);
+            }
+        }
+
+        if (srcCatalog == null) {
+            MessageDialog.openError(
+                    getShell(),
+                    Messages.msgError,
+                    "Source catalog is not loaded for offline source.");
+            return false;
+        }
+
+        return true;
     }
 
     private static class OfflineFilePathContext {
