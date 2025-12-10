@@ -294,7 +294,8 @@ public final class CMTConParamManager implements IJDBCInfoChangedSubject {
     /** Cache a detailed source Catalog for the given connection and schema selection. */
     public void updateSelectedSourceCatalog(
             ConnParameters cp, Collection<String> selectedSchemas, Catalog catalog) {
-        if (cp == null || catalog == null) return;
+        if (cp == null || selectedSchemas == null || selectedSchemas.isEmpty() || catalog == null)
+            return;
         SchemaSelection sel = SchemaSelection.of(selectedSchemas);
         sourceSelectedCatalogCache.put(cp, sel, catalog);
     }
@@ -406,6 +407,14 @@ public final class CMTConParamManager implements IJDBCInfoChangedSubject {
     /** Clear detailed source Catalog cache for the given connection. */
     public void clearSelectedSourceCatalog(ConnParameters cp) {
         sourceSelectedCatalogCache.clear(cp);
+    }
+
+    /** Clear cache for the specified schemas only. */
+    public void clearSelectedSourceCatalog(
+            ConnParameters cp, java.util.List<String> selectedSchemas) {
+        if (cp == null || selectedSchemas == null || selectedSchemas.isEmpty()) return;
+        SchemaSelection selection = SchemaSelection.of(selectedSchemas);
+        sourceSelectedCatalogCache.remove(cp, selection);
     }
 
     /**

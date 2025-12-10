@@ -38,39 +38,72 @@ import java.util.Map;
 /** Cache of detailed source Catalog per connection and schema selection. */
 public class SourceSelectedCatalogCache {
 
-    private static final class Entry {
-        final Catalog catalog;
-        final SchemaSelection selection;
+    private final Map<ConnParameters, Map<SchemaSelection, Catalog>> cache = new HashMap<>();
 
-        Entry(Catalog catalog, SchemaSelection selection) {
-            this.catalog = catalog;
-            this.selection = selection;
+    /** Returns cached Catalog for given connection and schema selection, or null if not cached. */
+    protected Catalog get(ConnParameters cp, SchemaSelection selection) {
+        if (cp == null || selection == null) {
+            return null;
+        }
+        Map<SchemaSelection, Catalog> bySelection = cache.get(cp);
+        if (bySelection == null) {
+            return null;
+        }
+        return bySelection.get(selection);
+    }
+
+    /** Puts Catalog into cache for given connection and schema selection. */
+    protected void put(ConnParameters cp, SchemaSelection selection, Catalog catalog) {
+        if (cp == null || selection == null || catalog == null) {
+            return;
+        }
+        Map<SchemaSelection, Catalog> bySelection = cache.get(cp);
+        if (bySelection == null) {
+            bySelection = new HashMap<SchemaSelection, Catalog>();
+            cache.put(cp, bySelection);
+        }
+        bySelection.put(selection, catalog);
+    }
+
+    /** Removes a specific selection entry for given connection. */
+    protected void remove(ConnParameters cp, SchemaSelection selection) {
+        if (cp == null || selection == null) {
+            return;
+        }
+        Map<SchemaSelection, Catalog> bySelection = cache.get(cp);
+        if (bySelection == null) {
+            return;
+        }
+        bySelection.remove(selection);
+        if (bySelection.isEmpty()) {
+            cache.remove(cp);
         }
     }
 
-    private final Map<ConnParameters, Entry> cache = new HashMap<>();
-
-    protected void rekey(ConnParameters oldCp, ConnParameters newCp) {
-        if (oldCp == null || newCp == null) return;
-        Entry entry = cache.remove(oldCp);
-        if (entry != null) cache.put(newCp, entry);
-    }
-
-    protected Catalog get(ConnParameters cp, SchemaSelection selection) {
-        if (cp == null || selection == null) return null;
-        Entry entry = cache.get(cp);
-        if (entry == null) return null;
-        if (entry.selection.equals(selection)) return entry.catalog;
-        return null;
-    }
-
-    protected void put(ConnParameters cp, SchemaSelection selection, Catalog catalog) {
-        if (cp == null || selection == null || catalog == null) return;
-        cache.put(cp, new Entry(catalog, selection));
-    }
-
+    /** Clears all cached selections for given connection. */
     protected void clear(ConnParameters cp) {
-        if (cp == null) return;
+        if (cp == null) {
+            return;
+        }
         cache.remove(cp);
+    }
+
+    /** Clears all entries in this cache. */
+    protected void clearAll() {
+        cache.clear();
+    }
+
+    /**
+     * Moves all cached selections from oldCp to newCp. Used when connection is renamed but points
+     * to the same physical DB.
+     */
+    protected void rekey(ConnParameters oldCp, ConnParameters newCp) {
+        if (oldCp == null || newCp == null || oldCp == newCp) {
+            return;
+        }
+        Map<SchemaSelection, Catalog> bySelection = cache.remove(oldCp);
+        if (bySelection != null) {
+            cache.put(newCp, bySelection);
+        }
     }
 }
