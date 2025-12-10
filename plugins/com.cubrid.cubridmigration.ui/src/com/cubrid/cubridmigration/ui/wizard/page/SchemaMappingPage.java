@@ -74,6 +74,8 @@ public class SchemaMappingPage extends MigrationWizardPage {
     private final List<SrcTable> srcTableList = new ArrayList<>();
     private Catalog srcCatalog;
 
+    private Button btnUpdateObjects;
+
     public SchemaMappingPage(String pageName) {
         super(pageName);
     }
@@ -95,7 +97,7 @@ public class SchemaMappingPage extends MigrationWizardPage {
         header.setLayout(headerLayout);
         header.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, false));
 
-        Button btnUpdateObjects = new Button(header, SWT.PUSH);
+        btnUpdateObjects = new Button(header, SWT.PUSH);
         btnUpdateObjects.setText(Messages.objectMappingRefreshLabel);
         btnUpdateObjects.addSelectionListener(
                 new SelectionAdapter() {
@@ -136,6 +138,11 @@ public class SchemaMappingPage extends MigrationWizardPage {
         schemaTableView.setSrcSchemaCatalog(wizard.getSourceSchemaCatalog());
         schemaTableView.setTarCatalog(wizard.getTargetCatalog());
         schemaTableView.updateCellEditors();
+
+        if (btnUpdateObjects != null && !btnUpdateObjects.isDisposed()) {
+            boolean enableUpdateObjects = config.sourceIsOnline();
+            btnUpdateObjects.setEnabled(enableUpdateObjects);
+        }
 
         if (!config.targetIsOnline()) {
             setOfflineSchemaMappingPage();
