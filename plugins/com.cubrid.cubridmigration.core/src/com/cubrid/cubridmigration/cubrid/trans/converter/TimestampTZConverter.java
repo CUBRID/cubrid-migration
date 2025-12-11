@@ -25,6 +25,7 @@
  * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
  * OF SUCH DAMAGE.
+ *
  */
 package com.cubrid.cubridmigration.cubrid.trans.converter;
 
@@ -36,8 +37,6 @@ import com.cubrid.cubridmigration.core.trans.AbstractDataConverter;
 import java.time.OffsetDateTime;
 
 public class TimestampTZConverter extends AbstractDataConverter {
-
-    private static final Logger LOG = LogUtil.getLogger(TimestampTZConverter.class);
 
     public Object convert(Object obj, DataTypeInstance dti, MigrationConfiguration config) {
 
