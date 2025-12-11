@@ -47,14 +47,30 @@ public class TimeZoneValueToCUBRIDString implements IFormatValueToString {
 
     @Override
     public String format(Object value) {
-        OffsetDateTime dateTime =
-                TimeZoneConverterUtils.parseToOffsetDateTime(value, defaultTimeZone);
-        if (dateTime == null) {
-            throw new IllegalArgumentException("Timezone value cannot be null.");
+        try {
+            OffsetDateTime dateTime =
+                    TimeZoneConverterUtils.parseToOffsetDateTime(value, defaultTimeZone);
+            if (dateTime == null) {
+                throw new IllegalArgumentException("Timezone value cannot be null.");
+            }
+            if (convertToUTC) {
+                return TimeZoneConverterUtils.formatWithOffset(
+                        TimeZoneConverterUtils.toUtc(dateTime));
+            }
+            return TimeZoneConverterUtils.formatWithOffset(dateTime);
+        } catch (IllegalArgumentException ex) {
+            String valueStr = value == null ? null : value.toString();
+            if (isZeroDatePattern(valueStr)) {
+                return valueStr;
+            }
+            throw ex;
         }
-        if (convertToUTC) {
-            return TimeZoneConverterUtils.formatWithOffset(TimeZoneConverterUtils.toUtc(dateTime));
+    }
+
+    private boolean isZeroDatePattern(String value) {
+        if (value == null) {
+            return false;
         }
-        return TimeZoneConverterUtils.formatWithOffset(dateTime);
+        return value.matches(".*0{2,4}[/-]0{1,2}[/-]0{2,4}.*");
     }
 }
