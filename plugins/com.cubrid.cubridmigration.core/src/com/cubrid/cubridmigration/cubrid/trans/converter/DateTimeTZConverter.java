@@ -39,8 +39,21 @@ import java.time.OffsetDateTime;
 public class DateTimeTZConverter extends AbstractDataConverter {
 
     public Object convert(Object obj, DataTypeInstance dti, MigrationConfiguration config) {
+
         if (obj instanceof OffsetDateTime) {
-            return TimeZoneConverterUtils.formatWithOffset((OffsetDateTime) obj);
+            String result = TimeZoneConverterUtils.formatWithOffset((OffsetDateTime) obj);
+            return result;
+        }
+
+        if (obj instanceof String) {
+            String valueStr = (String) obj;
+            boolean hasZoneId =
+                    valueStr.matches(".*\\s+[A-Za-z][A-Za-z0-9_/]+(?:\\s+[A-Z]{2,4})?\\s*$");
+            boolean endsWithOffset = valueStr.matches(".*[+-]\\d{2}:\\d{2}\\s*$");
+
+            if (hasZoneId && !endsWithOffset) {
+                return valueStr;
+            }
         }
 
         try {
@@ -48,10 +61,12 @@ public class DateTimeTZConverter extends AbstractDataConverter {
                     TimeZoneConverterUtils.parseToOffsetDateTime(
                             obj, config.getSourceDatabaseTimeZone());
             if (offsetDateTime == null) {
+
                 return null;
             }
 
-            return TimeZoneConverterUtils.formatWithOffset(offsetDateTime);
+            String result = TimeZoneConverterUtils.formatWithOffset(offsetDateTime);
+            return result;
         } catch (IllegalArgumentException ex) {
             String valueStr = obj != null ? obj.toString() : null;
             if (isZeroDatePattern(valueStr)) {

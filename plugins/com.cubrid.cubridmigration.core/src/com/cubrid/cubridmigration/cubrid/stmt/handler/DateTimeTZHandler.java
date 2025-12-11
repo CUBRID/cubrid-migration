@@ -49,10 +49,26 @@ public class DateTimeTZHandler extends DefaultHandler {
     public void handle(PreparedStatement stmt, int idx, ColumnValue columnValue)
             throws SQLException {
         Object value = columnValue.getValue();
+        String columnName = columnValue.getColumn().getName();
+
         if (value == null || "".equals(value)) {
             stmt.setNull(idx + 1, Types.NULL);
             return;
         }
+
+        if (value instanceof String) {
+            String valueStr = (String) value;
+
+            boolean hasZoneId =
+                    valueStr.matches(".*\\s+[A-Za-z][A-Za-z0-9_/]+(?:\\s+[A-Z]{2,4})?\\s*$");
+            boolean endsWithOffset = valueStr.matches(".*[+-]\\d{2}:\\d{2}\\s*$");
+
+            if (hasZoneId && !endsWithOffset) {
+                stmt.setString(idx + 1, valueStr);
+                return;
+            }
+        }
+
         try {
             OffsetDateTime odt =
                     value instanceof OffsetDateTime
@@ -62,16 +78,15 @@ public class DateTimeTZHandler extends DefaultHandler {
                 stmt.setNull(idx + 1, Types.NULL);
                 return;
             }
-            stmt.setString(idx + 1, TimeZoneConverterUtils.formatWithOffset(odt));
+            String formattedValue = TimeZoneConverterUtils.formatWithOffset(odt);
+            stmt.setString(idx + 1, formattedValue);
         } catch (IllegalArgumentException ex) {
             String valueStr = value.toString();
             if (isZeroDatePattern(valueStr)) {
                 stmt.setString(idx + 1, valueStr);
             } else {
                 throw new SQLException(
-                        "Failed to bind DATETIMETZ value for column "
-                                + columnValue.getColumn().getName(),
-                        ex);
+                        "Failed to bind DATETIMETZ value for column " + columnName, ex);
             }
         }
     }

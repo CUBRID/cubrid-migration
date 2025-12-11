@@ -256,9 +256,22 @@ public final class TimeZoneConverterUtils {
         }
 
         String zoneIdStr = normalized.substring(idx + 1);
+
         if (!isValidZoneId(zoneIdStr)) {
-            return null;
+            int prevIdx = normalized.lastIndexOf(' ', idx - 1);
+            if (prevIdx > 0) {
+                String candidateZoneId = normalized.substring(prevIdx + 1, idx);
+                if (isValidZoneId(candidateZoneId)) {
+                    zoneIdStr = candidateZoneId;
+                    idx = prevIdx;
+                } else {
+                    return null;
+                }
+            } else {
+                return null;
+            }
         }
+
         String dateTimePart = normalized.substring(0, idx);
         for (DateTimeFormatter formatter : LOCAL_INPUT_FORMATTERS) {
             try {

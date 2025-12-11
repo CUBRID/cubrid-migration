@@ -29,11 +29,8 @@
  */
 package com.cubrid.cubridmigration.core.export.handler;
 
-import com.cubrid.common.log.LogUtil;
 import com.cubrid.cubridmigration.core.dbobject.Column;
 import com.cubrid.cubridmigration.core.export.IExportDataHandler;
-
-import org.slf4j.Logger;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -49,24 +46,38 @@ import java.sql.SQLException;
  */
 public class TimestampTZTypeHandler implements IExportDataHandler {
 
-    private static final Logger LOG = LogUtil.getLogger(TimestampTZTypeHandler.class);
-
     public Object getJdbcObject(ResultSet rs, Column column) throws SQLException {
         try {
             String strValue = rs.getString(column.getName());
 
             if (strValue != null && strValue.trim().length() > 0) {
-                if (strValue.matches(".*[+-]\\d{2}:?\\d{2}.*") || strValue.contains("Z")) {
+                String originalValue = strValue;
+                strValue = strValue.replaceAll("([+-]\\d{2}:\\d{2})\\s+\\1", "$1");
+
+                if (strValue.matches(
+                        ".*\\s+[A-Za-z][A-Za-z0-9_/]+(?:\\s+[A-Z]{2,4})?\\s+[+-]\\d{2}:\\d{2}.*")) {
+                    strValue =
+                            strValue.replaceAll(
+                                    "(\\d{4}-\\d{2}-\\d{2}\\s+\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?)\\s+([A-Za-z][A-Za-z0-9_/]+(?:\\s+[A-Z]{2,4})?)\\s+[+-]\\d{2}:\\d{2}",
+                                    "$1 $2");
+                }
+
+                if (strValue.matches(".*[+-]\\d{2}:?\\d{2}.*")
+                        || strValue.contains("Z")
+                        || strValue.matches(".*\\s+[A-Za-z][A-Za-z0-9_/]+.*")) {
                     return strValue;
                 }
                 return strValue;
             }
             Object value = rs.getObject(column.getName());
             if (value != null) {
+
                 return value;
             }
+
             return null;
         } catch (SQLException e) {
+
             throw e;
         }
     }

@@ -25,7 +25,6 @@
  * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
  * OF SUCH DAMAGE.
- *
  */
 package com.cubrid.cubridmigration.cubrid.trans.converter;
 
@@ -38,10 +37,24 @@ import java.time.OffsetDateTime;
 
 public class TimestampTZConverter extends AbstractDataConverter {
 
+    private static final Logger LOG = LogUtil.getLogger(TimestampTZConverter.class);
+
     public Object convert(Object obj, DataTypeInstance dti, MigrationConfiguration config) {
 
         if (obj instanceof OffsetDateTime) {
-            return TimeZoneConverterUtils.formatWithOffset((OffsetDateTime) obj);
+            String result = TimeZoneConverterUtils.formatWithOffset((OffsetDateTime) obj);
+            return result;
+        }
+
+        if (obj instanceof String) {
+            String valueStr = (String) obj;
+            boolean hasZoneId =
+                    valueStr.matches(".*\\s+[A-Za-z][A-Za-z0-9_/]+(?:\\s+[A-Z]{2,4})?\\s*$");
+            boolean endsWithOffset = valueStr.matches(".*[+-]\\d{2}:\\d{2}\\s*$");
+
+            if (hasZoneId && !endsWithOffset) {
+                return valueStr;
+            }
         }
 
         try {
@@ -52,7 +65,8 @@ public class TimestampTZConverter extends AbstractDataConverter {
                 return null;
             }
 
-            return TimeZoneConverterUtils.formatWithOffset(offsetDateTime);
+            String result = TimeZoneConverterUtils.formatWithOffset(offsetDateTime);
+            return result;
         } catch (IllegalArgumentException ex) {
             String valueStr = obj != null ? obj.toString() : null;
             if (isZeroDatePattern(valueStr)) {
