@@ -51,44 +51,56 @@ public class DateTimeTZHandler extends DefaultHandler {
         Object value = columnValue.getValue();
         String columnName = columnValue.getColumn().getName();
 
-        if (value == null || "".equals(value)) {
+        if (isNullOrEmpty(value)) {
             stmt.setNull(idx + 1, Types.NULL);
             return;
         }
 
-        if (value instanceof String) {
-            String valueStr = (String) value;
-
-            boolean hasZoneId =
-                    valueStr.matches(".*\\s+[A-Za-z][A-Za-z0-9_/]+(?:\\s+[A-Z]{2,4})?\\s*$");
-            boolean endsWithOffset = valueStr.matches(".*[+-]\\d{2}:\\d{2}\\s*$");
-
-            if (hasZoneId && !endsWithOffset) {
-                stmt.setString(idx + 1, valueStr);
-                return;
-            }
+        if (value instanceof String && shouldPassThrough((String) value)) {
+            stmt.setString(idx + 1, (String) value);
+            return;
         }
 
         try {
-            OffsetDateTime odt =
-                    value instanceof OffsetDateTime
-                            ? (OffsetDateTime) value
-                            : TimeZoneConverterUtils.parseToOffsetDateTime(value, sourceTimeZone);
-            if (odt == null) {
-                stmt.setNull(idx + 1, Types.NULL);
-                return;
-            }
-            String formattedValue = TimeZoneConverterUtils.formatWithOffset(odt);
-            stmt.setString(idx + 1, formattedValue);
+            bindOffsetDateTime(stmt, idx, value);
         } catch (IllegalArgumentException ex) {
-            String valueStr = value.toString();
-            if (isZeroDatePattern(valueStr)) {
-                stmt.setString(idx + 1, valueStr);
-            } else {
-                throw new SQLException(
-                        "Failed to bind DATETIMETZ value for column " + columnName, ex);
-            }
+            handleIllegalArgument(stmt, idx, columnName, value, ex);
         }
+    }
+
+    private void bindOffsetDateTime(PreparedStatement stmt, int idx, Object value)
+            throws SQLException {
+        OffsetDateTime odt =
+                value instanceof OffsetDateTime
+                        ? (OffsetDateTime) value
+                        : TimeZoneConverterUtils.parseToOffsetDateTime(value, sourceTimeZone);
+        if (odt == null) {
+            stmt.setNull(idx + 1, Types.NULL);
+            return;
+        }
+        stmt.setString(idx + 1, TimeZoneConverterUtils.formatWithOffset(odt));
+    }
+
+    private void handleIllegalArgument(
+            PreparedStatement stmt, int idx, String columnName, Object value, Exception ex)
+            throws SQLException {
+        String valueStr = value == null ? null : value.toString();
+        if (isZeroDatePattern(valueStr)) {
+            stmt.setString(idx + 1, valueStr);
+            return;
+        }
+        throw new SQLException("Failed to bind DATETIMETZ value for column " + columnName, ex);
+    }
+
+    private boolean shouldPassThrough(String valueStr) {
+        boolean hasZoneId =
+                valueStr.matches(".*\\s+[A-Za-z][A-Za-z0-9_/]+(?:\\s+[A-Z]{2,4})?\\s*$");
+        boolean endsWithOffset = valueStr.matches(".*[+-]\\d{2}:\\d{2}\\s*$");
+        return hasZoneId && !endsWithOffset;
+    }
+
+    private boolean isNullOrEmpty(Object value) {
+        return value == null || "".equals(value);
     }
 
     private boolean isZeroDatePattern(String value) {

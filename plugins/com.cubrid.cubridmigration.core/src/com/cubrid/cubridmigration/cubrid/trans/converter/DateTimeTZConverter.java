@@ -45,37 +45,38 @@ public class DateTimeTZConverter extends AbstractDataConverter {
             return result;
         }
 
-        if (obj instanceof String) {
-            String valueStr = (String) obj;
-            boolean hasZoneId =
-                    valueStr.matches(".*\\s+[A-Za-z][A-Za-z0-9_/]+(?:\\s+[A-Z]{2,4})?\\s*$");
-            boolean endsWithOffset = valueStr.matches(".*[+-]\\d{2}:\\d{2}\\s*$");
-
-            if (hasZoneId && !endsWithOffset) {
-                return valueStr;
-            }
+        if (obj instanceof String && shouldPassThrough((String) obj)) {
+            return obj;
         }
 
+        return convertToFormattedString(obj, config, "DATETIMETZ");
+    }
+
+    private Object convertToFormattedString(
+            Object obj, MigrationConfiguration config, String targetType) {
         try {
             OffsetDateTime offsetDateTime =
                     TimeZoneConverterUtils.parseToOffsetDateTime(
                             obj, config.getSourceDatabaseTimeZone());
             if (offsetDateTime == null) {
-
                 return null;
             }
-
-            String result = TimeZoneConverterUtils.formatWithOffset(offsetDateTime);
-            return result;
+            return TimeZoneConverterUtils.formatWithOffset(offsetDateTime);
         } catch (IllegalArgumentException ex) {
             String valueStr = obj != null ? obj.toString() : null;
             if (isZeroDatePattern(valueStr)) {
                 return valueStr;
-            } else {
-                throw new IllegalStateException(
-                        "ERROR: could not convert:" + obj + " to CUBRID type DATETIMETZ", ex);
             }
+            throw new IllegalStateException(
+                    "ERROR: could not convert:" + obj + " to CUBRID type " + targetType, ex);
         }
+    }
+
+    private boolean shouldPassThrough(String valueStr) {
+        boolean hasZoneId =
+                valueStr.matches(".*\\s+[A-Za-z][A-Za-z0-9_/]+(?:\\s+[A-Z]{2,4})?\\s*$");
+        boolean endsWithOffset = valueStr.matches(".*[+-]\\d{2}:\\d{2}\\s*$");
+        return hasZoneId && !endsWithOffset;
     }
 
     private boolean isZeroDatePattern(String value) {

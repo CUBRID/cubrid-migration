@@ -250,42 +250,50 @@ public final class TimeZoneConverterUtils {
 
     private static OffsetDateTime tryParseWithZoneId(String text) {
         String normalized = normalizeIsoSpacing(text);
-        int idx = normalized.lastIndexOf(' ');
-        if (idx <= 0 || idx + 1 >= normalized.length()) {
+        ZoneSplit zoneSplit = extractZoneSplit(normalized);
+        if (zoneSplit == null) {
             return null;
         }
 
-        String zoneIdStr = normalized.substring(idx + 1);
-
-        if (!isValidZoneId(zoneIdStr)) {
-            int prevIdx = normalized.lastIndexOf(' ', idx - 1);
-            if (prevIdx > 0) {
-                String candidateZoneId = normalized.substring(prevIdx + 1, idx);
-                if (isValidZoneId(candidateZoneId)) {
-                    zoneIdStr = candidateZoneId;
-                    idx = prevIdx;
-                } else {
-                    return null;
-                }
-            } else {
-                return null;
-            }
-        }
-
-        String dateTimePart = normalized.substring(0, idx);
+        String dateTimePart = normalized.substring(0, zoneSplit.splitIndex);
+        ZoneId zoneId = ZoneId.of(zoneSplit.zoneId);
         for (DateTimeFormatter formatter : LOCAL_INPUT_FORMATTERS) {
             try {
                 LocalDateTime ldt = LocalDateTime.parse(dateTimePart, formatter);
-                return ldt.atZone(ZoneId.of(zoneIdStr)).toOffsetDateTime();
+                return ldt.atZone(zoneId).toOffsetDateTime();
             } catch (DateTimeParseException ignore) {
             }
         }
         try {
             long timestamp =
                     CUBRIDTimeUtil.parseTimestamp(dateTimePart, TimeZone.getTimeZone("GMT"));
-            return OffsetDateTime.ofInstant(Instant.ofEpochMilli(timestamp), ZoneId.of(zoneIdStr));
+            return OffsetDateTime.ofInstant(Instant.ofEpochMilli(timestamp), zoneId);
         } catch (ParseException ignore) {
         }
+        return null;
+    }
+
+    private static ZoneSplit extractZoneSplit(String normalized) {
+        int lastSpace = normalized.lastIndexOf(' ');
+        if (lastSpace <= 0 || lastSpace + 1 >= normalized.length()) {
+            return null;
+        }
+
+        String trailingZone = normalized.substring(lastSpace + 1);
+        if (isValidZoneId(trailingZone)) {
+            return new ZoneSplit(trailingZone, lastSpace);
+        }
+
+        int prevSpace = normalized.lastIndexOf(' ', lastSpace - 1);
+        if (prevSpace <= 0) {
+            return null;
+        }
+
+        String embeddedZone = normalized.substring(prevSpace + 1, lastSpace);
+        if (isValidZoneId(embeddedZone)) {
+            return new ZoneSplit(embeddedZone, prevSpace);
+        }
+
         return null;
     }
 
@@ -328,6 +336,16 @@ public final class TimeZoneConverterUtils {
             return true;
         } catch (DateTimeException ex) {
             return false;
+        }
+    }
+
+    private static final class ZoneSplit {
+        private final String zoneId;
+        private final int splitIndex;
+
+        private ZoneSplit(String zoneId, int splitIndex) {
+            this.zoneId = zoneId;
+            this.splitIndex = splitIndex;
         }
     }
 

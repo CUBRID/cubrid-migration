@@ -47,38 +47,31 @@ import java.sql.SQLException;
 public class TimestampTZTypeHandler implements IExportDataHandler {
 
     public Object getJdbcObject(ResultSet rs, Column column) throws SQLException {
-        try {
-            String strValue = rs.getString(column.getName());
-
-            if (strValue != null && strValue.trim().length() > 0) {
-                String originalValue = strValue;
-                strValue = strValue.replaceAll("([+-]\\d{2}:\\d{2})\\s+\\1", "$1");
-
-                if (strValue.matches(
-                        ".*\\s+[A-Za-z][A-Za-z0-9_/]+(?:\\s+[A-Z]{2,4})?\\s+[+-]\\d{2}:\\d{2}.*")) {
-                    strValue =
-                            strValue.replaceAll(
-                                    "(\\d{4}-\\d{2}-\\d{2}\\s+\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?)\\s+([A-Za-z][A-Za-z0-9_/]+(?:\\s+[A-Z]{2,4})?)\\s+[+-]\\d{2}:\\d{2}",
-                                    "$1 $2");
-                }
-
-                if (strValue.matches(".*[+-]\\d{2}:?\\d{2}.*")
-                        || strValue.contains("Z")
-                        || strValue.matches(".*\\s+[A-Za-z][A-Za-z0-9_/]+.*")) {
-                    return strValue;
-                }
-                return strValue;
-            }
-            Object value = rs.getObject(column.getName());
-            if (value != null) {
-
-                return value;
-            }
-
-            return null;
-        } catch (SQLException e) {
-
-            throw e;
+        String strValue = safeTrim(rs.getString(column.getName()));
+        if (strValue != null) {
+            return normalizeTimezoneString(strValue);
         }
+
+        Object value = rs.getObject(column.getName());
+        return value != null ? value : null;
+    }
+
+    private String safeTrim(String raw) {
+        if (raw == null) {
+            return null;
+        }
+        String trimmed = raw.trim();
+        return trimmed.isEmpty() ? null : trimmed;
+    }
+
+    private String normalizeTimezoneString(String value) {
+        String normalized = value.replaceAll("([+-]\\d{2}:\\d{2})\\s+\\1", "$1");
+        if (normalized.matches(
+                ".*\\s+[A-Za-z][A-Za-z0-9_/]+(?:\\s+[A-Z]{2,4})?\\s+[+-]\\d{2}:\\d{2}.*")) {
+            return normalized.replaceAll(
+                    "(\\d{4}-\\d{2}-\\d{2}\\s+\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?)\\s+([A-Za-z][A-Za-z0-9_/]+(?:\\s+[A-Z]{2,4})?)\\s+[+-]\\d{2}:\\d{2}",
+                    "$1 $2");
+        }
+        return normalized;
     }
 }
