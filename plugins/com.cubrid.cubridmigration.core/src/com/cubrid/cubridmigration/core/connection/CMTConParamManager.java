@@ -384,20 +384,24 @@ public final class CMTConParamManager implements IJDBCInfoChangedSubject {
             }
         }
 
-        if (target != null) {
-            connections.remove(target);
-            catalogs.remove(target);
-            sourceSchemaCatalogCache.remove(target);
-            sourceSelectedCatalogCache.clear(target);
-            save2File();
-            if (silence) {
-                return;
-            }
+        if (target == null) {
+            return;
+        }
+
+        ConnParameters deletedSnapshot = target.clone();
+        connections.remove(target);
+        catalogs.remove(target);
+        sourceSchemaCatalogCache.remove(target);
+        sourceSelectedCatalogCache.clear(target);
+        save2File();
+
+        if (silence) {
+            return;
         }
 
         for (IJDBCConnectionChangedObserver ob : observers) {
             try {
-                ob.afterDelete(this, target);
+                ob.afterDelete(this, deletedSnapshot);
             } catch (Exception ex) {
                 LOG.error("", ex);
             }
