@@ -85,9 +85,15 @@ public abstract class AbstractJDBCSchemaFetcher implements IDependOnDatabaseType
         void run() throws Exception;
     }
 
-    private void runSchemaTask(String label, SchemaTask task) {
+    private void runSchemaTask(String label, boolean fatalOnSQLException, SchemaTask task)
+            throws SQLException {
         try {
             task.run();
+        } catch (SQLException e) {
+            if (fatalOnSQLException) {
+                throw e;
+            }
+            LOG.error(label, e);
         } catch (Exception e) {
             LOG.error(label, e);
         }
@@ -187,13 +193,14 @@ public abstract class AbstractJDBCSchemaFetcher implements IDependOnDatabaseType
                 continue;
             }
 
-            runSchemaTask("buildTables", () -> buildTables(conn, catalog, schema, null));
-            runSchemaTask("buildViews", () -> buildViews(conn, catalog, schema, null));
-            runSchemaTask("buildProcedures", () -> buildProcedures(conn, catalog, schema, null));
-            runSchemaTask("buildTriggers", () -> buildTriggers(conn, catalog, schema, null));
-            runSchemaTask("buildSequence", () -> buildSequence(conn, catalog, schema, null));
-            runSchemaTask("buildSynonym", () -> buildSynonym(conn, catalog, schema, null));
-            runSchemaTask("buildGrant", () -> buildGrant(conn, catalog, schema, null));
+            runSchemaTask("buildTables", true, () -> buildTables(conn, catalog, schema, null));
+            runSchemaTask("buildViews", false, () -> buildViews(conn, catalog, schema, null));
+            runSchemaTask(
+                    "buildProcedures", false, () -> buildProcedures(conn, catalog, schema, null));
+            runSchemaTask("buildTriggers", false, () -> buildTriggers(conn, catalog, schema, null));
+            runSchemaTask("buildSequence", false, () -> buildSequence(conn, catalog, schema, null));
+            runSchemaTask("buildSynonym", false, () -> buildSynonym(conn, catalog, schema, null));
+            runSchemaTask("buildGrant", false, () -> buildGrant(conn, catalog, schema, null));
         }
         return catalog;
     }
@@ -290,13 +297,14 @@ public abstract class AbstractJDBCSchemaFetcher implements IDependOnDatabaseType
             schema.setGrantorSchema(false);
         }
 
-        runSchemaTask("buildTables", () -> buildTables(conn, catalog, schema, null));
-        runSchemaTask("buildViews", () -> buildViews(conn, catalog, schema, null));
-        runSchemaTask("buildProcedures", () -> buildProcedures(conn, catalog, schema, null));
-        runSchemaTask("buildTriggers", () -> buildTriggers(conn, catalog, schema, null));
-        runSchemaTask("buildSequence", () -> buildSequence(conn, catalog, schema, null));
-        runSchemaTask("buildSynonym", () -> buildSynonym(conn, catalog, schema, null));
-        runSchemaTask("buildGrant", () -> buildGrant(conn, catalog, schema, null));
+        runSchemaTask("buildTables", true, () -> buildTables(conn, catalog, schema, filter));
+        runSchemaTask("buildViews", false, () -> buildViews(conn, catalog, schema, filter));
+        runSchemaTask(
+                "buildProcedures", false, () -> buildProcedures(conn, catalog, schema, filter));
+        runSchemaTask("buildTriggers", false, () -> buildTriggers(conn, catalog, schema, filter));
+        runSchemaTask("buildSequence", false, () -> buildSequence(conn, catalog, schema, filter));
+        runSchemaTask("buildSynonym", false, () -> buildSynonym(conn, catalog, schema, filter));
+        runSchemaTask("buildGrant", false, () -> buildGrant(conn, catalog, schema, filter));
     }
 
     protected void buildGrant(
