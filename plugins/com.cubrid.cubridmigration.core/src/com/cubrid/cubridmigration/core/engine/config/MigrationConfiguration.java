@@ -221,6 +221,12 @@ public class MigrationConfiguration {
     private int tarSchemaSize;
     private Catalog offlineSrcCatalog;
 
+    /**
+     * Full/original offline source catalog snapshot used for Step4/Step5 back navigation and re
+     * selection.
+     */
+    private Catalog offlineFullSrcCatalog;
+
     private final List<Table> srcSQLSchemas = new ArrayList<Table>();
 
     private boolean createConstrainsBeforeData = false;
@@ -3137,6 +3143,10 @@ public class MigrationConfiguration {
         return offlineSrcCatalog;
     }
 
+    public Catalog getOfflineFullSrcCatalog() {
+        return offlineFullSrcCatalog;
+    }
+
     /**
      * Get other parameter from configuration
      *
@@ -4990,6 +5000,10 @@ public class MigrationConfiguration {
 
     public void setOfflineSrcCatalog(Catalog offlineSrcCatalog) {
         this.offlineSrcCatalog = offlineSrcCatalog;
+    }
+
+    public void setOfflineFullSrcCatalog(Catalog offlineFullSrcCatalog) {
+        this.offlineFullSrcCatalog = offlineFullSrcCatalog;
     }
 
     public void setOneTableOneFile(boolean oneTableOneFile) {

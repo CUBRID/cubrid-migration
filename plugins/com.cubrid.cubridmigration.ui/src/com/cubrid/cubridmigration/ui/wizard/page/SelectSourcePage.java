@@ -423,6 +423,7 @@ public class SelectSourcePage extends MigrationWizardPage {
             xmlCatalog.setCharset(cboFileCharset.getItem(cboFileCharset.getSelectionIndex()));
             xmlCatalog.setTimezone(cobTimezone.getItem(cobTimezone.getSelectionIndex()));
             cfg.setSrcCatalog(catalog, isInputChanged());
+            cfg.setOfflineFullSrcCatalog(catalog);
             return true;
         }
 

@@ -60,6 +60,7 @@ import org.slf4j.Logger;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -431,7 +432,7 @@ public class SchemaMappingPage extends MigrationWizardPage {
         if (config.sourceIsOnline()) {
             return ensureDetailedSrcCatalogOnline(selectedSchemas);
         } else {
-            return ensureDetailedSrcCatalogOffline();
+            return ensureDetailedSrcCatalogOffline(selectedSchemas);
         }
     }
 
@@ -487,20 +488,22 @@ public class SchemaMappingPage extends MigrationWizardPage {
      * Logic to get the detailed catalog for offline sources. Uses the catalog pre-loaded via
      * config.setSrcCatalog.
      */
-    private boolean ensureDetailedSrcCatalogOffline() {
-        if (srcCatalog == null) {
-            Catalog wizardCatalog = wizard.getSourceCatalog();
-            if (wizardCatalog != null) {
-                srcCatalog = wizardCatalog;
-            } else {
-                srcCatalog = config.getSrcCatalog();
-            }
-            if (srcCatalog != null) {
-                wizard.setSourceCatalog(srcCatalog);
+    private boolean ensureDetailedSrcCatalogOffline(List<String> selectedSchemas) {
+        if (selectedSchemas == null || selectedSchemas.isEmpty()) {
+            MessageDialog.openError(
+                    getShell(), Messages.msgError, Messages.msgErrEmptySchemaCheckbox);
+            return false;
+        }
+
+        Catalog full = config.getOfflineFullSrcCatalog();
+        if (full == null) {
+            full = config.getSrcCatalog();
+            if (full != null) {
+                config.setOfflineFullSrcCatalog(full);
             }
         }
 
-        if (srcCatalog == null) {
+        if (full == null) {
             MessageDialog.openError(
                     getShell(),
                     Messages.msgError,
@@ -508,6 +511,19 @@ public class SchemaMappingPage extends MigrationWizardPage {
             return false;
         }
 
+        Catalog working = full.createCatalog();
+        Set<String> selectedSet = new HashSet<>(selectedSchemas);
+
+        List<Schema> toRemove = new ArrayList<>();
+        for (Schema s : working.getSchemas()) {
+            if (!selectedSet.contains(s.getName())) {
+                toRemove.add(s);
+            }
+        }
+        working.removeSchema(toRemove);
+
+        srcCatalog = working;
+        wizard.setSourceCatalog(srcCatalog);
         return true;
     }
 
