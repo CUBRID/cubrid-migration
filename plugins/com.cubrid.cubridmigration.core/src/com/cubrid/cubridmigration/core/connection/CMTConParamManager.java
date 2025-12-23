@@ -229,22 +229,41 @@ public final class CMTConParamManager implements IJDBCInfoChangedSubject {
     /**
      * Update a saved connection and keep related caches in sync.
      *
-     * @param conName old connection name
+     * @param oldName old connection name
      * @param newcp new ConnParameters
      * @param silence if true, the event will not be triggered.
      */
     public void updateConnection(String oldName, ConnParameters newcp, boolean silence) {
         ConnParameters oldStored = getInternalConParameter(oldName);
-        if (oldStored == null || newcp == null) return;
+        if (oldStored == null || newcp == null) {
+            return;
+        }
         boolean identityChanged = !oldStored.isSameDB(newcp);
-        if (identityChanged && isConnectionExists(newcp)) return;
+        if (identityChanged && isConnectionExists(newcp)) {
+            return;
+        }
         ConnParameters newStored = newcp.clone();
+
+        updateConnectionList(oldStored, newStored);
+        updateCaches(oldStored, newStored, identityChanged);
+        save2File();
+
+        if (!silence) {
+            fireAfterModifyEvent(oldStored, newStored);
+        }
+    }
+
+    private void updateConnectionList(ConnParameters oldStored, ConnParameters newStored) {
         int index = connections.indexOf(oldStored);
         if (index != -1) {
             connections.set(index, newStored);
         } else {
             connections.add(newStored);
         }
+    }
+
+    private void updateCaches(
+            ConnParameters oldStored, ConnParameters newStored, boolean identityChanged) {
         Catalog fullCatalog = catalogs.remove(oldStored);
         if (!identityChanged && fullCatalog != null) {
             catalogs.put(newStored, fullCatalog);
@@ -258,14 +277,14 @@ public final class CMTConParamManager implements IJDBCInfoChangedSubject {
         if (!identityChanged && sc != null) {
             sourceSchemaCatalogCache.put(newStored, sc);
         }
-        save2File();
-        if (silence) {
-            return;
-        }
+    }
+
+    private void fireAfterModifyEvent(ConnParameters oldStored, ConnParameters newStored) {
         ConnParameters oldSnapshot = oldStored.clone();
+        ConnParameters newSnapshot = newStored.clone();
         for (IJDBCConnectionChangedObserver ob : observers) {
             try {
-                ob.afterModify(this, oldSnapshot, newStored.clone());
+                ob.afterModify(this, oldSnapshot, newSnapshot);
             } catch (Exception ex) {
                 LOG.error("", ex);
             }

@@ -250,60 +250,65 @@ public final class MSSQLSchemaFetcher extends AbstractJDBCSchemaFetcher {
 
         List<Schema> schemaList = catalog.getSchemas();
         for (Schema schema : schemaList) {
-            ResultSet rs = null; // NOPMD
-            PreparedStatement stmt = null; // NOPMD
-            try {
-                stmt = conn.prepareStatement(SHOW_IDENTITY.replace(CATALOG_NAME, catalogName));
-                stmt.setInt(1, schemaNameIDMap.get(schema.getName()));
-                rs = stmt.executeQuery();
-
-                while (rs.next()) {
-                    Table table = schema.getTableByName(rs.getString("tablename"));
-                    if (table == null) {
-                        continue;
-                    }
-
-                    table.setComment(getTableComment(conn, schema.getName(), table.getName()));
-
-                    Column column = table.getColumnByName(rs.getString("columnname"));
-                    if (column == null) {
-                        continue;
-                    }
-                    column.setAutoIncrement(true);
-                    Long incrementValue = rs.getLong("increment_value");
-                    incrementValue = incrementValue == null ? 1 : incrementValue;
-                    column.setAutoIncIncrVal(incrementValue);
-                    Long lastValue = rs.getLong("last_value");
-                    if (lastValue == null) {
-                        column.setAutoIncSeedVal(rs.getLong("seed_value"));
-                    } else {
-                        column.setAutoIncSeedVal(lastValue + incrementValue);
-                    }
-                }
-            } finally {
-                Closer.close(rs);
-                Closer.close(stmt);
-            }
-
-            List<View> viewList = schema.getViews();
-            for (View view : viewList) {
-                String viewDDL =
-                        getObjectDDL(
-                                conn,
-                                catalogName,
-                                schema.getName(),
-                                view.getName(),
-                                OBJECT_TYPE_VIEW);
-                view.setDDL(viewDDL);
-                view.setQuerySpec(sqlHelper.getViewQuerySpec(viewDDL));
-                view.setOwner(schema.getName());
-                view.setComment(getViewComment(conn, schema.getName(), view.getName()));
-            }
-
+            updateTableIdentityInfo(conn, catalogName, schema);
+            buildViewDetails(conn, catalogName, sqlHelper, schema);
             buildPartitions(conn, catalog, schema);
         }
 
         catalog.setTimezone(getTimezone(conn));
+    }
+
+    private void updateTableIdentityInfo(Connection conn, String catalogName, Schema schema)
+            throws SQLException {
+        PreparedStatement stmt = null; // NOPMD
+        ResultSet rs = null; // NOPMD
+        try {
+            stmt = conn.prepareStatement(SHOW_IDENTITY.replace(CATALOG_NAME, catalogName));
+            stmt.setInt(1, schemaNameIDMap.get(schema.getName()));
+            rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                Table table = schema.getTableByName(rs.getString("tablename"));
+                if (table == null) {
+                    continue;
+                }
+
+                table.setComment(getTableComment(conn, schema.getName(), table.getName()));
+
+                Column column = table.getColumnByName(rs.getString("columnname"));
+                if (column == null) {
+                    continue;
+                }
+                column.setAutoIncrement(true);
+                Long incrementValue = rs.getLong("increment_value");
+                incrementValue = incrementValue == null ? 1 : incrementValue;
+                column.setAutoIncIncrVal(incrementValue);
+                Long lastValue = rs.getLong("last_value");
+                if (lastValue == null) {
+                    column.setAutoIncSeedVal(rs.getLong("seed_value"));
+                } else {
+                    column.setAutoIncSeedVal(lastValue + incrementValue);
+                }
+            }
+        } finally {
+            Closer.close(rs);
+            Closer.close(stmt);
+        }
+    }
+
+    private void buildViewDetails(
+            Connection conn, String catalogName, SQLHelper sqlHelper, Schema schema)
+            throws SQLException {
+        List<View> viewList = schema.getViews();
+        for (View view : viewList) {
+            String viewDDL =
+                    getObjectDDL(
+                            conn, catalogName, schema.getName(), view.getName(), OBJECT_TYPE_VIEW);
+            view.setDDL(viewDDL);
+            view.setQuerySpec(sqlHelper.getViewQuerySpec(viewDDL));
+            view.setOwner(schema.getName());
+            view.setComment(getViewComment(conn, schema.getName(), view.getName()));
+        }
     }
 
     /**

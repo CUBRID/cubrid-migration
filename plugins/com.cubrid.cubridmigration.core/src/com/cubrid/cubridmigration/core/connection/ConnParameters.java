@@ -323,29 +323,32 @@ public final class ConnParameters implements Serializable, IDBSource, IJDBCConne
      * @return true if ip,port,db name and user are same.
      */
     public boolean isSameDB(Object value) {
-        if (!(value instanceof ConnParameters)) return false;
+        if (!(value instanceof ConnParameters)) {
+            return false;
+        }
         ConnParameters cp = (ConnParameters) value;
 
-        if (dbType != cp.dbType) return false;
-        if (port != cp.port) return false;
-
-        String h1 = host == null ? "" : host;
-        String h2 = cp.host == null ? "" : cp.host;
-        if (!h1.equals(h2)) return false;
-
-        String d1 = dbName == null ? "" : dbName;
-        String d2 = cp.dbName == null ? "" : cp.dbName;
-        if (dbType == DatabaseType.CUBRID.getID()) {
-            if (!d1.equalsIgnoreCase(d2)) return false;
-        } else {
-            if (!d1.equals(d2)) return false;
+        if (dbType != cp.dbType || port != cp.port) {
+            return false;
         }
 
-        String u1 = conUser == null ? "" : conUser;
-        String u2 = cp.conUser == null ? "" : cp.conUser;
-        if (!u1.equalsIgnoreCase(u2)) return false;
+        String h1 = StringUtils.defaultString(host);
+        String h2 = StringUtils.defaultString(cp.host);
+        if (!h1.equals(h2)) {
+            return false;
+        }
 
-        return true;
+        String u1 = StringUtils.defaultString(conUser);
+        String u2 = StringUtils.defaultString(cp.conUser);
+        if (u1.equalsIgnoreCase(u2)) {
+            return false;
+        }
+
+        String d1 = StringUtils.defaultString(dbName);
+        String d2 = StringUtils.defaultString(cp.dbName);
+
+        boolean isCubrid = (dbType == DatabaseType.CUBRID.getID());
+        return isCubrid ? d1.equalsIgnoreCase(d2) : d1.equals(d2);
     }
 
     public void setCharset(String charSet) {

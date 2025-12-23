@@ -175,56 +175,7 @@ public class SchemaFetcherWithProgress implements IRunnableWithProgress {
                 new IRunnableWithProgress() {
                     public void run(final IProgressMonitor pm)
                             throws InvocationTargetException, InterruptedException {
-                        if (pm == null) {
-                            return;
-                        }
-                        isFinished = false;
-                        exception = null;
-                        schemaCatalog = null;
-                        errorMessage = null;
-                        canceled = false;
-                        try {
-                            final IDBSchemaInfoFetcher fetcher = createFetcher();
-                            pm.beginTask(Messages.progressMetadata, IProgressMonitor.UNKNOWN);
-                            Thread thread =
-                                    new Thread("Fetch Names") {
-                                        public void run() {
-                                            try {
-                                                schemaCatalog = fetcher.fetchSchemaNames(dbSource);
-                                            } catch (Exception ex) {
-                                                exception = ex;
-                                                LOG.error("", ex);
-                                            } finally {
-                                                isFinished = true;
-                                            }
-                                        }
-                                    };
-                            thread.start();
-                            while (!isFinished) {
-                                if (pm.isCanceled()) {
-                                    canceled = true;
-                                    thread.interrupt();
-                                    fetcher.cancel();
-                                    return;
-                                }
-                                ThreadUtils.threadSleep(500, null);
-                            }
-                            if (exception != null) {
-                                if (dbSource instanceof ConnParameters) {
-                                    errorMessage = Messages.errConnectDatabase;
-                                    Throwable cause = exception.getCause();
-                                    if (cause instanceof SQLException) {
-                                        errorMessage = Messages.errMsgLoadSchemaFailed;
-                                    }
-                                } else {
-                                    errorMessage = Messages.errInvalidMysqlDumpFile;
-                                }
-                            }
-                        } catch (Exception e) {
-                            LOG.error("", e);
-                        } finally {
-                            pm.done();
-                        }
+                        fetchNamesWorker(pm);
                     }
                 });
         if (canceled) {
@@ -234,6 +185,63 @@ public class SchemaFetcherWithProgress implements IRunnableWithProgress {
             openErrorDialog(errorMessage, exception.getMessage());
         }
         return schemaCatalog;
+    }
+
+    private void fetchNamesWorker(final IProgressMonitor pm) throws InterruptedException {
+        if (pm == null) {
+            return;
+        }
+        isFinished = false;
+        exception = null;
+        schemaCatalog = null;
+        errorMessage = null;
+        canceled = false;
+        try {
+            final IDBSchemaInfoFetcher fetcher = createFetcher();
+            pm.beginTask(Messages.progressMetadata, IProgressMonitor.UNKNOWN);
+            Thread thread =
+                    new Thread("Fetch Names") {
+                        public void run() {
+                            try {
+                                schemaCatalog = fetcher.fetchSchemaNames(dbSource);
+                            } catch (Exception ex) {
+                                exception = ex;
+                                LOG.error("", ex);
+                            } finally {
+                                isFinished = true;
+                            }
+                        }
+                    };
+            thread.start();
+            while (!isFinished) {
+                if (pm.isCanceled()) {
+                    canceled = true;
+                    thread.interrupt();
+                    fetcher.cancel();
+                    return;
+                }
+                ThreadUtils.threadSleep(500, null);
+            }
+            if (exception != null) {
+                handleFetchError(dbSource, exception);
+            }
+        } catch (Exception e) {
+            LOG.error("", e);
+        } finally {
+            pm.done();
+        }
+    }
+
+    private void handleFetchError(IDBSource dbSource, Exception exception) {
+        if (dbSource instanceof ConnParameters) {
+            errorMessage = Messages.errConnectDatabase;
+            Throwable cause = exception.getCause();
+            if (cause instanceof SQLException) {
+                errorMessage = Messages.errMsgLoadSchemaFailed;
+            }
+        } else {
+            errorMessage = Messages.errInvalidMysqlDumpFile;
+        }
     }
 
     /** Runs fetchSchemaObjects(...) with a progress dialog (Lazy Step 2). */
