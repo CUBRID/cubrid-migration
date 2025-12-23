@@ -260,10 +260,13 @@ public final class MSSQLSchemaFetcher extends AbstractJDBCSchemaFetcher {
 
     private void updateTableIdentityInfo(Connection conn, String catalogName, Schema schema)
             throws SQLException {
+        String escapedCatalogName = (catalogName == null) ? "" : catalogName.replace("]", "]]");
         PreparedStatement stmt = null; // NOPMD
         ResultSet rs = null; // NOPMD
         try {
-            stmt = conn.prepareStatement(SHOW_IDENTITY.replace(CATALOG_NAME, catalogName));
+            String sql = SHOW_IDENTITY.replace(CATALOG_NAME, escapedCatalogName);
+            stmt = conn.prepareStatement(sql);
+
             stmt.setInt(1, schemaNameIDMap.get(schema.getName()));
             rs = stmt.executeQuery();
 
@@ -283,8 +286,8 @@ public final class MSSQLSchemaFetcher extends AbstractJDBCSchemaFetcher {
                 Long incrementValue = rs.getLong("increment_value");
                 incrementValue = incrementValue == null ? 1 : incrementValue;
                 column.setAutoIncIncrVal(incrementValue);
-                Long lastValue = rs.getLong("last_value");
-                if (lastValue == null) {
+                long lastValue = rs.getLong("last_value");
+                if (rs.wasNull()) {
                     column.setAutoIncSeedVal(rs.getLong("seed_value"));
                 } else {
                     column.setAutoIncSeedVal(lastValue + incrementValue);

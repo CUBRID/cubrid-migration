@@ -101,7 +101,7 @@ public class JDBCDBSchemaFetcherFacade implements IDBSchemaInfoFetcher {
     @Override
     public SchemaCatalog fetchSchemaNames(IDBSource ds) {
         if (cancelRunable != null) {
-            throw new RuntimeException("One fetching work is runnig");
+            throw new IllegalStateException("One fetching work is runnig");
         }
         try {
             ConnParameters cp = (ConnParameters) ds;
