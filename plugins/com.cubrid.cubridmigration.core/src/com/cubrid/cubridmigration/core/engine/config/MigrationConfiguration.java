@@ -43,6 +43,7 @@ import com.cubrid.cubridmigration.core.common.CharsetUtils;
 import com.cubrid.cubridmigration.core.common.PathUtils;
 import com.cubrid.cubridmigration.core.common.TimeZoneUtils;
 import com.cubrid.cubridmigration.core.connection.ConnParameters;
+import com.cubrid.cubridmigration.core.dbmetadata.BuildSchemaFilterFactory;
 import com.cubrid.cubridmigration.core.dbmetadata.DBSchemaInfoFetcherFactory;
 import com.cubrid.cubridmigration.core.dbmetadata.IBuildSchemaFilter;
 import com.cubrid.cubridmigration.core.dbmetadata.IDBSchemaInfoFetcher;
@@ -782,27 +783,8 @@ public class MigrationConfiguration {
             return null;
         }
         IDBSchemaInfoFetcher bcf = DBSchemaInfoFetcherFactory.createFetcher(ds);
-        Catalog cl =
-                bcf.fetchSchema(
-                        ds,
-                        new IBuildSchemaFilter() {
-
-                            public boolean filter(String schema, String objName) {
-                                // If database don't support multi schema, the schema name will be
-                                // pass as null.
-                                String tmpSchema = null;
-                                if (sourceIsOnline() && getSourceDBType().isSupportMultiSchema()) {
-                                    tmpSchema = schema;
-                                }
-                                if (getExpEntryTableCfg(tmpSchema, objName) != null
-                                        || getExpViewCfg(tmpSchema, objName) != null
-                                        || getExpSerialCfg(tmpSchema, objName) != null
-                                        || getExpSynonymCfg(tmpSchema, objName) != null) {
-                                    return false;
-                                }
-                                return true;
-                            }
-                        });
+        IBuildSchemaFilter filter = BuildSchemaFilterFactory.from(this);
+        Catalog cl = bcf.fetchSchema(ds, filter);
         if (cl == null || cl.getSchemas().isEmpty()) {
             return null;
         }
@@ -5060,6 +5042,7 @@ public class MigrationConfiguration {
             throw new IllegalArgumentException("Catalog can't not be null.");
         }
         this.srcCatalog = srcCatalog;
+        applyScriptSchemaMappingToCatalog();
         if (reset) {
             clearAll();
         }
@@ -5653,6 +5636,35 @@ public class MigrationConfiguration {
         String fullPath = mergePath(typePath, fileName.toString());
 
         return fullPath;
+    }
+
+    private void applyScriptSchemaMappingToCatalog() {
+        if (srcCatalog == null) {
+            return;
+        }
+        if (scriptSchemaMapping == null || scriptSchemaMapping.isEmpty()) {
+            return;
+        }
+        for (Schema srcSchema : srcCatalog.getSchemas()) {
+            if (srcSchema == null || StringUtils.isEmpty(srcSchema.getName())) {
+                continue;
+            }
+            Schema mapped = scriptSchemaMapping.get(srcSchema.getName());
+            if (mapped == null) {
+                for (Map.Entry<String, Schema> entry : scriptSchemaMapping.entrySet()) {
+                    if (srcSchema.getName().equalsIgnoreCase(entry.getKey())) {
+                        mapped = entry.getValue();
+                        break;
+                    }
+                }
+            }
+            if (mapped == null || StringUtils.isEmpty(mapped.getTargetSchemaName())) {
+                continue;
+            }
+            if (StringUtils.isEmpty(srcSchema.getTargetSchemaName())) {
+                srcSchema.setTargetSchemaName(mapped.getTargetSchemaName());
+            }
+        }
     }
 
     /**
