@@ -90,37 +90,7 @@ public class MigrationWizard extends Wizard implements IMigrationWizardStatus {
 
     private static final int[] IDX_ONLINE = new int[] {0, 1, 2, 11, 3, 4};
 
-    // private static final int[] IDX_OFFLINE = new int[]{0, 1, 2, 11, 3, 4 };
-
-    // public static final String SELECTED = "Selected";
     private static final Logger LOG = LogUtil.getLogger(MigrationWizard.class);
-
-    /**
-     * Retrieves the DB types which can be source database.
-     *
-     * @return Set<Integer> of database type ids
-     */
-    public static Set<Integer> getSupportedSrcDBTypes() {
-        Set<Integer> supportedDBs = new HashSet<Integer>(6);
-        supportedDBs.add(DatabaseType.MYSQL.getID());
-        supportedDBs.add(DatabaseType.ORACLE.getID());
-        supportedDBs.add(DatabaseType.CUBRID.getID());
-        supportedDBs.add(DatabaseType.MSSQL.getID());
-        supportedDBs.add(DatabaseType.MARIADB.getID());
-        supportedDBs.add(DatabaseType.INFORMIX.getID());
-        return supportedDBs;
-    }
-
-    /**
-     * Retrieves the DB types which can be target database.
-     *
-     * @return Set<Integer> of database type ids
-     */
-    public static Set<Integer> getSupportedTarDBTypes() {
-        Set<Integer> supportedDBs = new HashSet<Integer>(4);
-        supportedDBs.add(DatabaseType.CUBRID.getID());
-        return supportedDBs;
-    }
 
     private ObjectMappingPage objMapPage;
 
@@ -169,6 +139,33 @@ public class MigrationWizard extends Wizard implements IMigrationWizardStatus {
         autoSetUniqueNameOfConfiguration();
     }
 
+    /**
+     * Retrieves the DB types which can be source database.
+     *
+     * @return Set<Integer> of database type ids
+     */
+    public static Set<Integer> getSupportedSrcDBTypes() {
+        Set<Integer> supportedDBs = new HashSet<Integer>(6);
+        supportedDBs.add(DatabaseType.MYSQL.getID());
+        supportedDBs.add(DatabaseType.ORACLE.getID());
+        supportedDBs.add(DatabaseType.CUBRID.getID());
+        supportedDBs.add(DatabaseType.MSSQL.getID());
+        supportedDBs.add(DatabaseType.MARIADB.getID());
+        supportedDBs.add(DatabaseType.INFORMIX.getID());
+        return supportedDBs;
+    }
+
+    /**
+     * Retrieves the DB types which can be target database.
+     *
+     * @return Set<Integer> of database type ids
+     */
+    public static Set<Integer> getSupportedTarDBTypes() {
+        Set<Integer> supportedDBs = new HashSet<Integer>(4);
+        supportedDBs.add(DatabaseType.CUBRID.getID());
+        return supportedDBs;
+    }
+
     /** Auto update an unique name of the parsed configuration. */
     protected void autoSetUniqueNameOfConfiguration() {
         int idx = 1;
@@ -202,8 +199,6 @@ public class MigrationWizard extends Wizard implements IMigrationWizardStatus {
         addPage(new CSVImportConfirmPage("10"));
 
         addPage(new SchemaMappingPage("11"));
-
-        //		addPage(new SelectOfflineDest2Page("11"));
     }
 
     /**
@@ -258,9 +253,6 @@ public class MigrationWizard extends Wizard implements IMigrationWizardStatus {
      */
     private int[] getPageNOs() {
         if (migrationConfig.sourceIsOnline() || migrationConfig.sourceIsXMLDump()) {
-            //			if (migrationConfig.targetIsOffline()) {
-            //				return IDX_OFFLINE;
-            //			}
             return IDX_ONLINE;
         }
 

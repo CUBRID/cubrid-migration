@@ -104,7 +104,6 @@ public final class OracleSchemaFetcher extends AbstractJDBCSchemaFetcher {
     private static final String OBJECT_TYPE_TABLE = "TABLE";
     private static final String OBJECT_TYPE_TRIGGER = "TRIGGER";
     private static final String OBJECT_TYPE_VIEW = "VIEW";
-    //	private static final String OBJECT_TYPE_INDEX = "INDEX";
 
     // Undefined columns will not be supported.
     private static final String SQL_GET_COLUMNS =
@@ -1510,60 +1509,6 @@ public final class OracleSchemaFetcher extends AbstractJDBCSchemaFetcher {
         }
     }
 
-    //	/**
-    //	 * getSQLTable
-    //	 *
-    //	 * @param sql String
-    //	 * @param resultSetMeta ResultSetMetaData
-    //	 * @return SourceTable
-    //	 * @throws SQLException e
-    //	 */
-    //	public Table getSQLTable(String sql, ResultSetMetaData resultSetMeta) throws SQLException {
-    //		List<Column> columns = new ArrayList<Column>();
-    //		Table sqlTable = factory.createTable();
-    //		sqlTable.setName(sql);
-    //		Set<String> columnNames = new HashSet<String>();
-    //
-    //		for (int i = 1; i < resultSetMeta.getColumnCount() + 1; i++) {
-    //			Column column = factory.createColumn();
-    //			String tableName = resultSetMeta.getTableName(i);
-    //			String columnName = resultSetMeta.getColumnName(i);
-    //
-    //			if (StringUtils.isNotBlank(tableName)) {
-    //				columnName = tableName + "." + columnName;
-    //			}
-    //
-    //			if (columnNames.contains(columnName)) {
-    //				columnName = columnName + "1";
-    //			}
-    //
-    //			columnNames.add(columnName);
-    //
-    //			column.setName(columnName);
-    //			column.setCharLength(resultSetMeta.getColumnDisplaySize(i));
-    //
-    //			column.setTableOrView(sqlTable);
-    //			String dataType = resultSetMeta.getColumnTypeName(i);
-    //
-    //			column.setDataType(dataType);
-    //			column.setJdbcIDOfDataType(resultSetMeta.getColumnType(i));
-    //			int precision = resultSetMeta.getPrecision(i);
-    //			column.setPrecision(precision);
-    //
-    //			int scale = resultSetMeta.getScale(i);
-    //			column.setScale(scale);
-    //			column.setAutoIncrement(resultSetMeta.isAutoIncrement(i));
-    //			column.setNullable(resultSetMeta.isNullable(i) == ResultSetMetaData.columnNullable);
-    //			columns.add(column);
-    //
-    //			String shownDataType = OracleDataTypeHelper.getShownDataType(column);
-    //			column.setShownDataType(shownDataType);
-    //		}
-    //
-    //		sqlTable.setColumns(columns);
-    //		return sqlTable;
-    //	}
-
     /**
      * get All Routines
      *
@@ -1685,12 +1630,6 @@ public final class OracleSchemaFetcher extends AbstractJDBCSchemaFetcher {
             } else if (COLUMNS_RESET2.indexOf(dataType) >= 0) {
                 column.setPrecision(column.getByteLength());
             }
-            //			else if (!"NUMBER".equals(dataType)
-            //					&& !"BINARY_FLOAT".equals(dataType)
-            //					&& !"BINARY_DOUBLE".equals(dataType)
-            //					&& !"DATE".equals(dataType)) {
-            //				column.setPrecision(column.getDataLength());
-            //			}
         }
     }
 
@@ -1800,10 +1739,6 @@ public final class OracleSchemaFetcher extends AbstractJDBCSchemaFetcher {
             Closer.close(stmt);
         }
 
-        //		if (StringUtils.isNotBlank(cp.getSchema())
-        //				&& !schemaNames.contains(cp.getSchema())) {
-        //			schemaNames.add(cp.getSchema());
-        //		}
         String defaultSchema = cp.getConUser().toUpperCase(Locale.US);
         if (!schemaNames.contains(defaultSchema)) {
             schemaNames.add(defaultSchema);
@@ -1819,9 +1754,4 @@ public final class OracleSchemaFetcher extends AbstractJDBCSchemaFetcher {
     public DatabaseType getDBType() {
         return DatabaseType.ORACLE;
     }
-
-    //	protected void buildAllSchemas(Connection conn, Catalog catalog, Schema schema, Map<String,
-    // Table> tables)
-    //			throws SQLException {
-    //	}
 }

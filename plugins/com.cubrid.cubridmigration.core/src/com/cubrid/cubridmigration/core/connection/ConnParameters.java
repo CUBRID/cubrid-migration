@@ -52,111 +52,6 @@ public final class ConnParameters implements Serializable, IDBSource, IJDBCConne
 
     private static final long serialVersionUID = 2531031197450692000L;
 
-    /**
-     * get a Connection: you can call DBTool.getConnection
-     *
-     * @param name String
-     * @param hostIp String
-     * @param port integer
-     * @param dbName String
-     * @param dt Integer
-     * @param charSet String
-     * @param username String
-     * @param password String
-     * @param driverPath String
-     * @param schemaName String
-     * @return ConnParameters
-     */
-    public static ConnParameters getConParam(
-            String name,
-            String hostIp,
-            int port,
-            String dbName,
-            DatabaseType dt,
-            String charSet,
-            String username,
-            String password,
-            String driverPath,
-            String schemaName) {
-        ConnParameters cp = new ConnParameters();
-        cp.setDatabaseType(dt);
-
-        // String sn = schemaName;
-        // Fix DB name: Oracle is special. For backward compatibility
-        if (dt.getID() == DatabaseType.ORACLE.getID()) {
-            String db = dbName;
-            String header = "";
-            if (dbName.indexOf('/') == 0) {
-                db = db.substring(1);
-                header = "/";
-            }
-            String[] names = db.split("/");
-            cp.setDbName(header + names[0]);
-            //			if (names.length > 1 && StringUtils.isBlank(schemaName)) {
-            //				sn = names[1];
-            //			}
-        } else {
-            cp.setDbName(dbName);
-        }
-
-        cp.setHost(hostIp);
-        cp.setPort(port);
-        cp.setCharset(charSet);
-
-        cp.setConUser(username);
-        cp.setConPassword(password);
-        cp.setDriverFileName(driverPath);
-        if (StringUtils.isBlank(name)) {
-            cp.setName(getDefaultName(cp));
-        } else {
-            cp.setName(name);
-        }
-        //		if (StringUtils.isBlank(sn)) {
-        //			sn = getDefaultSchema(dt, dbName, username);
-        //		}
-        //		cp.setSchema(sn);
-        return cp;
-    }
-
-    /**
-     * getConParamByInfo
-     *
-     * @param newCon IJDBCConnecInfo
-     * @return ConnParameters
-     */
-    public static ConnParameters getConParamByInfo(IJDBCConnecInfo newCon) {
-        ConnParameters cp =
-                ConnParameters.getConParam(
-                        newCon.getConName(),
-                        newCon.getHost(),
-                        newCon.getPort(),
-                        newCon.getDbName(),
-                        DatabaseType.getDatabaseTypeByID(newCon.getDbType()),
-                        newCon.getCharset(),
-                        newCon.getConUser(),
-                        newCon.getConPassword(),
-                        newCon.getDriverFileName(),
-                        "");
-        return cp;
-    }
-
-    /**
-     * Retrieves the default name of the connection parameters.
-     *
-     * @param cp ConnParameters
-     * @return default name
-     */
-    public static String getDefaultName(ConnParameters cp) {
-        return new StringBuffer(cp.getHost())
-                .append(":")
-                .append(cp.getPort())
-                .append("/")
-                .append(cp.getDbName())
-                .append("/")
-                .append(cp.getConUser())
-                .toString();
-    }
-
     private String charSet;
     private int dbType;
     private String dbName;
@@ -187,49 +82,6 @@ public final class ConnParameters implements Serializable, IDBSource, IJDBCConne
         this.conName = src.conName;
     }
 
-    /**
-     * Return a clone of this instance.
-     *
-     * <p>Semantic: deep copy. When adding mutable fields in the future, update the copy constructor
-     * accordingly.
-     *
-     * @return ConnParameters
-     */
-    @Override
-    public ConnParameters clone() {
-        return new ConnParameters(this);
-    }
-
-    /**
-     * Copy input to object.
-     *
-     * @param cp ConnParameters
-     */
-    public void copy(ConnParameters cp) {
-        this.dbType = cp.dbType;
-        this.host = cp.host;
-        this.port = cp.port;
-        this.dbName = cp.dbName;
-        this.charSet = cp.charSet;
-        this.timeZone = cp.timeZone;
-        this.conUser = cp.conUser;
-        this.conPassword = cp.conPassword;
-        this.driverFileName = cp.driverFileName;
-        this.userJDBCURL = cp.userJDBCURL;
-        this.conName = cp.conName;
-        // this.schema = cp.schema;
-    }
-
-    /**
-     * get a Connection
-     *
-     * @return conn Connection
-     * @throws SQLException e
-     */
-    public Connection createConnection() throws SQLException {
-        return DatabaseType.getDatabaseTypeByID(dbType).getConHelper().createConnection(this);
-    }
-
     public String getCharset() {
         return charSet;
     }
@@ -241,10 +93,6 @@ public final class ConnParameters implements Serializable, IDBSource, IJDBCConne
     public String getDbName() {
         return dbName;
     }
-
-    //	public String getSchema() {
-    //		return schema;
-    //	}
 
     /**
      * get a Connection
@@ -316,41 +164,6 @@ public final class ConnParameters implements Serializable, IDBSource, IJDBCConne
         return userJDBCURL;
     }
 
-    /**
-     * Only check ip,port,db name and user
-     *
-     * @param value the ConnParameters to be compared.
-     * @return true if ip,port,db name and user are same.
-     */
-    public boolean isSameDB(Object value) {
-        if (!(value instanceof ConnParameters)) {
-            return false;
-        }
-        ConnParameters cp = (ConnParameters) value;
-
-        if (dbType != cp.dbType || port != cp.port) {
-            return false;
-        }
-
-        String h1 = StringUtils.defaultString(host);
-        String h2 = StringUtils.defaultString(cp.host);
-        if (!h1.equals(h2)) {
-            return false;
-        }
-
-        String u1 = StringUtils.defaultString(conUser);
-        String u2 = StringUtils.defaultString(cp.conUser);
-        if (u1.equalsIgnoreCase(u2)) {
-            return false;
-        }
-
-        String d1 = StringUtils.defaultString(dbName);
-        String d2 = StringUtils.defaultString(cp.dbName);
-
-        boolean isCubrid = (dbType == DatabaseType.CUBRID.getID());
-        return isCubrid ? d1.equalsIgnoreCase(d2) : d1.equals(d2);
-    }
-
     public void setCharset(String charSet) {
         this.charSet = charSet;
     }
@@ -367,16 +180,6 @@ public final class ConnParameters implements Serializable, IDBSource, IJDBCConne
     public void setDbName(String dbName) {
         this.dbName = dbName;
     }
-
-    //	/**
-    //	 * Set default Schema name; If parameter is NULL, a default name will be
-    //	 * set.
-    //	 *
-    //	 * @param defaultSchema String
-    //	 */
-    //	public void setSchema(String defaultSchema) {
-    //		this.schema = defaultSchema;
-    //	}
 
     /**
      * set driver path
@@ -413,23 +216,6 @@ public final class ConnParameters implements Serializable, IDBSource, IJDBCConne
 
     public void setUserJDBCURL(String userJDBCURL) {
         this.userJDBCURL = userJDBCURL;
-    }
-
-    /**
-     * Retrieves the default schema name.
-     *
-     * @param dt DatabaseType
-     * @param dbName String
-     * @param userName String
-     * @return the default schema name.
-     */
-    public static String getDefaultSchema(DatabaseType dt, String dbName, String userName) {
-        if (dt.getID() == DatabaseType.MSSQL.getID()) {
-            return "dbo";
-        } else if (dt.getID() == DatabaseType.ORACLE.getID()) {
-            return StringUtils.upperCase(userName);
-        }
-        return dbName;
     }
 
     public int getDbType() {
@@ -484,6 +270,197 @@ public final class ConnParameters implements Serializable, IDBSource, IJDBCConne
      */
     public String getSchema() {
         return "";
+    }
+
+    /**
+     * get a Connection: you can call DBTool.getConnection
+     *
+     * @param name String
+     * @param hostIp String
+     * @param port integer
+     * @param dbName String
+     * @param dt Integer
+     * @param charSet String
+     * @param username String
+     * @param password String
+     * @param driverPath String
+     * @param schemaName String
+     * @return ConnParameters
+     */
+    public static ConnParameters getConParam(
+            String name,
+            String hostIp,
+            int port,
+            String dbName,
+            DatabaseType dt,
+            String charSet,
+            String username,
+            String password,
+            String driverPath,
+            String schemaName) {
+        ConnParameters cp = new ConnParameters();
+        cp.setDatabaseType(dt);
+
+        // Fix DB name: Oracle is special. For backward compatibility
+        if (dt.getID() == DatabaseType.ORACLE.getID()) {
+            String db = dbName;
+            String header = "";
+            if (dbName.indexOf('/') == 0) {
+                db = db.substring(1);
+                header = "/";
+            }
+            String[] names = db.split("/");
+            cp.setDbName(header + names[0]);
+        } else {
+            cp.setDbName(dbName);
+        }
+
+        cp.setHost(hostIp);
+        cp.setPort(port);
+        cp.setCharset(charSet);
+
+        cp.setConUser(username);
+        cp.setConPassword(password);
+        cp.setDriverFileName(driverPath);
+        if (StringUtils.isBlank(name)) {
+            cp.setName(getDefaultName(cp));
+        } else {
+            cp.setName(name);
+        }
+        return cp;
+    }
+
+    /**
+     * getConParamByInfo
+     *
+     * @param newCon IJDBCConnecInfo
+     * @return ConnParameters
+     */
+    public static ConnParameters getConParamByInfo(IJDBCConnecInfo newCon) {
+        ConnParameters cp =
+                ConnParameters.getConParam(
+                        newCon.getConName(),
+                        newCon.getHost(),
+                        newCon.getPort(),
+                        newCon.getDbName(),
+                        DatabaseType.getDatabaseTypeByID(newCon.getDbType()),
+                        newCon.getCharset(),
+                        newCon.getConUser(),
+                        newCon.getConPassword(),
+                        newCon.getDriverFileName(),
+                        "");
+        return cp;
+    }
+
+    /**
+     * Retrieves the default name of the connection parameters.
+     *
+     * @param cp ConnParameters
+     * @return default name
+     */
+    public static String getDefaultName(ConnParameters cp) {
+        return new StringBuffer(cp.getHost())
+                .append(":")
+                .append(cp.getPort())
+                .append("/")
+                .append(cp.getDbName())
+                .append("/")
+                .append(cp.getConUser())
+                .toString();
+    }
+
+    /**
+     * Only check ip,port,db name and user
+     *
+     * @param value the ConnParameters to be compared.
+     * @return true if ip,port,db name and user are same.
+     */
+    public boolean isSameDB(Object value) {
+        if (!(value instanceof ConnParameters)) {
+            return false;
+        }
+        ConnParameters cp = (ConnParameters) value;
+
+        if (dbType != cp.dbType || port != cp.port) {
+            return false;
+        }
+
+        String h1 = StringUtils.defaultString(host);
+        String h2 = StringUtils.defaultString(cp.host);
+        if (!h1.equals(h2)) {
+            return false;
+        }
+
+        String u1 = StringUtils.defaultString(conUser);
+        String u2 = StringUtils.defaultString(cp.conUser);
+        if (u1.equalsIgnoreCase(u2)) {
+            return false;
+        }
+
+        String d1 = StringUtils.defaultString(dbName);
+        String d2 = StringUtils.defaultString(cp.dbName);
+
+        boolean isCubrid = (dbType == DatabaseType.CUBRID.getID());
+        return isCubrid ? d1.equalsIgnoreCase(d2) : d1.equals(d2);
+    }
+
+    /**
+     * Return a clone of this instance.
+     *
+     * <p>Semantic: deep copy. When adding mutable fields in the future, update the copy constructor
+     * accordingly.
+     *
+     * @return ConnParameters
+     */
+    @Override
+    public ConnParameters clone() {
+        return new ConnParameters(this);
+    }
+
+    /**
+     * Copy input to object.
+     *
+     * @param cp ConnParameters
+     */
+    public void copy(ConnParameters cp) {
+        this.dbType = cp.dbType;
+        this.host = cp.host;
+        this.port = cp.port;
+        this.dbName = cp.dbName;
+        this.charSet = cp.charSet;
+        this.timeZone = cp.timeZone;
+        this.conUser = cp.conUser;
+        this.conPassword = cp.conPassword;
+        this.driverFileName = cp.driverFileName;
+        this.userJDBCURL = cp.userJDBCURL;
+        this.conName = cp.conName;
+    }
+
+    /**
+     * get a Connection
+     *
+     * @return conn Connection
+     * @throws SQLException e
+     */
+    public Connection createConnection() throws SQLException {
+        return DatabaseType.getDatabaseTypeByID(dbType).getConHelper().createConnection(this);
+    }
+
+    /**
+     * Retrieves the default schema name.
+     *
+     * @param dt DatabaseType
+     * @param dbName String
+     * @param userName String
+     * @return the default schema name.
+     */
+    public static String getDefaultSchema(DatabaseType dt, String dbName, String userName) {
+        if (dt.getID() == DatabaseType.MSSQL.getID()) {
+            return "dbo";
+        } else if (dt.getID() == DatabaseType.ORACLE.getID()) {
+            return StringUtils.upperCase(userName);
+        }
+        return dbName;
     }
 
     /** Logical equality based on database identity (same as {@link #isSameDB(Object)}). */

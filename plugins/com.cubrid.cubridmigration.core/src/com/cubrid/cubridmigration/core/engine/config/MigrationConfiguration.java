@@ -1611,9 +1611,7 @@ public class MigrationConfiguration {
                             StringUtils.lowerCase(entry.getValue()));
                 }
 
-                // tfk.setDeferability(fk.getDeferability());
                 tfk.setDeleteRule(fk.getDeleteRule());
-                // tfk.setOnCacheObject(fk.getOnCacheObject());
                 tfk.setUpdateRule(fk.getUpdateRule());
             }
             tfks.add(tfk);
@@ -3185,13 +3183,6 @@ public class MigrationConfiguration {
         return charset;
     }
 
-    //	/**
-    //	 * @return the sourceDBSchema
-    //	 */
-    //	public Schema getSourceDBSchema() {
-    //		return sourceDBSchema;
-    //	}
-
     /**
      * @return the sourceConParams
      */
@@ -4009,8 +4000,6 @@ public class MigrationConfiguration {
             return getTargetTableSchema(name);
         }
 
-        //		Schema targetSchema = verUtil.getSchemaMapping().get(owner);
-
         for (Table tt : this.targetTables) {
             if (tt.getName().equalsIgnoreCase(name) && tt.getOwner().equalsIgnoreCase(owner)) {
                 return tt;
@@ -4283,11 +4272,6 @@ public class MigrationConfiguration {
                 return sc.isCreate();
             }
         }
-        //		for (SourceConfig sc : expSerials) {
-        //			if (name.equalsIgnoreCase(sc.getTarget())) {
-        //				return true;
-        //			}
-        //		}
         return false;
     }
 
@@ -4338,7 +4322,6 @@ public class MigrationConfiguration {
     public void parsingCSVFile(SourceCSVConfig sc) {
         BufferedReader reader;
         try {
-            // new FileInputStream(sc.getName())
             reader =
                     new BufferedReader(
                             new InputStreamReader(
@@ -4693,12 +4676,6 @@ public class MigrationConfiguration {
                 sc.setCreate(value);
             }
         }
-
-        // Don't clear sqls
-        //		if (!value) {
-        //			expSQLTables.clear();
-        //			srcSQLSchemas.clear();
-        //		}
     }
 
     /**
@@ -4935,25 +4912,6 @@ public class MigrationConfiguration {
     public void setFileRepositroyPath(String fileRepositroyPath) {
         this.fileRepositroyPath = fileRepositroyPath;
     }
-
-    //	/**
-    //	 * Change migration configuration's source database schema, and the
-    //	 * configuration and target schemas will auto build according to the source
-    //	 * database schema. Note that this method may cost much time.
-    //	 *
-    //	 * @param sourceDBSchema the sourceDBSchema to set
-    //	 * @param reset reset the configuration or not
-    //	 */
-    //	public void setSourceDBSchema(Schema sourceDBSchema, boolean reset) {
-    //		if (sourceDBSchema == null) {
-    //			throw new IllegalArgumentException("Schema can't not be null.");
-    //		}
-    //		this.sourceDBSchema = sourceDBSchema;
-    //		if (reset) {
-    //			clearAll();
-    //		}
-    //		this.buildConfigAndTargetSchema(reset);
-    //	}
 
     /**
      * Set a true if didn't use to count total records before a migration for showing correct

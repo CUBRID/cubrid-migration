@@ -81,6 +81,93 @@ import java.util.Map;
  */
 public class SelectSourcePage extends MigrationWizardPage {
 
+    private static final Logger LOG = LogUtil.getLogger(SelectSourcePage.class);
+    private AbstractSourceView onlineView = new SelectOnlineSrcView();
+    private AbstractSourceView mysqlDumpView = new SelectMySQLDumpSrcView();
+
+    private Composite container;
+
+    public SelectSourcePage(String pageName) {
+        super(pageName);
+    }
+
+    /**
+     * When migration wizard displayed current page.
+     *
+     * @param event PageChangedEvent
+     */
+    protected void afterShowCurrentPage(PageChangedEvent event) {
+        try {
+            final MigrationWizard wzd = getMigrationWizard();
+            if (wzd.getMigrationConfig().sourceIsOnline()) {
+                onlineView.createControls(container);
+                mysqlDumpView.hide();
+                onlineView.show();
+            } else if (wzd.getMigrationConfig().sourceIsXMLDump()) {
+                mysqlDumpView.createControls(container);
+                onlineView.hide();
+                mysqlDumpView.show();
+            }
+            container.layout(true);
+            getCurrentView().init();
+        } catch (Exception ex) {
+            LOG.error("", ex);
+            MessageDialog.openError(getShell(), Messages.msgError, ex.getMessage());
+        }
+    }
+
+    /**
+     * Create contents of the wizard
+     *
+     * @param parent Composite
+     */
+    public void createControl(Composite parent) {
+        container = new Composite(parent, SWT.NONE);
+        final GridLayout gridLayoutRoot = new GridLayout();
+        container.setLayout(gridLayoutRoot);
+        setControl(container);
+    }
+
+    /**
+     * Retrieves the current view for selection data source.
+     *
+     * @return AbstractView
+     */
+    private AbstractSourceView getCurrentView() {
+        final MigrationConfiguration cfg = getMigrationWizard().getMigrationConfig();
+        if (cfg.sourceIsOnline()) {
+            return onlineView;
+        } else if (cfg.sourceIsXMLDump()) {
+            return mysqlDumpView;
+        }
+        throw new RuntimeException("Can't support source type :" + cfg.getSourceType());
+    }
+
+    /**
+     * When migration wizard will show next page or previous page.
+     *
+     * @param event PageChangingEvent
+     */
+    protected void handlePageLeaving(PageChangingEvent event) {
+        // If page is not complete, it should be go to previous page.
+        if (!isPageComplete()) {
+            return;
+        }
+        if (!isGotoNextPage(event)) {
+            return;
+        }
+        event.doit = updateMigrationConfig();
+    }
+
+    /**
+     * Save user input (source database connection information) to export options.
+     *
+     * @return true if update success.
+     */
+    protected boolean updateMigrationConfig() {
+        return getCurrentView().save();
+    }
+
     /**
      * AbstractSourceView
      *
@@ -591,92 +678,5 @@ public class SelectSourcePage extends MigrationWizardPage {
         public void show() {
             conMgrView.show();
         }
-    }
-
-    private static final Logger LOG = LogUtil.getLogger(SelectSourcePage.class);
-    private AbstractSourceView onlineView = new SelectOnlineSrcView();
-    private AbstractSourceView mysqlDumpView = new SelectMySQLDumpSrcView();
-
-    private Composite container;
-
-    public SelectSourcePage(String pageName) {
-        super(pageName);
-    }
-
-    /**
-     * When migration wizard displayed current page.
-     *
-     * @param event PageChangedEvent
-     */
-    protected void afterShowCurrentPage(PageChangedEvent event) {
-        try {
-            final MigrationWizard wzd = getMigrationWizard();
-            if (wzd.getMigrationConfig().sourceIsOnline()) {
-                onlineView.createControls(container);
-                mysqlDumpView.hide();
-                onlineView.show();
-            } else if (wzd.getMigrationConfig().sourceIsXMLDump()) {
-                mysqlDumpView.createControls(container);
-                onlineView.hide();
-                mysqlDumpView.show();
-            }
-            container.layout(true);
-            getCurrentView().init();
-        } catch (Exception ex) {
-            LOG.error("", ex);
-            MessageDialog.openError(getShell(), Messages.msgError, ex.getMessage());
-        }
-    }
-
-    /**
-     * Create contents of the wizard
-     *
-     * @param parent Composite
-     */
-    public void createControl(Composite parent) {
-        container = new Composite(parent, SWT.NONE);
-        final GridLayout gridLayoutRoot = new GridLayout();
-        container.setLayout(gridLayoutRoot);
-        setControl(container);
-    }
-
-    /**
-     * Retrieves the current view for selection data source.
-     *
-     * @return AbstractView
-     */
-    private AbstractSourceView getCurrentView() {
-        final MigrationConfiguration cfg = getMigrationWizard().getMigrationConfig();
-        if (cfg.sourceIsOnline()) {
-            return onlineView;
-        } else if (cfg.sourceIsXMLDump()) {
-            return mysqlDumpView;
-        }
-        throw new RuntimeException("Can't support source type :" + cfg.getSourceType());
-    }
-
-    /**
-     * When migration wizard will show next page or previous page.
-     *
-     * @param event PageChangingEvent
-     */
-    protected void handlePageLeaving(PageChangingEvent event) {
-        // If page is not complete, it should be go to previous page.
-        if (!isPageComplete()) {
-            return;
-        }
-        if (!isGotoNextPage(event)) {
-            return;
-        }
-        event.doit = updateMigrationConfig();
-    }
-
-    /**
-     * Save user input (source database connection information) to export options.
-     *
-     * @return true if update success.
-     */
-    protected boolean updateMigrationConfig() {
-        return getCurrentView().save();
     }
 }

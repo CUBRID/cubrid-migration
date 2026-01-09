@@ -122,9 +122,6 @@ public class MysqlXmlDumpSchemaWithHistoryFetcher implements IDBSchemaInfoFetche
                                 xmlFile, xmlFileCharset, new File(xmlFile).length(), jsonFileName);
                 MysqlXmlDumpParsingHistoryManager.appendMigrationHistory(history);
             }
-            //			else {
-            //				jsonFileName = history.getJsonFileName();
-            //			}
             File catalogFile = new File(history.getFullJsonFileName());
             if (catalogFile.exists()) {
                 PathUtils.deleteFile(catalogFile);

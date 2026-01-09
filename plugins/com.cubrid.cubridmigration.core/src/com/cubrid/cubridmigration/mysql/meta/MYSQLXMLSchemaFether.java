@@ -88,9 +88,6 @@ public class MYSQLXMLSchemaFether implements IDBSchemaInfoFetcher {
                 SAXParserFactory sf = SAXParserFactory.newInstance();
                 sf.setValidating(false);
                 SAXParser sp = sf.newSAXParser();
-                //		sp.setProperty(
-                //				"http://apache.org/xml/features/continue-after-fatal-error",
-                //				true);
                 MySQLXMLSchemaParser structReader = new MySQLXMLSchemaParser();
 
                 InputSource is = new InputSource(reader);

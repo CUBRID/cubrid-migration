@@ -216,11 +216,6 @@ public abstract class AbstractJDBCSchemaFetcher implements IDependOnDatabaseType
     protected List<String> getSchemaNames(final Connection conn, ConnParameters cp)
             throws SQLException {
         List<String> result = new ArrayList<String>();
-        //		if (StringUtils.isNotBlank(cp.getSchema())) {
-        //			result.add(cp.getSchema());
-        //		} else {
-        //			result.add(cp.getDbName());
-        //		}
         result.add(cp.getConUser().toUpperCase(Locale.US));
         return result;
     }
@@ -368,10 +363,6 @@ public abstract class AbstractJDBCSchemaFetcher implements IDependOnDatabaseType
                 columnName = resultSetMeta.getColumnName(i);
             }
             column.setName(columnName);
-            //			int charLength = resultSetMeta.getColumnDisplaySize(i);
-            //			if (charLength <= 0) {
-            //				charLength = 1;
-            //			}
             column.setJdbcIDOfDataType(resultSetMeta.getColumnType(i));
 
             int precision = resultSetMeta.getPrecision(i);
@@ -569,8 +560,6 @@ public abstract class AbstractJDBCSchemaFetcher implements IDependOnDatabaseType
                     }
 
                     foreignKey.setReferencedTableName(fkTableName);
-
-                    // foreignKey.setDeferability(rs.getInt("DEFERRABILITY"));
 
                     switch (rs.getShort("DELETE_RULE")) {
                         case DatabaseMetaData.importedKeyCascade:
@@ -905,26 +894,10 @@ public abstract class AbstractJDBCSchemaFetcher implements IDependOnDatabaseType
                 column.setPrecision(column.getCharLength());
                 column.setScale(rs.getInt("DECIMAL_DIGITS"));
                 // make sure precision is greater than scale
-                //				if (column.getScale() != null
-                //						&& column.getPrecision() < column.getScale()) {
-                //					column.setPrecision(16);
-                //
-                //					if (column.getPrecision() < column.getScale()) {
-                //						column.setPrecision(column.getScale() + 1);
-                //					}
-                //				}
                 column.setNullable(
                         rs.getInt("NULLABLE") == java.sql.DatabaseMetaData.columnNullable);
-                // prevent VARCHAR(0) columns
-                //				if (column.getDataType().equalsIgnoreCase("VARCHAR")
-                //						&& column.getCharLength() == 0) {
-                //					column.setCharLength(255);
-                //				}
                 // set column default value
                 column.setDefaultValue(rs.getString("COLUMN_DEF"));
-                //				LOG.debug("Column Name:" + column.getName() + "  Column Type "
-                //						+ column.getDataType() + "  Column Length:"
-                //						+ column.getByteLength());
             }
         } finally {
             Closer.close(rs);
@@ -1055,35 +1028,6 @@ public abstract class AbstractJDBCSchemaFetcher implements IDependOnDatabaseType
         return catalog == null ? null : catalog.getName();
     }
 
-    //	/**
-    //	 * Get Catalogs
-    //	 *
-    //	 * @param conn Connection
-    //	 * @return List<String> @ e
-    //	 */
-    //	public List<String> getCatalogs(final Connection conn) {
-    //		if (LOG.isDebugEnabled()) {
-    //			LOG.debug("[IN]getCatalogs()");
-    //		}
-    //		final List<String> list = new ArrayList<String>();
-    //		ResultSet rs = null; //NOPMD
-    //		try {
-    //			final DatabaseMetaData metadata = conn.getMetaData();
-    //			rs = metadata.getCatalogs();
-    //			if (rs != null) {
-    //				while (rs.next()) {
-    //					list.add(rs.getString("TABLE_CAT"));
-    //				}
-    //			}
-    //			return list;
-    //		} catch (SQLException e) {
-    //			LOG.error("getCatalogs err:", e);
-    //			throw new RuntimeException(e);
-    //		} finally {
-    //			Closer.close(rs);
-    //		}
-    //	}
-
     /**
      * ORACLE ----------select name,value$ from props$ where name like 'NLS_CHAR%'; MYSQL
      * ----------SHOW VARIABLES where variable_name='character_set_database'
@@ -1111,40 +1055,6 @@ public abstract class AbstractJDBCSchemaFetcher implements IDependOnDatabaseType
     protected String getSchemaName(final Schema schema) {
         return schema == null ? null : schema.getName();
     }
-
-    //	/**
-    //	 * Returns a list of all schemata from the given JDBC connection
-    //	 *
-    //	 * @param conn Connection
-    //	 * @return List<String> @ e
-    //	 */
-    //	public List<String> getSchemata(final Connection conn) {
-    //		if (LOG.isDebugEnabled()) {
-    //			LOG.debug("[IN]getSchemata()");
-    //		}
-    //		ResultSet rs = null; //NOPMD
-    //		try {
-    //			final List<String> schemataList = new ArrayList<String>();
-    //
-    //			rs = conn.getMetaData().getSchemas();
-    //			while (rs.next()) {
-    //				final String schemaName = rs.getString("TABLE_SCHEM");
-    //				if (schemaName != null) {
-    //					schemataList.add(schemaName);
-    //				}
-    //			}
-    //			if (schemataList.isEmpty()) {
-    //				schemataList.add("DEFAULT");
-    //			}
-    //
-    //			return schemataList;
-    //		} catch (SQLException e) {
-    //			LOG.error("getSchemata err:", e);
-    //			throw new RuntimeException(e);
-    //		} finally {
-    //			Closer.close(rs);
-    //		}
-    //	}
 
     /**
      * Get Source Partition DDL
@@ -1269,19 +1179,6 @@ public abstract class AbstractJDBCSchemaFetcher implements IDependOnDatabaseType
                 || "NULL".equalsIgnoreCase(dataType)
                 || "UNKNOWN".equalsIgnoreCase(dataType);
     }
-
-    //	/**
-    //	 * build Partitions
-    //	 *
-    //	 * @param conn Connection
-    //	 * @param catalog Catalog
-    //	 * @param schema Schema
-    //	 * @throws SQLException e
-    //	 */
-    //	protected void buildPartitions(final Connection conn,
-    //			final Catalog catalog, final Schema schema) throws SQLException {
-    //		//do nothing
-    //	}
 
     /**
      * Return whether a view name is accepted.

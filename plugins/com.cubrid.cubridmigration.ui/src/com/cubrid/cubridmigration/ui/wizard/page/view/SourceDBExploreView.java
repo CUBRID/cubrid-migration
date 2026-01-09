@@ -298,7 +298,6 @@ public class SourceDBExploreView implements ISQLTableChangedListener {
      * @param config MigrationConfiguration
      */
     public void setInput(DatabaseNode input, MigrationConfiguration config) {
-        // this.config = config;
         if (input == null) {
             return;
         }

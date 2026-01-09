@@ -82,284 +82,89 @@ import java.util.List;
  */
 public class SelectDestinationPage extends MigrationWizardPage {
 
+    private OnlineTargetDBView onlineTargetDBView;
+    private UnloadTargetDBView unloadTargetDBView;
+
+    private Composite container;
+
+    /** Create the wizard */
+    public SelectDestinationPage(String pageName) {
+        super(pageName);
+    }
+
     /**
-     * OfflineTargetDBView provides settings exporting to a offline CUBRID DB
+     * When migration wizard displayed current page.
      *
-     * @author Kevin Cao
-     * @version 1.0 - 2012-10-9 created by Kevin Cao
+     * @param event PageChangedEvent
      */
-    // private class OfflineTargetDBView extends
-    // AbstractDestinationView {
-    // // private static final String CMHOST = "cmserverip";
-    // // private static final String CMPORT = "cmserverport";
-    // private Composite offContainer;
-    //
-    // private TableViewer tvCMS;
-    // private Button btnAdd;
-    // private Button btnEdit;
-    // private Button btnDelete;
-    //
-    // private String selectedCMS; //Selected CMS name
-    //
-    // private OfflineTargetDBView() {
-    // //Do nothing
-    // }
-    //
-    // /**
-    // * connect to cmserver return connect result
-    // *
-    // * @return boolean
-    // */
-    // private boolean connectCMS() {
-    // CMSInfo si = CMSManager.getInstance().findServer(selectedCMS);
-    // if (si.isConnected()) {
-    // return true;
-    // }
-    // String result = CMSEditDialog.connectCMS(si);
-    // if (StringUtils.isNotBlank(result)) {
-    // MessageDialog.openError(getShell(), Messages.msgError, result);
-    // return false;
-    // }
-    // //Check if the CMServer supports FTP
-    // if (!CUBRIDIOUtils.isLocal(si.getHostIp()) && !si.isSupportFTP()) {
-    // MessageDialog.openError(
-    // PlatformUI.getWorkbench().getDisplay().getActiveShell(),
-    // Messages.msgError,
-    // Messages.msgErrNotSupportRemoteLoadDB);
-    // return false;
-    // }
-    // return true;
-    // }
-    //
-    // /**
-    // * Create Controls
-    // *
-    // * @param parent Composite
-    // */
-    // public void createControls(Composite parent) {
-    // if (offContainer != null) {
-    // return;
-    // }
-    // offContainer = new Composite(parent, SWT.BORDER);
-    // offContainer.setLayout(new GridLayout(2, false));
-    // offContainer.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true,
-    // true));
-    //
-    // Composite tvContainer = new Composite(offContainer, SWT.NONE);
-    // tvContainer.setLayout(new GridLayout());
-    // tvContainer.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true,
-    // true));
-    //
-    // tvCMS = CompositeUtils.createTableViewer(tvContainer, SWT.SIMPLE
-    // | SWT.FULL_SELECTION | SWT.BORDER, new String[]{"",
-    // Messages.colCMSName, Messages.colCMSIp,
-    // Messages.colCMSPort, Messages.colCMSUser }, new int[]{
-    // SWT.NONE, SWT.NONE, SWT.NONE, SWT.NONE, SWT.NONE });
-    // CompositeUtils.setTableColumnsTooltip(tvCMS, new String[]{"",
-    // Messages.colCMSNameDes, Messages.colCMSIpDes,
-    // Messages.colCMSPortDes, Messages.colCMSUserDes });
-    // CompositeUtils.setTableColumnsWidth(tvCMS, new int[]{25, 200, 150,
-    // 100, 150 });
-    // tvCMS.setContentProvider(new StructuredContentProviderAdaptor());
-    // tvCMS.setLabelProvider(new BaseTableLabelProvider() {
-    //
-    // public Image getColumnImage(Object element, int columnIndex) {
-    // if (columnIndex > 0) {
-    // return null;
-    // }
-    // CMSInfo cms = (CMSInfo) element;
-    // if (cms.getName().equals(selectedCMS)) {
-    // return DBLabelProvider.CHECK_IMAGE;
-    // }
-    // return DBLabelProvider.UNCHECK_IMAGE;
-    // }
-    //
-    // public String getColumnText(Object element, int columnIndex) {
-    // CMSInfo cms = (CMSInfo) element;
-    // if (columnIndex == 0) {
-    // return "";
-    // } else if (columnIndex == 1) {
-    // return cms.getName();
-    // } else if (columnIndex == 2) {
-    // return cms.getHostIp();
-    // } else if (columnIndex == 3) {
-    // return cms.getPort() + "";
-    // } else if (columnIndex == 4) {
-    // return cms.getCubridManagerUser();
-    // }
-    // return "";
-    // }
-    // });
-    // tvCMS.addSelectionChangedListener(new ISelectionChangedListener() {
-    //
-    // public void selectionChanged(SelectionChangedEvent event) {
-    // if (event.getSelection().isEmpty()) {
-    // return;
-    // }
-    // IStructuredSelection selection = (IStructuredSelection)
-    // event.getSelection();
-    // CMSInfo cms = (CMSInfo) selection.getFirstElement();
-    // selectedCMS = cms.getName();
-    // tvCMS.refresh();
-    // }
-    // });
-    //
-    // Composite btnContainer = new Composite(offContainer, SWT.NONE);
-    // btnContainer.setLayout(new GridLayout());
-    // btnContainer.setLayoutData(new GridData(SWT.RIGHT, SWT.FILL, false,
-    // true));
-    //
-    // btnAdd = new Button(btnContainer, SWT.NONE);
-    // btnAdd.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false,
-    // false));
-    // btnAdd.setText(Messages.btnAdd);
-    // btnAdd.addSelectionListener(new SelectionAdapter() {
-    //
-    // public void widgetSelected(final SelectionEvent event) {
-    // CMServerConfig result = CMSEditDialog.newCMS(getShell());
-    // if (result == null) {
-    // return;
-    // }
-    // CMSInfo cms = CMSManager.getInstance().findServer(
-    // result.getHost(), result.getPort(),
-    // result.getUser());
-    // selectedCMS = cms.getName();
-    // fillTableViewer();
-    // }
-    // });
-    //
-    // btnEdit = new Button(btnContainer, SWT.NONE);
-    // btnEdit.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false,
-    // false));
-    // btnEdit.setText(Messages.btnEdit);
-    // btnEdit.addSelectionListener(new SelectionAdapter() {
-    //
-    // public void widgetSelected(final SelectionEvent event) {
-    // if (tvCMS.getSelection().isEmpty()) {
-    // return;
-    // }
-    // CMServerConfig cmsc = new CMServerConfig();
-    // CMSInfo cms = CMSManager.getInstance().findServer(
-    // selectedCMS);
-    // cmsc.setHost(cms.getHostIp());
-    // cmsc.setPort(cms.getPort());
-    // cmsc.setUser(cms.getCubridManagerUser());
-    // cmsc.setPassword(cms.getCubridManagerPassword());
-    //
-    // CMServerConfig result = CMSEditDialog.editCMS(getShell(),
-    // cmsc);
-    // if (result == null) {
-    // return;
-    // }
-    // cms = CMSManager.getInstance().findServer(result.getHost(),
-    // result.getPort(), result.getUser());
-    // selectedCMS = cms.getName();
-    // fillTableViewer();
-    // }
-    // });
-    //
-    // btnDelete = new Button(btnContainer, SWT.NONE);
-    // btnDelete.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false,
-    // false));
-    // btnDelete.setText(Messages.btnDelete);
-    // btnDelete.addSelectionListener(new SelectionAdapter() {
-    //
-    // public void widgetSelected(final SelectionEvent event) {
-    // if (tvCMS.getSelection().isEmpty()) {
-    // return;
-    // }
-    // CMSManager.getInstance().removeCMS(selectedCMS);
-    // selectedCMS = null;
-    // fillTableViewer();
-    // }
-    // });
-    // }
-    //
-    // /**
-    // * Hide view
-    // */
-    // public void hide() {
-    // if (offContainer == null) {
-    // return;
-    // }
-    // GridData offlinegd = (GridData) offContainer.getLayoutData();
-    // offlinegd.exclude = true;
-    // offContainer.setVisible(false);
-    // }
-    //
-    // /**
-    // * Fill table viewer with data
-    // *
-    // */
-    // private void fillTableViewer() {
-    // tvCMS.setInput(CMSManager.getInstance().getServers());
-    // tvCMS.refresh();
-    // }
-    //
-    // /**
-    // * Initialize
-    // */
-    // public void init() {
-    //
-    // setTitle(getMigrationWizard().getStepNoMsg(
-    // SelectDestinationPage.this)
-    // + Messages.msgDestSelectOfflineCUBRIDDB);
-    // setDescription(Messages.msgDestSelectOfflineCUBRIDDBDes);
-    //
-    // MigrationConfiguration config =
-    // getMigrationWizard().getMigrationConfig();
-    // final CMServerConfig cmServer = config.getCmServer();
-    // if (selectedCMS == null && cmServer != null) {
-    // CMSInfo cms = CMSManager.getInstance().findServer(
-    // cmServer.getHost(), cmServer.getPort(),
-    // cmServer.getUser());
-    // if (cms != null) {
-    // selectedCMS = cms.getName();
-    // }
-    // }
-    // fillTableViewer();
-    // }
-    //
-    // /**
-    // * Save view to configuration
-    // *
-    // * @return true if saving successfully
-    // */
-    // public boolean save() {
-    // if (CMSManager.getInstance().findServer(selectedCMS) == null) {
-    // MessageDialog.openError(getShell(), Messages.msgError,
-    // Messages.msgErrNoCMSSelected);
-    // return false;
-    // }
-    // if (!connectCMS()) {
-    // return false;
-    // }
-    // MigrationConfiguration config =
-    // getMigrationWizard().getMigrationConfig();
-    // // save cmserver config
-    // CMServerConfig cmServerConfig = config.getCmServer();
-    // if (cmServerConfig == null) {
-    // cmServerConfig = new CMServerConfig();
-    // config.setCmServer(cmServerConfig);
-    // }
-    // CMSInfo cms = CMSManager.getInstance().findServer(selectedCMS);
-    // cmServerConfig.setHost(cms.getHostIp());
-    // cmServerConfig.setPort(cms.getPort());
-    // cmServerConfig.setUser(cms.getCubridManagerUser());
-    // cmServerConfig.setPassword(cms.getCubridManagerPassword());
-    // return true;
-    // }
-    //
-    // /**
-    // * Show view
-    // */
-    // public void show() {
-    // GridData offlinegd = (GridData) offContainer.getLayoutData();
-    // offlinegd.exclude = false;
-    // offContainer.setVisible(true);
-    // }
-    //
-    // }
+    protected void afterShowCurrentPage(PageChangedEvent event) {
+        if (isFirstVisible) {
+            isFirstVisible = false;
+        }
+        final AbstractDestinationView crtDBView = getCrtDBView();
+        crtDBView.createControls(container);
+        unloadTargetDBView.hide();
+        onlineTargetDBView.hide();
+        crtDBView.init();
+        crtDBView.show();
+        container.layout();
+    }
+
+    /**
+     * Create contents of the wizard
+     *
+     * @param parent Composite
+     */
+    public void createControl(Composite parent) {
+        container = new Composite(parent, SWT.NONE);
+        final GridLayout gridLayoutRoot = new GridLayout();
+        container.setLayout(gridLayoutRoot);
+        container.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+        setControl(container);
+
+        onlineTargetDBView = new OnlineTargetDBView();
+        unloadTargetDBView = new UnloadTargetDBView();
+    }
+
+    /**
+     * Retrieves current target DB view
+     *
+     * @return TargetDBView
+     */
+    private AbstractDestinationView getCrtDBView() {
+        MigrationWizard wizard = getMigrationWizard();
+        MigrationConfiguration config = wizard.getMigrationConfig();
+        if (config.targetIsOnline()) {
+            return onlineTargetDBView;
+        } else if (config.targetIsFile()) {
+            return unloadTargetDBView;
+        }
+        throw new RuntimeException("Error destination configuration.");
+    }
+
+    /**
+     * When migration wizard will show next page or previous page.
+     *
+     * @param event PageChangingEvent
+     */
+    protected void handlePageLeaving(PageChangingEvent event) {
+        // If page is not complete, it should be go to previous page.
+        if (!isPageComplete()) {
+            return;
+        }
+        if (isGotoNextPage(event)) {
+            event.doit = updateMigrationConfig();
+        }
+    }
+
+    /**
+     * Update migration configuration.
+     *
+     * @return true if all updated
+     */
+    protected boolean updateMigrationConfig() {
+        return getCrtDBView().save();
+    }
 
     /**
      * OnlineTargetDBView provides settings exporting to a online CUBRID DB.
@@ -457,7 +262,6 @@ public class SelectDestinationPage extends MigrationWizardPage {
             final MigrationWizard wzd = getMigrationWizard();
             final MigrationConfiguration config = wzd.getMigrationConfig();
             ConnParameters connParameters = conMgrView.getSelectedDCI().getConnParameters();
-            // connParameters.setTimeZone(onLineTimezoneCombo.getItem(onLineTimezoneCombo.getSelectionIndex()));
             config.setTargetConParams(connParameters);
             config.setWriteErrorRecords(btnWriteErrorRecords.getSelection());
             config.setUpdateStatistics(btnUpdateStatistics.getSelection());
@@ -765,17 +569,6 @@ public class SelectDestinationPage extends MigrationWizardPage {
 
             btnCSVSetting.setVisible(config.targetIsCSV());
 
-            // final boolean isChar = config.targetIsCSV() ||
-            // config.targetIsSQL();
-            // lblCharset.setVisible(isChar);
-            // GridData gd = (GridData) lblCharset.getLayoutData();
-            // gd.exclude = !isChar;
-            // cboCharset.setVisible(isChar);
-            // gd = (GridData) cboCharset.getLayoutData();
-            // gd.exclude = !isChar;
-            // gd = (GridData) lblCharsetSP.getLayoutData();
-            // gd.exclude = !isChar;
-
             final boolean oneToneF = config.targetIsDBDump() || config.targetIsSQL();
             btnOneTableOneFile.setVisible(oneToneF);
             btnOneTableOneFile.setSelection(oneToneF && config.isOneTableOneFile());
@@ -898,106 +691,5 @@ public class SelectDestinationPage extends MigrationWizardPage {
             }
             return true;
         }
-    }
-
-    // private static final Logger LOG =
-    // LogUtil.getLogger(SelectDestinationPage.class);
-
-    private OnlineTargetDBView onlineTargetDBView;
-    // private OfflineTargetDBView offlineTargetDBView;
-    private UnloadTargetDBView unloadTargetDBView;
-
-    private Composite container;
-
-    // private Listener autoSelectAll = new Listener() {
-    // public void handleEvent(Event event) {
-    // if (event.item instanceof Text) {
-    // ((Text) event.item).selectAll();
-    // }
-    // }
-    // };
-
-    /** Create the wizard */
-    public SelectDestinationPage(String pageName) {
-        super(pageName);
-    }
-
-    /**
-     * When migration wizard displayed current page.
-     *
-     * @param event PageChangedEvent
-     */
-    protected void afterShowCurrentPage(PageChangedEvent event) {
-        if (isFirstVisible) {
-            isFirstVisible = false;
-        }
-        final AbstractDestinationView crtDBView = getCrtDBView();
-        crtDBView.createControls(container);
-        unloadTargetDBView.hide();
-        // offlineTargetDBView.hide();
-        onlineTargetDBView.hide();
-        crtDBView.init();
-        crtDBView.show();
-        container.layout();
-    }
-
-    /**
-     * Create contents of the wizard
-     *
-     * @param parent Composite
-     */
-    public void createControl(Composite parent) {
-        container = new Composite(parent, SWT.NONE);
-        final GridLayout gridLayoutRoot = new GridLayout();
-        container.setLayout(gridLayoutRoot);
-        container.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
-        setControl(container);
-
-        onlineTargetDBView = new OnlineTargetDBView();
-        // offlineTargetDBView = new OfflineTargetDBView();
-        unloadTargetDBView = new UnloadTargetDBView();
-    }
-
-    /**
-     * Retrieves current target DB view
-     *
-     * @return TargetDBView
-     */
-    private AbstractDestinationView getCrtDBView() {
-        MigrationWizard wizard = getMigrationWizard();
-        MigrationConfiguration config = wizard.getMigrationConfig();
-        if (config.targetIsOnline()) {
-            return onlineTargetDBView;
-        } else if (config.targetIsFile()) {
-            return unloadTargetDBView;
-        }
-        // else if (config.targetIsOffline()) {
-        // return offlineTargetDBView;
-        // }
-        throw new RuntimeException("Error destination configuration.");
-    }
-
-    /**
-     * When migration wizard will show next page or previous page.
-     *
-     * @param event PageChangingEvent
-     */
-    protected void handlePageLeaving(PageChangingEvent event) {
-        // If page is not complete, it should be go to previous page.
-        if (!isPageComplete()) {
-            return;
-        }
-        if (isGotoNextPage(event)) {
-            event.doit = updateMigrationConfig();
-        }
-    }
-
-    /**
-     * Update migration configuration.
-     *
-     * @return true if all updated
-     */
-    protected boolean updateMigrationConfig() {
-        return getCrtDBView().save();
     }
 }

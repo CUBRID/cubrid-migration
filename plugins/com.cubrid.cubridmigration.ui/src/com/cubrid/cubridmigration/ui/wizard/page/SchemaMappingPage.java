@@ -74,7 +74,6 @@ public class SchemaMappingPage extends MigrationWizardPage {
     private SchemaTableView schemaTableView;
     private final List<SrcTable> srcTableList = new ArrayList<>();
     private Catalog srcCatalog;
-
     private Button btnUpdateObjects;
 
     public SchemaMappingPage(String pageName) {

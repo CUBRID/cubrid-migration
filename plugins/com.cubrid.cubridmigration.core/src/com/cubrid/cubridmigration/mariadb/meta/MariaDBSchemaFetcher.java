@@ -104,8 +104,6 @@ public final class MariaDBSchemaFetcher extends AbstractJDBCSchemaFetcher {
                     + "from information_schema.tables "
                     + "where table_schema = ? and table_name = ?";
 
-    // private static final String SCHEMA_SELECT = "SHOW DATABASES";
-
     /**
      * get db prop info
      *
@@ -144,68 +142,6 @@ public final class MariaDBSchemaFetcher extends AbstractJDBCSchemaFetcher {
                     }
                 };
     }
-
-    //	/**
-    //	 * Returns a list of all schemata from the given JDBC connection
-    //	 *
-    //	 * @param conn Connection
-    //	 * @return returns a GRT XML string containing a list of schemata names @ e
-    //	 */
-    //	public List<String> getSchemata(final Connection conn) {
-    //		Statement stmt = null; // NOPMD
-    //		ResultSet rs = null; // NOPMD
-    //		try {
-    //			final List<String> schemataList = new ArrayList<String>();
-    //
-    //			stmt = conn.createStatement();
-    //			rs = stmt.executeQuery(SCHEMA_SELECT);
-    //
-    //			while (rs.next()) {
-    //				schemataList.add(rs.getString(1));
-    //			}
-    //
-    //			return schemataList;
-    //		} catch (SQLException e) {
-    //			throw new RuntimeException(e);
-    //		} finally {
-    //			Closer.close(rs);
-    //			Closer.close(stmt);
-    //		}
-    //	}
-
-    //	/**
-    //	 * get db char set
-    //	 *
-    //	 * @param conn Connection
-    //	 * @param dbName String
-    //	 * @return db charSet
-    //	 * @throws SQLException e
-    //	 */
-    //	public String getCharSet(final Connection conn, final String dbName) throws SQLException {
-    //		if (dbName == null || dbName.trim().equals("")) {
-    //			throw new IllegalArgumentException("The database name is null!");
-    //		}
-    //
-    //		PreparedStatement stmt = null; // NOPMD
-    //		ResultSet rs = null; // NOPMD
-    //		try {
-    //			final String sqlStr = SHOW_DB + getQuoteStr(dbName);
-    //			stmt = conn.prepareStatement(sqlStr);
-    //			rs = stmt.executeQuery();
-    //
-    //			String databaseDDL = null;
-    //
-    //			if (rs.next()) {
-    //				databaseDDL = rs.getString(2);
-    //			}
-    //
-    //			return getCharset(databaseDDL);
-    //
-    //		} finally {
-    //			Closer.close(rs);
-    //			Closer.close(stmt);
-    //		}
-    //	}
 
     /**
      * buildCatalog
@@ -548,7 +484,6 @@ public final class MariaDBSchemaFetcher extends AbstractJDBCSchemaFetcher {
 
             while (rs.next()) {
                 String indexName = rs.getString("KEY_NAME");
-                // String indexType = rs.getString("INDEX_TYPE");
                 // filter duplicate key_name
                 FK fk = table.getFKByName(indexName);
                 if (fk != null) {
@@ -1037,40 +972,6 @@ public final class MariaDBSchemaFetcher extends AbstractJDBCSchemaFetcher {
         return null;
     }
 
-    //	/**
-    //	 * get table's row count by schema name
-    //	 *
-    //	 * @param conn Connection
-    //	 * @param schemaName String
-    //	 * @return Map<String, String> @ e
-    //	 */
-    //	protected Map<String, String> getTableRowCntBySchemaName(
-    //			final Connection conn, final String schemaName) {
-    //		final Map<String, String> map = new HashMap<String, String>();
-    //		ResultSet rs = null; // NOPMD
-    //		PreparedStatement stmt = null; // NOPMD
-    //		try {
-    //			final String tableType = "BASE TABLE";
-    //			final String sqlStr = "SELECT TABLE_NAME,TABLE_ROWS FROM INFORMATION_SCHEMA.TABLES WHERE
-    // TABLE_TYPE=? AND TABLE_SCHEMA=?";
-    //			stmt = conn.prepareStatement(sqlStr);
-    //			stmt.setString(1, tableType);
-    //			stmt.setString(2, schemaName);
-    //			rs = stmt.executeQuery();
-    //
-    //			while (rs.next()) {
-    //				map.put(rs.getString(1), rs.getString(2));
-    //			}
-    //
-    //			return map;
-    //		} catch (SQLException e) {
-    //			throw new RuntimeException(e);
-    //		} finally {
-    //			Closer.close(rs);
-    //			Closer.close(stmt);
-    //		}
-    //	}
-
     /**
      * get time zone
      *
@@ -1160,18 +1061,4 @@ public final class MariaDBSchemaFetcher extends AbstractJDBCSchemaFetcher {
     public DatabaseType getDBType() {
         return DatabaseType.MARIADB;
     }
-
-    //	/**
-    //	 *
-    //	 * buildAllSchemas
-    //	 *
-    //	 * @param conn Connection
-    //	 * @param catalog Catalog
-    //	 * @param schema Schema
-    //	 * @param tables Map<String, Table>
-    //	 * @throws SQLException ex
-    //	 */
-    //	protected void buildAllSchemas(Connection conn, Catalog catalog,
-    //			Schema schema, Map<String, Table> tables) throws SQLException {
-    //	}
 }

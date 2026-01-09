@@ -206,7 +206,6 @@ public final class MSSQLSchemaFetcher extends AbstractJDBCSchemaFetcher {
                      */
                     public DataType createDataType() {
                         return new DataType();
-                        // new MSSQLDataTypeHelper()
                     }
                 };
     }

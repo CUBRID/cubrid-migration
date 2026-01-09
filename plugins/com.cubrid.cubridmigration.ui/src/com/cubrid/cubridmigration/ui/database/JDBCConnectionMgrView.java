@@ -78,49 +78,6 @@ import java.util.List;
  */
 public class JDBCConnectionMgrView {
 
-    /**
-     * @author fulei
-     */
-    private class DeleteAction extends Action {
-        public DeleteAction() {
-            setText(Messages.removeButtonLabel);
-            setImageDescriptor(MigrationUIPlugin.getImageDescriptor("icon/deleteDB.png"));
-        }
-
-        /** run */
-        public void run() {
-            removeDBConInfo();
-        }
-    }
-
-    /**
-     * @author fulei
-     */
-    private class RefreshAction extends Action {
-        /** constructor */
-        public RefreshAction() {
-            setText(Messages.schemaMappingRefreshLabel);
-            setToolTipText(Messages.schemaMappingRefreshDescription);
-            setImageDescriptor(MigrationUIPlugin.getImageDescriptor("icon/refresh.gif"));
-        }
-
-        /** run */
-        public void run() {
-            refreshCon();
-        }
-    }
-
-    private class CopyAction extends Action {
-        public CopyAction() {
-            setText(Messages.copyButtonLabel);
-            setImageDescriptor(MigrationUIPlugin.getImageDescriptor("icon/copy.png"));
-        }
-
-        public void run() {
-            copyDBConInfo();
-        }
-    }
-
     private static final Logger LOG = LogUtil.getLogger(JDBCConnectionMgrView.class);
 
     private final IJDBCConnectionFilter conFilter;
@@ -780,5 +737,48 @@ public class JDBCConnectionMgrView {
         // Update cached catalog with old schema catalog.
         cpm.updateSourceSchemaCatalog(cp, oldSchemaCatalog);
         cpm.clearSelectedSourceCatalog(cp);
+    }
+
+    /**
+     * @author fulei
+     */
+    private class DeleteAction extends Action {
+        public DeleteAction() {
+            setText(Messages.removeButtonLabel);
+            setImageDescriptor(MigrationUIPlugin.getImageDescriptor("icon/deleteDB.png"));
+        }
+
+        /** run */
+        public void run() {
+            removeDBConInfo();
+        }
+    }
+
+    /**
+     * @author fulei
+     */
+    private class RefreshAction extends Action {
+        /** constructor */
+        public RefreshAction() {
+            setText(Messages.schemaMappingRefreshLabel);
+            setToolTipText(Messages.schemaMappingRefreshDescription);
+            setImageDescriptor(MigrationUIPlugin.getImageDescriptor("icon/refresh.gif"));
+        }
+
+        /** run */
+        public void run() {
+            refreshCon();
+        }
+    }
+
+    private class CopyAction extends Action {
+        public CopyAction() {
+            setText(Messages.copyButtonLabel);
+            setImageDescriptor(MigrationUIPlugin.getImageDescriptor("icon/copy.png"));
+        }
+
+        public void run() {
+            copyDBConInfo();
+        }
     }
 }
