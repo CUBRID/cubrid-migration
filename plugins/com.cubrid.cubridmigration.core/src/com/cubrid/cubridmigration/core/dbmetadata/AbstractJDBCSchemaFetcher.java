@@ -266,6 +266,10 @@ public abstract class AbstractJDBCSchemaFetcher implements IDependOnDatabaseType
         if (schemaNames == null || schemaNames.isEmpty()) {
             throw new IllegalArgumentException("Invalid schema or no schema specified.");
         }
+        LOG.debug(
+                "[SCHEMA_SELECTED_ONLY] buildSchemaObjects schemaNames={} count={}",
+                schemaNames,
+                schemaNames.size());
         Catalog catalog = SchemaCatalogMapper.createEmptyCatalogFromSchemaCatalog(sc, schemaNames);
         for (String schemaName : schemaNames) {
             Schema schema = catalog.getSchemaByName(schemaName);
