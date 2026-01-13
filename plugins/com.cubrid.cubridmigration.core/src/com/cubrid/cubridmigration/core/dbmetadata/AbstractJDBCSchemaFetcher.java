@@ -198,10 +198,21 @@ public abstract class AbstractJDBCSchemaFetcher implements IDependOnDatabaseType
             final Connection conn, final ConnParameters cp, final List<String> schemaNames)
             throws SQLException {
 
+        List<String> normalizedSchemaNames = normalizeSchemaNames(schemaNames);
+        DatabaseType databaseType = cp.getDatabaseType();
+        String catalogName = resolveCatalogName(cp);
+        Version version = getVersion(conn);
+        Map<String, List<DataType>> supportedDataType = getSupportedSqlTypes(conn);
+        SchemaCatalog schemaCatalog =
+                new SchemaCatalog(catalogName, databaseType, cp, version, supportedDataType);
+        addSchemaEntries(schemaCatalog, normalizedSchemaNames, databaseType, cp.getConUser());
+        return schemaCatalog;
+    }
+
+    private List<String> normalizeSchemaNames(List<String> schemaNames) {
         if (schemaNames == null || schemaNames.isEmpty()) {
             throw new IllegalArgumentException("Invalid schema or no schema specified.");
         }
-
         Set<String> normalizedSchemaNames = new LinkedHashSet<String>();
         for (String raw : schemaNames) {
             if (raw == null) {
@@ -213,11 +224,13 @@ public abstract class AbstractJDBCSchemaFetcher implements IDependOnDatabaseType
             }
             normalizedSchemaNames.add(trimmed.toUpperCase(Locale.ENGLISH));
         }
-
         if (normalizedSchemaNames.isEmpty()) {
             throw new IllegalArgumentException("Invalid schema or no schema specified.");
         }
+        return new ArrayList<String>(normalizedSchemaNames);
+    }
 
+    private String resolveCatalogName(ConnParameters cp) {
         DatabaseType databaseType = cp.getDatabaseType();
         String dbName = cp.getDbName();
         if (DatabaseType.ORACLE == databaseType && dbName != null) {
@@ -228,25 +241,22 @@ public abstract class AbstractJDBCSchemaFetcher implements IDependOnDatabaseType
             final int slash = upper.indexOf('/');
             dbName = (slash >= 0) ? upper.substring(0, slash) : upper;
         }
+        return dbName;
+    }
 
-        String catalogName = dbName;
-        Version version = getVersion(conn);
-        Map<String, List<DataType>> supportedDataType = getSupportedSqlTypes(conn);
-        SchemaCatalog schemaCatalog =
-                new SchemaCatalog(catalogName, databaseType, cp, version, supportedDataType);
+    private void addSchemaEntries(
+            SchemaCatalog schemaCatalog,
+            List<String> schemaNames,
+            DatabaseType databaseType,
+            String conUser) {
         boolean multiSchema = databaseType.isSupportMultiSchema();
-        String conUser = cp.getConUser();
-
-        for (String schemaName : normalizedSchemaNames) {
+        for (String schemaName : schemaNames) {
             final boolean grantorSchema =
                     multiSchema
                             ? (conUser == null || !schemaName.equalsIgnoreCase(conUser))
                             : false;
-
             schemaCatalog.getSchemas().add(new SchemaEntry(schemaName, grantorSchema));
         }
-
-        return schemaCatalog;
     }
 
     /** Builds a Catalog with objects only for the given schemas using the given SchemaCatalog. */

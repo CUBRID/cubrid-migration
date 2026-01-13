@@ -53,6 +53,25 @@ public final class ConsoleSourceSchemaBuilder {
         if (config == null) {
             return null;
         }
+        Set<String> selectedSchemas = requireSelectedSchemas(config, outPrinter);
+        if (selectedSchemas == null) {
+            return null;
+        }
+        IBuildSchemaFilter filter = BuildSchemaFilterFactory.from(config);
+
+        if (config.sourceIsOnline()) {
+            return buildOnlineSchema(config, outPrinter, selectedSchemas, filter);
+        }
+
+        if (config.sourceIsXMLDump()) {
+            return buildXmlDumpSchema(config, outPrinter, selectedSchemas, filter);
+        }
+
+        return null;
+    }
+
+    private static Set<String> requireSelectedSchemas(
+            MigrationConfiguration config, PrintStream outPrinter) {
         Set<String> selectedSchemas = config.getSelectedSrcSchemas();
         if (selectedSchemas == null || selectedSchemas.isEmpty()) {
             if (outPrinter != null) {
@@ -60,39 +79,43 @@ public final class ConsoleSourceSchemaBuilder {
             }
             return null;
         }
-        IBuildSchemaFilter filter = BuildSchemaFilterFactory.from(config);
+        return selectedSchemas;
+    }
 
-        if (config.sourceIsOnline()) {
-            ConnParameters cp = config.getSourceConParams();
-            if (cp == null) {
-                if (outPrinter != null) {
-                    outPrinter.println("Invalid source database connection.");
-                }
-                return null;
-            }
-            JDBCDBSchemaFetcherFacade facade = new JDBCDBSchemaFetcherFacade();
-            List<String> schemaList = new ArrayList<String>(selectedSchemas);
-            return facade.fetchSchemaObjectsForSchemas(cp, schemaList, filter);
-        }
-
-        if (config.sourceIsXMLDump()) {
+    private static Catalog buildOnlineSchema(
+            MigrationConfiguration config,
+            PrintStream outPrinter,
+            Set<String> selectedSchemas,
+            IBuildSchemaFilter filter) {
+        ConnParameters cp = config.getSourceConParams();
+        if (cp == null) {
             if (outPrinter != null) {
-                outPrinter.println(
-                        "Warning: XML dump loads full schema metadata before filtering.");
+                outPrinter.println("Invalid source database connection.");
             }
-            MysqlXmlDumpSource ds =
-                    new MysqlXmlDumpSource(
-                            config.getSourceFileName(), config.getSourceFileEncoding());
-            IDBSchemaInfoFetcher fetcher = DBSchemaInfoFetcherFactory.createFetcher(ds);
-            Catalog catalog = fetcher.fetchSchema(ds, filter);
-            if (catalog == null) {
-                return null;
-            }
-            filterSchemas(catalog, selectedSchemas);
-            return catalog;
+            return null;
         }
+        JDBCDBSchemaFetcherFacade facade = new JDBCDBSchemaFetcherFacade();
+        List<String> schemaList = new ArrayList<String>(selectedSchemas);
+        return facade.fetchSchemaObjectsForSchemas(cp, schemaList, filter);
+    }
 
-        return null;
+    private static Catalog buildXmlDumpSchema(
+            MigrationConfiguration config,
+            PrintStream outPrinter,
+            Set<String> selectedSchemas,
+            IBuildSchemaFilter filter) {
+        if (outPrinter != null) {
+            outPrinter.println("Warning: XML dump loads full schema metadata before filtering.");
+        }
+        MysqlXmlDumpSource ds =
+                new MysqlXmlDumpSource(config.getSourceFileName(), config.getSourceFileEncoding());
+        IDBSchemaInfoFetcher fetcher = DBSchemaInfoFetcherFactory.createFetcher(ds);
+        Catalog catalog = fetcher.fetchSchema(ds, filter);
+        if (catalog == null) {
+            return null;
+        }
+        filterSchemas(catalog, selectedSchemas);
+        return catalog;
     }
 
     private static void filterSchemas(Catalog catalog, Set<String> selectedSchemas) {
