@@ -79,6 +79,5 @@ public class TargetFileRepositoryNodeHandler {
         config.setAddUserSchema(getBoolean(attributes.getValue(ATTR_ADD_SCHEMA), false));
         config.setSplitSchema(getBoolean(attributes.getValue(ATTR_SPLIT_SCHEMA), false));
         config.setCreateUserSQL(getBoolean(attributes.getValue(ATTR_CREATE_USER_SQL), false));
-        config.createDumpfile(config.isSplitSchema(), config.isOneTableOneFile());
     }
 }

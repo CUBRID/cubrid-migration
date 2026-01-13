@@ -109,6 +109,15 @@ public final class MigrationTemplateHandler extends DefaultHandler {
             }
             return;
         }
+
+        if (TAG_MIGRATION.equals(qName)) {
+            if (config.targetIsFile()
+                    && config.getFileRepositroyPath() != null
+                    && config.getFileRepositroyPath().length() > 0
+                    && config.getTargetTableFileName().isEmpty()) {
+                config.createDumpfile(config.isSplitSchema(), config.isOneTableOneFile());
+            }
+        }
     }
 
     @Override
