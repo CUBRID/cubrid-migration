@@ -49,7 +49,7 @@ public class TimestampTZTypeHandler implements IExportDataHandler {
     public Object getJdbcObject(ResultSet rs, Column column) throws SQLException {
         String strValue = safeTrim(rs.getString(column.getName()));
         if (strValue != null) {
-            return normalizeTimezoneString(strValue);
+            return strValue;
         }
 
         Object value = rs.getObject(column.getName());
@@ -62,16 +62,5 @@ public class TimestampTZTypeHandler implements IExportDataHandler {
         }
         String trimmed = raw.trim();
         return trimmed.isEmpty() ? null : trimmed;
-    }
-
-    private String normalizeTimezoneString(String value) {
-        String normalized = value.replaceAll("([+-]\\d{2}:\\d{2})\\s+\\1", "$1");
-        if (normalized.matches(
-                ".*\\s+[A-Za-z][A-Za-z0-9_/]+(?:\\s+[A-Z]{2,4})?\\s+[+-]\\d{2}:\\d{2}.*")) {
-            return normalized.replaceAll(
-                    "(\\d{4}-\\d{2}-\\d{2}\\s+\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?)\\s+([A-Za-z][A-Za-z0-9_/]+(?:\\s+[A-Z]{2,4})?)\\s+[+-]\\d{2}:\\d{2}",
-                    "$1 $2");
-        }
-        return normalized;
     }
 }

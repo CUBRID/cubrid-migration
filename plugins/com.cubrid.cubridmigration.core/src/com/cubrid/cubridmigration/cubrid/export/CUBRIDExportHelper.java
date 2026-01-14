@@ -148,7 +148,7 @@ public class CUBRIDExportHelper extends DBExportHelper {
             if (isTimestamptzColumn(setc, colName, config)) {
                 buf.append("TO_CHAR(")
                         .append(getQuotedObjName(colName))
-                        .append(", 'YYYY-MM-DD HH24:MI:SS TZR TZD TZH:TZM') AS ")
+                        .append(", 'YYYY-MM-DD HH24:MI:SS TZR TZD') AS ")
                         .append(getQuotedObjName(colName));
             } else {
                 buf.append(getQuotedObjName(colName));
