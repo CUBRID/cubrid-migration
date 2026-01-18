@@ -35,15 +35,6 @@ import com.cubrid.cubridmigration.core.export.IExportDataHandler;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-/**
- * TimestampTZTypeHandler Description
- *
- * <p>This handler reads TIMESTAMPTZ and DATETIMETZ values as strings to preserve the timezone
- * offset information. Using getTimestamp() would lose the timezone offset information.
- *
- * @author Auto-generated
- * @version 1.0 - 2025-11-20 created
- */
 public class TimestampTZTypeHandler implements IExportDataHandler {
 
     public Object getJdbcObject(ResultSet rs, Column column) throws SQLException {

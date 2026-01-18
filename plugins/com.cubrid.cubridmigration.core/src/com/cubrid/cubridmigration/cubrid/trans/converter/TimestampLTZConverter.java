@@ -29,48 +29,16 @@
  */
 package com.cubrid.cubridmigration.cubrid.trans.converter;
 
-import com.cubrid.cubridmigration.core.common.TimeZoneConverterUtils;
 import com.cubrid.cubridmigration.core.datatype.DataTypeInstance;
 import com.cubrid.cubridmigration.core.engine.config.MigrationConfiguration;
 import com.cubrid.cubridmigration.core.trans.AbstractDataConverter;
 
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
-
 public class TimestampLTZConverter extends AbstractDataConverter {
 
     public Object convert(Object obj, DataTypeInstance dti, MigrationConfiguration config) {
-
-        if (obj instanceof OffsetDateTime) {
-            return TimeZoneConverterUtils.formatWithOffset(
-                    ((OffsetDateTime) obj).withOffsetSameInstant(ZoneOffset.UTC));
+        if (obj == null) {
+            return null;
         }
-
-        try {
-            OffsetDateTime offsetDateTime =
-                    TimeZoneConverterUtils.parseToOffsetDateTime(
-                            obj, config.getSourceDatabaseTimeZone());
-            if (offsetDateTime == null) {
-                return null;
-            }
-
-            return TimeZoneConverterUtils.formatWithOffset(
-                    offsetDateTime.withOffsetSameInstant(ZoneOffset.UTC));
-        } catch (IllegalArgumentException ex) {
-            String valueStr = obj != null ? obj.toString() : null;
-            if (isZeroDatePattern(valueStr)) {
-                return valueStr;
-            } else {
-                throw new IllegalStateException(
-                        "ERROR: could not convert:" + obj + " to CUBRID type TIMESTAMPLTZ", ex);
-            }
-        }
-    }
-
-    private boolean isZeroDatePattern(String value) {
-        if (value == null) {
-            return false;
-        }
-        return value.matches(".*0{2,4}[/-]0{1,2}[/-]0{2,4}.*");
+        return obj.toString();
     }
 }

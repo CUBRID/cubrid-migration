@@ -29,13 +29,11 @@
  */
 package com.cubrid.cubridmigration.cubrid.stmt.handler;
 
-import com.cubrid.cubridmigration.core.common.TimeZoneConverterUtils;
 import com.cubrid.cubridmigration.core.dbobject.Record.ColumnValue;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Types;
-import java.time.OffsetDateTime;
 import java.util.TimeZone;
 
 public class TimestampLTZHandler extends DefaultHandler {
@@ -53,35 +51,7 @@ public class TimestampLTZHandler extends DefaultHandler {
             stmt.setNull(idx + 1, Types.NULL);
             return;
         }
-        try {
-            OffsetDateTime odt =
-                    value instanceof OffsetDateTime
-                            ? (OffsetDateTime) value
-                            : TimeZoneConverterUtils.parseToOffsetDateTime(value, sourceTimeZone);
-            if (odt == null) {
-                stmt.setNull(idx + 1, Types.NULL);
-                return;
-            }
-            stmt.setString(
-                    idx + 1,
-                    TimeZoneConverterUtils.formatWithOffset(TimeZoneConverterUtils.toUtc(odt)));
-        } catch (IllegalArgumentException ex) {
-            String valueStr = value.toString();
-            if (isZeroDatePattern(valueStr)) {
-                stmt.setString(idx + 1, valueStr);
-            } else {
-                throw new SQLException(
-                        "Failed to bind TIMESTAMPLTZ value for column "
-                                + columnValue.getColumn().getName(),
-                        ex);
-            }
-        }
-    }
 
-    private boolean isZeroDatePattern(String value) {
-        if (value == null) {
-            return false;
-        }
-        return value.matches(".*0{2,4}[/-]0{1,2}[/-]0{2,4}.*");
+        stmt.setString(idx + 1, value.toString());
     }
 }

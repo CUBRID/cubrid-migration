@@ -29,13 +29,11 @@
  */
 package com.cubrid.cubridmigration.cubrid.stmt.handler;
 
-import com.cubrid.cubridmigration.core.common.TimeZoneConverterUtils;
 import com.cubrid.cubridmigration.core.dbobject.Record.ColumnValue;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Types;
-import java.time.OffsetDateTime;
 import java.util.TimeZone;
 
 public class TimestampTZHandler extends DefaultHandler {
@@ -49,64 +47,16 @@ public class TimestampTZHandler extends DefaultHandler {
     public void handle(PreparedStatement stmt, int idx, ColumnValue columnValue)
             throws SQLException {
         Object value = columnValue.getValue();
-        String columnName = columnValue.getColumn().getName();
 
         if (isNullOrEmpty(value)) {
             stmt.setNull(idx + 1, Types.NULL);
             return;
         }
 
-        if (value instanceof String && shouldPassThrough((String) value)) {
-            stmt.setString(idx + 1, (String) value);
-            return;
-        }
-
-        try {
-            bindOffsetDateTime(stmt, idx, value);
-        } catch (IllegalArgumentException ex) {
-            handleIllegalArgument(stmt, idx, columnName, value, ex);
-        }
-    }
-
-    private void bindOffsetDateTime(PreparedStatement stmt, int idx, Object value)
-            throws SQLException {
-        OffsetDateTime odt =
-                value instanceof OffsetDateTime
-                        ? (OffsetDateTime) value
-                        : TimeZoneConverterUtils.parseToOffsetDateTime(value, sourceTimeZone);
-        if (odt == null) {
-            stmt.setNull(idx + 1, Types.NULL);
-            return;
-        }
-        stmt.setString(idx + 1, TimeZoneConverterUtils.formatWithOffset(odt));
-    }
-
-    private void handleIllegalArgument(
-            PreparedStatement stmt, int idx, String columnName, Object value, Exception ex)
-            throws SQLException {
-        String valueStr = value == null ? null : value.toString();
-        if (isZeroDatePattern(valueStr)) {
-            stmt.setString(idx + 1, valueStr);
-            return;
-        }
-        throw new SQLException("Failed to bind TIMESTAMPTZ value for column " + columnName, ex);
-    }
-
-    private boolean shouldPassThrough(String valueStr) {
-        boolean hasZoneId =
-                valueStr.matches(".*\\s+[A-Za-z][A-Za-z0-9_/]+(?:\\s+[A-Z]{2,4})?\\s*$");
-        boolean endsWithOffset = valueStr.matches(".*[+-]\\d{2}:\\d{2}\\s*$");
-        return hasZoneId && !endsWithOffset;
+        stmt.setString(idx + 1, value.toString());
     }
 
     private boolean isNullOrEmpty(Object value) {
         return value == null || "".equals(value);
-    }
-
-    private boolean isZeroDatePattern(String value) {
-        if (value == null) {
-            return false;
-        }
-        return value.matches(".*0{2,4}[/-]0{1,2}[/-]0{2,4}.*");
     }
 }

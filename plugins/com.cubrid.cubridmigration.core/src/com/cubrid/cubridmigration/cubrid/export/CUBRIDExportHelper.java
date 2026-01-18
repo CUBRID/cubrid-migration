@@ -47,10 +47,13 @@ import com.cubrid.cubridmigration.core.export.DBExportHelper;
 import com.cubrid.cubridmigration.core.export.handler.BytesTypeHandler;
 import com.cubrid.cubridmigration.core.export.handler.CharTypeHandler;
 import com.cubrid.cubridmigration.core.export.handler.ClobTypeHandler;
+import com.cubrid.cubridmigration.core.export.handler.DateTimeLTZTypeHandler;
+import com.cubrid.cubridmigration.core.export.handler.DateTimeTZTypeHandler;
 import com.cubrid.cubridmigration.core.export.handler.DateTypeHandler;
 import com.cubrid.cubridmigration.core.export.handler.DefaultHandler;
 import com.cubrid.cubridmigration.core.export.handler.NumberTypeHandler;
 import com.cubrid.cubridmigration.core.export.handler.TimeTypeHandler;
+import com.cubrid.cubridmigration.core.export.handler.TimestampLTZTypeHandler;
 import com.cubrid.cubridmigration.core.export.handler.TimestampTZTypeHandler;
 import com.cubrid.cubridmigration.core.export.handler.TimestampTypeHandler;
 import com.cubrid.cubridmigration.cubrid.export.handler.CUBRIDSetTypeHandler;
@@ -104,9 +107,9 @@ public class CUBRIDExportHelper extends DBExportHelper {
         handlerMap1.put(DataTypeConstant.CUBRID_DT_TIMESTAMP, new TimestampTypeHandler());
 
         handlerMap1.put(DataTypeConstant.CUBRID_DT_TIMESTAMPTZ, new TimestampTZTypeHandler());
-        handlerMap1.put(DataTypeConstant.CUBRID_DT_DATETIMETZ, new TimestampTZTypeHandler());
-        handlerMap1.put(DataTypeConstant.CUBRID_DT_TIMESTAMPLTZ, new TimestampTZTypeHandler());
-        handlerMap1.put(DataTypeConstant.CUBRID_DT_DATETIMELTZ, new TimestampTZTypeHandler());
+        handlerMap1.put(DataTypeConstant.CUBRID_DT_TIMESTAMPLTZ, new TimestampLTZTypeHandler());
+        handlerMap1.put(DataTypeConstant.CUBRID_DT_DATETIMETZ, new DateTimeTZTypeHandler());
+        handlerMap1.put(DataTypeConstant.CUBRID_DT_DATETIMELTZ, new DateTimeLTZTypeHandler());
 
         handlerMap1.put(DataTypeConstant.CUBRID_DT_SET, new CUBRIDSetTypeHandler());
         handlerMap1.put(DataTypeConstant.CUBRID_DT_MULTISET, new CUBRIDSetTypeHandler());

@@ -29,60 +29,16 @@
  */
 package com.cubrid.cubridmigration.cubrid.trans.converter;
 
-import com.cubrid.cubridmigration.core.common.TimeZoneConverterUtils;
 import com.cubrid.cubridmigration.core.datatype.DataTypeInstance;
 import com.cubrid.cubridmigration.core.engine.config.MigrationConfiguration;
 import com.cubrid.cubridmigration.core.trans.AbstractDataConverter;
 
-import java.time.OffsetDateTime;
-
 public class TimestampTZConverter extends AbstractDataConverter {
 
     public Object convert(Object obj, DataTypeInstance dti, MigrationConfiguration config) {
-
-        if (obj instanceof OffsetDateTime) {
-            String result = TimeZoneConverterUtils.formatWithOffset((OffsetDateTime) obj);
-            return result;
+        if (obj == null) {
+            return null;
         }
-
-        if (obj instanceof String && shouldPassThrough((String) obj)) {
-            return obj;
-        }
-
-        return convertToFormattedString(obj, config, "TIMESTAMPTZ");
-    }
-
-    private Object convertToFormattedString(
-            Object obj, MigrationConfiguration config, String targetType) {
-        try {
-            OffsetDateTime offsetDateTime =
-                    TimeZoneConverterUtils.parseToOffsetDateTime(
-                            obj, config.getSourceDatabaseTimeZone());
-            if (offsetDateTime == null) {
-                return null;
-            }
-            return TimeZoneConverterUtils.formatWithOffset(offsetDateTime);
-        } catch (IllegalArgumentException ex) {
-            String valueStr = obj != null ? obj.toString() : null;
-            if (isZeroDatePattern(valueStr)) {
-                return valueStr;
-            }
-            throw new IllegalStateException(
-                    "ERROR: could not convert:" + obj + " to CUBRID type " + targetType, ex);
-        }
-    }
-
-    private boolean shouldPassThrough(String valueStr) {
-        boolean hasZoneId =
-                valueStr.matches(".*\\s+[A-Za-z][A-Za-z0-9_/]+(?:\\s+[A-Z]{2,4})?\\s*$");
-        boolean endsWithOffset = valueStr.matches(".*[+-]\\d{2}:\\d{2}\\s*$");
-        return hasZoneId && !endsWithOffset;
-    }
-
-    private boolean isZeroDatePattern(String value) {
-        if (value == null) {
-            return false;
-        }
-        return value.matches(".*0{2,4}[/-]0{1,2}[/-]0{2,4}.*");
+        return obj.toString();
     }
 }
