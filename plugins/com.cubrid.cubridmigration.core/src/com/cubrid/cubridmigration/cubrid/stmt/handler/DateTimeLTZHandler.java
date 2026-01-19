@@ -34,15 +34,8 @@ import com.cubrid.cubridmigration.core.dbobject.Record.ColumnValue;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Types;
-import java.util.TimeZone;
 
 public class DateTimeLTZHandler extends DefaultHandler {
-
-    private final TimeZone sourceTimeZone;
-
-    public DateTimeLTZHandler(TimeZone sourceTimeZone) {
-        this.sourceTimeZone = sourceTimeZone;
-    }
 
     public void handle(PreparedStatement stmt, int idx, ColumnValue columnValue)
             throws SQLException {
