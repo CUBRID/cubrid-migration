@@ -29,48 +29,17 @@
  */
 package com.cubrid.cubridmigration.cubrid.format;
 
-import com.cubrid.cubridmigration.core.common.TimeZoneConverterUtils;
 import com.cubrid.cubridmigration.cubrid.IFormatValueToString;
-
-import java.time.OffsetDateTime;
-import java.util.TimeZone;
 
 public class TimeZoneValueToCUBRIDString implements IFormatValueToString {
 
-    private final TimeZone defaultTimeZone;
-    private final boolean convertToUTC;
-
-    public TimeZoneValueToCUBRIDString(TimeZone defaultTimeZone, boolean convertToUTC) {
-        this.defaultTimeZone = defaultTimeZone;
-        this.convertToUTC = convertToUTC;
-    }
+    public TimeZoneValueToCUBRIDString() {}
 
     @Override
     public String format(Object value) {
-        try {
-            OffsetDateTime dateTime =
-                    TimeZoneConverterUtils.parseToOffsetDateTime(value, defaultTimeZone);
-            if (dateTime == null) {
-                throw new IllegalArgumentException("Timezone value cannot be null.");
-            }
-            if (convertToUTC) {
-                return TimeZoneConverterUtils.formatWithOffset(
-                        TimeZoneConverterUtils.toUtc(dateTime));
-            }
-            return TimeZoneConverterUtils.formatWithOffset(dateTime);
-        } catch (IllegalArgumentException ex) {
-            String valueStr = value == null ? null : value.toString();
-            if (isZeroDatePattern(valueStr)) {
-                return valueStr;
-            }
-            throw ex;
-        }
-    }
-
-    private boolean isZeroDatePattern(String value) {
         if (value == null) {
-            return false;
+            return null;
         }
-        return value.matches(".*0{2,4}[/-]0{1,2}[/-]0{2,4}.*");
+        return value.toString();
     }
 }

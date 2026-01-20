@@ -122,10 +122,8 @@ public class Data2StrTranslator implements IData2StrTranslator {
         formaters.put(DataTypeConstant.CUBRID_DT_FLOAT, new FloatToCUBRIDString());
         formaters.put(DataTypeConstant.CUBRID_DT_DOUBLE, new DoubleToCUBRIDString());
 
-        TimeZoneValueToCUBRIDString tzFormatter =
-                new TimeZoneValueToCUBRIDString(sourceTimeZone, false);
-        TimeZoneValueToCUBRIDString ltzFormatter =
-                new TimeZoneValueToCUBRIDString(sourceTimeZone, true);
+        TimeZoneValueToCUBRIDString tzFormatter = new TimeZoneValueToCUBRIDString();
+        TimeZoneValueToCUBRIDString ltzFormatter = new TimeZoneValueToCUBRIDString();
 
         if (targetDataFileFormat == MigrationConfiguration.DEST_CSV
                 || targetDataFileFormat == MigrationConfiguration.DEST_XLS) {

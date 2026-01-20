@@ -31,7 +31,6 @@
 package com.cubrid.cubridmigration.core.engine.exporter.impl;
 
 import com.cubrid.common.log.LogUtil;
-import com.cubrid.cubridmigration.core.common.TimeZoneConverterUtils;
 import com.cubrid.cubridmigration.core.dbobject.Column;
 import com.cubrid.cubridmigration.core.dbobject.Record;
 import com.cubrid.cubridmigration.core.dbobject.Table;
@@ -218,13 +217,10 @@ public class XMLDataParsingTask implements Runnable {
     }
 
     private String parseTzValue(String data, TimeZone sourceTz) {
-        return TimeZoneConverterUtils.formatWithOffset(
-                TimeZoneConverterUtils.parseToOffsetDateTime(data, sourceTz));
+        return data;
     }
 
     private String parseLtzValue(String data, TimeZone sourceTz) {
-        return TimeZoneConverterUtils.formatWithOffset(
-                TimeZoneConverterUtils.toUtc(
-                        TimeZoneConverterUtils.parseToOffsetDateTime(data, sourceTz)));
+        return data;
     }
 }
