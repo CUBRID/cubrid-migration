@@ -151,7 +151,7 @@ public class CUBRIDExportHelper extends DBExportHelper {
             if (isTimestamptzColumn(setc, colName, config)) {
                 buf.append("TO_CHAR(")
                         .append(getQuotedObjName(colName))
-                        .append(", 'YYYY-MM-DD HH24:MI:SS TZR TZD') AS ")
+                        .append(") AS ")
                         .append(getQuotedObjName(colName));
             } else {
                 buf.append(getQuotedObjName(colName));
@@ -177,11 +177,6 @@ public class CUBRIDExportHelper extends DBExportHelper {
 
     private boolean isTimestamptzColumn(
             SourceEntryTableConfig setc, String colName, MigrationConfiguration config) {
-        return hasTimeZoneDataType(setc, colName, config);
-    }
-
-    private boolean hasTimeZoneDataType(
-            SourceEntryTableConfig setc, String colName, MigrationConfiguration config) {
         if (config == null) {
             return false;
         }
@@ -194,26 +189,11 @@ public class CUBRIDExportHelper extends DBExportHelper {
             return false;
         }
         Integer jdbcID = column.getJdbcIDOfDataType();
-        return isTimeZoneJdbcId(jdbcID) || isTimeZoneDataTypeName(column.getDataType());
-    }
-
-    private boolean isTimeZoneJdbcId(Integer jdbcID) {
         return jdbcID != null
                 && (jdbcID == DataTypeConstant.CUBRID_DT_TIMESTAMPTZ
                         || jdbcID == DataTypeConstant.CUBRID_DT_DATETIMETZ
                         || jdbcID == DataTypeConstant.CUBRID_DT_TIMESTAMPLTZ
                         || jdbcID == DataTypeConstant.CUBRID_DT_DATETIMELTZ);
-    }
-
-    private boolean isTimeZoneDataTypeName(String dataType) {
-        if (dataType == null) {
-            return false;
-        }
-        String lowerType = dataType.toLowerCase();
-        return lowerType.contains("timestamptz")
-                || lowerType.contains("datetimetz")
-                || lowerType.contains("timestampltz")
-                || lowerType.contains("datetimeltz");
     }
 
     /**
