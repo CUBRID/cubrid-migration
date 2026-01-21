@@ -309,11 +309,11 @@ public class ScriptCommandHandler implements ConsoleCommandHandler {
         if (!dbProFile.exists() || dbProFile.isDirectory()) {
             return;
         }
-        try {
-            dbProperties.load(new FileInputStream(dbProFile));
+        try (FileInputStream fis = new FileInputStream(dbProFile)) {
+            dbProperties.load(fis);
         } catch (Exception ex) {
             outPrinter.println("Load db.conf error.");
-            LOG.error("Failed to load db.conf from {}.", ex);
+            LOG.error("Failed to load db.conf", ex);
         }
     }
 
@@ -447,14 +447,12 @@ public class ScriptCommandHandler implements ConsoleCommandHandler {
                 outPrinter.println("Invalid driver : " + tcp.getDriverFileName());
                 return false;
             }
-            try {
-                Connection con = tcp.createConnection();
+            try (Connection con = tcp.createConnection()) {
                 DatabaseMetaData metaData = con.getMetaData();
                 int version =
                         metaData.getDatabaseMajorVersion() * 10
                                 + metaData.getDatabaseMinorVersion();
                 config.setTargetDBVersion(String.valueOf(version));
-                con.close();
             } catch (Exception e) {
                 outPrinter.println("Can't connect database:" + tvalue);
                 LOG.error("Failed to connect to target database [{}].", tvalue, e);

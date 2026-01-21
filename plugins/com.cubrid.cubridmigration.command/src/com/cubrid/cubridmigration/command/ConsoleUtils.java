@@ -68,10 +68,17 @@ public class ConsoleUtils {
 
     /** Print help information */
     public static void printHelp(String src) {
-        final InputStream in = ConsoleUtils.class.getResourceAsStream(src);
-        final List<String> readLines = IOUtils.readLines(in, StandardCharsets.UTF_8);
-        for (String ss : readLines) {
-            System.out.println(ss);
+        try (InputStream in = ConsoleUtils.class.getResourceAsStream(src)) {
+            if (in != null) {
+                final List<String> readLines = IOUtils.readLines(in, StandardCharsets.UTF_8);
+                for (String ss : readLines) {
+                    System.out.println(ss);
+                }
+            } else {
+                System.err.println("Help file not found: " + src);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
