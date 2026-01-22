@@ -48,6 +48,7 @@ import com.cubrid.cubridmigration.core.engine.event.MigrationErrorEvent;
 import com.cubrid.cubridmigration.core.engine.exception.NormalMigrationException;
 import com.cubrid.cubridmigration.core.engine.exporter.MigrationExporter;
 import com.cubrid.cubridmigration.core.export.DBExportHelper;
+import com.cubrid.cubridmigration.cubrid.export.CUBRIDExportHelper;
 
 import org.slf4j.Logger;
 
@@ -107,8 +108,8 @@ public class JDBCExporter extends MigrationExporter {
     protected JDBCConManager connManager;
     protected MigrationStatusManager msm;
 
-    //	public JDBCExporter() {
-    //	}
+    // public JDBCExporter() {
+    // }
 
     /**
      * Export all records of all tables
@@ -117,12 +118,12 @@ public class JDBCExporter extends MigrationExporter {
      */
     public void exportAllRecords(RecordExportedListener oneNewRecord) {
         // This method will not be called by clients
-        //		for (SourceEntryTableConfig st : config.getExportEntryTables()) {
-        //			exportTableRecords(st, oneNewRecord);
-        //		}
-        //		for (SourceSQLTableConfig st : config.getExportSQLTables()) {
-        //			exportTableRecords(st, oneNewRecord);
-        //		}
+        // for (SourceEntryTableConfig st : config.getExportEntryTables()) {
+        // exportTableRecords(st, oneNewRecord);
+        // }
+        // for (SourceSQLTableConfig st : config.getExportSQLTables()) {
+        // exportTableRecords(st, oneNewRecord);
+        // }
     }
 
     /**
@@ -257,10 +258,8 @@ public class JDBCExporter extends MigrationExporter {
             long totalExported = 0L;
             long intPageCount = config.getPageFetchCount();
             String sql;
-            if (expHelper instanceof com.cubrid.cubridmigration.cubrid.export.CUBRIDExportHelper) {
-                sql =
-                        ((com.cubrid.cubridmigration.cubrid.export.CUBRIDExportHelper) expHelper)
-                                .getSelectSQL(stc, config);
+            if (expHelper instanceof CUBRIDExportHelper) {
+                sql = ((CUBRIDExportHelper) expHelper).getSelectSQL(stc, config);
             } else {
                 sql = expHelper.getSelectSQL(stc);
             }

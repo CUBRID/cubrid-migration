@@ -58,12 +58,12 @@ import java.util.TimeZone;
  */
 public class XMLDataParsingTask implements Runnable {
 
+    private static final Logger LOG = LogUtil.getLogger(XMLDataParsingTask.class);
     private final String tableName;
     private final List<List<String[]>> recordMaps;
     private final RecordExportedListener oneNewRecord;
     private final MigrationConfiguration config;
     private final MySQLDataTypeHelper dtHelper = MySQLDataTypeHelper.getInstance(null);
-    private static final Logger LOG = LogUtil.getLogger(XMLDataParsingTask.class);
 
     public XMLDataParsingTask(
             MigrationConfiguration config,
@@ -133,7 +133,7 @@ public class XMLDataParsingTask implements Runnable {
                 }
             } else if (column.getDataType().equalsIgnoreCase("TIMESTAMPTZ")) {
                 try {
-                    return parseTzValue(data, sourceTz);
+                    return parseTzValue(data);
                 } catch (Exception ex) {
                     String timestampValue =
                             MySQL2CUBRIDMigParas.getMigrationParamter(
@@ -142,7 +142,7 @@ public class XMLDataParsingTask implements Runnable {
                 }
             } else if (column.getDataType().equalsIgnoreCase("TIMESTAMPLTZ")) {
                 try {
-                    return parseLtzValue(data, sourceTz);
+                    return parseLtzValue(data);
                 } catch (Exception ex) {
                     String timestampValue =
                             MySQL2CUBRIDMigParas.getMigrationParamter(
@@ -151,7 +151,7 @@ public class XMLDataParsingTask implements Runnable {
                 }
             } else if (column.getDataType().equalsIgnoreCase("DATETIMETZ")) {
                 try {
-                    return parseTzValue(data, sourceTz);
+                    return parseTzValue(data);
                 } catch (Exception ex) {
                     String timestampValue =
                             MySQL2CUBRIDMigParas.getMigrationParamter(
@@ -160,7 +160,7 @@ public class XMLDataParsingTask implements Runnable {
                 }
             } else if (column.getDataType().equalsIgnoreCase("DATETIMELTZ")) {
                 try {
-                    return parseLtzValue(data, sourceTz);
+                    return parseLtzValue(data);
                 } catch (Exception ex) {
                     String timestampValue =
                             MySQL2CUBRIDMigParas.getMigrationParamter(
@@ -216,11 +216,11 @@ public class XMLDataParsingTask implements Runnable {
         }
     }
 
-    private String parseTzValue(String data, TimeZone sourceTz) {
+    private String parseTzValue(String data) {
         return data;
     }
 
-    private String parseLtzValue(String data, TimeZone sourceTz) {
+    private String parseLtzValue(String data) {
         return data;
     }
 }

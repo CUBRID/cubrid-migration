@@ -39,6 +39,7 @@ import com.cubrid.cubridmigration.core.engine.config.SourceColumnConfig;
 import com.cubrid.cubridmigration.core.engine.config.SourceEntryTableConfig;
 import com.cubrid.cubridmigration.core.engine.config.SourceTableConfig;
 import com.cubrid.cubridmigration.core.engine.exception.NormalMigrationException;
+import com.cubrid.cubridmigration.core.export.DBExportHelper;
 import com.cubrid.cubridmigration.cubrid.CUBRIDSQLHelper;
 
 import org.apache.commons.lang3.StringUtils;
@@ -390,27 +391,24 @@ public class CUBRIDJDBCExporter extends JDBCExporter {
      * @return Selection SQL statement with paging.
      */
     private String getPagingSQL(SourceEntryTableConfig setc, String[] spCols, boolean isFirstPage) {
-        final com.cubrid.cubridmigration.cubrid.export.CUBRIDExportHelper expHelper =
-                (com.cubrid.cubridmigration.cubrid.export.CUBRIDExportHelper)
-                        getSrcDBExportHelper();
-        String sql = expHelper.getSelectSQL(setc, config);
-        StringBuffer sqlBuf = new StringBuffer(sql);
+        final DBExportHelper expHelper = getSrcDBExportHelper();
+        StringBuffer sql = new StringBuffer(expHelper.getSelectSQL(setc));
         final String[] quotedObjNames = getQuotedCols(spCols);
         if (StringUtils.isBlank(setc.getCondition())) {
-            sqlBuf.append(" WHERE (");
+            sql.append(" WHERE (");
         } else {
-            sqlBuf.append(" AND (");
+            sql.append(" AND (");
         }
-        sqlBuf.append(getPageCondition(quotedObjNames, isFirstPage));
-        sqlBuf.append(") ORDER BY ");
+        sql.append(getPageCondition(quotedObjNames, isFirstPage));
+        sql.append(") ORDER BY ");
         for (int i = 0; i < spCols.length; i++) {
             if (i > 0) {
-                sqlBuf.append(",");
+                sql.append(",");
             }
-            sqlBuf.append(quotedObjNames[i]);
+            sql.append(quotedObjNames[i]);
         }
-        sqlBuf.append(" FOR ORDERBY_NUM() BETWEEN 1 AND ?");
-        return sqlBuf.toString();
+        sql.append(" FOR ORDERBY_NUM() BETWEEN 1 AND ?");
+        return sql.toString();
     }
 
     /**
