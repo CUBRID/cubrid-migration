@@ -57,8 +57,8 @@ import java.util.TimeZone;
  * @version 1.0 - 2011-8-23 created by Kevin Cao
  */
 public class XMLDataParsingTask implements Runnable {
-
     private static final Logger LOG = LogUtil.getLogger(XMLDataParsingTask.class);
+
     private final String tableName;
     private final List<List<String[]>> recordMaps;
     private final RecordExportedListener oneNewRecord;
@@ -131,42 +131,6 @@ public class XMLDataParsingTask implements Runnable {
                                     MySQL2CUBRIDMigParas.UNPARSED_TIME);
                     return MySQL2CUBRIDMigParas.getReplacedTime(timeValue, sourceTz);
                 }
-            } else if (column.getDataType().equalsIgnoreCase("TIMESTAMPTZ")) {
-                try {
-                    return parseTzValue(data);
-                } catch (Exception ex) {
-                    String timestampValue =
-                            MySQL2CUBRIDMigParas.getMigrationParamter(
-                                    MySQL2CUBRIDMigParas.UNPARSED_TIMESTAMP);
-                    return MySQL2CUBRIDMigParas.getReplacedTimestamp(timestampValue, sourceTz);
-                }
-            } else if (column.getDataType().equalsIgnoreCase("TIMESTAMPLTZ")) {
-                try {
-                    return parseLtzValue(data);
-                } catch (Exception ex) {
-                    String timestampValue =
-                            MySQL2CUBRIDMigParas.getMigrationParamter(
-                                    MySQL2CUBRIDMigParas.UNPARSED_TIMESTAMP);
-                    return MySQL2CUBRIDMigParas.getReplacedTimestamp(timestampValue, sourceTz);
-                }
-            } else if (column.getDataType().equalsIgnoreCase("DATETIMETZ")) {
-                try {
-                    return parseTzValue(data);
-                } catch (Exception ex) {
-                    String timestampValue =
-                            MySQL2CUBRIDMigParas.getMigrationParamter(
-                                    MySQL2CUBRIDMigParas.UNPARSED_TIMESTAMP);
-                    return MySQL2CUBRIDMigParas.getReplacedTimestamp(timestampValue, sourceTz);
-                }
-            } else if (column.getDataType().equalsIgnoreCase("DATETIMELTZ")) {
-                try {
-                    return parseLtzValue(data);
-                } catch (Exception ex) {
-                    String timestampValue =
-                            MySQL2CUBRIDMigParas.getMigrationParamter(
-                                    MySQL2CUBRIDMigParas.UNPARSED_TIMESTAMP);
-                    return MySQL2CUBRIDMigParas.getReplacedTimestamp(timestampValue, sourceTz);
-                }
             } else {
                 return data;
             }
@@ -214,13 +178,5 @@ public class XMLDataParsingTask implements Runnable {
         } catch (Exception ex) {
             LOG.error("", ex);
         }
-    }
-
-    private String parseTzValue(String data) {
-        return data;
-    }
-
-    private String parseLtzValue(String data) {
-        return data;
     }
 }

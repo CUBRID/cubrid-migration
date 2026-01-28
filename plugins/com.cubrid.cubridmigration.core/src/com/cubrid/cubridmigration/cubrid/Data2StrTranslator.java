@@ -77,7 +77,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TimeZone;
 
 /**
  * help to create load DB file
@@ -113,7 +112,6 @@ public class Data2StrTranslator implements IData2StrTranslator {
         this.lobFilePath = dataFilePath;
         this.targetDataFileFormat = targetDataFileFormat;
         this.dirAndFilesManager = dirAndFilesManager;
-        TimeZone sourceTimeZone = config.getSourceDatabaseTimeZone();
         // Initialize formaters mapping
         formaters.put(DataTypeConstant.CUBRID_DT_MONETARY, new IntegerToCUBRIDString());
         formaters.put(DataTypeConstant.CUBRID_DT_INTEGER, new IntegerToCUBRIDString());

@@ -39,7 +39,7 @@ import com.cubrid.cubridmigration.core.engine.config.SourceColumnConfig;
 import com.cubrid.cubridmigration.core.engine.config.SourceEntryTableConfig;
 import com.cubrid.cubridmigration.core.engine.config.SourceTableConfig;
 import com.cubrid.cubridmigration.core.engine.exception.NormalMigrationException;
-import com.cubrid.cubridmigration.core.export.DBExportHelper;
+import com.cubrid.cubridmigration.cubrid.export.CUBRIDExportHelper;  
 import com.cubrid.cubridmigration.cubrid.CUBRIDSQLHelper;
 
 import org.apache.commons.lang3.StringUtils;
@@ -391,8 +391,8 @@ public class CUBRIDJDBCExporter extends JDBCExporter {
      * @return Selection SQL statement with paging.
      */
     private String getPagingSQL(SourceEntryTableConfig setc, String[] spCols, boolean isFirstPage) {
-        final DBExportHelper expHelper = getSrcDBExportHelper();
-        StringBuffer sql = new StringBuffer(expHelper.getSelectSQL(setc));
+    	final CUBRIDExportHelper expHelper = (CUBRIDExportHelper) getSrcDBExportHelper();
+        StringBuffer sql = new StringBuffer(expHelper.getSelectSQL(setc,config));
         final String[] quotedObjNames = getQuotedCols(spCols);
         if (StringUtils.isBlank(setc.getCondition())) {
             sql.append(" WHERE (");

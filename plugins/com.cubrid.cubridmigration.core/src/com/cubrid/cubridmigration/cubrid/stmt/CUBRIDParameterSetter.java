@@ -58,7 +58,6 @@ import com.cubrid.cubridmigration.cubrid.stmt.handler.VarcharHandler;
 import java.sql.PreparedStatement;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.TimeZone;
 
 /**
  * CUBRIDParameterSetter responses to read source data value and transform it to target data value
@@ -75,7 +74,6 @@ public class CUBRIDParameterSetter {
     public CUBRIDParameterSetter(MigrationConfiguration config) {
         String sourceCharset = config.getSourceCharset();
         String targetCharset = config.getTargetCharSet();
-        TimeZone sourceTimeZone = config.getSourceDatabaseTimeZone();
         // Build data type to handler map.
         handlerMap.put(DataTypeConstant.CUBRID_DT_BIT, new BitHandler());
         handlerMap.put(DataTypeConstant.CUBRID_DT_VARBIT, new VarBitHandler());
