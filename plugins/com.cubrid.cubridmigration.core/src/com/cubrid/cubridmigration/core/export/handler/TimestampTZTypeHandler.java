@@ -38,20 +38,12 @@ import java.sql.SQLException;
 public class TimestampTZTypeHandler implements IExportDataHandler {
 
     public Object getJdbcObject(ResultSet rs, Column column) throws SQLException {
-        String strValue = safeTrim(rs.getString(column.getName()));
+        String strValue = rs.getString(column.getName());
         if (strValue != null) {
             return strValue;
         }
 
         Object value = rs.getObject(column.getName());
-        return value != null ? value : null;
-    }
-
-    private String safeTrim(String raw) {
-        if (raw == null) {
-            return null;
-        }
-        String trimmed = raw.trim();
-        return trimmed.isEmpty() ? null : trimmed;
+        return value;
     }
 }

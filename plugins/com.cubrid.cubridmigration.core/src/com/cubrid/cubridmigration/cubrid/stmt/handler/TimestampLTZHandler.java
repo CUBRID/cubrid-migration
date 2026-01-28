@@ -40,11 +40,15 @@ public class TimestampLTZHandler extends DefaultHandler {
     public void handle(PreparedStatement stmt, int idx, ColumnValue columnValue)
             throws SQLException {
         Object value = columnValue.getValue();
-        if (value == null || "".equals(value)) {
+        if (isNullOrEmpty(value)) {
             stmt.setNull(idx + 1, Types.NULL);
             return;
         }
 
         stmt.setString(idx + 1, value.toString());
+    }
+
+    private boolean isNullOrEmpty(Object value) {
+        return value == null || "".equals(value);
     }
 }
