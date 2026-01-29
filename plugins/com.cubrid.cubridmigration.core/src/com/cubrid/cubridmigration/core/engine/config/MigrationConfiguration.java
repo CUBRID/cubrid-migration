@@ -140,6 +140,9 @@ public class MigrationConfiguration {
     public static final int RPT_LEVEL_INFO = 2;
     public static final int RPT_LEVEL_DEBUG = 3;
 
+    public static final int DEFAULT_EXPORT_THREAD_COUNT = 4;
+    public static final int DEFAULT_IMPORT_THREAD_COUNT = 3;
+
     // Used to set the name of the data file extracted by SQL.
     public static final String SQLTABLE = "__SQLTABLE__";
 
@@ -160,8 +163,8 @@ public class MigrationConfiguration {
 
     private int commitCount = 1000;
     private int maxCountPerFile = 0;
-    private int exportThreadCount = 2;
-    private int importThreadCount = 2;
+    private int exportThreadCount = DEFAULT_EXPORT_THREAD_COUNT;
+    private int importThreadCount = DEFAULT_IMPORT_THREAD_COUNT;
 
     private boolean deleteTempFile = true;
 

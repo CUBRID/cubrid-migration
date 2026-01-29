@@ -30,6 +30,9 @@
  */
 package com.cubrid.cubridmigration.ui.preference;
 
+import static com.cubrid.cubridmigration.core.engine.config.MigrationConfiguration.DEFAULT_EXPORT_THREAD_COUNT;
+import static com.cubrid.cubridmigration.core.engine.config.MigrationConfiguration.DEFAULT_IMPORT_THREAD_COUNT;
+
 import com.cubrid.common.log.LogUtil;
 import com.cubrid.cubridmigration.core.common.PathUtils;
 import com.cubrid.cubridmigration.ui.MigrationUIPlugin;
@@ -65,8 +68,6 @@ import org.slf4j.Logger;
 public class MigrationConfigPage extends PreferencePage implements IWorkbenchPreferencePage {
     private static final String DEFAULT_FETCHING_COUNT = "defaultFetchingCount";
     private static final int DEFAULT_MAX_RECORD_COUNT_EACH_DATA_FILE = 0;
-    private static final int DEFAULT_IMPORT_THREAD_COUNT_OF_EACHE_TARGET_TABLE = 3;
-    private static final int DEFAULT_EXPORT_THREAD_COUNT = 4;
     public static final int MIN_CC = 1;
     public static final int MAX_CC = 50000;
     public static final int DEFAULT_PAGE_COUNT = 1000;
@@ -100,8 +101,7 @@ public class MigrationConfigPage extends PreferencePage implements IWorkbenchPre
      * @return 4 is default value
      */
     public static int getDefaultImpportThreadCountEachTable() {
-        return NODE.getInt(
-                "importThreadCountSpinner", DEFAULT_IMPORT_THREAD_COUNT_OF_EACHE_TARGET_TABLE);
+        return NODE.getInt("importThreadCountSpinner", DEFAULT_IMPORT_THREAD_COUNT);
     }
 
     /**
@@ -270,7 +270,7 @@ public class MigrationConfigPage extends PreferencePage implements IWorkbenchPre
     /** performDefaults */
     protected void performDefaults() {
         exportThreadCountSpinner.setSelection(DEFAULT_EXPORT_THREAD_COUNT);
-        importThreadCountSpinner.setSelection(DEFAULT_IMPORT_THREAD_COUNT_OF_EACHE_TARGET_TABLE);
+        importThreadCountSpinner.setSelection(DEFAULT_IMPORT_THREAD_COUNT);
         txtFetchCount.setSelection(DEFAULT_PAGE_COUNT);
         onlineDefaultCommitCount.setSelection(ONLINE_DEFAULT_CC);
         edtTempFilePath.setText(PathUtils.getDefaultBaseTempDir());
