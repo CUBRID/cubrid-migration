@@ -276,9 +276,9 @@ public class ScriptCommandHandler implements ConsoleCommandHandler {
             File outputFile = new File(outputDir, outputFileName);
             MigrationTemplateWriter.save(
                     config,
-                    outputFile.getAbsolutePath(),
+                    outputFile.getCanonicalPath(),
                     "yes".equalsIgnoreCase(getParameter(tmpArgs, "-schema")));
-            outPrinter.println(outputFile.getAbsolutePath() + " was created successfully.");
+            outPrinter.println(outputFile.getCanonicalPath() + " was created successfully.");
         } catch (Exception ex) {
             outPrinter.println("Unexpected error. Please check the log for more information.");
             LOG.error("Unexpected error while processing CLI arguments: {}.", args, ex);
