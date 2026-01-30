@@ -34,7 +34,6 @@ import com.cubrid.common.log.LogUtil;
 import com.cubrid.cubridmigration.core.common.Closer;
 import com.cubrid.cubridmigration.core.common.CommonUtils;
 import com.cubrid.cubridmigration.core.common.DBUtils;
-import com.cubrid.cubridmigration.core.common.TimeZoneUtils;
 import com.cubrid.cubridmigration.core.connection.ConnParameters;
 import com.cubrid.cubridmigration.core.datatype.DataTypeInstance;
 import com.cubrid.cubridmigration.core.dbmetadata.AbstractJDBCSchemaFetcher;
@@ -144,7 +143,6 @@ public final class CUBRIDSchemaFetcher extends AbstractJDBCSchemaFetcher {
         Catalog catalog = super.buildCatalog(conn, cp, filter);
         catalog.setDatabaseType(DatabaseType.CUBRID);
         catalog.setCreateSql(null);
-        catalog.setTimezone(TimeZoneUtils.getDefaultID2GMT());
         List<Schema> schemaList = catalog.getSchemas();
 
         CUBRIDSQLHelper ddlUtil = CUBRIDSQLHelper.getInstance(null);

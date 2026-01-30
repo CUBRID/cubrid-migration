@@ -88,7 +88,9 @@ public class JDBCDBSchemaFetcherFacade implements IDBSchemaInfoFetcher {
                 } else {
                     cp.setCharset(catalog.getCharset());
                 }
-                cp.setTimeZone(catalog.getTimezone());
+                if (cp.getTimeZone() == null || cp.getTimeZone().isEmpty()) {
+                    cp.setTimeZone(catalog.getTimezone());
+                }
                 return catalog;
             } finally {
                 cancelRunable = null;
@@ -160,7 +162,9 @@ public class JDBCDBSchemaFetcherFacade implements IDBSchemaInfoFetcher {
                 } else {
                     cp.setCharset(catalog.getCharset());
                 }
-                cp.setTimeZone(catalog.getTimezone());
+                if (cp.getTimeZone() == null || cp.getTimeZone().isEmpty()) {
+                    cp.setTimeZone(catalog.getTimezone());
+                }
                 return catalog;
             } finally {
                 cancelRunable = null;
@@ -209,7 +213,9 @@ public class JDBCDBSchemaFetcherFacade implements IDBSchemaInfoFetcher {
                 } else {
                     cp.setCharset(catalog.getCharset());
                 }
-                cp.setTimeZone(catalog.getTimezone());
+                if (cp.getTimeZone() == null || cp.getTimeZone().isEmpty()) {
+                    cp.setTimeZone(catalog.getTimezone());
+                }
                 return catalog;
             } finally {
                 cancelRunable = null;

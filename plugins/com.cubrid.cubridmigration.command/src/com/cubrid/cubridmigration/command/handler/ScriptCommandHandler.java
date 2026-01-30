@@ -134,6 +134,7 @@ public class ScriptCommandHandler implements ConsoleCommandHandler {
             String username = dbProperties.getProperty(cpname + ".user");
             String password = dbProperties.getProperty(cpname + ".password");
             String driverPath = dbProperties.getProperty(cpname + ".driver");
+            String timeZone = dbProperties.getProperty(cpname + ".timezone");
             ConnParameters cp =
                     ConnParameters.getConParam(
                             cpname,
@@ -146,6 +147,7 @@ public class ScriptCommandHandler implements ConsoleCommandHandler {
                             password,
                             driverPath,
                             null);
+            cp.setTimeZone(timeZone);
             return cp;
         } catch (Exception ex) {
             LOG.error("Failed to build connection parameters for [{}].", cpname, ex);
