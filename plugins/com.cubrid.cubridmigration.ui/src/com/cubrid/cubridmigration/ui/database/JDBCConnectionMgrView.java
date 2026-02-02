@@ -377,6 +377,13 @@ public class JDBCConnectionMgrView {
                 SchemaFetcherWithProgress fetcher = SchemaFetcherWithProgress.getInstance(cp);
                 catalog = fetcher.fetch();
                 if (catalog == null) {
+                    if (fetcher.getError() != null) {
+                        DetailMessageDialog.openError(
+                                getActiveShell(),
+                                Messages.msgError,
+                                fetcher.getErrorMessage(),
+                                fetcher.getError().getMessage());
+                    }
                     return null;
                 }
                 instance.updateCatalog(dbID, catalog);
