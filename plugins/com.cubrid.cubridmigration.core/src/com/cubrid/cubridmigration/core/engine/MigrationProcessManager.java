@@ -238,6 +238,7 @@ public class MigrationProcessManager {
 
     /** Interrupt the migration process by Users. It should be called in a progress dialog. */
     public void interruptMigration() {
+        context.getEventsHandler().handleEvent(new MigrationCanceledEvent());
         context.getEventsHandler().handleEvent(new MigrationFinishedEvent(true));
         // waiting for stopping.
         while (mainThread != null) {
