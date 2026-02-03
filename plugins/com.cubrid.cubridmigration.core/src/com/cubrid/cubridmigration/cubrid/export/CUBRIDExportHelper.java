@@ -139,7 +139,7 @@ public class CUBRIDExportHelper extends DBExportHelper {
         }
 
         SourceEntryTableConfig setc = (SourceEntryTableConfig) stc;
-        StringBuffer buf = new StringBuffer(256);
+        StringBuilder buf = new StringBuilder(256);
         buf.append("SELECT ");
         final List<SourceColumnConfig> columnList = setc.getColumnConfigList();
         for (int i = 0; i < columnList.size(); i++) {
