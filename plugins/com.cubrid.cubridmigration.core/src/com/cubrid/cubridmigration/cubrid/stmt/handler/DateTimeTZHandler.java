@@ -48,8 +48,4 @@ public class DateTimeTZHandler extends DefaultHandler {
 
         stmt.setString(idx + 1, value.toString());
     }
-
-    private boolean isNullOrEmpty(Object value) {
-        return value == null || "".equals(value);
-    }
 }

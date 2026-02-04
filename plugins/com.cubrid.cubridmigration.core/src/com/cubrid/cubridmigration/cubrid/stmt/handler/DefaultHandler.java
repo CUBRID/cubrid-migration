@@ -66,4 +66,14 @@ public class DefaultHandler implements SetterHandler {
     public void setNull(PreparedStatement stmt, int idx) throws SQLException {
         stmt.setNull(idx + 1, Types.NULL);
     }
+
+    /**
+     * Check if value is null or empty string
+     *
+     * @param value Object to check
+     * @return true if value is null or empty string
+     */
+    protected boolean isNullOrEmpty(Object value) {
+        return value == null || "".equals(value);
+    }
 }
