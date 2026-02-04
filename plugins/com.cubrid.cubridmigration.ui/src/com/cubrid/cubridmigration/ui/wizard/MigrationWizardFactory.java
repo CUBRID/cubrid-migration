@@ -41,6 +41,7 @@ import com.cubrid.cubridmigration.core.engine.config.SourceSequenceConfig;
 import com.cubrid.cubridmigration.core.engine.config.SourceViewConfig;
 import com.cubrid.cubridmigration.core.engine.report.DBObjMigrationResult;
 import com.cubrid.cubridmigration.core.engine.report.DataFileImportResult;
+import com.cubrid.cubridmigration.core.engine.report.MigrationBriefReport;
 import com.cubrid.cubridmigration.core.engine.report.MigrationReport;
 import com.cubrid.cubridmigration.core.engine.report.MigrationReportFileUtils;
 import com.cubrid.cubridmigration.core.engine.report.RecordMigrationResult;
@@ -369,7 +370,9 @@ public final class MigrationWizardFactory {
         MigrationConfiguration config = MigrationTemplateReader.parse(scriptFile);
         // Get open mode
         int handlingMode = 0;
-        if (rpt.hasError()) {
+        if (rpt.hasError()
+                || (rpt.getBrief() != null
+                        && rpt.getBrief().getStatus() == MigrationBriefReport.MS_CANCELED)) {
             OpenWizardWithHistoryDialog dlg =
                     new OpenWizardWithHistoryDialog(shell, config.targetIsOnline());
             if (dlg.open() != IDialogConstants.OK_ID) {
