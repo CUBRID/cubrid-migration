@@ -102,8 +102,12 @@ public class MigrationReport implements Serializable {
      * @return name displayed in table
      */
     private static String getDBObjName(DBObject obj) {
-        if (obj instanceof PK && ("PRIMARY".equals(obj.getName()) || obj.getName() == null)) {
-            return "primary key of " + ((PK) obj).getTable().getName();
+        if (obj instanceof PK) {
+            String name = obj.getName();
+            if (StringUtils.isBlank(name) || "primary".equalsIgnoreCase(name)) {
+                return "primary key of " + ((PK) obj).getTable().getName();
+            }
+            return "[" + ((PK) obj).getTable().getName() + "]" + obj.getName();
         } else if (obj instanceof Index) {
             return "[" + ((Index) obj).getTable().getName() + "]" + obj.getName();
         } else if (obj instanceof Table) {
