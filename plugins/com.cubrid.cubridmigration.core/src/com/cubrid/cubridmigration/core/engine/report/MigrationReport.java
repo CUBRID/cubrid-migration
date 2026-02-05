@@ -107,7 +107,7 @@ public class MigrationReport implements Serializable {
             if (StringUtils.isBlank(name) || "primary".equalsIgnoreCase(name)) {
                 return "primary key of " + ((PK) obj).getTable().getName();
             }
-            return "[" + ((PK) obj).getTable().getName() + "]" + obj.getName();
+            return "[" + ((PK) obj).getTable().getName() + "]" + name;
         } else if (obj instanceof Index) {
             return "[" + ((Index) obj).getTable().getName() + "]" + obj.getName();
         } else if (obj instanceof Table) {
