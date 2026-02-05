@@ -128,10 +128,6 @@ public class CUBRIDExportHelper extends DBExportHelper {
     }
 
     @Override
-    public String getSelectSQL(final SourceTableConfig stc) {
-        return getSelectSQL(stc, null);
-    }
-
     public String getSelectSQL(final SourceTableConfig stc, final MigrationConfiguration config) {
 
         if (stc instanceof SourceSQLTableConfig) {
@@ -292,9 +288,9 @@ public class CUBRIDExportHelper extends DBExportHelper {
      * If add a schema prefix before the table name.
      *
      * @param setc SourceEntryTableConfig
-     * @param buf StringBuffer
+     * @param buf StringBuilder
      */
-    protected void addSchemaPrefix(SourceEntryTableConfig setc, StringBuffer buf) {
+    protected void addSchemaPrefix(SourceEntryTableConfig setc, StringBuilder buf) {
         if (StringUtils.isNotBlank(setc.getOwner())) {
             buf.append(getQuotedObjName(setc.getOwner())).append(".");
         }

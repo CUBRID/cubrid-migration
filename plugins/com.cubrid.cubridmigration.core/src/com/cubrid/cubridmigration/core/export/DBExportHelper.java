@@ -175,7 +175,7 @@ public abstract class DBExportHelper implements IDependOnDatabaseType {
         }
         // Entry table
         SourceEntryTableConfig setc = (SourceEntryTableConfig) stc;
-        StringBuffer buf = new StringBuffer(256);
+        StringBuilder buf = new StringBuilder(256);
         buf.append("SELECT ");
         final List<SourceColumnConfig> columnList = setc.getColumnConfigList();
         for (int i = 0; i < columnList.size(); i++) {
@@ -206,12 +206,27 @@ public abstract class DBExportHelper implements IDependOnDatabaseType {
     }
 
     /**
+     * Returns a SELECT SQL for the given table and migration configuration.
+     *
+     * <p>By default, ignores the configuration and delegates to Override in DB helpers if the
+     * configuration is needed.
+     *
+     * @param stc SourceTableConfig
+     * @param config MigrationConfiguration
+     * @return SQL string
+     */
+    @SuppressWarnings("unused")
+    public String getSelectSQL(final SourceTableConfig stc, final MigrationConfiguration config) {
+        return getSelectSQL(stc);
+    }
+
+    /**
      * If add a schema prefix before the table name.
      *
      * @param setc SourceEntryTableConfig
-     * @param buf StringBuffer
+     * @param buf StringBuilder
      */
-    protected void addSchemaPrefix(SourceEntryTableConfig setc, StringBuffer buf) {
+    protected void addSchemaPrefix(SourceEntryTableConfig setc, StringBuilder buf) {
         if (StringUtils.isNotBlank(setc.getOwner())) {
             buf.append(getQuotedObjName(setc.getOwner())).append(".");
         }
@@ -224,7 +239,7 @@ public abstract class DBExportHelper implements IDependOnDatabaseType {
      * @return String
      */
     public String getSelectCountSQL(final SourceEntryTableConfig setc) {
-        StringBuffer buf = new StringBuffer(256);
+        StringBuilder buf = new StringBuilder(256);
         buf.append("SELECT COUNT(1) ");
         buf.append(" FROM ");
         // it will make a query with a schema and table name
@@ -346,7 +361,7 @@ public abstract class DBExportHelper implements IDependOnDatabaseType {
     protected String cleanSQLTableSQL(SourceSQLTableConfig sstc) {
         String cleanSQL = sstc.getSql().trim();
         if (cleanSQL.endsWith(";")) {
-            cleanSQL = new StringBuffer(cleanSQL).deleteCharAt(cleanSQL.length() - 1).toString();
+            cleanSQL = new StringBuilder(cleanSQL).deleteCharAt(cleanSQL.length() - 1).toString();
             sstc.setSql(cleanSQL);
         }
         return cleanSQL;

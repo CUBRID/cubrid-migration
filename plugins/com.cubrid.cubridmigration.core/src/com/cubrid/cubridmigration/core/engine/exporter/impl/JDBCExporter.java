@@ -48,7 +48,6 @@ import com.cubrid.cubridmigration.core.engine.event.MigrationErrorEvent;
 import com.cubrid.cubridmigration.core.engine.exception.NormalMigrationException;
 import com.cubrid.cubridmigration.core.engine.exporter.MigrationExporter;
 import com.cubrid.cubridmigration.core.export.DBExportHelper;
-import com.cubrid.cubridmigration.cubrid.export.CUBRIDExportHelper;
 
 import org.slf4j.Logger;
 
@@ -249,11 +248,7 @@ public class JDBCExporter extends MigrationExporter {
             long totalExported = 0L;
             long intPageCount = config.getPageFetchCount();
             String sql;
-            if (expHelper instanceof CUBRIDExportHelper) {
-                sql = ((CUBRIDExportHelper) expHelper).getSelectSQL(stc, config);
-            } else {
-                sql = expHelper.getSelectSQL(stc);
-            }
+            sql = expHelper.getSelectSQL(stc, config);
             while (true) {
                 if (interrupted) {
                     return;
