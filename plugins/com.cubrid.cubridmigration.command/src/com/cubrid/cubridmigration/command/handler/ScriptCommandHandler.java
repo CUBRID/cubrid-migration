@@ -477,7 +477,11 @@ public class ScriptCommandHandler implements ConsoleCommandHandler {
         } else if (config.targetIsFile()) {
             String prefix = dbProperties.getProperty(tvalue + ".file_prefix");
             config.setTargetFilePrefix(
-                    prefix == null ? config.getSourceConParams().getDbName() : prefix);
+                    prefix == null
+                            ? (config.getSourceConParams() == null
+                                    ? config.getSrcConnOwner()
+                                    : config.getSourceConParams().getDbName())
+                            : prefix);
             config.setFileRepositroyPath(dbProperties.getProperty(tvalue + ".output"));
             config.setTargetCharSet(dbProperties.getProperty(tvalue + ".charset"));
             config.setTargetFileTimeZone("Default");

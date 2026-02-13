@@ -3099,7 +3099,7 @@ public class MigrationConfiguration {
     public String getFullTargetFilePrefix() {
         String filePrefix = getTargetFilePrefix();
         if (filePrefix == null) {
-            filePrefix = srcCatalog.getName();
+            filePrefix = srcCatalog == null ? "" : srcCatalog.getName();
         }
         if (StringUtils.isNotBlank(filePrefix)) {
             filePrefix = filePrefix + "_";
@@ -5710,9 +5710,11 @@ public class MigrationConfiguration {
 
     public String getSrcConnOwner() {
         if (this.sourceIsXMLDump()) {
-            return getSrcCatalog().getName();
+            Catalog catalog = getSrcCatalog();
+            return catalog == null ? "" : catalog.getName();
         } else {
-            return getSourceConParams().getConUser();
+            ConnParameters params = getSourceConParams();
+            return params == null ? "" : params.getConUser();
         }
     }
 }

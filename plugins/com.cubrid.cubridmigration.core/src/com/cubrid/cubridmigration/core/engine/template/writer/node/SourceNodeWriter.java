@@ -83,11 +83,12 @@ public class SourceNodeWriter {
         }
 
         if (config.sourceIsOnline()) {
-            writeOnlineSource(writer, config, saveSchema);
+            writeDatabaseSource(writer, config, saveSchema);
         } else if (config.sourceIsSQL()) {
             writeSQLSource(writer, config);
         } else if (config.sourceIsXMLDump()) {
             writeXMLDumpSource(writer, config);
+            writeDatabaseSource(writer, config, saveSchema);
         } else if (config.sourceIsCSV()) {
             writeCSVSource(writer, config);
         }
@@ -95,7 +96,7 @@ public class SourceNodeWriter {
         writer.writeEndElement(); // </source>
     }
 
-    private void writeOnlineSource(
+    private void writeDatabaseSource(
             XMLStreamWriter writer, MigrationConfiguration config, boolean saveSchema)
             throws XMLStreamException, IOException {
         if (saveSchema) {
