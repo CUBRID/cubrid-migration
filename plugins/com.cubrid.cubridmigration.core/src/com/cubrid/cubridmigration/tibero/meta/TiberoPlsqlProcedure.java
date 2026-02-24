@@ -27,11 +27,11 @@
  * OF SUCH DAMAGE.
  *
  */
-package com.cubrid.cubridmigration.oracle.meta;
+package com.cubrid.cubridmigration.tibero.meta;
 
 import com.cubrid.cubridmigration.core.dbobject.SourcePlsqlProcedure;
 
-public class OraclePlsqlProcedure implements SourcePlsqlProcedure {
+public class TiberoPlsqlProcedure implements SourcePlsqlProcedure {
 
     private final String owner;
     private final String name;
@@ -39,7 +39,7 @@ public class OraclePlsqlProcedure implements SourcePlsqlProcedure {
     private final String procedureType;
     private String ddl;
 
-    public OraclePlsqlProcedure(String owner, String name, String authid, String procedureType) {
+    public TiberoPlsqlProcedure(String owner, String name, String authid, String procedureType) {
         this.owner = owner;
         this.name = name;
         this.authid = authid;

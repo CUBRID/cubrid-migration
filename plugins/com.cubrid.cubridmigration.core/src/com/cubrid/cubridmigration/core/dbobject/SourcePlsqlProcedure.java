@@ -27,46 +27,18 @@
  * OF SUCH DAMAGE.
  *
  */
-package com.cubrid.cubridmigration.oracle.meta;
+package com.cubrid.cubridmigration.core.dbobject;
 
-import com.cubrid.cubridmigration.core.dbobject.SourcePlsqlProcedure;
+public interface SourcePlsqlProcedure {
+    String getOwner();
 
-public class OraclePlsqlProcedure implements SourcePlsqlProcedure {
+    String getName();
 
-    private final String owner;
-    private final String name;
-    private final String authid;
-    private final String procedureType;
-    private String ddl;
+    String getAuthid();
 
-    public OraclePlsqlProcedure(String owner, String name, String authid, String procedureType) {
-        this.owner = owner;
-        this.name = name;
-        this.authid = authid;
-        this.procedureType = procedureType;
-    }
+    String getProcedureType();
 
-    public String getOwner() {
-        return owner;
-    }
+    String getDDL();
 
-    public String getName() {
-        return name;
-    }
-
-    public String getAuthid() {
-        return authid;
-    }
-
-    public String getProcedureType() {
-        return procedureType;
-    }
-
-    public void setDDL(String ddl) {
-        this.ddl = ddl;
-    }
-
-    public String getDDL() {
-        return ddl;
-    }
+    void setDDL(String ddl);
 }
