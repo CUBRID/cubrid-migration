@@ -176,4 +176,22 @@ Export-Package:
    com.cubrid.cubridmigration.core.mapping,
    com.cubrid.cubridmigration.core.trans,
    com.cubrid.cubridmigration.core.mapping.model,
+   com.cubrid.cubridmigration.cubrid.trans",
+ com.cubrid.cubridmigration.tibero;uses:="com.cubrid.cubridmigration.core.dbobject,com.cubrid.cubridmigration.core.dbtype,com.cubrid.cubridmigration.core.sql",
+ com.cubrid.cubridmigration.tibero.export;
+  uses:="com.cubrid.cubridmigration.core.export,
+   com.cubrid.cubridmigration.core.dbobject,
+   com.cubrid.cubridmigration.core.dbtype",
+ com.cubrid.cubridmigration.tibero.export.handler;uses:="com.cubrid.cubridmigration.core.dbobject,com.cubrid.cubridmigration.core.export.handler,com.cubrid.cubridmigration.core.export",
+ com.cubrid.cubridmigration.tibero.meta;
+  uses:="com.cubrid.cubridmigration.core.dbobject,
+  com.cubrid.cubridmigration.core.dbmetadata,
+  com.cubrid.cubridmigration.core.connection,
+  com.cubrid.cubridmigration.core.export",
+ com.cubrid.cubridmigration.tibero.trans;
+  uses:="com.cubrid.cubridmigration.core.engine.config,
+   com.cubrid.cubridmigration.core.dbobject,
+   com.cubrid.cubridmigration.core.mapping,
+   com.cubrid.cubridmigration.core.trans,
+   com.cubrid.cubridmigration.core.mapping.model,
    com.cubrid.cubridmigration.cubrid.trans"
