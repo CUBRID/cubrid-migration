@@ -30,6 +30,8 @@
  */
 package com.cubrid.cubridmigration.oracle.meta;
 
+import static com.cubrid.cubridmigration.core.dbobject.ProcedureConstants.*;
+
 import com.cubrid.common.log.LogUtil;
 import com.cubrid.cubridmigration.core.common.Closer;
 import com.cubrid.cubridmigration.core.common.CommonUtils;
@@ -375,7 +377,7 @@ public final class OracleSchemaFetcher extends AbstractJDBCSchemaFetcher {
         List<OraclePlsqlProcedure> oracleProcedures = getAllProcedures(conn, schema.getName());
 
         for (OraclePlsqlProcedure oraProc : oracleProcedures) {
-            if (oraProc.getProcedureType().equals(OracleConstants.PROCEDURE)) {
+            if (oraProc.getProcedureType().equals(PROCEDURE)) {
                 procedures.add(factory.createPlcsqlProcedure(oraProc));
             } else {
                 functions.add(factory.createPlcsqlFunction(oraProc));

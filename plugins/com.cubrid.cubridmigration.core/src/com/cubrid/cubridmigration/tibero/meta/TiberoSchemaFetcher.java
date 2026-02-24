@@ -29,6 +29,8 @@
  */
 package com.cubrid.cubridmigration.tibero.meta;
 
+import static com.cubrid.cubridmigration.core.dbobject.ProcedureConstants.*;
+
 import com.cubrid.common.log.LogUtil;
 import com.cubrid.cubridmigration.core.common.Closer;
 import com.cubrid.cubridmigration.core.common.CommonUtils;
@@ -366,7 +368,7 @@ public final class TiberoSchemaFetcher extends AbstractJDBCSchemaFetcher {
         List<TiberoPlsqlProcedure> tiberoProcedures = getAllProcedures(conn, schema.getName());
 
         for (TiberoPlsqlProcedure tibProc : tiberoProcedures) {
-            if (tibProc.getProcedureType().equals(TiberoConstants.PROCEDURE)) {
+            if (tibProc.getProcedureType().equals(PROCEDURE)) {
                 procedures.add(factory.createPlcsqlProcedure(tibProc));
             } else {
                 functions.add(factory.createPlcsqlFunction(tibProc));

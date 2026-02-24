@@ -30,9 +30,9 @@
  */
 package com.cubrid.cubridmigration.core.dbobject;
 
+import static com.cubrid.cubridmigration.core.dbobject.ProcedureConstants.*;
+
 import com.cubrid.cubridmigration.core.datatype.DataType;
-import com.cubrid.cubridmigration.cubrid.meta.CubridConstants;
-import com.cubrid.cubridmigration.oracle.meta.OracleConstants;
 
 import java.math.BigInteger;
 
@@ -141,9 +141,8 @@ public class DBObjectFactory {
         PlcsqlFunction func = new PlcsqlFunction();
         func.setOwner(proc.getOwner());
         func.setName(proc.getName());
-        func.setAuthid(CubridConstants.PROCEDURE_AUTHID_OWNER);
-        func.setAuthidChanged(
-                OracleConstants.PROCEDURE_AUTHID_CURRENT_USER.equals(proc.getAuthid()));
+        func.setAuthid(AUTHID_OWNER);
+        func.setAuthidChanged(AUTHID_CURRENT_USER.equals(proc.getAuthid()));
         func.setSourceDDL(proc.getDDL());
 
         return func;
@@ -162,9 +161,8 @@ public class DBObjectFactory {
         PlcsqlProcedure plcsqlProc = new PlcsqlProcedure();
         plcsqlProc.setOwner(proc.getOwner());
         plcsqlProc.setName(proc.getName());
-        plcsqlProc.setAuthid(CubridConstants.PROCEDURE_AUTHID_OWNER);
-        plcsqlProc.setAuthidChanged(
-                OracleConstants.PROCEDURE_AUTHID_CURRENT_USER.equals(proc.getAuthid()));
+        plcsqlProc.setAuthid(AUTHID_OWNER);
+        plcsqlProc.setAuthidChanged(AUTHID_CURRENT_USER.equals(proc.getAuthid()));
         plcsqlProc.setSourceDDL(proc.getDDL());
 
         return plcsqlProc;
