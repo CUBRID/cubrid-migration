@@ -85,6 +85,9 @@ public class DataTypeConstant {
     public static final String ORACLE_NCHAR_MAXSIZE = "536870911";
     public static final int ORACLE_INTEGERTOVARCHAR_MINSIZE = 127;
 
+    /** TIBERO * */
+    public static final int TIBERO_INTEGERTOVARCHAR_MINSIZE = 127;
+
     /** SQLSERVER * */
     public static final int SQLSERVER_MAXSIZE = 1073741823;
 

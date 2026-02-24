@@ -44,6 +44,8 @@ import com.cubrid.cubridmigration.mysql.trans.MySQL2CUBRIDTranformHelper;
 import com.cubrid.cubridmigration.mysql.trans.MySQLDataTypeMappingHelper;
 import com.cubrid.cubridmigration.oracle.trans.Oracle2CUBRIDTranformHelper;
 import com.cubrid.cubridmigration.oracle.trans.OracleDataTypeMappingHelper;
+import com.cubrid.cubridmigration.tibero.trans.Tibero2CUBRIDTransformHelper;
+import com.cubrid.cubridmigration.tibero.trans.TiberoDataTypeMappingHelper;
 
 /**
  * MigrationTransFactory will return the DBTransform instance by input source database type and
@@ -71,6 +73,9 @@ public class MigrationTransFactory {
     private static final Informix2CUBRIDTransformHelper INFORMIX2CUBRID_TRANSFORM_HELPER =
             new Informix2CUBRIDTransformHelper(
                     new InformixDataTypeMappingHelper(), ToCUBRIDDataConverterFacade.getIntance());
+    private static final Tibero2CUBRIDTransformHelper TIBERO2CUBRID_TRANSFORM_HELPER =
+            new Tibero2CUBRIDTransformHelper(
+                    new TiberoDataTypeMappingHelper(), ToCUBRIDDataConverterFacade.getIntance());
 
     /**
      * getTransformHelper of source to target migration
@@ -92,6 +97,8 @@ public class MigrationTransFactory {
             return MARIADB2CUBRID_TRANFORM_HELPER;
         } else if (srcDT.getID() == DatabaseType.INFORMIX.getID()) {
             return INFORMIX2CUBRID_TRANSFORM_HELPER;
+        } else if (srcDT.getID() == DatabaseType.TIBERO.getID()) {
+            return TIBERO2CUBRID_TRANSFORM_HELPER;
         }
         throw new IllegalArgumentException("Can't support migration type.");
     }
