@@ -107,7 +107,8 @@ public class MigrationTasksScheduler {
         createSerials();
 
         // procedure, function header
-        if (config.getSourceDBType().getID() == MigrationConfiguration.SOURCE_TYPE_ORACLE) {
+        if (config.getSourceDBType().getID() == MigrationConfiguration.SOURCE_TYPE_ORACLE
+                || config.getSourceDBType().getID() == MigrationConfiguration.SOURCE_TYPE_TIBERO) {
             createProcedureHeaders();
             createFunctionHeaders();
         }
@@ -142,7 +143,8 @@ public class MigrationTasksScheduler {
         alterViews();
 
         // procedure, function body
-        if (config.getSourceDBType().getID() == MigrationConfiguration.SOURCE_TYPE_ORACLE) {
+        if (config.getSourceDBType().getID() == MigrationConfiguration.SOURCE_TYPE_ORACLE
+                || config.getSourceDBType().getID() == MigrationConfiguration.SOURCE_TYPE_TIBERO) {
             createProcedureBodies();
             createFunctionBodies();
         } else {
@@ -154,7 +156,9 @@ public class MigrationTasksScheduler {
 
         if (!config.targetIsOnline()) {
             if (config.isSplitSchema()) {
-                if (config.getSourceDBType().getID() == MigrationConfiguration.SOURCE_TYPE_ORACLE) {
+                if (config.getSourceDBType().getID() == MigrationConfiguration.SOURCE_TYPE_ORACLE
+                        || config.getSourceDBType().getID()
+                                == MigrationConfiguration.SOURCE_TYPE_TIBERO) {
                     createAllPlcsqlProcedureHeaderDDL();
                     createAllPlcsqlProcedureDDL();
                     createAllPlcsqlFunctionHeaderDDL();
