@@ -76,6 +76,7 @@ public class SelectSrcTarTypesView {
     private Button btnOnlineMSSQLSrc;
     private Button btnOnlineMariaDBSrc;
     private Button btnOnlineInformixSrc;
+    private Button btnOnlineTiberoSrc;
 
     private Button btnDumpSrc;
 
@@ -131,6 +132,12 @@ public class SelectSrcTarTypesView {
                         Messages.btnSrcOnlineInformixDBDes);
         btnOnlineInformixSrc.setData(MigrationConfiguration.SOURCE_TYPE_INFORMIX);
         srcButtons.add(btnOnlineInformixSrc);
+
+        btnOnlineTiberoSrc =
+                createSrcTarTypeBtn(
+                        grpSrc, Messages.btnSrcOnlineTiberoDB, Messages.btnSrcOnlineTiberoDBDes);
+        btnOnlineTiberoSrc.setData(MigrationConfiguration.SOURCE_TYPE_TIBERO);
+        srcButtons.add(btnOnlineTiberoSrc);
 
         Label comSep = new Label(grpSrc, SWT.SEPARATOR | SWT.HORIZONTAL);
         {

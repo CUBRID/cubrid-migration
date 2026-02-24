@@ -947,6 +947,7 @@ public class MigrationCfgUtils {
         }
         return (DatabaseType.MYSQL.equals(config.getSourceDBType())
                 || DatabaseType.ORACLE.equals(config.getSourceDBType())
+                || DatabaseType.TIBERO.equals(config.getSourceDBType())
                         && isEffectedByCharacterTypeSize);
     }
 

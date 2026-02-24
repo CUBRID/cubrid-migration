@@ -148,6 +148,7 @@ public class MigrationWizard extends Wizard implements IMigrationWizardStatus {
         Set<Integer> supportedDBs = new HashSet<Integer>(6);
         supportedDBs.add(DatabaseType.MYSQL.getID());
         supportedDBs.add(DatabaseType.ORACLE.getID());
+        supportedDBs.add(DatabaseType.TIBERO.getID());
         supportedDBs.add(DatabaseType.CUBRID.getID());
         supportedDBs.add(DatabaseType.MSSQL.getID());
         supportedDBs.add(DatabaseType.MARIADB.getID());
