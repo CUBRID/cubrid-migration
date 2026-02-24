@@ -1114,7 +1114,7 @@ public final class TiberoSchemaFetcher extends AbstractJDBCSchemaFetcher {
         if (LOG.isDebugEnabled()) {
             LOG.debug("[IN]getAllTriggers()");
         }
-        final List<String> list = this.getRountines(conn, OBJECT_TYPE_TRIGGER, ownerName);
+        final List<String> list = this.getRoutines(conn, OBJECT_TYPE_TRIGGER, ownerName);
         final List<Trigger> triggers = new ArrayList<Trigger>();
 
         for (String name : list) {
@@ -1245,79 +1245,63 @@ public final class TiberoSchemaFetcher extends AbstractJDBCSchemaFetcher {
      * @return processed comment
      */
     protected String getTableComment(Connection conn, String schemaName, String objectName) {
-        PreparedStatement pstmt = null;
-        ResultSet rs = null;
-        try {
-            pstmt = conn.prepareStatement(SQL_GET_TABLE_COMMENT);
-            pstmt.setString(1, schemaName);
-            pstmt.setString(2, objectName);
-
-            rs = pstmt.executeQuery();
-
-            String comment = "";
-            while (rs.next()) {
-                comment = rs.getString("COMMENTS");
-            }
-
-            return commentEditor(comment);
-        } catch (Exception e) {
-            LOG.error("Get table comment error: " + objectName, e);
-            return null;
-        } finally {
-            Closer.close(rs);
-            Closer.close(pstmt);
-        }
+        String comment =
+                querySingleString(
+                        conn,
+                        SQL_GET_TABLE_COMMENT,
+                        "COMMENTS",
+                        "Get table comment error: " + objectName,
+                        schemaName,
+                        objectName);
+        return comment == null ? null : commentEditor(comment);
     }
 
     protected String getViewComment(Connection conn, String schemaName, String viewName) {
-        PreparedStatement pstmt = null;
-        ResultSet rs = null;
-        try {
-            pstmt = conn.prepareStatement(SQL_GET_VIEW_COMMENT);
-            pstmt.setString(1, schemaName);
-            pstmt.setString(2, viewName);
-
-            rs = pstmt.executeQuery();
-
-            String comment = "";
-            while (rs.next()) {
-                comment = rs.getString("COMMENTS");
-            }
-
-            return commentEditor(comment);
-        } catch (Exception e) {
-            LOG.error("Get view comment error: " + viewName, e);
-            return null;
-        } finally {
-            Closer.close(rs);
-            Closer.close(pstmt);
-        }
+        String comment =
+                querySingleString(
+                        conn,
+                        SQL_GET_VIEW_COMMENT,
+                        "COMMENTS",
+                        "Get view comment error: " + viewName,
+                        schemaName,
+                        viewName);
+        return comment == null ? null : commentEditor(comment);
     }
 
     private String getViewColumnComment(
             Connection conn, String schemaName, String viewName, Column column) {
+        String comment =
+                querySingleString(
+                        conn,
+                        SQL_GET_VIEW_COLUMN_COMMENT,
+                        "COMMENTS",
+                        "Get view column comment error: " + viewName + "." + column.getName(),
+                        schemaName,
+                        viewName,
+                        column.getName());
+        return comment == null ? null : commentEditor(comment);
+    }
+
+    private String querySingleString(
+            Connection conn, String sql, String columnName, String errorMessage, String... params) {
         PreparedStatement pstmt = null;
         ResultSet rs = null;
         try {
-            pstmt = conn.prepareStatement(SQL_GET_VIEW_COLUMN_COMMENT);
-            pstmt.setString(1, schemaName);
-            pstmt.setString(2, viewName);
-            pstmt.setString(3, column.getName());
+            pstmt = conn.prepareStatement(sql);
+            for (int i = 0; i < params.length; i++) {
+                pstmt.setString(i + 1, params[i]);
+            }
 
             rs = pstmt.executeQuery();
 
-            String comment = "";
+            String value = "";
             while (rs.next()) {
-                comment = rs.getString("COMMENTS");
+                value = rs.getString(columnName);
             }
 
-            if (comment != null) {
-                comment = commentEditor(comment);
-            }
-
-            return comment;
+            return value;
         } catch (Exception e) {
-            LOG.error("Get view column comment error: " + viewName + "." + column.getName(), e);
+            LOG.error(errorMessage, e);
             return null;
         } finally {
             Closer.close(rs);
@@ -1515,10 +1499,10 @@ public final class TiberoSchemaFetcher extends AbstractJDBCSchemaFetcher {
      * @return all Routines names
      * @throws SQLException e
      */
-    private List<String> getRountines(
+    private List<String> getRoutines(
             final Connection conn, final String type, final String ownerName) throws SQLException {
         if (LOG.isDebugEnabled()) {
-            LOG.debug("[IN]getRountines()");
+            LOG.debug("[IN]getRoutines()");
         }
         PreparedStatement stmt = null; // NOPMD
         ResultSet rs = null; // NOPMD
