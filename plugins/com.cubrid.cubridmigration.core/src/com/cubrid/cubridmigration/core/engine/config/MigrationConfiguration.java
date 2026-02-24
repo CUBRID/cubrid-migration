@@ -123,6 +123,7 @@ public class MigrationConfiguration {
     public static final int SOURCE_TYPE_MSSQL = DatabaseType.MSSQL.getID();
     public static final int SOURCE_TYPE_MARIADB = DatabaseType.MARIADB.getID();
     public static final int SOURCE_TYPE_INFORMIX = DatabaseType.INFORMIX.getID();
+    public static final int SOURCE_TYPE_TIBERO = DatabaseType.TIBERO.getID();
 
     public static final int SOURCE_TYPE_XML_1 = 101;
     public static final int SOURCE_TYPE_SQL = 102;
@@ -134,6 +135,7 @@ public class MigrationConfiguration {
     public static final String CUBRID = "cubrid";
     public static final String MYSQL = "mysql";
     public static final String ORACLE = "oracle";
+    public static final String TIBERO = "tibero";
 
     public static final int RPT_LEVEL_BRIEF = 0;
     public static final int RPT_LEVEL_ERROR = 1;
@@ -1281,7 +1283,7 @@ public class MigrationConfiguration {
         String catalogName;
         String defSchemaName;
         DatabaseType databaseType = sourceConParams.getDatabaseType();
-        if (DatabaseType.ORACLE == databaseType) {
+        if (DatabaseType.ORACLE == databaseType || DatabaseType.TIBERO == databaseType) {
             // If DB name is SID/schemaName pattern
             if (dbName.startsWith("/")) {
                 dbName = dbName.substring(1, dbName.length());
@@ -5361,7 +5363,8 @@ public class MigrationConfiguration {
                 || (sourceType == SOURCE_TYPE_ORACLE)
                 || (sourceType == SOURCE_TYPE_MSSQL)
                 || (sourceType == SOURCE_TYPE_MARIADB)
-                || (sourceType == SOURCE_TYPE_INFORMIX);
+                || (sourceType == SOURCE_TYPE_INFORMIX)
+                || (sourceType == SOURCE_TYPE_TIBERO);
     }
 
     /**

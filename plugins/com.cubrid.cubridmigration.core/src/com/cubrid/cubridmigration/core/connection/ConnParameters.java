@@ -457,7 +457,8 @@ public final class ConnParameters implements Serializable, IDBSource, IJDBCConne
     public static String getDefaultSchema(DatabaseType dt, String dbName, String userName) {
         if (dt.getID() == DatabaseType.MSSQL.getID()) {
             return "dbo";
-        } else if (dt.getID() == DatabaseType.ORACLE.getID()) {
+        } else if (dt.getID() == DatabaseType.ORACLE.getID()
+                || dt.getID() == DatabaseType.TIBERO.getID()) {
             return StringUtils.upperCase(userName);
         }
         return dbName;
