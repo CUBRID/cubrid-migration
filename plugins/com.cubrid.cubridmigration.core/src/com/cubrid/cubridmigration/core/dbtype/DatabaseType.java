@@ -43,6 +43,7 @@ import com.cubrid.cubridmigration.mariadb.MariaDBDatabase;
 import com.cubrid.cubridmigration.mssql.MSSQLDatabase;
 import com.cubrid.cubridmigration.mysql.MySQLDatabase;
 import com.cubrid.cubridmigration.oracle.OracleDatabase;
+import com.cubrid.cubridmigration.tibero.TiberoDatabase;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -60,8 +61,6 @@ import java.util.List;
  */
 public abstract class DatabaseType {
 
-    // private static final Logger LOG = LogUtil.getLogger(DatabaseType.class);
-
     public static final DatabaseType MYSQL = new MySQLDatabase();
 
     public static final DatabaseType CUBRID = new CUBRIDDatabase();
@@ -74,8 +73,10 @@ public abstract class DatabaseType {
 
     public static final DatabaseType INFORMIX = new InformixDatabase();
 
+    public static final DatabaseType TIBERO = new TiberoDatabase();
+
     private static final DatabaseType[] DTS =
-            new DatabaseType[] {MYSQL, CUBRID, ORACLE, MSSQL, MARIADB, INFORMIX};
+            new DatabaseType[] {MYSQL, CUBRID, ORACLE, MSSQL, MARIADB, INFORMIX, TIBERO};
 
     /**
      * Retrieves all Database types

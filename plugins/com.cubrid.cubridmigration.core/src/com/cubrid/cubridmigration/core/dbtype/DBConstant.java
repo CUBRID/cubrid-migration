@@ -36,18 +36,18 @@ package com.cubrid.cubridmigration.core.dbtype;
  * @author moulinwang
  * @version 1.0 - 2010-11-13
  */
-public class DBConstant { // NOPMD
+public class DBConstant {
 
-    // public static final int DBTYPE_XML_MYSQL = 4;
     public static final int DBTYPE_MYSQL = 0;
     public static final int DBTYPE_CUBRID = 1;
     public static final int DBTYPE_MSSQL = 2;
     public static final int DBTYPE_ORACLE = 3;
     public static final int DBTYPE_MARIADB = 4;
     public static final int DBTYPE_INFORMIX = 5;
+    public static final int DBTYPE_TIBERO = 6;
 
     public static final String[] DB_NAMES =
-            new String[] {"MYSQL", "CUBRID", "MSSQL", "ORACLE", "MARIADB", "INFORMIX"};
+            new String[] {"MYSQL", "CUBRID", "MSSQL", "ORACLE", "MARIADB", "INFORMIX", "TIBERO"};
 
     public static final String JDBC_CLASS_ORACLE = "oracle.jdbc.OracleDriver";
     public static final String JDBC_CLASS_MSSQL = "com.microsoft.sqlserver.jdbc.SQLServerDriver";
@@ -56,21 +56,16 @@ public class DBConstant { // NOPMD
     public static final String JDBC_CLASS_MYSQL8_OR_LATER = "com.mysql.cj.jdbc.Driver";
     public static final String JDBC_CLASS_MSSQL_JTDS = "net.sourceforge.jtds.jdbc.Driver";
     public static final String JDBC_CLASS_MARIADB = "org.mariadb.jdbc.Driver";
-
     public static final String JDBC_CLASS_INFORMIX = "com.informix.jdbc.IfxDriver";
+    public static final String JDBC_CLASS_TIBERO = "com.tmax.tibero.jdbc.TbDriver";
 
     public static final String DEF_PORT_MSSQL = "1433";
     public static final String DEF_PORT_MYSQL = "3306";
     public static final String DEF_PORT_CUBRID = "33000";
     public static final String DEF_PORT_ORACLE = "1521";
     public static final String DEF_PORT_MARIADB = "3306";
-
     public static final String DEF_PORT_INFORMIX = "9088";
-
-    //	public static final String PATTERN_JAR_FILE_MSSQL = "^sqljdbc\\S*.jar";
-    //	public static final String PATTERN_JAR_FILE_MYSQL = "^mysql\\S*.jar";
-    //	public static final String PATTERN_JAR_FILE_CUBRID = "^jdbc\\S*.jar";
-    //	public static final String PATTERN_JAR_FILE_ORACLE = "^ojdbc\\S*.jar";
+    public static final String DEF_PORT_TIBERO = "8629";
 
     public static final String PREFIX_QUOTE_MSSQL = "[";
     public static final String SUFFIX_QUOTE_MSSQL = "]";
@@ -84,6 +79,8 @@ public class DBConstant { // NOPMD
     public static final String SUFFIX_QUOTE_MARIADB = "`";
     public static final String PREFIX_QUOTE_INFORMIX = "`";
     public static final String SUFFIX_QUOTE_INFOMRIX = "`";
+    public static final String PREFIX_QUOTE_TIBERO = "\"";
+    public static final String SUFFIX_QUOTE_TIBERO = "\"";
 
     public static final String DB_NULL_VALUE = "NULL";
 }
