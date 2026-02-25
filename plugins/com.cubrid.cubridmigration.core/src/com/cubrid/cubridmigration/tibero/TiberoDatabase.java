@@ -34,6 +34,7 @@ import com.cubrid.cubridmigration.core.connection.IConnHelper;
 import com.cubrid.cubridmigration.core.datatype.DBDataTypeHelper;
 import com.cubrid.cubridmigration.core.dbtype.DBConstant;
 import com.cubrid.cubridmigration.core.dbtype.DatabaseType;
+import com.cubrid.cubridmigration.core.engine.exception.JDBCConnectErrorException;
 import com.cubrid.cubridmigration.core.sql.SQLHelper;
 import com.cubrid.cubridmigration.tibero.export.TiberoExportHelper;
 import com.cubrid.cubridmigration.tibero.meta.TiberoSchemaFetcher;
@@ -94,7 +95,7 @@ public class TiberoDatabase extends DatabaseType {
             try {
                 Driver driver = conParam.getDriver();
                 if (driver == null) {
-                    throw new RuntimeException("JDBC driver can't be null.");
+                    throw new IllegalArgumentException("JDBC driver can't be null.");
                 }
                 Properties props = new Properties();
                 props.put("user", conParam.getConUser());
@@ -111,7 +112,7 @@ public class TiberoDatabase extends DatabaseType {
             } catch (SQLException e) {
                 throw e;
             } catch (Exception e) {
-                throw new RuntimeException(e);
+                throw new JDBCConnectErrorException(e);
             }
         }
     }
