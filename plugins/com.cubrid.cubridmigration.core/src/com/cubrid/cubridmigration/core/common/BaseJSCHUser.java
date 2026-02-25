@@ -42,7 +42,8 @@ public class BaseJSCHUser implements UserInfo {
      * @return null;
      */
     public String getPassphrase() {
-        return null;
+        return 
+        null;
     }
 
     /**
