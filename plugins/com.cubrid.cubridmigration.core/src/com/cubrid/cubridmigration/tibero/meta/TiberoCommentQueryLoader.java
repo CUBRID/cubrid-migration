@@ -46,7 +46,8 @@ class TiberoCommentQueryLoader {
 
     private static final Logger LOG = LogUtil.getLogger(TiberoCommentQueryLoader.class);
 
-    String getComment(Connection conn, String errorMessage, String schemaName, String objectName) {
+    String getTableComment(
+            Connection conn, String errorMessage, String schemaName, String objectName) {
         try (PreparedStatement pstmt = conn.prepareStatement(SQL_GET_TABLE_COMMENT)) {
             pstmt.setString(1, schemaName);
             pstmt.setString(2, objectName);

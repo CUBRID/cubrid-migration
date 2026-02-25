@@ -636,23 +636,6 @@ public final class TiberoSchemaFetcher extends AbstractJDBCSchemaFetcher {
     }
 
     /**
-     * Return query text of a view
-     *
-     * @param conn Connection
-     * @param schemaName schema name
-     * @param viewName String
-     * @return String
-     * @throws SQLException e
-     */
-    private String getQueryText(
-            final Connection conn, String schemaName, final String viewName, View view)
-            throws SQLException {
-        LOG.debug("[SQL]{}, 1={}, 2={}", SQL_SHOW_VIEW_QUERYTEXT, schemaName, viewName);
-
-        return commentQueryLoader.getViewQueryText(conn, schemaName, viewName);
-    }
-
-    /**
      * info: DECODE (t.data_precision, null, DECODE (t.data_type, 'CHAR', t.char_length, 'VARCHAR',
      * t.char_length, 'VARCHAR2', t.char_length, t.data_length), t.data_precision)
      *
