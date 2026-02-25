@@ -41,10 +41,7 @@ import com.cubrid.cubridmigration.core.dbmetadata.IBuildSchemaFilter;
 import com.cubrid.cubridmigration.core.dbobject.Catalog;
 import com.cubrid.cubridmigration.core.dbobject.Column;
 import com.cubrid.cubridmigration.core.dbobject.DBObjectFactory;
-import com.cubrid.cubridmigration.core.dbobject.FK;
 import com.cubrid.cubridmigration.core.dbobject.Grant;
-import com.cubrid.cubridmigration.core.dbobject.Index;
-import com.cubrid.cubridmigration.core.dbobject.PK;
 import com.cubrid.cubridmigration.core.dbobject.PlcsqlFunction;
 import com.cubrid.cubridmigration.core.dbobject.PlcsqlProcedure;
 import com.cubrid.cubridmigration.core.dbobject.Schema;
@@ -91,6 +88,8 @@ public final class TiberoSchemaFetcher extends AbstractJDBCSchemaFetcher {
     private final TiberoCommentQueryLoader commentQueryLoader = new TiberoCommentQueryLoader();
     private final TiberoPartitionMetadataLoader partitionMetadataLoader =
             new TiberoPartitionMetadataLoader();
+    private final TiberoConstraintIndexMetadataLoader constraintIndexMetadataLoader =
+            new TiberoConstraintIndexMetadataLoader();
 
     private static final String OBJECT_TYPE_TABLE = "TABLE";
     private static final String OBJECT_TYPE_TRIGGER = "TRIGGER";
@@ -588,39 +587,8 @@ public final class TiberoSchemaFetcher extends AbstractJDBCSchemaFetcher {
     protected void buildTablePK(
             final Connection conn, final Catalog catalog, final Schema schema, final Table table)
             throws SQLException {
-        LOG.debug("[IN] buildTablePK()");
-        try (PreparedStatement pstmt = conn.prepareStatement(SQL_GET_ENABLED_PK)) {
-            pstmt.setString(1, schema.getName());
-            pstmt.setString(2, table.getName());
-            LOG.debug(
-                    "[SQL]{} (1={}, 2={})", SQL_GET_ENABLED_PK, schema.getName(), table.getName());
-            try (ResultSet rs = pstmt.executeQuery()) {
-                PK primaryKey = null;
-
-                while (rs.next()) {
-                    if (primaryKey == null) {
-                        primaryKey = factory.createPK(table);
-                        primaryKey.setName(rs.getString("PK_NAME"));
-                        table.setPk(primaryKey);
-                    }
-
-                    // The SQL result is already ordered by POSITION, so we don't need to sort here.
-                    String columnName = rs.getString("COLUMN_NAME");
-                    Column col = table.getColumnWithNoCase(columnName);
-                    if (col != null) {
-                        primaryKey.addColumn(col.getName());
-                    }
-                }
-
-                if (primaryKey != null) {
-                    final String primaryKeyName = primaryKey.getName();
-                    if (primaryKeyName != null) {
-                        table.getIndexes()
-                                .removeIf(idx -> primaryKeyName.equalsIgnoreCase(idx.getName()));
-                    }
-                }
-            }
-        }
+        constraintIndexMetadataLoader.buildTablePK(
+                conn, schema, table, factory, SQL_GET_ENABLED_PK);
         setUniquColumnByPK(table);
     }
 
@@ -636,60 +604,8 @@ public final class TiberoSchemaFetcher extends AbstractJDBCSchemaFetcher {
     protected void buildTableFKs(
             final Connection conn, final Catalog catalog, final Schema schema, final Table table)
             throws SQLException {
-        LOG.debug("[IN] buildTableFKs()");
-        try (PreparedStatement pstmt = conn.prepareStatement(SQL_GET_ENABLED_FKS)) {
-            pstmt.setString(1, schema.getName());
-            pstmt.setString(2, table.getName());
-            LOG.debug(
-                    "[SQL]{} (1={}, 2={})", SQL_GET_ENABLED_FKS, schema.getName(), table.getName());
-
-            try (ResultSet rs = pstmt.executeQuery()) {
-                String fkName = "";
-                FK foreignKey = null;
-
-                while (rs.next()) {
-                    final String newFkName = rs.getString("FK_NAME");
-                    LOG.debug("[VAR]newFkName=" + newFkName);
-                    if (fkName.compareToIgnoreCase(newFkName) != 0) {
-                        if (foreignKey != null) {
-                            table.addFK(foreignKey);
-                        }
-
-                        fkName = newFkName;
-                        foreignKey = factory.createFK(table);
-                        foreignKey.setName(fkName);
-                        foreignKey.setUpdateRule(
-                                FK.ON_UPDATE_NO_ACTION); // Tibero doesn't have update rule
-
-                        String deleteRule = rs.getString("DELETE_RULE");
-                        if ("CASCADE".equalsIgnoreCase(deleteRule)) {
-                            foreignKey.setDeleteRule(FK.ON_DELETE_CASCADE);
-                        } else if ("SET NULL".equalsIgnoreCase(deleteRule)) {
-                            foreignKey.setDeleteRule(FK.ON_DELETE_SET_NULL);
-                        } else {
-                            foreignKey.setDeleteRule(FK.ON_DELETE_NO_ACTION);
-                        }
-
-                        foreignKey.setReferencedTableName(rs.getString("PK_TABLE_NAME"));
-                    }
-                    if (foreignKey != null) {
-                        // find reference table column
-                        final String colName = rs.getString("FK_COLUMN_NAME");
-                        Column column = table.getColumnByName(colName);
-                        if (column != null) {
-                            foreignKey.addRefColumnName(colName, rs.getString("PK_COLUMN_NAME"));
-                        }
-                    }
-                }
-
-                if (foreignKey != null) {
-                    table.addFK(foreignKey);
-                }
-            }
-        } catch (SQLException e) {
-            LOG.error("Error while building table FKs", e);
-            throw e;
-        }
+        constraintIndexMetadataLoader.buildTableFKs(
+                conn, schema, table, factory, SQL_GET_ENABLED_FKS);
     }
 
     /**
@@ -704,105 +620,8 @@ public final class TiberoSchemaFetcher extends AbstractJDBCSchemaFetcher {
     protected void buildTableIndexes(
             final Connection conn, final Catalog catalog, final Schema schema, final Table table)
             throws SQLException {
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("[IN]buildTableIndexes()");
-        }
-        ResultSet rs = null; // NOPMD
-        PreparedStatement stmt = null; // NOPMD
-        try {
-            stmt = conn.prepareStatement(SQL_GET_TABLE_INDEX);
-            stmt.setString(1, schema.getName());
-            stmt.setString(2, table.getName());
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("[SQL]" + SQL_GET_TABLE_INDEX + ", 1=" + table.getName());
-            }
-            rs = stmt.executeQuery();
-            while (rs.next()) {
-                String indexName = rs.getString("INDEX_NAME");
-                String indexType = rs.getString("INDEX_TYPE");
-
-                Index idx = factory.createIndex(table);
-                idx.setName(indexName);
-                idx.setUnique("UNIQUE".equals(rs.getString("UNIQUENESS")));
-
-                if ("NORMAL".equals(indexType)) {
-                    idx.setIndexType(DatabaseMetaData.tableIndexClustered);
-                } else if ("NORMAL/REV".equals(indexType)) {
-                    idx.setReverse(true);
-                    idx.setIndexType(DatabaseMetaData.tableIndexClustered);
-                } else {
-                    idx.setIndexType(DatabaseMetaData.tableIndexOther);
-                }
-                table.addIndex(idx);
-            }
-            if (LOG.isDebugEnabled()) {
-                LOG.debug(
-                        "[VAR]indexes.count="
-                                + (table.getIndexes() == null ? null : table.getIndexes()));
-            }
-        } finally {
-            Closer.close(rs);
-            Closer.close(stmt);
-        }
-
-        try {
-            stmt = conn.prepareStatement(SQL_GET_INDEX_COLUMNS);
-            for (Index idx : table.getIndexes()) {
-                stmt.setString(1, schema.getName());
-                stmt.setString(2, table.getName());
-                stmt.setString(3, idx.getName());
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug(
-                            "[SQL]"
-                                    + SQL_GET_INDEX_COLUMNS
-                                    + ", "
-                                    + "1="
-                                    + table.getName()
-                                    + ", "
-                                    + "2="
-                                    + idx.getName());
-                }
-                rs = stmt.executeQuery();
-                while (rs.next()) {
-                    Column col = table.getColumnByName(rs.getString("COLUMN_NAME"));
-                    String name;
-                    if (col == null) {
-                        name = rs.getString("COLUMN_EXPRESSION");
-                        if (name == null) {
-                            continue;
-                        }
-                        // Some column name may be something like "test"
-                        if (name.matches("^\"(\\w|\\W|\\d|_)+\"$")) {
-                            name = name.substring(1, name.length() - 1);
-                        }
-                    } else {
-                        name = col.getName();
-                    }
-                    if (name == null) {
-                        continue;
-                    }
-                    String order = rs.getString("DESCEND");
-                    order = order == null ? "A" : order.toUpperCase(Locale.US);
-                    idx.addColumn(name, order.startsWith("A"));
-                }
-                rs.close();
-            }
-        } finally {
-            Closer.close(rs);
-            Closer.close(stmt);
-        }
-
-        List<Index> validIndexes = new ArrayList<Index>();
-        for (Index idx : table.getIndexes()) {
-            if (idx.getColumnNames().isEmpty()) {
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("Skip index without columns: " + idx.getName());
-                }
-                continue;
-            }
-            validIndexes.add(idx);
-        }
-        table.setIndexes(validIndexes);
+        constraintIndexMetadataLoader.buildTableIndexes(
+                conn, schema, table, factory, SQL_GET_TABLE_INDEX, SQL_GET_INDEX_COLUMNS);
 
         setUniquColumnByIndex(table);
     }
