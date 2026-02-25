@@ -31,12 +31,14 @@ jobs:
         id: files
         continue-on-error: true
       - name: Check license
+        env:
+          CHANGED_FILES: "${{ steps.files.outputs.added_modified }}"
         run: |
           set +e
           license_headers=.github/workflows/license_headers
           result="PASS"
 
-          for f in ${{ steps.files.outputs.added_modified }}; do
+          for f in $CHANGED_FILES; do
             if [ -d "$f" ]; then
               continue
             fi
@@ -88,14 +90,14 @@ jobs:
           files: "**/*.java"
           write_output_files: true
       - uses: axel-op/googlejavaformat-action@c1134ebd196c4cbffb077f9476585b0be8b6afcd
-        if: ${{ steps.changed.outputs.any_changed == 'true' }}
+        if: steps.changed.outputs.any_changed == 'true'
         with:
           release-name: v1.32.0
           args: "--aosp --replace --set-exit-if-changed @.github/outputs/all_changed_files.txt"
           files-excluded: "**/*"
           skip-commit: true
       - name: Suggest code changes
-        if: ${{ failure() }}
+        if: failure()
         uses: reviewdog/action-suggester@aa38384ceb608d00f84b4690cacc83a5aba307ff
         with:
           tool_name: code-style (indent, googlejavaformat)
