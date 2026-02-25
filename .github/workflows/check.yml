@@ -31,12 +31,14 @@ jobs:
         id: files
         continue-on-error: true
       - name: Check license
+        env:
+          CHANGED_FILES: ${{ steps.files.outputs.added_modified }}
         run: |
           set +e
           license_headers=.github/workflows/license_headers
           result="PASS"
 
-          for f in ${{ steps.files.outputs.added_modified }}; do
+          for f in $CHANGED_FILES; do
             if [ -d "$f" ]; then
               continue
             fi
