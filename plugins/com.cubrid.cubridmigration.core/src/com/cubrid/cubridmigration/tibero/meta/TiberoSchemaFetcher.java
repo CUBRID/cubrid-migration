@@ -92,6 +92,8 @@ public final class TiberoSchemaFetcher extends AbstractJDBCSchemaFetcher {
 
     private static final Logger LOG = LogUtil.getLogger(TiberoSchemaFetcher.class);
 
+    private final TiberoCommentQueryLoader commentQueryLoader = new TiberoCommentQueryLoader();
+
     private static final String OBJECT_TYPE_TABLE = "TABLE";
     private static final String OBJECT_TYPE_TRIGGER = "TRIGGER";
     private static final String OBJECT_TYPE_VIEW = "VIEW";
@@ -1246,10 +1248,9 @@ public final class TiberoSchemaFetcher extends AbstractJDBCSchemaFetcher {
      */
     protected String getTableComment(Connection conn, String schemaName, String objectName) {
         String comment =
-                querySingleString(
+                commentQueryLoader.getComment(
                         conn,
                         SQL_GET_TABLE_COMMENT,
-                        "COMMENTS",
                         "Get table comment error: " + objectName,
                         schemaName,
                         objectName);
@@ -1258,10 +1259,9 @@ public final class TiberoSchemaFetcher extends AbstractJDBCSchemaFetcher {
 
     protected String getViewComment(Connection conn, String schemaName, String viewName) {
         String comment =
-                querySingleString(
+                commentQueryLoader.getComment(
                         conn,
                         SQL_GET_VIEW_COMMENT,
-                        "COMMENTS",
                         "Get view comment error: " + viewName,
                         schemaName,
                         viewName);
@@ -1271,42 +1271,14 @@ public final class TiberoSchemaFetcher extends AbstractJDBCSchemaFetcher {
     private String getViewColumnComment(
             Connection conn, String schemaName, String viewName, Column column) {
         String comment =
-                querySingleString(
+                commentQueryLoader.getComment(
                         conn,
                         SQL_GET_VIEW_COLUMN_COMMENT,
-                        "COMMENTS",
                         "Get view column comment error: " + viewName + "." + column.getName(),
                         schemaName,
                         viewName,
                         column.getName());
         return comment == null ? null : commentEditor(comment);
-    }
-
-    private String querySingleString(
-            Connection conn, String sql, String columnName, String errorMessage, String... params) {
-        PreparedStatement pstmt = null;
-        ResultSet rs = null;
-        try {
-            pstmt = conn.prepareStatement(sql);
-            for (int i = 0; i < params.length; i++) {
-                pstmt.setString(i + 1, params[i]);
-            }
-
-            rs = pstmt.executeQuery();
-
-            String value = "";
-            while (rs.next()) {
-                value = rs.getString(columnName);
-            }
-
-            return value;
-        } catch (Exception e) {
-            LOG.error(errorMessage, e);
-            return null;
-        } finally {
-            Closer.close(rs);
-            Closer.close(pstmt);
-        }
     }
 
     /**
@@ -1463,31 +1435,11 @@ public final class TiberoSchemaFetcher extends AbstractJDBCSchemaFetcher {
         if (LOG.isDebugEnabled()) {
             LOG.debug("[IN]getQueryText()");
         }
-        ResultSet rs = null; // NOPMD
-        PreparedStatement stmt = null; // NOPMD
-        try {
-            stmt = conn.prepareStatement(SQL_SHOW_VIEW_QUERYTEXT);
-            stmt.setString(1, schemaName);
-            stmt.setString(2, viewName);
-            if (LOG.isDebugEnabled()) {
-                LOG.debug(
-                        "[SQL]"
-                                + SQL_SHOW_VIEW_QUERYTEXT
-                                + ", 1="
-                                + schemaName
-                                + ", 1="
-                                + viewName);
-            }
-            rs = stmt.executeQuery();
-            while (rs.next()) {
-                return rs.getString("TEXT");
-            }
-
-            return null;
-        } finally {
-            Closer.close(rs);
-            Closer.close(stmt);
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("[SQL]" + SQL_SHOW_VIEW_QUERYTEXT + ", 1=" + schemaName + ", 1=" + viewName);
         }
+        return commentQueryLoader.getViewQueryText(
+                conn, SQL_SHOW_VIEW_QUERYTEXT, schemaName, viewName);
     }
 
     /**
