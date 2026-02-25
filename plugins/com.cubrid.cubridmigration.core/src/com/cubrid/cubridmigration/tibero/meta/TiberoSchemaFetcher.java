@@ -34,7 +34,6 @@ import static com.cubrid.cubridmigration.core.dbobject.ProcedureConstants.*;
 import com.cubrid.common.log.LogUtil;
 import com.cubrid.cubridmigration.core.common.Closer;
 import com.cubrid.cubridmigration.core.common.CommonUtils;
-import com.cubrid.cubridmigration.core.common.DBUtils;
 import com.cubrid.cubridmigration.core.common.TimeZoneUtils;
 import com.cubrid.cubridmigration.core.connection.ConnParameters;
 import com.cubrid.cubridmigration.core.dbmetadata.AbstractJDBCSchemaFetcher;
@@ -46,8 +45,6 @@ import com.cubrid.cubridmigration.core.dbobject.FK;
 import com.cubrid.cubridmigration.core.dbobject.Grant;
 import com.cubrid.cubridmigration.core.dbobject.Index;
 import com.cubrid.cubridmigration.core.dbobject.PK;
-import com.cubrid.cubridmigration.core.dbobject.PartitionInfo;
-import com.cubrid.cubridmigration.core.dbobject.PartitionTable;
 import com.cubrid.cubridmigration.core.dbobject.PlcsqlFunction;
 import com.cubrid.cubridmigration.core.dbobject.PlcsqlProcedure;
 import com.cubrid.cubridmigration.core.dbobject.Schema;
@@ -65,7 +62,6 @@ import com.cubrid.cubridmigration.tibero.TiberoDataTypeHelper;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 
-import java.io.Reader;
 import java.math.BigInteger;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -93,6 +89,8 @@ public final class TiberoSchemaFetcher extends AbstractJDBCSchemaFetcher {
     private static final Logger LOG = LogUtil.getLogger(TiberoSchemaFetcher.class);
 
     private final TiberoCommentQueryLoader commentQueryLoader = new TiberoCommentQueryLoader();
+    private final TiberoPartitionMetadataLoader partitionMetadataLoader =
+            new TiberoPartitionMetadataLoader();
 
     private static final String OBJECT_TYPE_TABLE = "TABLE";
     private static final String OBJECT_TYPE_TRIGGER = "TRIGGER";
@@ -293,60 +291,20 @@ public final class TiberoSchemaFetcher extends AbstractJDBCSchemaFetcher {
         if (LOG.isDebugEnabled()) {
             LOG.debug("[IN]buildPartitions()");
         }
-        ResultSet rs = null; // NOPMD
-        PreparedStatement stmt = null; // NOPMD
-        try {
-            stmt = conn.prepareStatement(SQL_GET_PART_TABLES);
-            stmt.setString(1, schema.getName());
-            rs = stmt.executeQuery();
-
-            while (rs.next()) {
-                String tableName = rs.getString("TABLE_NAME");
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("[VAR]tableName=" + tableName);
-                }
-                Table table = schema.getTableByName(tableName);
-                if (table == null) {
-                    continue;
-                }
-
-                String partitionMethod = rs.getString("PARTITIONING_TYPE");
-                int partitionCount = rs.getInt("PARTITION_COUNT");
-                int partitionColumnCount = rs.getInt("PARTITIONING_KEY_COUNT");
-
-                String subPartitionMethod = rs.getString("SUBPARTITIONING_TYPE");
-                int subPartitionCount = rs.getInt("DEF_SUBPARTITION_COUNT");
-                int subPartitionColumnCount = rs.getInt("SUBPARTITIONING_KEY_COUNT");
-
-                PartitionInfo partitionInfo = factory.createPartitionInfo();
-                partitionInfo.setPartitionMethod(partitionMethod);
-                partitionInfo.setPartitionCount(partitionCount);
-                partitionInfo.setPartitionColumnCount(partitionColumnCount);
-                partitionInfo.setPartitionExp(null);
-                partitionInfo.setPartitionFunc(null);
-                partitionInfo.setDDL(getSourcePartitionDDL(table));
-                if ("NONE".equals(subPartitionMethod)) {
-                    subPartitionMethod = null;
-                }
-                partitionInfo.setSubPartitionMethod(subPartitionMethod);
-                partitionInfo.setSubPartitionCount(subPartitionCount);
-                partitionInfo.setSubPartitionColumnCount(subPartitionColumnCount);
-
-                table.setPartitionInfo(partitionInfo);
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("[VAR]partitionInfo=" + partitionInfo);
-                }
-            }
-        } catch (Exception ex) {
-            LOG.error("", ex);
-        } finally {
-            Closer.close(rs);
-            Closer.close(stmt);
-        }
-
-        getPartitionColumn(conn, schema);
-        getPartitionTables(conn, schema);
-        getSubPartitionTables(conn, schema);
+        partitionMetadataLoader.buildPartitions(
+                conn,
+                schema,
+                factory,
+                SQL_GET_PART_TABLES,
+                SQL_GET_PART_COLUMN,
+                SQL_GET_SUBPART_KEY_COLUMN,
+                SQL_GET_PARTITIONS,
+                SQL_GET_SUB_PART_TABLES,
+                new TiberoPartitionMetadataLoader.PartitionDDLProvider() {
+                    public String getPartitionDDL(Table table) {
+                        return getSourcePartitionDDL(table);
+                    }
+                });
     }
 
     /**
@@ -1282,145 +1240,6 @@ public final class TiberoSchemaFetcher extends AbstractJDBCSchemaFetcher {
     }
 
     /**
-     * get partition column information
-     *
-     * @param conn Connection
-     * @param schema Schema
-     */
-    private void getPartitionColumn(final Connection conn, final Schema schema) {
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("[IN]getPartitionColumn()");
-        }
-        ResultSet rs = null; // NOPMD
-        PreparedStatement stmt = null; // NOPMD
-
-        try {
-            stmt = conn.prepareStatement(SQL_GET_PART_COLUMN);
-            stmt.setString(1, schema.getName());
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("[SQL]" + SQL_GET_PART_COLUMN);
-            }
-            rs = stmt.executeQuery();
-            while (rs.next()) {
-                String tableName = rs.getString("NAME");
-                String columnName = rs.getString("COLUMN_NAME");
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("[VAR]tableName=" + tableName + ", columnName=" + columnName);
-                }
-
-                Table table = schema.getTableByName(tableName);
-                if (table == null) {
-                    continue;
-                }
-
-                PartitionInfo partitionInfo = table.getPartitionInfo();
-                partitionInfo.addPartitionColumn(table.getColumnByName(columnName));
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("[VAR]partitionInfo=" + partitionInfo);
-                }
-            }
-        } catch (Exception ex) {
-            LOG.error("", ex);
-        } finally {
-            Closer.close(rs);
-            Closer.close(stmt);
-        }
-
-        try {
-            stmt = conn.prepareStatement(SQL_GET_SUBPART_KEY_COLUMN);
-            stmt.setString(1, schema.getName());
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("[SQL]" + SQL_GET_SUBPART_KEY_COLUMN);
-            }
-            rs = stmt.executeQuery();
-            while (rs.next()) {
-                String tableName = rs.getString("NAME");
-                String columnName = rs.getString("COLUMN_NAME");
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("[VAR]tableName=" + tableName + ", columnName=" + columnName);
-                }
-                Table table = schema.getTableByName(tableName);
-                if (table == null) {
-                    continue;
-                }
-                PartitionInfo partitionInfo = table.getPartitionInfo();
-                partitionInfo.addSubPartitionColumn(table.getColumnByName(columnName));
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("[VAR]partitionInfo=" + partitionInfo);
-                }
-            }
-        } catch (Exception ex) {
-            LOG.error("", ex);
-        } finally {
-            Closer.close(rs);
-            Closer.close(stmt);
-        }
-    }
-
-    /**
-     * get partition table information
-     *
-     * @param conn Connection
-     * @param schema Schema
-     */
-    private void getPartitionTables(final Connection conn, final Schema schema) {
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("[IN]getPartitionTables()");
-        }
-        ResultSet rs = null; // NOPMD
-        PreparedStatement stmt = null; // NOPMD
-
-        try {
-            stmt = conn.prepareStatement(SQL_GET_PARTITIONS);
-            stmt.setString(1, schema.getName());
-            if (LOG.isDebugEnabled()) {
-                LOG.debug(
-                        "[SQL]"
-                                + SQL_GET_PARTITIONS
-                                + ", 1="
-                                + schema.getName()
-                                + ", 2="
-                                + schema.getName());
-            }
-            rs = stmt.executeQuery();
-            while (rs.next()) {
-                String tableName = rs.getString("TABLE_NAME");
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("[VAR]tableName=" + tableName);
-                }
-                Table table = schema.getTableByName(tableName);
-                if (table == null) {
-                    continue;
-                }
-
-                String partitionName = rs.getString("PARTITION_NAME");
-                Reader reader = rs.getCharacterStream("HIGH_VALUE");
-                String partitionDesc = reader == null ? null : DBUtils.reader2String(reader);
-                int partitionPosition = rs.getInt("PARTITION_POSITION");
-
-                PartitionInfo partitionInfo = table.getPartitionInfo();
-                partitionInfo.setPartitionExp(null);
-                partitionInfo.setPartitionFunc(null);
-
-                PartitionTable partition = factory.createPartitionTable();
-                partition.setPartitionName(partitionName);
-                partition.setPartitionDesc(partitionDesc);
-                partition.setPartitionIdx(partitionPosition);
-
-                partitionInfo.addPartition(partition);
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("[VAR]partition=" + partition);
-                }
-            }
-        } catch (Exception ex) {
-            LOG.error("", ex);
-        } finally {
-            Closer.close(rs);
-            Closer.close(stmt);
-        }
-    }
-
-    /**
      * Return query text of a view
      *
      * @param conn Connection
@@ -1486,59 +1305,6 @@ public final class TiberoSchemaFetcher extends AbstractJDBCSchemaFetcher {
                 LOG.debug("[VAR]list=" + (list.size()));
             }
             return new ArrayList<String>(list);
-        } finally {
-            Closer.close(rs);
-            Closer.close(stmt);
-        }
-    }
-
-    /**
-     * get sub partition table information
-     *
-     * @param conn Connection
-     * @param schema Schema
-     */
-    private void getSubPartitionTables(final Connection conn, final Schema schema) {
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("[IN]getSubPartitionTables()");
-        }
-        ResultSet rs = null; // NOPMD
-        PreparedStatement stmt = null; // NOPMD
-
-        try {
-            stmt = conn.prepareStatement(SQL_GET_SUB_PART_TABLES);
-            stmt.setString(1, schema.getName());
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("[SQL]" + SQL_GET_SUB_PART_TABLES);
-            }
-            rs = stmt.executeQuery();
-            while (rs.next()) {
-                String tableName = rs.getString("TABLE_NAME");
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("[VAR]tableName=" + tableName);
-                }
-                Table table = schema.getTableByName(tableName);
-                if (table == null) {
-                    continue;
-                }
-
-                String subPartitionName = rs.getString("SUBPARTITION_NAME");
-                Reader reader = rs.getCharacterStream("HIGH_VALUE");
-                String subPartitionDesc = reader == null ? null : DBUtils.reader2String(reader);
-                int subPartitionPosition = rs.getInt("SUBPARTITION_POSITION");
-
-                PartitionTable subPartition = factory.createPartitionTable();
-                subPartition.setPartitionName(subPartitionName);
-                subPartition.setPartitionDesc(subPartitionDesc);
-                subPartition.setPartitionIdx(subPartitionPosition);
-
-                table.getPartitionInfo().addSubPartition(subPartition);
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("[VAR]subPartition=" + subPartition);
-                }
-            }
-        } catch (Exception ex) {
-            LOG.error("", ex);
         } finally {
             Closer.close(rs);
             Closer.close(stmt);
