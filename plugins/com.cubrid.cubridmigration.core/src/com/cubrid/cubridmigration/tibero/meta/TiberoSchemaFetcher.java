@@ -41,7 +41,6 @@ import com.cubrid.cubridmigration.core.dbmetadata.IBuildSchemaFilter;
 import com.cubrid.cubridmigration.core.dbobject.Catalog;
 import com.cubrid.cubridmigration.core.dbobject.Column;
 import com.cubrid.cubridmigration.core.dbobject.DBObjectFactory;
-import com.cubrid.cubridmigration.core.dbobject.Grant;
 import com.cubrid.cubridmigration.core.dbobject.PlcsqlFunction;
 import com.cubrid.cubridmigration.core.dbobject.PlcsqlProcedure;
 import com.cubrid.cubridmigration.core.dbobject.Schema;
@@ -49,14 +48,12 @@ import com.cubrid.cubridmigration.core.dbobject.SchemaCatalog;
 import com.cubrid.cubridmigration.core.dbobject.Sequence;
 import com.cubrid.cubridmigration.core.dbobject.Synonym;
 import com.cubrid.cubridmigration.core.dbobject.Table;
-import com.cubrid.cubridmigration.core.dbobject.Trigger;
 import com.cubrid.cubridmigration.core.dbobject.View;
 import com.cubrid.cubridmigration.core.dbtype.DatabaseType;
 import com.cubrid.cubridmigration.core.export.DBExportHelper;
 import com.cubrid.cubridmigration.cubrid.CUBRIDSQLHelper;
 import com.cubrid.cubridmigration.tibero.TiberoDataTypeHelper;
 
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 
 import java.math.BigInteger;
@@ -69,10 +66,8 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Types;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
-import java.util.Set;
 import java.util.TimeZone;
 
 public final class TiberoSchemaFetcher extends AbstractJDBCSchemaFetcher {
@@ -90,6 +85,8 @@ public final class TiberoSchemaFetcher extends AbstractJDBCSchemaFetcher {
             new TiberoPartitionMetadataLoader();
     private final TiberoConstraintIndexMetadataLoader constraintIndexMetadataLoader =
             new TiberoConstraintIndexMetadataLoader();
+    private final TiberoRoutineTriggerGrantLoader routineTriggerGrantLoader =
+            new TiberoRoutineTriggerGrantLoader();
 
     private static final String OBJECT_TYPE_TABLE = "TABLE";
     private static final String OBJECT_TYPE_TRIGGER = "TRIGGER";
@@ -324,7 +321,8 @@ public final class TiberoSchemaFetcher extends AbstractJDBCSchemaFetcher {
 
         List<PlcsqlProcedure> procedures = new ArrayList<>();
         List<PlcsqlFunction> functions = new ArrayList<>();
-        List<TiberoPlsqlProcedure> tiberoProcedures = getAllProcedures(conn, schema.getName());
+        List<TiberoPlsqlProcedure> tiberoProcedures =
+                routineTriggerGrantLoader.getAllProcedures(conn, schema.getName());
 
         for (TiberoPlsqlProcedure tibProc : tiberoProcedures) {
             if (tibProc.getProcedureType().equals(PROCEDURE)) {
@@ -642,8 +640,15 @@ public final class TiberoSchemaFetcher extends AbstractJDBCSchemaFetcher {
             LOG.debug("[IN]buildTriggers()");
         }
 
-        // get triggers
-        schema.setTriggers(getAllTriggers(conn, schema.getName(), schema.getName()));
+        schema.setTriggers(
+                routineTriggerGrantLoader.getAllTriggers(
+                        conn,
+                        schema.getName(),
+                        schema.getName(),
+                        factory,
+                        SQL_SHOW_ALL_OBJECTS,
+                        SQL_SHOW_DDL,
+                        OBJECT_TYPE_TRIGGER));
     }
 
     /**
@@ -688,155 +693,8 @@ public final class TiberoSchemaFetcher extends AbstractJDBCSchemaFetcher {
         if (LOG.isDebugEnabled()) {
             LOG.debug("[IN]buildGrant()");
         }
-        PreparedStatement stmt = null; // NOPMD
-        ResultSet rs = null; // NOPMD
-
-        try {
-            stmt = conn.prepareStatement(SQL_SHOW_GRANT_TABLE);
-            if (LOG.isDebugEnabled()) {
-                LOG.debug(
-                        "[SQL]"
-                                + SQL_SHOW_GRANT_TABLE
-                                + ", "
-                                + "1="
-                                + schema.getName()
-                                + ", "
-                                + "2="
-                                + schema.getName());
-            }
-
-            stmt.setString(1, schema.getName().toUpperCase());
-            rs = stmt.executeQuery();
-            while (rs.next()) {
-                if (!isSupportPrivilege(rs.getString("PRIVILEGE"))) {
-                    continue;
-                }
-
-                Grant grant = factory.createGrant();
-                grant.setGranteeName(rs.getString("GRANTEE"));
-                grant.setOwner(schema.getName());
-                grant.setClassOwner(rs.getString("OWNER"));
-                grant.setClassName(rs.getString("TABLE_NAME"));
-                grant.setGrantorName(rs.getString("GRANTOR"));
-                grant.setAuthType(convertPrivilegeTibero2Cubrid(rs.getString("PRIVILEGE")));
-                grant.setGrantable(rs.getString("GRANTABLE").equals("YES") ? true : false);
-                grant.setSourceObjectOwner(grant.getClassOwner());
-                grant.setDDL(CUBRIDSQLHelper.getInstance(null).getGrantDDL(grant, true));
-                schema.addGrant(grant);
-            }
-
-            Closer.close(rs);
-            Closer.close(stmt);
-
-            stmt = conn.prepareStatement(SQL_SHOW_GRANT_VIEW);
-            if (LOG.isDebugEnabled()) {
-                LOG.debug(
-                        "[SQL]"
-                                + SQL_SHOW_GRANT_VIEW
-                                + ", "
-                                + "1="
-                                + schema.getName()
-                                + ", "
-                                + "2="
-                                + schema.getName());
-            }
-
-            stmt.setString(1, schema.getName().toUpperCase());
-            rs = stmt.executeQuery();
-            while (rs.next()) {
-                Grant grant = factory.createGrant();
-                grant.setGranteeName(rs.getString("GRANTEE"));
-                grant.setOwner(schema.getName());
-                grant.setClassOwner(rs.getString("OWNER"));
-                grant.setClassName(rs.getString("TABLE_NAME"));
-                grant.setGrantorName(rs.getString("GRANTOR"));
-                grant.setAuthType(rs.getString("PRIVILEGE"));
-                grant.setGrantable(rs.getString("GRANTABLE").equals("YES") ? true : false);
-                grant.setSourceObjectOwner(grant.getClassOwner());
-                grant.setDDL(CUBRIDSQLHelper.getInstance(null).getGrantDDL(grant, true));
-                schema.addGrant(grant);
-            }
-        } finally {
-            Closer.close(rs);
-            Closer.close(stmt);
-        }
-    }
-
-    /**
-     * get All Procedures
-     *
-     * @param conn Connection
-     * @param dbName String
-     * @param ownerName == schema name
-     * @return List<Procedure>
-     * @throws SQLException e
-     */
-    private List<TiberoPlsqlProcedure> getAllProcedures(
-            final Connection conn, final String ownerName) throws SQLException {
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("[IN]getAllProcedures()");
-        }
-
-        List<TiberoPlsqlProcedure> procedures = new ArrayList<>();
-        getPlcsqlProcedureMetaData(conn, ownerName, procedures);
-        getPlcsqlProcedureDDL(conn, procedures);
-
-        return procedures;
-    }
-
-    private void getPlcsqlProcedureDDL(Connection conn, List<TiberoPlsqlProcedure> procedures)
-            throws SQLException {
-        String SQL =
-                "SELECT TEXT FROM ALL_SOURCE WHERE OWNER = ? AND NAME = ? AND TYPE = ? ORDER BY"
-                        + " LINE";
-
-        try (PreparedStatement stmt = conn.prepareStatement(SQL)) {
-            for (TiberoPlsqlProcedure proc : procedures) {
-                stmt.setString(1, proc.getOwner());
-                stmt.setString(2, proc.getName());
-                stmt.setString(3, proc.getProcedureType());
-
-                StringBuilder sb = new StringBuilder();
-                sb.append("CREATE ");
-                try (ResultSet rs = stmt.executeQuery()) {
-                    while (rs.next()) {
-                        sb.append(rs.getString("TEXT"));
-                    }
-                }
-                proc.setDDL(sb.toString());
-            }
-        }
-    }
-
-    private void getPlcsqlProcedureMetaData(
-            Connection conn, String ownerName, List<TiberoPlsqlProcedure> procedures)
-            throws SQLException {
-        String SQL =
-                "SELECT o.owner, o.object_name, p.authid, o.object_type"
-                        + " FROM all_objects o LEFT JOIN all_procedures p"
-                        + " ON p.owner = o.owner"
-                        + " AND p.object_name = o.object_name"
-                        + " AND p.procedure_name IS NULL"
-                        + " WHERE o.owner = ?"
-                        + " AND o.object_type IN ('PROCEDURE', 'FUNCTION')";
-
-        ResultSet rs = null;
-        try (PreparedStatement stmt = conn.prepareStatement(SQL)) {
-            stmt.setString(1, ownerName);
-
-            rs = stmt.executeQuery();
-
-            while (rs.next()) {
-                procedures.add(
-                        new TiberoPlsqlProcedure(
-                                rs.getString("OWNER"),
-                                rs.getString("OBJECT_NAME"),
-                                rs.getString("AUTHID"),
-                                rs.getString("OBJECT_TYPE")));
-            }
-        } finally {
-            Closer.close(rs);
-        }
+        routineTriggerGrantLoader.buildGrant(
+                conn, schema, factory, SQL_SHOW_GRANT_TABLE, SQL_SHOW_GRANT_VIEW);
     }
 
     /**
@@ -876,38 +734,6 @@ public final class TiberoSchemaFetcher extends AbstractJDBCSchemaFetcher {
         } finally {
             Closer.close(tables);
         }
-    }
-
-    /**
-     * get All Triggers
-     *
-     * @param conn Connection
-     * @param dbName the db name
-     * @param ownerName = schema name
-     * @return all triggers
-     * @throws SQLException e
-     */
-    private List<Trigger> getAllTriggers(
-            final Connection conn, final String dbName, final String ownerName)
-            throws SQLException {
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("[IN]getAllTriggers()");
-        }
-        final List<String> list = this.getRoutines(conn, OBJECT_TYPE_TRIGGER, ownerName);
-        final List<Trigger> triggers = new ArrayList<Trigger>();
-
-        for (String name : list) {
-            final Trigger trigger = factory.createTrigger();
-            trigger.setName(name);
-            final String trigDDL = getObjectDDL(conn, dbName, name, OBJECT_TYPE_TRIGGER);
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("[VAR]trigDDL=" + trigDDL);
-            }
-            trigger.setDDL(trigDDL);
-            triggers.add(trigger);
-        }
-
-        return triggers;
     }
 
     /**
@@ -953,66 +779,6 @@ public final class TiberoSchemaFetcher extends AbstractJDBCSchemaFetcher {
 
     protected DBExportHelper getExportHelper() {
         return DatabaseType.TIBERO.getExportHelper();
-    }
-
-    /**
-     * Get TABLE DDL
-     *
-     * @param conn Connection
-     * @param schemaName String
-     * @param objectName String
-     * @param objectType String
-     * @return String
-     * @throws SQLException e
-     */
-    protected String getObjectDDL(
-            final Connection conn,
-            final String schemaName,
-            final String objectName,
-            final String objectType)
-            throws SQLException {
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("[IN]getObjectDDL()");
-        }
-        if (StringUtils.isBlank(objectName)) {
-            throw new IllegalArgumentException("The tibero object name is null!");
-        }
-
-        PreparedStatement preStmt = null; // NOPMD
-        ResultSet rs = null; // NOPMD
-        try {
-            preStmt = conn.prepareStatement(SQL_SHOW_DDL);
-            preStmt.setString(1, objectType);
-            preStmt.setString(2, objectName);
-            preStmt.setString(3, schemaName);
-            if (LOG.isDebugEnabled()) {
-                LOG.debug(
-                        "[SQL]"
-                                + SQL_SHOW_DDL
-                                + ", "
-                                + "1="
-                                + objectType
-                                + ", "
-                                + "2="
-                                + objectName
-                                + ", "
-                                + "3="
-                                + schemaName);
-            }
-            rs = preStmt.executeQuery();
-
-            String ddl = "";
-            while (rs.next()) {
-                ddl = rs.getString(1);
-            }
-            return ddl;
-        } catch (Exception ex) {
-            LOG.error("Get Tibero Object DDL error:" + objectName, ex);
-            return "";
-        } finally {
-            Closer.close(rs);
-            Closer.close(preStmt);
-        }
     }
 
     /**
@@ -1081,56 +847,6 @@ public final class TiberoSchemaFetcher extends AbstractJDBCSchemaFetcher {
     }
 
     /**
-     * get All Routines
-     *
-     * @param conn Connection
-     * @param type procedure/function
-     * @param ownerName == schema name
-     * @return all Routines names
-     * @throws SQLException e
-     */
-    private List<String> getRoutines(
-            final Connection conn, final String type, final String ownerName) throws SQLException {
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("[IN]getRoutines()");
-        }
-        PreparedStatement stmt = null; // NOPMD
-        ResultSet rs = null; // NOPMD
-        try {
-            stmt = conn.prepareStatement(SQL_SHOW_ALL_OBJECTS);
-            stmt.setString(1, type);
-            stmt.setString(2, ownerName);
-
-            if (LOG.isDebugEnabled()) {
-                LOG.debug(
-                        "[SQL]"
-                                + SQL_SHOW_ALL_OBJECTS
-                                + ", "
-                                + "1="
-                                + type
-                                + ", "
-                                + "2="
-                                + ownerName
-                                + ", "
-                                + "3="
-                                + type);
-            }
-            rs = stmt.executeQuery();
-            final Set<String> list = new HashSet<String>();
-            while (rs.next()) {
-                list.add(rs.getString(1));
-            }
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("[VAR]list=" + (list.size()));
-            }
-            return new ArrayList<String>(list);
-        } finally {
-            Closer.close(rs);
-            Closer.close(stmt);
-        }
-    }
-
-    /**
      * info: DECODE (t.data_precision, null, DECODE (t.data_type, 'CHAR', t.char_length, 'VARCHAR',
      * t.char_length, 'VARCHAR2', t.char_length, t.data_length), t.data_precision)
      *
@@ -1195,42 +911,6 @@ public final class TiberoSchemaFetcher extends AbstractJDBCSchemaFetcher {
             Closer.close(rs);
             Closer.close(stmt);
         }
-    }
-
-    /**
-     * Check privilege supported by Cubrid.
-     *
-     * @param privilege
-     * @return boolean
-     */
-    private boolean isSupportPrivilege(String privilege) {
-        if (privilege.equals("SELECT")
-                || privilege.equals("INSERT")
-                || privilege.equals("UPDATE")
-                || privilege.equals("DELETE")
-                || privilege.equals("ALTER")
-                || privilege.equals("INDEX")
-                || privilege.equals("EXECUTE")
-                || privilege.equals("ALL")) {
-            return true;
-        }
-        return false;
-    }
-
-    /**
-     * Change to privilege used by Cubrid.
-     *
-     * @param privilege
-     * @return String cubridPrivilege
-     */
-    private String convertPrivilegeTibero2Cubrid(String privilege) {
-        String cubridPrivilege = privilege;
-
-        if (privilege.equals("ALL")) {
-            cubridPrivilege = "ALL PRIVILEGES";
-        }
-
-        return cubridPrivilege;
     }
 
     /**
