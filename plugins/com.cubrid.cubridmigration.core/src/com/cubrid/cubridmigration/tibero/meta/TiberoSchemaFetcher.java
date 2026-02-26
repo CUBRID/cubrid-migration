@@ -68,6 +68,7 @@ import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.TimeZone;
 
 public final class TiberoSchemaFetcher extends AbstractJDBCSchemaFetcher {
@@ -155,6 +156,9 @@ public final class TiberoSchemaFetcher extends AbstractJDBCSchemaFetcher {
     private static final String SQL_SHOW_VIEW_QUERYTEXT =
             "SELECT TEXT from ALL_VIEWS WHERE OWNER=? AND VIEW_NAME=?";
 
+    private static final String SQL_GET_ALL_VIEW_QUERYTEXTS =
+            "SELECT VIEW_NAME, TEXT from ALL_VIEWS WHERE OWNER=?";
+
     private static final String SQL_GET_VIEW_COMMENT =
             "SELECT COMMENTS FROM ALL_TAB_COMMENTS WHERE OWNER=? AND " + "TABLE_NAME=?";
 
@@ -164,6 +168,9 @@ public final class TiberoSchemaFetcher extends AbstractJDBCSchemaFetcher {
 
     private static final String SQL_GET_TABLE_COMMENT =
             "SELECT COMMENTS FROM ALL_TAB_COMMENTS WHERE OWNER=? AND " + "TABLE_NAME=?";
+
+    private static final String SQL_GET_ALL_TAB_COMMENTS =
+            "SELECT TABLE_NAME, COMMENTS FROM ALL_TAB_COMMENTS WHERE OWNER=?";
 
     private static final String SQL_SHOW_GRANT_TABLE =
             "SELECT P.GRANTEE, P.OWNER, P.TABLE_NAME, P.GRANTOR, P.PRIVILEGE, P.GRANTABLE"
