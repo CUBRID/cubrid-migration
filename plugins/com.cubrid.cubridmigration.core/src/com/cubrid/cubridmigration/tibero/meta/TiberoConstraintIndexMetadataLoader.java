@@ -29,6 +29,8 @@
  */
 package com.cubrid.cubridmigration.tibero.meta;
 
+import static com.cubrid.cubridmigration.tibero.meta.TiberoSqlConstants.*;
+
 import com.cubrid.common.log.LogUtil;
 import com.cubrid.cubridmigration.core.common.Closer;
 import com.cubrid.cubridmigration.core.dbobject.Column;
@@ -58,13 +60,12 @@ class TiberoConstraintIndexMetadataLoader {
             final Connection conn,
             final Schema schema,
             final Table table,
-            final DBObjectFactory factory,
-            final String sqlGetEnabledPk)
+            final DBObjectFactory factory)
             throws SQLException {
-        try (PreparedStatement pstmt = conn.prepareStatement(sqlGetEnabledPk)) {
+        try (PreparedStatement pstmt = conn.prepareStatement(SQL_GET_ENABLED_PK)) {
             pstmt.setString(1, schema.getName());
             pstmt.setString(2, table.getName());
-            LOG.debug("[SQL]{} 1={}, 2={}", sqlGetEnabledPk, schema.getName(), table.getName());
+            LOG.debug("[SQL]{} 1={}, 2={}", SQL_GET_ENABLED_PK, schema.getName(), table.getName());
 
             try (ResultSet rs = pstmt.executeQuery()) {
                 PK primaryKey = null;
@@ -98,13 +99,12 @@ class TiberoConstraintIndexMetadataLoader {
             final Connection conn,
             final Schema schema,
             final Table table,
-            final DBObjectFactory factory,
-            final String sqlGetEnabledFks)
+            final DBObjectFactory factory)
             throws SQLException {
-        try (PreparedStatement pstmt = conn.prepareStatement(sqlGetEnabledFks)) {
+        try (PreparedStatement pstmt = conn.prepareStatement(SQL_GET_ENABLED_FKS)) {
             pstmt.setString(1, schema.getName());
             pstmt.setString(2, table.getName());
-            LOG.debug("[SQL]{} 1={}, 2={}", sqlGetEnabledFks, schema.getName(), table.getName());
+            LOG.debug("[SQL]{} 1={}, 2={}", SQL_GET_ENABLED_FKS, schema.getName(), table.getName());
 
             try (ResultSet rs = pstmt.executeQuery()) {
                 String fkName = "";
@@ -158,17 +158,16 @@ class TiberoConstraintIndexMetadataLoader {
             final Connection conn,
             final Schema schema,
             final Table table,
-            final DBObjectFactory factory,
-            final String sqlGetTableIndex,
-            final String sqlGetIndexColumns)
+            final DBObjectFactory factory)
             throws SQLException {
         ResultSet rs = null;
         PreparedStatement stmt = null;
         try {
-            stmt = conn.prepareStatement(sqlGetTableIndex);
+            stmt = conn.prepareStatement(SQL_GET_TABLE_INDEX);
             stmt.setString(1, schema.getName());
             stmt.setString(2, table.getName());
-            LOG.debug("[SQL]{}, 1={}, 2={}", sqlGetTableIndex, schema.getName(), table.getName());
+            LOG.debug(
+                    "[SQL]{}, 1={}, 2={}", SQL_GET_TABLE_INDEX, schema.getName(), table.getName());
 
             rs = stmt.executeQuery();
             while (rs.next()) {
@@ -198,14 +197,14 @@ class TiberoConstraintIndexMetadataLoader {
         }
 
         try {
-            stmt = conn.prepareStatement(sqlGetIndexColumns);
+            stmt = conn.prepareStatement(SQL_GET_INDEX_COLUMNS);
             for (Index idx : table.getIndexes()) {
                 stmt.setString(1, schema.getName());
                 stmt.setString(2, table.getName());
                 stmt.setString(3, idx.getName());
                 LOG.debug(
                         "[SQL]{}, 1={}, 2={}, 3={}",
-                        sqlGetIndexColumns,
+                        SQL_GET_INDEX_COLUMNS,
                         schema.getName(),
                         table.getName(),
                         idx.getName());

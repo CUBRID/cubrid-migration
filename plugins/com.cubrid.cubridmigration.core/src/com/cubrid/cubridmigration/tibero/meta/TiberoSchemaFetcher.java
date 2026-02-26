@@ -30,6 +30,7 @@
 package com.cubrid.cubridmigration.tibero.meta;
 
 import static com.cubrid.cubridmigration.core.dbobject.ProcedureConstants.*;
+import static com.cubrid.cubridmigration.tibero.meta.TiberoSqlConstants.*;
 
 import com.cubrid.common.log.LogUtil;
 import com.cubrid.cubridmigration.core.common.Closer;
@@ -94,115 +95,6 @@ public final class TiberoSchemaFetcher extends AbstractJDBCSchemaFetcher {
     private static final String OBJECT_TYPE_TRIGGER = "TRIGGER";
     private static final String OBJECT_TYPE_VIEW = "VIEW";
 
-    // Undefined columns will not be supported.
-    private static final String SQL_GET_COLUMNS =
-            "SELECT T.COLUMN_NAME, T.DATA_TYPE, T.DATA_LENGTH, T.DATA_PRECISION, T.DATA_SCALE,"
-                + " T.NULLABLE, T.DATA_DEFAULT, T.CHAR_LENGTH, T.CHAR_USED, T.COLUMN_ID, C.COMMENTS"
-                + " FROM ALL_TAB_COLUMNS T LEFT JOIN ALL_COL_COMMENTS C ON C.OWNER=T.OWNER AND"
-                + " C.TABLE_NAME=T.TABLE_NAME AND C.COLUMN_NAME=T.COLUMN_NAME WHERE T.OWNER=? AND"
-                + " T.TABLE_NAME=? ORDER BY T.COLUMN_ID";
-
-    private static final String SQL_GET_INDEX_COLUMNS =
-            "SELECT A.COLUMN_NAME, A.DESCEND, B.COLUMN_EXPRESSION FROM ALL_IND_COLUMNS A LEFT JOIN"
-                + " ALL_IND_EXPRESSIONS B ON A.TABLE_OWNER=B.TABLE_OWNER AND"
-                + " A.TABLE_NAME=B.TABLE_NAME AND A.INDEX_NAME=B.INDEX_NAME AND"
-                + " A.COLUMN_POSITION=B.COLUMN_POSITION  WHERE A.TABLE_OWNER=? AND A.TABLE_NAME=?"
-                + " AND A.INDEX_NAME=? ORDER BY A.COLUMN_POSITION";
-
-    private static final String SQL_GET_PART_COLUMN =
-            "SELECT * FROM ALL_PART_KEY_COLUMNS WHERE OBJECT_TYPE='TABLE' AND OWNER=? "
-                    + " ORDER BY NAME, COLUMN_POSITION";
-
-    private static final String SQL_GET_PART_TABLES =
-            "SELECT T.* FROM ALL_PART_TABLES T WHERE T.OWNER=? ORDER BY TABLE_NAME";
-
-    private static final String SQL_GET_PARTITIONS =
-            "SELECT T.TABLE_NAME, T.PARTITION_NAME, T.HIGH_VALUE, T.PARTITION_POSITION "
-                    + "FROM ALL_TAB_PARTITIONS T WHERE T.TABLE_OWNER=? "
-                    + "ORDER BY TABLE_NAME, PARTITION_POSITION";
-
-    private static final String SQL_GET_SUB_PART_TABLES =
-            "SELECT TABLE_NAME, PARTITION_NAME, SUBPARTITION_NAME, HIGH_VALUE,"
-                + " SUBPARTITION_POSITION  FROM ALL_TAB_SUBPARTITIONS WHERE TABLE_OWNER=? ORDER BY"
-                + " TABLE_NAME, SUBPARTITION_POSITION";
-
-    private static final String SQL_GET_SUBPART_KEY_COLUMN =
-            "SELECT * FROM ALL_SUBPART_KEY_COLUMNS WHERE OBJECT_TYPE='TABLE' AND OWNER=? "
-                    + " ORDER BY NAME, COLUMN_POSITION";
-
-    private static final String SQL_GET_TABLE_INDEX =
-            "SELECT INDEX_NAME, INDEX_TYPE, UNIQUENESS FROM ALL_INDEXES A  WHERE A.TABLE_OWNER=?"
-                    + " AND A.TABLE_NAME=? AND A.INDEX_NAME NOT IN (SELECT C.CONSTRAINT_NAME FROM"
-                    + " ALL_CONSTRAINTS C WHERE C.CONSTRAINT_TYPE='P' AND C.OWNER=A.TABLE_OWNER AND"
-                    + " C.TABLE_NAME=A.TABLE_NAME) AND UPPER(A.INDEX_TYPE) <> 'LOB' ORDER BY"
-                    + " A.INDEX_NAME";
-
-    private static final String SQL_SHOW_ALL_OBJECTS =
-            "SELECT NAME FROM ALL_SOURCE S "
-                    + "WHERE S.TYPE=? AND S.OWNER=? AND NOT S.NAME LIKE 'BIN$%' "
-                    + "AND NOT S.NAME LIKE 'MLOG$%' AND NOT S.NAME LIKE 'RUPD$%'";
-
-    private static final String SQL_SHOW_DDL = "SELECT DBMS_METADATA.GET_DDL(?, ?, ?) FROM dual";
-
-    private static final String SQL_SHOW_SEQUENCES =
-            "SELECT S.* FROM ALL_SEQUENCES S WHERE S.SEQUENCE_OWNER=? AND NOT S.SEQUENCE_NAME LIKE"
-                    + " 'BIN$%' AND NOT S.SEQUENCE_NAME LIKE 'MLOG$%' AND NOT S.SEQUENCE_NAME LIKE"
-                    + " 'RUPD$%' ";
-
-    private static final String SQL_SHOW_SYNONYM =
-            "SELECT SYNONYM_NAME, ORG_OBJECT_OWNER, ORG_OBJECT_NAME FROM ALL_SYNONYMS WHERE"
-                    + " OWNER=?";
-
-    private static final String SQL_SHOW_VIEW_QUERYTEXT =
-            "SELECT TEXT from ALL_VIEWS WHERE OWNER=? AND VIEW_NAME=?";
-
-    private static final String SQL_GET_ALL_VIEW_QUERYTEXTS =
-            "SELECT VIEW_NAME, TEXT from ALL_VIEWS WHERE OWNER=?";
-
-    private static final String SQL_GET_VIEW_COMMENT =
-            "SELECT COMMENTS FROM ALL_TAB_COMMENTS WHERE OWNER=? AND " + "TABLE_NAME=?";
-
-    private static final String SQL_GET_VIEW_COLUMN_COMMENT =
-            "SELECT COMMENTS FROM ALL_COL_COMMENTS WHERE OWNER=? AND "
-                    + "TABLE_NAME=? AND COLUMN_NAME=?";
-
-    private static final String SQL_GET_TABLE_COMMENT =
-            "SELECT COMMENTS FROM ALL_TAB_COMMENTS WHERE OWNER=? AND " + "TABLE_NAME=?";
-
-    private static final String SQL_GET_ALL_TAB_COMMENTS =
-            "SELECT TABLE_NAME, COMMENTS FROM ALL_TAB_COMMENTS WHERE OWNER=?";
-
-    private static final String SQL_SHOW_GRANT_TABLE =
-            "SELECT P.GRANTEE, P.OWNER, P.TABLE_NAME, P.GRANTOR, P.PRIVILEGE, P.GRANTABLE"
-                    + " FROM USER_TAB_PRIVS P, ALL_TABLES T"
-                    + " WHERE P.TABLE_NAME=T.TABLE_NAME"
-                    + " AND P.OWNER=T.OWNER"
-                    + " AND P.GRANTEE=?";
-
-    private static final String SQL_SHOW_GRANT_VIEW =
-            "SELECT P.GRANTEE, P.OWNER, P.TABLE_NAME, P.GRANTOR, P.PRIVILEGE, P.GRANTABLE"
-                    + " FROM USER_TAB_PRIVS P, ALL_VIEWS V"
-                    + " WHERE P.TABLE_NAME=V.VIEW_NAME"
-                    + " AND P.OWNER=V.OWNER"
-                    + " AND P.GRANTEE=?";
-
-    private static final String SQL_GET_ENABLED_PK =
-            "SELECT acc.COLUMN_NAME, ac.CONSTRAINT_NAME AS PK_NAME FROM ALL_CONSTRAINTS ac JOIN"
-                + " ALL_CONS_COLUMNS acc ON ac.OWNER = acc.OWNER AND ac.CONSTRAINT_NAME ="
-                + " acc.CONSTRAINT_NAME WHERE ac.CONSTRAINT_TYPE = 'P' AND ac.STATUS = 'ENABLED'"
-                + " AND ac.OWNER = ? AND ac.TABLE_NAME = ? ORDER BY acc.POSITION";
-
-    private static final String SQL_GET_ENABLED_FKS =
-            "SELECT fk.constraint_name AS FK_NAME, fk.delete_rule AS DELETE_RULE,"
-                + " fk_col.column_name AS FK_COLUMN_NAME, pk_col.table_name AS PK_TABLE_NAME,"
-                + " pk_col.column_name AS PK_COLUMN_NAME FROM all_constraints fk JOIN"
-                + " all_cons_columns fk_col ON fk.owner = fk_col.owner AND fk.constraint_name ="
-                + " fk_col.constraint_name JOIN all_cons_columns pk_col ON fk.r_owner ="
-                + " pk_col.owner AND fk.r_constraint_name = pk_col.constraint_name AND"
-                + " fk_col.position = pk_col.position WHERE fk.owner = ? AND fk.table_name = ? AND"
-                + " fk.constraint_type = 'R' AND fk.status = 'ENABLED' ORDER BY fk.constraint_name,"
-                + " fk_col.position";
-
     public TiberoSchemaFetcher() {
         factory = new DBObjectFactory() {};
     }
@@ -250,11 +142,6 @@ public final class TiberoSchemaFetcher extends AbstractJDBCSchemaFetcher {
                 conn,
                 schema,
                 factory,
-                SQL_GET_PART_TABLES,
-                SQL_GET_PART_COLUMN,
-                SQL_GET_SUBPART_KEY_COLUMN,
-                SQL_GET_PARTITIONS,
-                SQL_GET_SUB_PART_TABLES,
                 new TiberoPartitionMetadataLoader.PartitionDDLProvider() {
                     public String getPartitionDDL(Table table) {
                         return getSourcePartitionDDL(table);
@@ -497,8 +384,7 @@ public final class TiberoSchemaFetcher extends AbstractJDBCSchemaFetcher {
             throws SQLException {
         super.buildTables(conn, catalog, schema, filter);
         Map<String, String> comments =
-                commentQueryLoader.queryMap(
-                        conn, SQL_GET_ALL_TAB_COMMENTS, "TABLE_NAME", "COMMENTS", schema.getName());
+                commentQueryLoader.findAllTabComments(conn, schema.getName());
         for (Table table : schema.getTables()) {
             table.setComment(commentEditor(comments.get(table.getName())));
         }
@@ -518,8 +404,7 @@ public final class TiberoSchemaFetcher extends AbstractJDBCSchemaFetcher {
     protected void buildTablePK(
             final Connection conn, final Catalog catalog, final Schema schema, final Table table)
             throws SQLException {
-        constraintIndexMetadataLoader.buildTablePK(
-                conn, schema, table, factory, SQL_GET_ENABLED_PK);
+        constraintIndexMetadataLoader.buildTablePK(conn, schema, table, factory);
         setUniquColumnByPK(table);
     }
 
@@ -535,8 +420,7 @@ public final class TiberoSchemaFetcher extends AbstractJDBCSchemaFetcher {
     protected void buildTableFKs(
             final Connection conn, final Catalog catalog, final Schema schema, final Table table)
             throws SQLException {
-        constraintIndexMetadataLoader.buildTableFKs(
-                conn, schema, table, factory, SQL_GET_ENABLED_FKS);
+        constraintIndexMetadataLoader.buildTableFKs(conn, schema, table, factory);
     }
 
     /**
@@ -551,8 +435,7 @@ public final class TiberoSchemaFetcher extends AbstractJDBCSchemaFetcher {
     protected void buildTableIndexes(
             final Connection conn, final Catalog catalog, final Schema schema, final Table table)
             throws SQLException {
-        constraintIndexMetadataLoader.buildTableIndexes(
-                conn, schema, table, factory, SQL_GET_TABLE_INDEX, SQL_GET_INDEX_COLUMNS);
+        constraintIndexMetadataLoader.buildTableIndexes(conn, schema, table, factory);
 
         setUniquColumnByIndex(table);
     }
@@ -571,13 +454,7 @@ public final class TiberoSchemaFetcher extends AbstractJDBCSchemaFetcher {
             throws SQLException {
         schema.setTriggers(
                 routineTriggerGrantLoader.getAllTriggers(
-                        conn,
-                        schema.getName(),
-                        schema.getName(),
-                        factory,
-                        SQL_SHOW_ALL_OBJECTS,
-                        SQL_SHOW_DDL,
-                        OBJECT_TYPE_TRIGGER));
+                        conn, schema.getName(), schema.getName(), factory, OBJECT_TYPE_TRIGGER));
     }
 
     /**
@@ -615,8 +492,7 @@ public final class TiberoSchemaFetcher extends AbstractJDBCSchemaFetcher {
     protected void buildGrant(
             Connection conn, Catalog catalog, Schema schema, IBuildSchemaFilter filter)
             throws SQLException {
-        routineTriggerGrantLoader.buildGrant(
-                conn, schema, factory, SQL_SHOW_GRANT_TABLE, SQL_SHOW_GRANT_VIEW);
+        routineTriggerGrantLoader.buildGrant(conn, schema, factory);
     }
 
     @Override
@@ -628,11 +504,9 @@ public final class TiberoSchemaFetcher extends AbstractJDBCSchemaFetcher {
             throws SQLException {
         super.buildViews(conn, catalog, schema, filter);
         Map<String, String> comments =
-                commentQueryLoader.queryMap(
-                        conn, SQL_GET_ALL_TAB_COMMENTS, "TABLE_NAME", "COMMENTS", schema.getName());
+                commentQueryLoader.findAllTabComments(conn, schema.getName());
         Map<String, String> queryTexts =
-                commentQueryLoader.queryMap(
-                        conn, SQL_GET_ALL_VIEW_QUERYTEXTS, "VIEW_NAME", "TEXT", schema.getName());
+                commentQueryLoader.findAllViewQuerySpecs(conn, schema.getName());
         for (View view : schema.getViews()) {
             view.setComment(commentEditor(comments.get(view.getName())));
             view.setQuerySpec(queryTexts.get(view.getName()));
@@ -727,32 +601,23 @@ public final class TiberoSchemaFetcher extends AbstractJDBCSchemaFetcher {
      */
     protected String getTableComment(Connection conn, String schemaName, String objectName) {
         String comment =
-                commentQueryLoader.getComment(
-                        conn,
-                        SQL_GET_TABLE_COMMENT,
-                        "Get table comment error: " + objectName,
-                        schemaName,
-                        objectName);
+                commentQueryLoader.getTableComment(
+                        conn, "Get table comment error: " + objectName, schemaName, objectName);
         return comment == null ? null : commentEditor(comment);
     }
 
     protected String getViewComment(Connection conn, String schemaName, String viewName) {
         String comment =
-                commentQueryLoader.getComment(
-                        conn,
-                        SQL_GET_VIEW_COMMENT,
-                        "Get view comment error: " + viewName,
-                        schemaName,
-                        viewName);
+                commentQueryLoader.getViewComment(
+                        conn, "Get view comment error: " + viewName, schemaName, viewName);
         return comment == null ? null : commentEditor(comment);
     }
 
     private String getViewColumnComment(
             Connection conn, String schemaName, String viewName, Column column) {
         String comment =
-                commentQueryLoader.getComment(
+                commentQueryLoader.getViewColumnComment(
                         conn,
-                        SQL_GET_VIEW_COLUMN_COMMENT,
                         "Get view column comment error: " + viewName + "." + column.getName(),
                         schemaName,
                         viewName,
@@ -774,8 +639,7 @@ public final class TiberoSchemaFetcher extends AbstractJDBCSchemaFetcher {
             throws SQLException {
         LOG.debug("[SQL]{}, 1={}, 2={}", SQL_SHOW_VIEW_QUERYTEXT, schemaName, viewName);
 
-        return commentQueryLoader.getViewQueryText(
-                conn, SQL_SHOW_VIEW_QUERYTEXT, schemaName, viewName);
+        return commentQueryLoader.getViewQueryText(conn, schemaName, viewName);
     }
 
     /**

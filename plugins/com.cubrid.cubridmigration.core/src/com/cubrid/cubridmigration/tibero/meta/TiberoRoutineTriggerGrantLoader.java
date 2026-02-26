@@ -29,6 +29,8 @@
  */
 package com.cubrid.cubridmigration.tibero.meta;
 
+import static com.cubrid.cubridmigration.tibero.meta.TiberoSqlConstants.*;
+
 import com.cubrid.common.log.LogUtil;
 import com.cubrid.cubridmigration.core.common.Closer;
 import com.cubrid.cubridmigration.core.dbobject.DBObjectFactory;
@@ -67,18 +69,15 @@ class TiberoRoutineTriggerGrantLoader {
             final String dbName,
             final String ownerName,
             final DBObjectFactory factory,
-            final String sqlShowAllObjects,
-            final String sqlShowDdl,
             final String objectTypeTrigger)
             throws SQLException {
-        final List<String> list =
-                getRoutines(conn, objectTypeTrigger, ownerName, sqlShowAllObjects);
+        final List<String> list = getRoutines(conn, objectTypeTrigger, ownerName);
         final List<Trigger> triggers = new ArrayList<Trigger>();
 
         for (String name : list) {
             final Trigger trigger = factory.createTrigger();
             trigger.setName(name);
-            final String trigDDL = getObjectDDL(conn, dbName, name, objectTypeTrigger, sqlShowDdl);
+            final String trigDDL = getObjectDDL(conn, dbName, name, objectTypeTrigger);
             LOG.debug("[VAR]trigDDL={}", trigDDL);
 
             trigger.setDDL(trigDDL);
@@ -88,19 +87,13 @@ class TiberoRoutineTriggerGrantLoader {
         return triggers;
     }
 
-    void buildGrant(
-            Connection conn,
-            Schema schema,
-            DBObjectFactory factory,
-            String sqlShowGrantTable,
-            String sqlShowGrantView)
-            throws SQLException {
+    void buildGrant(Connection conn, Schema schema, DBObjectFactory factory) throws SQLException {
         PreparedStatement stmt = null;
         ResultSet rs = null;
 
         try {
-            stmt = conn.prepareStatement(sqlShowGrantTable);
-            LOG.debug("[SQL]{}, 1={}", sqlShowGrantTable, schema.getName());
+            stmt = conn.prepareStatement(SQL_SHOW_GRANT_TABLE);
+            LOG.debug("[SQL]{}, 1={}", SQL_SHOW_GRANT_TABLE, schema.getName());
 
             stmt.setString(1, schema.getName().toUpperCase());
             rs = stmt.executeQuery();
@@ -125,8 +118,8 @@ class TiberoRoutineTriggerGrantLoader {
             Closer.close(rs);
             Closer.close(stmt);
 
-            stmt = conn.prepareStatement(sqlShowGrantView);
-            LOG.debug("[SQL]{}, 1={}", sqlShowGrantView, schema.getName());
+            stmt = conn.prepareStatement(SQL_SHOW_GRANT_VIEW);
+            LOG.debug("[SQL]{}, 1={}", SQL_SHOW_GRANT_VIEW, schema.getName());
 
             stmt.setString(1, schema.getName().toUpperCase());
             rs = stmt.executeQuery();
@@ -151,11 +144,7 @@ class TiberoRoutineTriggerGrantLoader {
 
     private void getPlcsqlProcedureDDL(Connection conn, List<TiberoPlsqlProcedure> procedures)
             throws SQLException {
-        String sql =
-                "SELECT TEXT FROM ALL_SOURCE WHERE OWNER = ? AND NAME = ? AND TYPE = ? ORDER BY"
-                        + " LINE";
-
-        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+        try (PreparedStatement stmt = conn.prepareStatement(SQL_GET_PROCEDURE_DDL)) {
             for (TiberoPlsqlProcedure proc : procedures) {
                 stmt.setString(1, proc.getOwner());
                 stmt.setString(2, proc.getName());
@@ -176,17 +165,8 @@ class TiberoRoutineTriggerGrantLoader {
     private void getPlcsqlProcedureMetaData(
             Connection conn, String ownerName, List<TiberoPlsqlProcedure> procedures)
             throws SQLException {
-        String sql =
-                "SELECT o.owner, o.object_name, p.authid, o.object_type"
-                        + " FROM all_objects o LEFT JOIN all_procedures p"
-                        + " ON p.owner = o.owner"
-                        + " AND p.object_name = o.object_name"
-                        + " AND p.procedure_name IS NULL"
-                        + " WHERE o.owner = ?"
-                        + " AND o.object_type IN ('PROCEDURE', 'FUNCTION')";
-
         ResultSet rs = null;
-        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+        try (PreparedStatement stmt = conn.prepareStatement(SQL_GET_PROCEDURE_METADATA)) {
             stmt.setString(1, ownerName);
 
             rs = stmt.executeQuery();
@@ -208,8 +188,7 @@ class TiberoRoutineTriggerGrantLoader {
             final Connection conn,
             final String schemaName,
             final String objectName,
-            final String objectType,
-            final String sqlShowDdl)
+            final String objectType)
             throws SQLException {
         if (StringUtils.isBlank(objectName)) {
             throw new IllegalArgumentException("The tibero object name is null!");
@@ -218,11 +197,12 @@ class TiberoRoutineTriggerGrantLoader {
         PreparedStatement preStmt = null;
         ResultSet rs = null;
         try {
-            preStmt = conn.prepareStatement(sqlShowDdl);
+            preStmt = conn.prepareStatement(SQL_SHOW_DDL);
             preStmt.setString(1, objectType);
             preStmt.setString(2, objectName);
             preStmt.setString(3, schemaName);
-            LOG.debug("[SQL]{}, 1={}, 2={}, 3={}", sqlShowDdl, objectType, objectName, schemaName);
+            LOG.debug(
+                    "[SQL]{}, 1={}, 2={}, 3={}", SQL_SHOW_DDL, objectType, objectName, schemaName);
 
             rs = preStmt.executeQuery();
 
@@ -241,18 +221,14 @@ class TiberoRoutineTriggerGrantLoader {
     }
 
     private List<String> getRoutines(
-            final Connection conn,
-            final String type,
-            final String ownerName,
-            final String sqlShowAllObjects)
-            throws SQLException {
+            final Connection conn, final String type, final String ownerName) throws SQLException {
         PreparedStatement stmt = null;
         ResultSet rs = null;
         try {
-            stmt = conn.prepareStatement(sqlShowAllObjects);
+            stmt = conn.prepareStatement(SQL_SHOW_ALL_OBJECTS);
             stmt.setString(1, type);
             stmt.setString(2, ownerName);
-            LOG.debug("[SQL]{}, 1={}, 2={}", sqlShowAllObjects, type, ownerName);
+            LOG.debug("[SQL]{}, 1={}, 2={}", SQL_SHOW_ALL_OBJECTS, type, ownerName);
             rs = stmt.executeQuery();
             final Set<String> list = new HashSet<String>();
             while (rs.next()) {

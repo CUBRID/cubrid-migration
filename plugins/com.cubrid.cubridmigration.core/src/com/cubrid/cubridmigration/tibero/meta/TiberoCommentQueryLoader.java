@@ -29,6 +29,8 @@
  */
 package com.cubrid.cubridmigration.tibero.meta;
 
+import static com.cubrid.cubridmigration.tibero.meta.TiberoSqlConstants.*;
+
 import com.cubrid.common.log.LogUtil;
 import com.cubrid.cubridmigration.core.common.Closer;
 
@@ -45,16 +47,39 @@ class TiberoCommentQueryLoader {
 
     private static final Logger LOG = LogUtil.getLogger(TiberoCommentQueryLoader.class);
 
-    String getComment(Connection conn, String sql, String errorMessage, String... params) {
-        return querySingleString(conn, sql, "COMMENTS", errorMessage, params);
+    String getComment(Connection conn, String errorMessage, String schemaName, String objectName) {
+        return querySingleString(
+                conn, SQL_GET_TABLE_COMMENT, "COMMENTS", errorMessage, schemaName, objectName);
     }
 
-    String getViewQueryText(Connection conn, String sql, String schemaName, String viewName)
+    String getViewComment(
+            Connection conn, String errorMessage, String schemaName, String viewName) {
+        return querySingleString(
+                conn, SQL_GET_VIEW_COMMENT, "COMMENTS", errorMessage, schemaName, viewName);
+    }
+
+    String getViewColumnComment(
+            Connection conn,
+            String errorMessage,
+            String schemaName,
+            String viewName,
+            String columnName) {
+        return querySingleString(
+                conn,
+                SQL_GET_VIEW_COLUMN_COMMENT,
+                "COMMENTS",
+                errorMessage,
+                schemaName,
+                viewName,
+                columnName);
+    }
+
+    String getViewQueryText(Connection conn, String schemaName, String viewName)
             throws SQLException {
         ResultSet rs = null;
         PreparedStatement stmt = null;
         try {
-            stmt = conn.prepareStatement(sql);
+            stmt = conn.prepareStatement(SQL_SHOW_VIEW_QUERYTEXT);
             stmt.setString(1, schemaName);
             stmt.setString(2, viewName);
             rs = stmt.executeQuery();
@@ -68,7 +93,15 @@ class TiberoCommentQueryLoader {
         }
     }
 
-    Map<String, String> queryMap(
+    Map<String, String> findAllTabComments(Connection conn, String schemaName) {
+        return queryMap(conn, SQL_GET_ALL_TAB_COMMENTS, "TABLE_NAME", "COMMENTS", schemaName);
+    }
+
+    Map<String, String> findAllViewQuerySpecs(Connection conn, String schemaName) {
+        return queryMap(conn, SQL_GET_ALL_VIEW_QUERYTEXTS, "VIEW_NAME", "TEXT", schemaName);
+    }
+
+    private Map<String, String> queryMap(
             Connection conn, String sql, String keyColumn, String valueColumn, String... params) {
         Map<String, String> result = new HashMap<>();
         try (PreparedStatement pstmt = conn.prepareStatement(sql)) {

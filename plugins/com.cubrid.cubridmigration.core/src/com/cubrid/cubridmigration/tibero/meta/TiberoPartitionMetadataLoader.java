@@ -29,6 +29,8 @@
  */
 package com.cubrid.cubridmigration.tibero.meta;
 
+import static com.cubrid.cubridmigration.tibero.meta.TiberoSqlConstants.*;
+
 import com.cubrid.common.log.LogUtil;
 import com.cubrid.cubridmigration.core.common.Closer;
 import com.cubrid.cubridmigration.core.common.DBUtils;
@@ -57,16 +59,11 @@ class TiberoPartitionMetadataLoader {
             final Connection conn,
             final Schema schema,
             final DBObjectFactory factory,
-            final String sqlGetPartTables,
-            final String sqlGetPartColumn,
-            final String sqlGetSubpartKeyColumn,
-            final String sqlGetPartitions,
-            final String sqlGetSubPartTables,
             final PartitionDDLProvider partitionDDLProvider) {
         ResultSet rs = null;
         PreparedStatement stmt = null;
         try {
-            stmt = conn.prepareStatement(sqlGetPartTables);
+            stmt = conn.prepareStatement(SQL_GET_PART_TABLES);
             stmt.setString(1, schema.getName());
             rs = stmt.executeQuery();
 
@@ -111,23 +108,19 @@ class TiberoPartitionMetadataLoader {
             Closer.close(stmt);
         }
 
-        addPartitionColumns(conn, schema, sqlGetPartColumn, sqlGetSubpartKeyColumn);
-        addPartitionTables(conn, schema, factory, sqlGetPartitions);
-        addSubPartitionTables(conn, schema, factory, sqlGetSubPartTables);
+        addPartitionColumns(conn, schema);
+        addPartitionTables(conn, schema, factory);
+        addSubPartitionTables(conn, schema, factory);
     }
 
-    private void addPartitionColumns(
-            final Connection conn,
-            final Schema schema,
-            final String sqlGetPartColumn,
-            final String sqlGetSubpartKeyColumn) {
+    private void addPartitionColumns(final Connection conn, final Schema schema) {
         ResultSet rs = null;
         PreparedStatement stmt = null;
 
         try {
-            stmt = conn.prepareStatement(sqlGetPartColumn);
+            stmt = conn.prepareStatement(SQL_GET_PART_COLUMN);
             stmt.setString(1, schema.getName());
-            LOG.debug("[SQL]{}, 1={}", sqlGetPartColumn, schema.getName());
+            LOG.debug("[SQL]{}, 1={}", SQL_GET_PART_COLUMN, schema.getName());
 
             rs = stmt.executeQuery();
             while (rs.next()) {
@@ -155,9 +148,9 @@ class TiberoPartitionMetadataLoader {
         }
 
         try {
-            stmt = conn.prepareStatement(sqlGetSubpartKeyColumn);
+            stmt = conn.prepareStatement(SQL_GET_SUBPART_KEY_COLUMN);
             stmt.setString(1, schema.getName());
-            LOG.debug("[SQL]{}, 1={}", sqlGetSubpartKeyColumn, schema.getName());
+            LOG.debug("[SQL]{}, 1={}", SQL_GET_SUBPART_KEY_COLUMN, schema.getName());
 
             rs = stmt.executeQuery();
             while (rs.next()) {
@@ -185,17 +178,14 @@ class TiberoPartitionMetadataLoader {
     }
 
     private void addPartitionTables(
-            final Connection conn,
-            final Schema schema,
-            final DBObjectFactory factory,
-            final String sqlGetPartitions) {
+            final Connection conn, final Schema schema, final DBObjectFactory factory) {
         ResultSet rs = null;
         PreparedStatement stmt = null;
 
         try {
-            stmt = conn.prepareStatement(sqlGetPartitions);
+            stmt = conn.prepareStatement(SQL_GET_PARTITIONS);
             stmt.setString(1, schema.getName());
-            LOG.debug("[SQL]{}, 1={}", sqlGetPartitions, schema.getName());
+            LOG.debug("[SQL]{}, 1={}", SQL_GET_PARTITIONS, schema.getName());
 
             rs = stmt.executeQuery();
             while (rs.next()) {
@@ -234,17 +224,14 @@ class TiberoPartitionMetadataLoader {
     }
 
     private void addSubPartitionTables(
-            final Connection conn,
-            final Schema schema,
-            final DBObjectFactory factory,
-            final String sqlGetSubPartTables) {
+            final Connection conn, final Schema schema, final DBObjectFactory factory) {
         ResultSet rs = null;
         PreparedStatement stmt = null;
 
         try {
-            stmt = conn.prepareStatement(sqlGetSubPartTables);
+            stmt = conn.prepareStatement(SQL_GET_SUB_PART_TABLES);
             stmt.setString(1, schema.getName());
-            LOG.debug("[SQL]{}, 1={}", sqlGetSubPartTables, schema.getName());
+            LOG.debug("[SQL]{}, 1={}", SQL_GET_SUB_PART_TABLES, schema.getName());
 
             rs = stmt.executeQuery();
             while (rs.next()) {
