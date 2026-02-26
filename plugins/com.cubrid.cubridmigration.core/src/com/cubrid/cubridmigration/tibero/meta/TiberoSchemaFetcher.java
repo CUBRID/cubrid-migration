@@ -71,12 +71,6 @@ import java.util.Locale;
 import java.util.TimeZone;
 
 public final class TiberoSchemaFetcher extends AbstractJDBCSchemaFetcher {
-    private static final List<Object> COLUMNS_RESET1 =
-            CommonUtils.createListWithArray(
-                    new Object[] {"CHAR", "NCHAR", "VARCHAR", "VARCHAR2", "NVARCHAR2", "LONG"});
-
-    private static final List<Object> COLUMNS_RESET2 =
-            CommonUtils.createListWithArray(new Object[] {"RAW", "LONG RAW"});
 
     private static final Logger LOG = LogUtil.getLogger(TiberoSchemaFetcher.class);
 
@@ -87,6 +81,13 @@ public final class TiberoSchemaFetcher extends AbstractJDBCSchemaFetcher {
             new TiberoConstraintIndexMetadataLoader();
     private final TiberoRoutineTriggerGrantLoader routineTriggerGrantLoader =
             new TiberoRoutineTriggerGrantLoader();
+
+    private static final List<Object> COLUMNS_RESET1 =
+            CommonUtils.createListWithArray(
+                    new Object[] {"CHAR", "NCHAR", "VARCHAR", "VARCHAR2", "NVARCHAR2", "LONG"});
+
+    private static final List<Object> COLUMNS_RESET2 =
+            CommonUtils.createListWithArray(new Object[] {"RAW", "LONG RAW"});
 
     private static final String OBJECT_TYPE_TABLE = "TABLE";
     private static final String OBJECT_TYPE_TRIGGER = "TRIGGER";
@@ -216,17 +217,15 @@ public final class TiberoSchemaFetcher extends AbstractJDBCSchemaFetcher {
         setCatalogTimezone(catalog);
         final List<Schema> schemaList = new ArrayList<Schema>(catalog.getSchemas());
         for (Schema schema : schemaList) {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("[VAR]schema=" + schema.getName());
-            }
+            LOG.debug("[VAR]schema={}", schema.getName());
+
             // get tables
             List<Table> tableList = schema.getTables();
             if (tableList == null) {
                 tableList = new ArrayList<Table>();
             }
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("[VAR]tableList.count=" + tableList.size());
-            }
+            LOG.debug("[VAR]tableList.count={}", tableList.size());
+
             for (Table table : tableList) {
                 String comment = getTableComment(conn, schema.getName(), table.getName());
                 table.setComment(comment);
@@ -236,9 +235,8 @@ public final class TiberoSchemaFetcher extends AbstractJDBCSchemaFetcher {
             if (viewList == null) {
                 viewList = new ArrayList<View>();
             }
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("[VAR]viewList.count=" + viewList.size());
-            }
+            LOG.debug("[VAR]viewList.count={}", viewList.size());
+
             for (View view : viewList) {
                 view.setQuerySpec(getQueryText(conn, schema.getName(), view.getName(), view));
 
@@ -284,9 +282,6 @@ public final class TiberoSchemaFetcher extends AbstractJDBCSchemaFetcher {
      */
     protected void buildPartitions(
             final Connection conn, final Catalog catalog, final Schema schema) {
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("[IN]buildPartitions()");
-        }
         partitionMetadataLoader.buildPartitions(
                 conn,
                 schema,
@@ -315,10 +310,6 @@ public final class TiberoSchemaFetcher extends AbstractJDBCSchemaFetcher {
     protected void buildProcedures(
             Connection conn, Catalog catalog, Schema schema, IBuildSchemaFilter filter)
             throws SQLException {
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("[IN]buildProcedures()");
-        }
-
         List<PlcsqlProcedure> procedures = new ArrayList<>();
         List<PlcsqlFunction> functions = new ArrayList<>();
         List<TiberoPlsqlProcedure> tiberoProcedures =
@@ -359,26 +350,13 @@ public final class TiberoSchemaFetcher extends AbstractJDBCSchemaFetcher {
             final Schema schema,
             IBuildSchemaFilter filter)
             throws SQLException {
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("[IN]buildSequence()");
-        }
-        PreparedStatement stmt = null; // NOPMD
-        ResultSet rs = null; // NOPMD
+        PreparedStatement stmt = null;
+        ResultSet rs = null;
 
         try {
             stmt = conn.prepareStatement(SQL_SHOW_SEQUENCES);
             stmt.setString(1, schema.getName());
-            if (LOG.isDebugEnabled()) {
-                LOG.debug(
-                        "[SQL]"
-                                + SQL_SHOW_SEQUENCES
-                                + ", "
-                                + "1="
-                                + schema.getName()
-                                + ", "
-                                + "2="
-                                + schema.getName());
-            }
+            LOG.debug("[SQL]{}, 1={}", SQL_SHOW_SEQUENCES, schema.getName());
 
             rs = stmt.executeQuery();
             while (rs.next()) {
@@ -416,26 +394,13 @@ public final class TiberoSchemaFetcher extends AbstractJDBCSchemaFetcher {
     protected void buildSynonym(
             Connection conn, Catalog catlog, Schema schema, IBuildSchemaFilter filter)
             throws SQLException {
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("[IN]buildSynonym()");
-        }
-        PreparedStatement stmt = null; // NOPMD
-        ResultSet rs = null; // NOPMD
+        PreparedStatement stmt = null;
+        ResultSet rs = null;
 
         try {
             stmt = conn.prepareStatement(SQL_SHOW_SYNONYM);
             stmt.setString(1, schema.getName());
-            if (LOG.isDebugEnabled()) {
-                LOG.debug(
-                        "[SQL]"
-                                + SQL_SHOW_SYNONYM
-                                + ", "
-                                + "1="
-                                + schema.getName()
-                                + ", "
-                                + "2="
-                                + schema.getName());
-            }
+            LOG.debug("[SQL]{}, 1={}", SQL_SHOW_SYNONYM, schema.getName());
 
             rs = stmt.executeQuery();
             while (rs.next()) {
@@ -468,9 +433,6 @@ public final class TiberoSchemaFetcher extends AbstractJDBCSchemaFetcher {
      * @throws SQLException e
      */
     public Table buildSQLTable(ResultSetMetaData resultSetMeta) throws SQLException {
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("[IN]buildSQLTable()");
-        }
         TiberoDataTypeHelper dtHelper = TiberoDataTypeHelper.getInstance(null);
         Table sourceTable = super.buildSQLTable(resultSetMeta);
         List<Column> columns = sourceTable.getColumns();
@@ -504,23 +466,13 @@ public final class TiberoSchemaFetcher extends AbstractJDBCSchemaFetcher {
             stmt = conn.prepareStatement(SQL_GET_COLUMNS);
             stmt.setString(1, schema.getName());
             stmt.setString(2, table.getName());
-            if (LOG.isDebugEnabled()) {
-                LOG.debug(
-                        "[SQL]"
-                                + SQL_GET_COLUMNS
-                                + ", 1="
-                                + schema.getName()
-                                + ", 2="
-                                + table.getName());
-            }
+            LOG.debug("[SQL]{}, 1={}, 2={}", SQL_GET_COLUMNS, schema.getName(), table.getName());
             TiberoDataTypeHelper dtHelper = TiberoDataTypeHelper.getInstance(null);
             rs = stmt.executeQuery();
             while (rs.next()) {
                 try {
                     String columnName = rs.getString("COLUMN_NAME");
-                    if (LOG.isDebugEnabled()) {
-                        LOG.debug("[VAR]columnName=" + columnName);
-                    }
+                    LOG.debug("[VAR]columnName={}", columnName);
                     Column column = table.getColumnWithNoCase(columnName);
                     if (column == null) {
                         continue;
@@ -563,7 +515,7 @@ public final class TiberoSchemaFetcher extends AbstractJDBCSchemaFetcher {
                     String comment = rs.getString("COMMENTS");
                     column.setComment(commentEditor(comment));
                 } catch (Exception ex) {
-                    LOG.error("Read table column information error:" + table.getName(), ex);
+                    LOG.error("Read table column information error:{}", table.getName(), ex);
                 }
             }
         } finally {
@@ -636,10 +588,6 @@ public final class TiberoSchemaFetcher extends AbstractJDBCSchemaFetcher {
     protected void buildTriggers(
             Connection conn, Catalog catalog, Schema schema, IBuildSchemaFilter filter)
             throws SQLException {
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("[IN]buildTriggers()");
-        }
-
         schema.setTriggers(
                 routineTriggerGrantLoader.getAllTriggers(
                         conn,
@@ -663,16 +611,12 @@ public final class TiberoSchemaFetcher extends AbstractJDBCSchemaFetcher {
     protected void buildViewColumns(
             final Connection conn, final Catalog catalog, final Schema schema, final View view)
             throws SQLException {
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("[IN]buildViewColumns()");
-        }
         super.buildViewColumns(conn, catalog, schema, view);
         TiberoDataTypeHelper dtHelper = TiberoDataTypeHelper.getInstance(null);
         for (Column column : view.getColumns()) {
             String shownDataType = dtHelper.getShownDataType(column);
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("[VAR]shownDataType=" + shownDataType + ", column=" + column);
-            }
+            LOG.debug("[VAR]shownDataType={}, column={}", shownDataType, column);
+
             column.setShownDataType(shownDataType);
             column.setComment(getViewColumnComment(conn, schema.getName(), view.getName(), column));
         }
@@ -690,9 +634,6 @@ public final class TiberoSchemaFetcher extends AbstractJDBCSchemaFetcher {
     protected void buildGrant(
             Connection conn, Catalog catalog, Schema schema, IBuildSchemaFilter filter)
             throws SQLException {
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("[IN]buildGrant()");
-        }
         routineTriggerGrantLoader.buildGrant(
                 conn, schema, factory, SQL_SHOW_GRANT_TABLE, SQL_SHOW_GRANT_VIEW);
     }
@@ -708,9 +649,6 @@ public final class TiberoSchemaFetcher extends AbstractJDBCSchemaFetcher {
      */
     protected List<String> getAllTableNames(
             final Connection conn, final Catalog catalog, final Schema schema) throws SQLException {
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("[IN]getAllTableNames()");
-        }
         final DatabaseMetaData metaData = conn.getMetaData();
         final ResultSet tables =
                 metaData.getTables(
@@ -747,9 +685,6 @@ public final class TiberoSchemaFetcher extends AbstractJDBCSchemaFetcher {
      */
     protected List<String> getAllViewNames(
             final Connection conn, final Catalog catalog, final Schema schema) throws SQLException {
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("[IN]getAllViewNames()");
-        }
         List<String> viewNameList = new ArrayList<String>();
         final String owner = schema.getName();
         final ResultSet rs =
@@ -836,12 +771,8 @@ public final class TiberoSchemaFetcher extends AbstractJDBCSchemaFetcher {
     private String getQueryText(
             final Connection conn, String schemaName, final String viewName, View view)
             throws SQLException {
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("[IN]getQueryText()");
-        }
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("[SQL]" + SQL_SHOW_VIEW_QUERYTEXT + ", 1=" + schemaName + ", 1=" + viewName);
-        }
+        LOG.debug("[SQL]{}, 1={}, 2={}", SQL_SHOW_VIEW_QUERYTEXT, schemaName, viewName);
+
         return commentQueryLoader.getViewQueryText(
                 conn, SQL_SHOW_VIEW_QUERYTEXT, schemaName, viewName);
     }
@@ -853,9 +784,6 @@ public final class TiberoSchemaFetcher extends AbstractJDBCSchemaFetcher {
      * @param column Column
      */
     private void resetTiberoColumnPrecision(Column column) {
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("[IN]resetTiberoColumnPrecision()");
-        }
         if (column.getPrecision() == null || column.getPrecision() == 0) {
             String dataType = column.getDataType();
 
@@ -887,16 +815,12 @@ public final class TiberoSchemaFetcher extends AbstractJDBCSchemaFetcher {
      * @param catalog Catalog
      */
     private void setCharset(final Connection conn, final Catalog catalog) {
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("[IN]setCharset()");
-        }
         Statement stmt = null; // NOPMD
         ResultSet rs = null; // NOPMD
         try {
             final String sqlStr = "SELECT * FROM NLS_DATABASE_PARAMETERS";
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("[SQL]" + sqlStr);
-            }
+            LOG.debug("[SQL]" + sqlStr);
+
             stmt = conn.createStatement();
             rs = stmt.executeQuery(sqlStr);
             while (rs.next()) {

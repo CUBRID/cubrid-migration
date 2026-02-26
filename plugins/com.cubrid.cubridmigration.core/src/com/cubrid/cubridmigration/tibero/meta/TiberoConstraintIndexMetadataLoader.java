@@ -32,11 +32,11 @@ class TiberoConstraintIndexMetadataLoader {
             final DBObjectFactory factory,
             final String sqlGetEnabledPk)
             throws SQLException {
-        LOG.debug("[IN] buildTablePK()");
         try (PreparedStatement pstmt = conn.prepareStatement(sqlGetEnabledPk)) {
             pstmt.setString(1, schema.getName());
             pstmt.setString(2, table.getName());
-            LOG.debug("[SQL]{} (1={}, 2={})", sqlGetEnabledPk, schema.getName(), table.getName());
+            LOG.debug("[SQL]{} 1={}, 2={}", sqlGetEnabledPk, schema.getName(), table.getName());
+
             try (ResultSet rs = pstmt.executeQuery()) {
                 PK primaryKey = null;
 
@@ -72,11 +72,10 @@ class TiberoConstraintIndexMetadataLoader {
             final DBObjectFactory factory,
             final String sqlGetEnabledFks)
             throws SQLException {
-        LOG.debug("[IN] buildTableFKs()");
         try (PreparedStatement pstmt = conn.prepareStatement(sqlGetEnabledFks)) {
             pstmt.setString(1, schema.getName());
             pstmt.setString(2, table.getName());
-            LOG.debug("[SQL]{} (1={}, 2={})", sqlGetEnabledFks, schema.getName(), table.getName());
+            LOG.debug("[SQL]{} 1={}, 2={}", sqlGetEnabledFks, schema.getName(), table.getName());
 
             try (ResultSet rs = pstmt.executeQuery()) {
                 String fkName = "";
@@ -84,7 +83,8 @@ class TiberoConstraintIndexMetadataLoader {
 
                 while (rs.next()) {
                     final String newFkName = rs.getString("FK_NAME");
-                    LOG.debug("[VAR]newFkName=" + newFkName);
+                    LOG.debug("[VAR]newFkName={}", newFkName);
+
                     if (fkName.compareToIgnoreCase(newFkName) != 0) {
                         if (foreignKey != null) {
                             table.addFK(foreignKey);
@@ -133,18 +133,14 @@ class TiberoConstraintIndexMetadataLoader {
             final String sqlGetTableIndex,
             final String sqlGetIndexColumns)
             throws SQLException {
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("[IN]buildTableIndexes()");
-        }
         ResultSet rs = null;
         PreparedStatement stmt = null;
         try {
             stmt = conn.prepareStatement(sqlGetTableIndex);
             stmt.setString(1, schema.getName());
             stmt.setString(2, table.getName());
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("[SQL]" + sqlGetTableIndex + ", 1=" + table.getName());
-            }
+            LOG.debug("[SQL]{}, 1={}, 2={}", sqlGetTableIndex, schema.getName(), table.getName());
+
             rs = stmt.executeQuery();
             while (rs.next()) {
                 String indexName = rs.getString("INDEX_NAME");
@@ -164,11 +160,9 @@ class TiberoConstraintIndexMetadataLoader {
                 }
                 table.addIndex(idx);
             }
-            if (LOG.isDebugEnabled()) {
-                LOG.debug(
-                        "[VAR]indexes.count="
-                                + (table.getIndexes() == null ? null : table.getIndexes()));
-            }
+            LOG.debug(
+                    "[VAR]indexes.count={}",
+                    (table.getIndexes() == null ? 0 : table.getIndexes().size()));
         } finally {
             Closer.close(rs);
             Closer.close(stmt);
@@ -180,17 +174,13 @@ class TiberoConstraintIndexMetadataLoader {
                 stmt.setString(1, schema.getName());
                 stmt.setString(2, table.getName());
                 stmt.setString(3, idx.getName());
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug(
-                            "[SQL]"
-                                    + sqlGetIndexColumns
-                                    + ", "
-                                    + "1="
-                                    + table.getName()
-                                    + ", "
-                                    + "2="
-                                    + idx.getName());
-                }
+                LOG.debug(
+                        "[SQL]{}, 1={}, 2={}, 3={}",
+                        sqlGetIndexColumns,
+                        schema.getName(),
+                        table.getName(),
+                        idx.getName());
+
                 rs = stmt.executeQuery();
                 while (rs.next()) {
                     Column col = table.getColumnByName(rs.getString("COLUMN_NAME"));
@@ -223,9 +213,7 @@ class TiberoConstraintIndexMetadataLoader {
         List<Index> validIndexes = new ArrayList<Index>();
         for (Index idx : table.getIndexes()) {
             if (idx.getColumnNames().isEmpty()) {
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("Skip index without columns: " + idx.getName());
-                }
+                LOG.debug("Skip index without columns: {}", idx.getName());
                 continue;
             }
             validIndexes.add(idx);

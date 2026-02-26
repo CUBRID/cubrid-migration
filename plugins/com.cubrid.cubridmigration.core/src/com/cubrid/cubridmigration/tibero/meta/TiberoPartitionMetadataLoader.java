@@ -72,9 +72,8 @@ class TiberoPartitionMetadataLoader {
 
             while (rs.next()) {
                 String tableName = rs.getString("TABLE_NAME");
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("[VAR]tableName=" + tableName);
-                }
+                LOG.debug("[VAR]tableName={}", tableName);
+
                 Table table = schema.getTableByName(tableName);
                 if (table == null) {
                     continue;
@@ -103,9 +102,7 @@ class TiberoPartitionMetadataLoader {
                 partitionInfo.setSubPartitionColumnCount(subPartitionColumnCount);
 
                 table.setPartitionInfo(partitionInfo);
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("[VAR]partitionInfo=" + partitionInfo);
-                }
+                LOG.debug("[VAR]partitionInfo={}", partitionInfo);
             }
         } catch (Exception ex) {
             LOG.error("", ex);
@@ -130,16 +127,13 @@ class TiberoPartitionMetadataLoader {
         try {
             stmt = conn.prepareStatement(sqlGetPartColumn);
             stmt.setString(1, schema.getName());
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("[SQL]" + sqlGetPartColumn);
-            }
+            LOG.debug("[SQL]{}, 1={}", sqlGetPartColumn, schema.getName());
+
             rs = stmt.executeQuery();
             while (rs.next()) {
                 String tableName = rs.getString("NAME");
                 String columnName = rs.getString("COLUMN_NAME");
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("[VAR]tableName=" + tableName + ", columnName=" + columnName);
-                }
+                LOG.debug("[VAR]tableName={}, columnName={}", tableName, columnName);
 
                 Table table = schema.getTableByName(tableName);
                 if (table == null) {
@@ -148,9 +142,7 @@ class TiberoPartitionMetadataLoader {
 
                 PartitionInfo partitionInfo = table.getPartitionInfo();
                 partitionInfo.addPartitionColumn(table.getColumnByName(columnName));
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("[VAR]partitionInfo=" + partitionInfo);
-                }
+                LOG.debug("[VAR]partitionInfo={}", partitionInfo);
             }
         } catch (Exception ex) {
             LOG.error("", ex);
@@ -162,25 +154,21 @@ class TiberoPartitionMetadataLoader {
         try {
             stmt = conn.prepareStatement(sqlGetSubpartKeyColumn);
             stmt.setString(1, schema.getName());
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("[SQL]" + sqlGetSubpartKeyColumn);
-            }
+            LOG.debug("[SQL]{}, 1={}", sqlGetSubpartKeyColumn, schema.getName());
+
             rs = stmt.executeQuery();
             while (rs.next()) {
                 String tableName = rs.getString("NAME");
                 String columnName = rs.getString("COLUMN_NAME");
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("[VAR]tableName=" + tableName + ", columnName=" + columnName);
-                }
+                LOG.debug("[VAR]tableName={}, columnName={}", tableName, columnName);
+
                 Table table = schema.getTableByName(tableName);
                 if (table == null) {
                     continue;
                 }
                 PartitionInfo partitionInfo = table.getPartitionInfo();
                 partitionInfo.addSubPartitionColumn(table.getColumnByName(columnName));
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("[VAR]partitionInfo=" + partitionInfo);
-                }
+                LOG.debug("[VAR]partitionInfo={}", partitionInfo);
             }
         } catch (Exception ex) {
             LOG.error("", ex);
@@ -201,21 +189,13 @@ class TiberoPartitionMetadataLoader {
         try {
             stmt = conn.prepareStatement(sqlGetPartitions);
             stmt.setString(1, schema.getName());
-            if (LOG.isDebugEnabled()) {
-                LOG.debug(
-                        "[SQL]"
-                                + sqlGetPartitions
-                                + ", 1="
-                                + schema.getName()
-                                + ", 2="
-                                + schema.getName());
-            }
+            LOG.debug("[SQL]{}, 1={}", sqlGetPartitions, schema.getName());
+
             rs = stmt.executeQuery();
             while (rs.next()) {
                 String tableName = rs.getString("TABLE_NAME");
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("[VAR]tableName=" + tableName);
-                }
+                LOG.debug("[VAR]tableName={}", tableName);
+
                 Table table = schema.getTableByName(tableName);
                 if (table == null) {
                     continue;
@@ -236,9 +216,7 @@ class TiberoPartitionMetadataLoader {
                 partition.setPartitionIdx(partitionPosition);
 
                 partitionInfo.addPartition(partition);
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("[VAR]partition=" + partition);
-                }
+                LOG.debug("[VAR]partition={}", partition);
             }
         } catch (Exception ex) {
             LOG.error("", ex);
@@ -259,15 +237,13 @@ class TiberoPartitionMetadataLoader {
         try {
             stmt = conn.prepareStatement(sqlGetSubPartTables);
             stmt.setString(1, schema.getName());
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("[SQL]" + sqlGetSubPartTables);
-            }
+            LOG.debug("[SQL]{}, 1={}", sqlGetSubPartTables, schema.getName());
+
             rs = stmt.executeQuery();
             while (rs.next()) {
                 String tableName = rs.getString("TABLE_NAME");
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("[VAR]tableName=" + tableName);
-                }
+                LOG.debug("[VAR]tableName={}", tableName);
+
                 Table table = schema.getTableByName(tableName);
                 if (table == null) {
                     continue;
@@ -284,9 +260,7 @@ class TiberoPartitionMetadataLoader {
                 subPartition.setPartitionIdx(subPartitionPosition);
 
                 table.getPartitionInfo().addSubPartition(subPartition);
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("[VAR]subPartition=" + subPartition);
-                }
+                LOG.debug("[VAR]subPartition={}", subPartition);
             }
         } catch (Exception ex) {
             LOG.error("", ex);

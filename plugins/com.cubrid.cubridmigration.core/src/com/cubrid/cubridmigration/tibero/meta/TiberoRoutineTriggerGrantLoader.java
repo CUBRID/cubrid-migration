@@ -26,10 +26,6 @@ class TiberoRoutineTriggerGrantLoader {
 
     List<TiberoPlsqlProcedure> getAllProcedures(final Connection conn, final String ownerName)
             throws SQLException {
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("[IN]getAllProcedures()");
-        }
-
         List<TiberoPlsqlProcedure> procedures = new ArrayList<TiberoPlsqlProcedure>();
         getPlcsqlProcedureMetaData(conn, ownerName, procedures);
         getPlcsqlProcedureDDL(conn, procedures);
@@ -46,9 +42,6 @@ class TiberoRoutineTriggerGrantLoader {
             final String sqlShowDdl,
             final String objectTypeTrigger)
             throws SQLException {
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("[IN]getAllTriggers()");
-        }
         final List<String> list =
                 getRoutines(conn, objectTypeTrigger, ownerName, sqlShowAllObjects);
         final List<Trigger> triggers = new ArrayList<Trigger>();
@@ -57,9 +50,8 @@ class TiberoRoutineTriggerGrantLoader {
             final Trigger trigger = factory.createTrigger();
             trigger.setName(name);
             final String trigDDL = getObjectDDL(conn, dbName, name, objectTypeTrigger, sqlShowDdl);
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("[VAR]trigDDL=" + trigDDL);
-            }
+            LOG.debug("[VAR]trigDDL={}", trigDDL);
+
             trigger.setDDL(trigDDL);
             triggers.add(trigger);
         }
@@ -79,17 +71,7 @@ class TiberoRoutineTriggerGrantLoader {
 
         try {
             stmt = conn.prepareStatement(sqlShowGrantTable);
-            if (LOG.isDebugEnabled()) {
-                LOG.debug(
-                        "[SQL]"
-                                + sqlShowGrantTable
-                                + ", "
-                                + "1="
-                                + schema.getName()
-                                + ", "
-                                + "2="
-                                + schema.getName());
-            }
+            LOG.debug("[SQL]{}, 1={}", sqlShowGrantTable, schema.getName());
 
             stmt.setString(1, schema.getName().toUpperCase());
             rs = stmt.executeQuery();
@@ -115,17 +97,7 @@ class TiberoRoutineTriggerGrantLoader {
             Closer.close(stmt);
 
             stmt = conn.prepareStatement(sqlShowGrantView);
-            if (LOG.isDebugEnabled()) {
-                LOG.debug(
-                        "[SQL]"
-                                + sqlShowGrantView
-                                + ", "
-                                + "1="
-                                + schema.getName()
-                                + ", "
-                                + "2="
-                                + schema.getName());
-            }
+            LOG.debug("[SQL]{}, 1={}", sqlShowGrantView, schema.getName());
 
             stmt.setString(1, schema.getName().toUpperCase());
             rs = stmt.executeQuery();
@@ -210,9 +182,6 @@ class TiberoRoutineTriggerGrantLoader {
             final String objectType,
             final String sqlShowDdl)
             throws SQLException {
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("[IN]getObjectDDL()");
-        }
         if (StringUtils.isBlank(objectName)) {
             throw new IllegalArgumentException("The tibero object name is null!");
         }
@@ -224,20 +193,8 @@ class TiberoRoutineTriggerGrantLoader {
             preStmt.setString(1, objectType);
             preStmt.setString(2, objectName);
             preStmt.setString(3, schemaName);
-            if (LOG.isDebugEnabled()) {
-                LOG.debug(
-                        "[SQL]"
-                                + sqlShowDdl
-                                + ", "
-                                + "1="
-                                + objectType
-                                + ", "
-                                + "2="
-                                + objectName
-                                + ", "
-                                + "3="
-                                + schemaName);
-            }
+            LOG.debug("[SQL]{}, 1={}, 2={}, 3={}", sqlShowDdl, objectType, objectName, schemaName);
+
             rs = preStmt.executeQuery();
 
             String ddl = "";
@@ -246,7 +203,7 @@ class TiberoRoutineTriggerGrantLoader {
             }
             return ddl;
         } catch (Exception ex) {
-            LOG.error("Get Tibero Object DDL error:" + objectName, ex);
+            LOG.error("Get Tibero Object DDL error:{}", objectName, ex);
             return "";
         } finally {
             Closer.close(rs);
@@ -260,38 +217,19 @@ class TiberoRoutineTriggerGrantLoader {
             final String ownerName,
             final String sqlShowAllObjects)
             throws SQLException {
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("[IN]getRoutines()");
-        }
         PreparedStatement stmt = null;
         ResultSet rs = null;
         try {
             stmt = conn.prepareStatement(sqlShowAllObjects);
             stmt.setString(1, type);
             stmt.setString(2, ownerName);
-
-            if (LOG.isDebugEnabled()) {
-                LOG.debug(
-                        "[SQL]"
-                                + sqlShowAllObjects
-                                + ", "
-                                + "1="
-                                + type
-                                + ", "
-                                + "2="
-                                + ownerName
-                                + ", "
-                                + "3="
-                                + type);
-            }
+            LOG.debug("[SQL]{}, 1={}, 2={}", sqlShowAllObjects, type, ownerName);
             rs = stmt.executeQuery();
             final Set<String> list = new HashSet<String>();
             while (rs.next()) {
                 list.add(rs.getString(1));
             }
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("[VAR]list=" + (list.size()));
-            }
+            LOG.debug("[VAR]list={}", list.size());
             return new ArrayList<String>(list);
         } finally {
             Closer.close(rs);
