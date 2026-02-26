@@ -141,6 +141,9 @@ class TiberoPartitionMetadataLoader {
                 }
 
                 PartitionInfo partitionInfo = table.getPartitionInfo();
+                if (partitionInfo == null) {
+                    continue;
+                }
                 partitionInfo.addPartitionColumn(table.getColumnByName(columnName));
                 LOG.debug("[VAR]partitionInfo={}", partitionInfo);
             }
@@ -167,6 +170,9 @@ class TiberoPartitionMetadataLoader {
                     continue;
                 }
                 PartitionInfo partitionInfo = table.getPartitionInfo();
+                if (partitionInfo == null) {
+                    continue;
+                }
                 partitionInfo.addSubPartitionColumn(table.getColumnByName(columnName));
                 LOG.debug("[VAR]partitionInfo={}", partitionInfo);
             }
@@ -207,8 +213,9 @@ class TiberoPartitionMetadataLoader {
                 int partitionPosition = rs.getInt("PARTITION_POSITION");
 
                 PartitionInfo partitionInfo = table.getPartitionInfo();
-                partitionInfo.setPartitionExp(null);
-                partitionInfo.setPartitionFunc(null);
+                if (partitionInfo == null) {
+                    continue;
+                }
 
                 PartitionTable partition = factory.createPartitionTable();
                 partition.setPartitionName(partitionName);
@@ -254,12 +261,17 @@ class TiberoPartitionMetadataLoader {
                 String subPartitionDesc = reader == null ? null : DBUtils.reader2String(reader);
                 int subPartitionPosition = rs.getInt("SUBPARTITION_POSITION");
 
+                PartitionInfo partitionInfo = table.getPartitionInfo();
+                if (partitionInfo == null) {
+                    continue;
+                }
+
                 PartitionTable subPartition = factory.createPartitionTable();
                 subPartition.setPartitionName(subPartitionName);
                 subPartition.setPartitionDesc(subPartitionDesc);
                 subPartition.setPartitionIdx(subPartitionPosition);
 
-                table.getPartitionInfo().addSubPartition(subPartition);
+                partitionInfo.addSubPartition(subPartition);
                 LOG.debug("[VAR]subPartition={}", subPartition);
             }
         } catch (Exception ex) {
