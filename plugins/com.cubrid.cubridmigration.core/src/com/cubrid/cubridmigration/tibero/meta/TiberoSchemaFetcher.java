@@ -225,32 +225,6 @@ public final class TiberoSchemaFetcher extends AbstractJDBCSchemaFetcher {
         final List<Schema> schemaList = new ArrayList<Schema>(catalog.getSchemas());
         for (Schema schema : schemaList) {
             LOG.debug("[VAR]schema={}", schema.getName());
-
-            // get tables
-            List<Table> tableList = schema.getTables();
-            if (tableList == null) {
-                tableList = new ArrayList<Table>();
-            }
-            LOG.debug("[VAR]tableList.count={}", tableList.size());
-
-            for (Table table : tableList) {
-                String comment = getTableComment(conn, schema.getName(), table.getName());
-                table.setComment(comment);
-            }
-            // get views
-            List<View> viewList = schema.getViews();
-            if (viewList == null) {
-                viewList = new ArrayList<View>();
-            }
-            LOG.debug("[VAR]viewList.count={}", viewList.size());
-
-            for (View view : viewList) {
-                view.setQuerySpec(getQueryText(conn, schema.getName(), view.getName(), view));
-
-                String comment = getViewComment(conn, schema.getName(), view.getName());
-                view.setComment(comment);
-            }
-            buildPartitions(conn, catalog, schema);
         }
         return catalog;
     }
@@ -260,23 +234,6 @@ public final class TiberoSchemaFetcher extends AbstractJDBCSchemaFetcher {
             final Connection conn, final SchemaCatalog sc, List<String> schemaNames)
             throws SQLException {
         Catalog catalog = super.buildSchemaObjects(conn, sc, schemaNames);
-        if (catalog == null) {
-            return null;
-        }
-
-        for (Schema schema : catalog.getSchemas()) {
-            String schemaName = schema.getName();
-            for (Table table : schema.getTables()) {
-                table.setComment(getTableComment(conn, schemaName, table.getName()));
-            }
-
-            for (View view : schema.getViews()) {
-                view.setQuerySpec(getQueryText(conn, schemaName, view.getName(), view));
-                view.setComment(getViewComment(conn, schemaName, view.getName()));
-            }
-            buildPartitions(conn, catalog, schema);
-        }
-
         return catalog;
     }
 
