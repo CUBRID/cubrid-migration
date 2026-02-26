@@ -38,6 +38,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.Map;
 
 class TiberoCommentQueryLoader {
 
@@ -64,6 +66,24 @@ class TiberoCommentQueryLoader {
             Closer.close(rs);
             Closer.close(stmt);
         }
+    }
+
+    Map<String, String> queryMap(
+            Connection conn, String sql, String keyColumn, String valueColumn, String... params) {
+        Map<String, String> result = new HashMap<>();
+        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            for (int i = 0; i < params.length; i++) {
+                pstmt.setString(i + 1, params[i]);
+            }
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    result.put(rs.getString(keyColumn), rs.getString(valueColumn));
+                }
+            }
+        } catch (SQLException e) {
+            LOG.error("Query map error", e);
+        }
+        return result;
     }
 
     private String querySingleString(
