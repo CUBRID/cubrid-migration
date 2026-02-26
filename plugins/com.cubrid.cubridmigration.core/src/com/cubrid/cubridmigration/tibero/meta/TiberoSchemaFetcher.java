@@ -662,6 +662,26 @@ public final class TiberoSchemaFetcher extends AbstractJDBCSchemaFetcher {
                 conn, schema, factory, SQL_SHOW_GRANT_TABLE, SQL_SHOW_GRANT_VIEW);
     }
 
+    @Override
+    protected void buildViews(
+            final Connection conn,
+            final Catalog catalog,
+            final Schema schema,
+            IBuildSchemaFilter filter)
+            throws SQLException {
+        super.buildViews(conn, catalog, schema, filter);
+        Map<String, String> comments =
+                commentQueryLoader.queryMap(
+                        conn, SQL_GET_ALL_TAB_COMMENTS, "TABLE_NAME", "COMMENTS", schema.getName());
+        Map<String, String> queryTexts =
+                commentQueryLoader.queryMap(
+                        conn, SQL_GET_ALL_VIEW_QUERYTEXTS, "VIEW_NAME", "TEXT", schema.getName());
+        for (View view : schema.getViews()) {
+            view.setComment(commentEditor(comments.get(view.getName())));
+            view.setQuerySpec(queryTexts.get(view.getName()));
+        }
+    }
+
     /**
      * return a list of tibero table name.
      *
