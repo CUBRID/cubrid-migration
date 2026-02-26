@@ -233,8 +233,8 @@ public abstract class AbstractJDBCSchemaFetcher implements IDependOnDatabaseType
     private String resolveCatalogName(ConnParameters cp) {
         DatabaseType databaseType = cp.getDatabaseType();
         String dbName = cp.getDbName();
-        if (DatabaseType.ORACLE == databaseType
-                || DatabaseType.TIBERO == databaseType && dbName != null) {
+        if ((DatabaseType.ORACLE == databaseType
+                || DatabaseType.TIBERO == databaseType) && dbName != null) {
             if (dbName.startsWith("/")) {
                 dbName = dbName.substring(1);
             }
