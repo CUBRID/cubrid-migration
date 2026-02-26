@@ -531,6 +531,23 @@ public final class TiberoSchemaFetcher extends AbstractJDBCSchemaFetcher {
         }
     }
 
+    @Override
+    protected void buildTables(
+            final Connection conn,
+            final Catalog catalog,
+            final Schema schema,
+            IBuildSchemaFilter filter)
+            throws SQLException {
+        super.buildTables(conn, catalog, schema, filter);
+        Map<String, String> comments =
+                commentQueryLoader.queryMap(
+                        conn, SQL_GET_ALL_TAB_COMMENTS, "TABLE_NAME", "COMMENTS", schema.getName());
+        for (Table table : schema.getTables()) {
+            table.setComment(commentEditor(comments.get(table.getName())));
+        }
+        buildPartitions(conn, catalog, schema);
+    }
+
     /**
      * Build enabled primary key information for the given table.
      *
