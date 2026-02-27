@@ -114,6 +114,11 @@ class TiberoPartitionMetadataLoader {
     }
 
     private void addPartitionColumns(final Connection conn, final Schema schema) {
+        addMainPartitionKeyColumns(conn, schema);
+        addSubPartitionKeyColumns(conn, schema);
+    }
+
+    private void addMainPartitionKeyColumns(final Connection conn, final Schema schema) {
         ResultSet rs = null;
         PreparedStatement stmt = null;
 
@@ -146,7 +151,11 @@ class TiberoPartitionMetadataLoader {
             Closer.close(rs);
             Closer.close(stmt);
         }
+    }
 
+    private void addSubPartitionKeyColumns(final Connection conn, final Schema schema) {
+        ResultSet rs = null;
+        PreparedStatement stmt = null;
         try {
             stmt = conn.prepareStatement(SQL_GET_SUBPART_KEY_COLUMN);
             stmt.setString(1, schema.getName());
