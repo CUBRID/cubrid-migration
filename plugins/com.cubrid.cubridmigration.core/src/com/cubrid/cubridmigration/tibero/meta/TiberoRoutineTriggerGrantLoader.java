@@ -47,6 +47,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -54,6 +56,13 @@ import java.util.Set;
 class TiberoRoutineTriggerGrantLoader {
 
     private static final Logger LOG = LogUtil.getLogger(TiberoRoutineTriggerGrantLoader.class);
+
+    private static final Set<String> SUPPORTED_PRIVILEGES =
+            Collections.unmodifiableSet(
+                    new HashSet<String>(
+                            Arrays.asList(
+                                    "SELECT", "INSERT", "UPDATE", "DELETE", "ALTER", "INDEX",
+                                    "EXECUTE", "ALL")));
 
     List<TiberoPlsqlProcedure> getAllProcedures(final Connection conn, final String ownerName)
             throws SQLException {
@@ -243,17 +252,7 @@ class TiberoRoutineTriggerGrantLoader {
     }
 
     private boolean isSupportPrivilege(String privilege) {
-        if (privilege.equals("SELECT")
-                || privilege.equals("INSERT")
-                || privilege.equals("UPDATE")
-                || privilege.equals("DELETE")
-                || privilege.equals("ALTER")
-                || privilege.equals("INDEX")
-                || privilege.equals("EXECUTE")
-                || privilege.equals("ALL")) {
-            return true;
-        }
-        return false;
+        return SUPPORTED_PRIVILEGES.contains(privilege);
     }
 
     private String convertPrivilegeTibero2Cubrid(String privilege) {
