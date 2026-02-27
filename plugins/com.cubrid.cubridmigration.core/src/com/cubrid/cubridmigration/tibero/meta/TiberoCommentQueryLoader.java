@@ -32,7 +32,6 @@ package com.cubrid.cubridmigration.tibero.meta;
 import static com.cubrid.cubridmigration.tibero.meta.TiberoSqlConstants.*;
 
 import com.cubrid.common.log.LogUtil;
-import com.cubrid.cubridmigration.core.common.Closer;
 
 import org.slf4j.Logger;
 
@@ -48,14 +47,36 @@ class TiberoCommentQueryLoader {
     private static final Logger LOG = LogUtil.getLogger(TiberoCommentQueryLoader.class);
 
     String getComment(Connection conn, String errorMessage, String schemaName, String objectName) {
-        return querySingleString(
-                conn, SQL_GET_TABLE_COMMENT, "COMMENTS", errorMessage, schemaName, objectName);
+        try (PreparedStatement pstmt = conn.prepareStatement(SQL_GET_TABLE_COMMENT)) {
+            pstmt.setString(1, schemaName);
+            pstmt.setString(2, objectName);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getString("COMMENTS");
+                }
+            }
+            return "";
+        } catch (Exception e) {
+            LOG.error(errorMessage, e);
+            return null;
+        }
     }
 
     String getViewComment(
             Connection conn, String errorMessage, String schemaName, String viewName) {
-        return querySingleString(
-                conn, SQL_GET_VIEW_COMMENT, "COMMENTS", errorMessage, schemaName, viewName);
+        try (PreparedStatement pstmt = conn.prepareStatement(SQL_GET_VIEW_COMMENT)) {
+            pstmt.setString(1, schemaName);
+            pstmt.setString(2, viewName);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getString("COMMENTS");
+                }
+            }
+            return "";
+        } catch (Exception e) {
+            LOG.error(errorMessage, e);
+            return null;
+        }
     }
 
     String getViewColumnComment(
@@ -64,83 +85,63 @@ class TiberoCommentQueryLoader {
             String schemaName,
             String viewName,
             String columnName) {
-        return querySingleString(
-                conn,
-                SQL_GET_VIEW_COLUMN_COMMENT,
-                "COMMENTS",
-                errorMessage,
-                schemaName,
-                viewName,
-                columnName);
+        try (PreparedStatement pstmt = conn.prepareStatement(SQL_GET_VIEW_COLUMN_COMMENT)) {
+            pstmt.setString(1, schemaName);
+            pstmt.setString(2, viewName);
+            pstmt.setString(3, columnName);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getString("COMMENTS");
+                }
+            }
+            return "";
+        } catch (Exception e) {
+            LOG.error(errorMessage, e);
+            return null;
+        }
     }
 
     String getViewQueryText(Connection conn, String schemaName, String viewName)
             throws SQLException {
-        ResultSet rs = null;
-        PreparedStatement stmt = null;
-        try {
-            stmt = conn.prepareStatement(SQL_SHOW_VIEW_QUERYTEXT);
+        try (PreparedStatement stmt = conn.prepareStatement(SQL_SHOW_VIEW_QUERYTEXT)) {
             stmt.setString(1, schemaName);
             stmt.setString(2, viewName);
-            rs = stmt.executeQuery();
-            while (rs.next()) {
-                return rs.getString("TEXT");
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getString("TEXT");
+                }
             }
             return null;
-        } finally {
-            Closer.close(rs);
-            Closer.close(stmt);
         }
     }
 
     Map<String, String> findAllTabComments(Connection conn, String schemaName) {
-        return queryMap(conn, SQL_GET_ALL_TAB_COMMENTS, "TABLE_NAME", "COMMENTS", schemaName);
-    }
-
-    Map<String, String> findAllViewQuerySpecs(Connection conn, String schemaName) {
-        return queryMap(conn, SQL_GET_ALL_VIEW_QUERYTEXTS, "VIEW_NAME", "TEXT", schemaName);
-    }
-
-    private Map<String, String> queryMap(
-            Connection conn, String sql, String keyColumn, String valueColumn, String... params) {
         Map<String, String> result = new HashMap<>();
-        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            for (int i = 0; i < params.length; i++) {
-                pstmt.setString(i + 1, params[i]);
-            }
+        try (PreparedStatement pstmt = conn.prepareStatement(SQL_GET_ALL_TAB_COMMENTS)) {
+            pstmt.setString(1, schemaName);
             try (ResultSet rs = pstmt.executeQuery()) {
                 while (rs.next()) {
-                    result.put(rs.getString(keyColumn), rs.getString(valueColumn));
+                    result.put(rs.getString("TABLE_NAME"), rs.getString("COMMENTS"));
                 }
             }
         } catch (SQLException e) {
-            LOG.error("Query map error", e);
+            LOG.error("Query all comments error", e);
         }
         return result;
     }
 
-    private String querySingleString(
-            Connection conn, String sql, String columnName, String errorMessage, String... params) {
-        PreparedStatement pstmt = null;
-        ResultSet rs = null;
-        try {
-            pstmt = conn.prepareStatement(sql);
-            for (int i = 0; i < params.length; i++) {
-                pstmt.setString(i + 1, params[i]);
+    Map<String, String> findAllViewQuerySpecs(Connection conn, String schemaName) {
+        Map<String, String> result = new HashMap<>();
+        try (PreparedStatement pstmt = conn.prepareStatement(SQL_GET_ALL_VIEW_QUERYTEXTS)) {
+            pstmt.setString(1, schemaName);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    result.put(rs.getString("VIEW_NAME"), rs.getString("TEXT"));
+                }
             }
-            rs = pstmt.executeQuery();
-
-            String value = "";
-            while (rs.next()) {
-                value = rs.getString(columnName);
-            }
-            return value;
-        } catch (Exception e) {
-            LOG.error(errorMessage, e);
-            return null;
-        } finally {
-            Closer.close(rs);
-            Closer.close(pstmt);
+        } catch (SQLException e) {
+            LOG.error("Query all view query specs error", e);
         }
+        return result;
     }
 }
