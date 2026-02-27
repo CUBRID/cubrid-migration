@@ -328,43 +328,7 @@ public final class TiberoSchemaFetcher extends AbstractJDBCSchemaFetcher {
                     if (column == null) {
                         continue;
                     }
-
-                    String dataType = rs.getString("DATA_TYPE");
-                    if ("NVARCHAR".equalsIgnoreCase(dataType)) {
-                        dataType = "NVARCHAR2";
-                    }
-                    column.setDataType(dataType);
-
-                    column.setByteLength(rs.getInt("DATA_LENGTH"));
-                    String precisionStr = rs.getString("DATA_PRECISION");
-                    column.setPrecision(precisionStr == null ? null : rs.getInt("DATA_PRECISION"));
-                    String scaleStr = rs.getString("DATA_SCALE");
-                    column.setScale(scaleStr == null ? null : rs.getInt("DATA_SCALE"));
-                    if ("NUMBER".equals(column.getDataType())
-                            && precisionStr == null
-                            && "0".equals(scaleStr)) {
-                        column.setDataType("INTEGER");
-                    }
-
-                    column.setNullable(!"N".equalsIgnoreCase(rs.getString("NULLABLE")));
-
-                    String defaultValue = rs.getString("DATA_DEFAULT");
-                    if (defaultValue != null) {
-                        defaultValue = defaultValue.trim();
-                    }
-                    if ("NULL".equals(defaultValue)) {
-                        column.setDefaultValue(null);
-                    } else {
-                        column.setDefaultValue(defaultValue);
-                    }
-
-                    column.setCharLength(rs.getInt("CHAR_LENGTH"));
-                    column.setCharUsed(rs.getString("CHAR_USED"));
-                    resetTiberoColumnPrecision(column);
-
-                    column.setShownDataType(dtHelper.getShownDataType(column));
-                    String comment = rs.getString("COMMENTS");
-                    column.setComment(commentEditor(comment));
+                    fillColumnMetadata(column, rs, dtHelper);
                 } catch (Exception ex) {
                     LOG.error("Read table column information error:{}", table.getName(), ex);
                 }
@@ -373,6 +337,52 @@ public final class TiberoSchemaFetcher extends AbstractJDBCSchemaFetcher {
             Closer.close(rs);
             Closer.close(stmt);
         }
+    }
+
+    /**
+     * Fill column metadata from ResultSet.
+     *
+     * @param column Column
+     * @param rs ResultSet
+     * @param dtHelper TiberoDataTypeHelper
+     * @throws SQLException e
+     */
+    private void fillColumnMetadata(Column column, ResultSet rs, TiberoDataTypeHelper dtHelper)
+            throws SQLException {
+        String dataType = rs.getString("DATA_TYPE");
+        if ("NVARCHAR".equalsIgnoreCase(dataType)) {
+            dataType = "NVARCHAR2";
+        }
+        column.setDataType(dataType);
+
+        column.setByteLength(rs.getInt("DATA_LENGTH"));
+        String precisionStr = rs.getString("DATA_PRECISION");
+        column.setPrecision(precisionStr == null ? null : rs.getInt("DATA_PRECISION"));
+        String scaleStr = rs.getString("DATA_SCALE");
+        column.setScale(scaleStr == null ? null : rs.getInt("DATA_SCALE"));
+        if ("NUMBER".equals(column.getDataType()) && precisionStr == null && "0".equals(scaleStr)) {
+            column.setDataType("INTEGER");
+        }
+
+        column.setNullable(!"N".equalsIgnoreCase(rs.getString("NULLABLE")));
+
+        String defaultValue = rs.getString("DATA_DEFAULT");
+        if (defaultValue != null) {
+            defaultValue = defaultValue.trim();
+        }
+        if ("NULL".equals(defaultValue)) {
+            column.setDefaultValue(null);
+        } else {
+            column.setDefaultValue(defaultValue);
+        }
+
+        column.setCharLength(rs.getInt("CHAR_LENGTH"));
+        column.setCharUsed(rs.getString("CHAR_USED"));
+        resetTiberoColumnPrecision(column);
+
+        column.setShownDataType(dtHelper.getShownDataType(column));
+        String comment = rs.getString("COMMENTS");
+        column.setComment(commentEditor(comment));
     }
 
     @Override
