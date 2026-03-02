@@ -53,47 +53,25 @@ public final class TiberoTypeFormatter {
      */
     public static String format(Column column, DBDataTypeHelper helper) {
         String colType = column.getDataType();
+        if (colType == null) {
+            return "";
+        }
         Integer precision = column.getPrecision();
         Integer scale = column.getScale();
 
-        if (helper.isString(colType)) {
-            return "C".equals(column.getCharUsed())
-                    ? colType + "(" + precision + " CHAR)"
-                    : colType + "(" + precision + ")";
+        // 1. String-like types that need manual precision attachment
+        if (helper.isString(colType) || helper.isNString(colType) || "RAW".equals(colType)) {
+            if (precision == null || precision <= 0) return colType;
+            String suffix = "C".equals(column.getCharUsed()) ? " CHAR)" : ")";
+            return colType + "(" + precision + suffix;
         }
 
-        if (helper.isNString(colType) || "RAW".equals(colType)) {
-            return colType + "(" + precision + ")";
-        }
-
+        // 2. NUMBER type which needs special formatting logic
         if (NUMBER.equals(colType)) {
             return formatNumber(precision, scale);
         }
 
-        if ("FLOAT".equals(colType)) {
-            return (precision != null && precision == 126) ? "FLOAT" : "FLOAT(" + precision + ")";
-        }
-
-        if ("TIMESTAMP".equals(colType)) {
-            return "TIMESTAMP(" + scale + ")";
-        }
-
-        if ("TIMESTAMPTZ".equals(colType)) {
-            return "TIMESTAMP(" + scale + ") WITH TIME ZONE";
-        }
-
-        if ("TIMESTAMPLTZ".equals(colType)) {
-            return "TIMESTAMP(" + scale + ") WITH LOCAL TIME ZONE";
-        }
-
-        if ("INTERVALDS".equals(colType)) {
-            return "INTERVAL DAY(" + precision + ") TO SECOND(" + scale + ")";
-        }
-
-        if ("INTERVALYM".equals(colType)) {
-            return "INTERVAL YEAR(" + precision + ") TO MONTH";
-        }
-
+        // 3. Other types (TIMESTAMP, INTERVAL, LOBs, etc.)
         return colType;
     }
 

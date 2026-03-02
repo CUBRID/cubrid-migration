@@ -39,25 +39,6 @@ import java.util.List;
 import java.util.Map;
 
 public final class TiberoDataTypeHelper extends DBDataTypeHelper {
-    /**
-     * Get normalized data type name.
-     *
-     * @param dataType String
-     * @param precision Integer
-     * @param scale Integer
-     * @return String normalized data type
-     */
-    public String getNormalizedDataType(String dataType, Integer precision, Integer scale) {
-        if ("NVARCHAR".equalsIgnoreCase(dataType)) {
-            return "NVARCHAR2";
-        }
-        if ("NUMBER".equalsIgnoreCase(dataType)
-                && precision == null
-                && Integer.valueOf(0).equals(scale)) {
-            return "INTEGER";
-        }
-        return dataType;
-    }
 
     private static final TiberoDataTypeHelper HELPER = new TiberoDataTypeHelper();
 
@@ -79,12 +60,6 @@ public final class TiberoDataTypeHelper extends DBDataTypeHelper {
      */
     public static String getTiberoDataTypeKey(String dataType) {
         String key = dataType;
-        if ("NVARCHAR2".equalsIgnoreCase(dataType)) {
-            return "NVARCHAR";
-        }
-        if ("VARCHAR2".equalsIgnoreCase(dataType)) {
-            return "VARCHAR";
-        }
 
         if (dataType.matches("TIMESTAMP\\(\\d*\\)")) {
             key = "TIMESTAMP";
@@ -114,27 +89,7 @@ public final class TiberoDataTypeHelper extends DBDataTypeHelper {
     }
 
     /**
-     * Get normalized data type name.
-     *
-     * @param dataType String
-     * @param precision Integer
-     * @param scale Integer
-     * @return String normalized data type
-     */
-    public String getNormalizedDataType(String dataType, Integer precision, Integer scale) {
-        if ("NVARCHAR".equalsIgnoreCase(dataType)) {
-            return "NVARCHAR2";
-        }
-        if ("NUMBER".equalsIgnoreCase(dataType)
-                && precision == null
-                && Integer.valueOf(0).equals(scale)) {
-            return "INTEGER";
-        }
-        return dataType;
-    }
-
-    /**
-     * return data type id TODO: to be refactory
+     * return data type id
      *
      * @param catalog Catalog
      * @param dataType String

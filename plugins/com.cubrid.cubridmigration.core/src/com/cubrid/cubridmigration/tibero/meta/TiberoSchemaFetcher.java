@@ -288,11 +288,8 @@ public final class TiberoSchemaFetcher extends AbstractJDBCSchemaFetcher {
         Table sourceTable = super.buildSQLTable(resultSetMeta);
         List<Column> columns = sourceTable.getColumns();
         for (Column column : columns) {
-            column.setDataType(
-                    dtHelper.getNormalizedDataType(
-                            column.getDataType(), column.getPrecision(), column.getScale()));
             if (isNULLType(column.getDataType())) {
-                column.setDataType("VARCHAR2");
+                column.setDataType("VARCHAR");
                 column.setJdbcIDOfDataType(Types.VARCHAR);
             }
             column.setShownDataType(dtHelper.getShownDataType(column));
@@ -353,15 +350,15 @@ public final class TiberoSchemaFetcher extends AbstractJDBCSchemaFetcher {
     private void fillColumnMetadata(
             Catalog catalog, Column column, ResultSet rs, TiberoDataTypeHelper dtHelper)
             throws SQLException {
-        String rawDataType = rs.getString("DATA_TYPE");
+        String dataType = rs.getString("DATA_TYPE");
+        column.setDataType(dataType);
+
+        column.setByteLength(rs.getInt("DATA_LENGTH"));
         String precisionStr = rs.getString("DATA_PRECISION");
         Integer precision = precisionStr == null ? null : rs.getInt("DATA_PRECISION");
+        column.setPrecision(precision);
         String scaleStr = rs.getString("DATA_SCALE");
         Integer scale = scaleStr == null ? null : rs.getInt("DATA_SCALE");
-
-        String dataType = dtHelper.getNormalizedDataType(rawDataType, precision, scale);
-        column.setDataType(dataType);
-        column.setPrecision(precision);
         column.setScale(scale);
 
         column.setJdbcIDOfDataType(dtHelper.getJdbcDataTypeID(catalog, dataType, precision, scale));

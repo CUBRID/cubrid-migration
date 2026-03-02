@@ -90,9 +90,11 @@
       </TargetDataType>
    </DataTypeMapping>
 
+
+
    <DataTypeMapping>
       <SourceDataType>
-         <type>VARCHAR2</type>
+         <type>VARCHAR</type>
          <precision>n</precision>
          <scale></scale>
       </SourceDataType>
@@ -105,7 +107,7 @@
 
    <DataTypeMapping>
       <SourceDataType>
-         <type>VARCHAR</type>
+         <type>NVARCHAR</type>
          <precision>n</precision>
          <scale></scale>
       </SourceDataType>
@@ -134,31 +136,7 @@
       </TargetDataType>
    </DataTypeMapping>
 
-   <DataTypeMapping>
-      <SourceDataType>
-         <type>NVARCHAR</type>
-         <precision>n</precision>
-         <scale></scale>
-      </SourceDataType>
-      <TargetDataType>
-         <type>varchar</type>
-         <precision>n</precision>
-         <scale></scale>
-      </TargetDataType>
-   </DataTypeMapping>
 
-   <DataTypeMapping>
-      <SourceDataType>
-         <type>NVARCHAR2</type>
-         <precision>n</precision>
-         <scale></scale>
-      </SourceDataType>
-      <TargetDataType>
-         <type>varchar</type>
-         <precision>n</precision>
-         <scale></scale>
-      </TargetDataType>
-   </DataTypeMapping>
 
    <DataTypeMapping>
       <SourceDataType>
@@ -284,61 +262,7 @@
    </DataTypeMapping>
 
 
-   <DataTypeMapping>
-      <SourceDataType>
-         <type>INTEGER</type>
-         <precision></precision>
-         <scale></scale>
-      </SourceDataType>
-      <TargetDataType>
-         <type>int</type>
-         <precision></precision>
-         <scale></scale>
-      </TargetDataType>
-      <TargetDataType>
-         <type>bigint</type>
-         <precision></precision>
-         <scale></scale>
-      </TargetDataType>
-      <TargetDataType>
-         <type>numeric</type>
-         <precision>38</precision>
-         <scale>0</scale>
-      </TargetDataType>
-      <TargetDataType>
-         <type>varchar</type>
-         <precision>40</precision>
-         <scale></scale>
-      </TargetDataType>
-   </DataTypeMapping>
 
-   <DataTypeMapping>
-      <SourceDataType>
-         <type>FLOAT</type>
-         <precision></precision>
-         <scale></scale>
-      </SourceDataType>
-      <TargetDataType>
-         <type>double</type>
-         <precision></precision>
-         <scale></scale>
-      </TargetDataType>
-      <TargetDataType>
-         <type>float</type>
-         <precision></precision>
-         <scale></scale>
-      </TargetDataType>
-      <TargetDataType>
-         <type>int</type>
-         <precision></precision>
-         <scale></scale>
-      </TargetDataType>
-      <TargetDataType>
-         <type>bigint</type>
-         <precision></precision>
-         <scale></scale>
-      </TargetDataType>
-   </DataTypeMapping>
 
 
    <DataTypeMapping>
