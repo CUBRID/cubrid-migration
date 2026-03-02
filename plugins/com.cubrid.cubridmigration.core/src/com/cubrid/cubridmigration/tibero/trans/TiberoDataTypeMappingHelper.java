@@ -118,6 +118,9 @@ public class TiberoDataTypeMappingHelper extends AbstractDataTypeMappingHelper {
         if (StringUtils.isBlank(str)) {
             return null;
         }
+        if (!str.matches("^-?\\d+$")) {
+            return null;
+        }
         try {
             return Integer.parseInt(str);
         } catch (NumberFormatException ex) {
