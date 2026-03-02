@@ -65,7 +65,6 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -288,10 +287,6 @@ public final class TiberoSchemaFetcher extends AbstractJDBCSchemaFetcher {
         Table sourceTable = super.buildSQLTable(resultSetMeta);
         List<Column> columns = sourceTable.getColumns();
         for (Column column : columns) {
-            if (isNULLType(column.getDataType())) {
-                column.setDataType("VARCHAR");
-                column.setJdbcIDOfDataType(Types.VARCHAR);
-            }
             column.setShownDataType(dtHelper.getShownDataType(column));
         }
         return sourceTable;

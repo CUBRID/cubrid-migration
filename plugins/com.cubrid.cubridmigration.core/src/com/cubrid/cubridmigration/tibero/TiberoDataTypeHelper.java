@@ -36,6 +36,7 @@ import com.cubrid.cubridmigration.core.dbobject.Column;
 import com.cubrid.cubridmigration.core.dbtype.DatabaseType;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 public final class TiberoDataTypeHelper extends DBDataTypeHelper {
@@ -59,17 +60,25 @@ public final class TiberoDataTypeHelper extends DBDataTypeHelper {
      * @return String
      */
     public static String getTiberoDataTypeKey(String dataType) {
-        String key = dataType;
+        if (dataType == null) {
+            return "";
+        }
 
-        if (dataType.matches("TIMESTAMP\\(\\d*\\)")) {
+        // Normalize metadata type text to avoid mismatch caused by case/spacing variation.
+        String normalizedType = dataType.trim().toUpperCase(Locale.ENGLISH).replaceAll("\\s+", " ");
+        String key = normalizedType;
+
+        if (normalizedType.matches("TIMESTAMP\\(\\d*\\)")) {
             key = "TIMESTAMP";
-        } else if (dataType.matches("TIMESTAMP\\(\\d*\\) WITH TIME ZONE")) {
+        } else if (normalizedType.matches("TIME\\(\\d*\\)")) {
+            key = "TIME";
+        } else if (normalizedType.matches("TIMESTAMP\\(\\d*\\) WITH TIME ZONE")) {
             key = "TIMESTAMP WITH TIME ZONE";
-        } else if (dataType.matches("TIMESTAMP\\(\\d*\\) WITH LOCAL TIME ZONE")) {
+        } else if (normalizedType.matches("TIMESTAMP\\(\\d*\\) WITH LOCAL TIME ZONE")) {
             key = "TIMESTAMP WITH LOCAL TIME ZONE";
-        } else if (dataType.matches("INTERVAL DAY\\(\\d*\\) TO SECOND\\(\\d*\\)")) {
+        } else if (normalizedType.matches("INTERVAL DAY\\(\\d*\\) TO SECOND\\(\\d*\\)")) {
             key = "INTERVAL DAY TO SECOND";
-        } else if (dataType.matches("INTERVAL YEAR\\(\\d*\\) TO MONTH")) {
+        } else if (normalizedType.matches("INTERVAL YEAR\\(\\d*\\) TO MONTH")) {
             key = "INTERVAL YEAR TO MONTH";
         }
         return key;
@@ -101,6 +110,10 @@ public final class TiberoDataTypeHelper extends DBDataTypeHelper {
             Catalog catalog, String dataType, Integer precision, Integer scale) {
         if ("NUMBER".equals(dataType)) {
             return TiberoJdbcTypeMapper.getNumberType(precision, scale);
+        }
+
+        if (TiberoJdbcTypeMapper.isUnsupportedJdbcType(dataType)) {
+            return null;
         }
 
         Integer fixedType = TiberoJdbcTypeMapper.getFixedJdbcTypeId(dataType);

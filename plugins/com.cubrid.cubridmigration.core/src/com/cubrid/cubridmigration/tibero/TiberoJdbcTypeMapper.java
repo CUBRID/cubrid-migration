@@ -44,6 +44,16 @@ public final class TiberoJdbcTypeMapper {
     }
 
     /**
+     * Determine if the given data type is an unsupported JDBC type for migration.
+     *
+     * @param dataType String
+     * @return true if unsupported, false otherwise
+     */
+    public static boolean isUnsupportedJdbcType(String dataType) {
+        return "ROWID".equalsIgnoreCase(dataType);
+    }
+
+    /**
      * Get the JDBC Type ID for fixed/known Tibero data types.
      *
      * @param dataType String
@@ -85,9 +95,6 @@ public final class TiberoJdbcTypeMapper {
 
     private static Map<String, Integer> createFixedJdbcTypeIds() {
         Map<String, Integer> fixedTypes = new HashMap<String, Integer>();
-        fixedTypes.put("LONG", Types.CLOB);
-        fixedTypes.put("XMLTYPE", Types.CLOB);
-        fixedTypes.put("JSON", Types.CLOB);
         fixedTypes.put("BINARY_FLOAT", Types.FLOAT);
         fixedTypes.put("BINARY_DOUBLE", Types.DOUBLE);
         return Collections.unmodifiableMap(fixedTypes);

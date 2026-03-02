@@ -39,7 +39,6 @@ import com.cubrid.cubridmigration.core.dbobject.Table;
 import com.cubrid.cubridmigration.core.dbobject.View;
 import com.cubrid.cubridmigration.core.engine.config.MigrationConfiguration;
 import com.cubrid.cubridmigration.core.mapping.AbstractDataTypeMappingHelper;
-import com.cubrid.cubridmigration.core.mapping.model.MapObject;
 import com.cubrid.cubridmigration.core.mapping.model.VerifyInfo;
 import com.cubrid.cubridmigration.core.trans.DBTransformHelper;
 import com.cubrid.cubridmigration.cubrid.CUBRIDDataTypeHelper;
@@ -53,15 +52,15 @@ import java.util.Locale;
 public class Tibero2CUBRIDTransformHelper extends DBTransformHelper {
 
     private static final String[] TIBERO_DATETIME_FUNCTION = {
-        "CURDATE",
-        "CURRENT_DATE",
-        "CURTIME",
-        "CURRENT_TIMESTAMP",
-        "DBTIMEZONE",
-        "LOCALTIMESTAMP",
-        "SESSIONTIMEZONE",
         "SYSDATE",
-        "SYSTIMESTAMP"
+        "SYSTIME",
+        "SYSTIMESTAMP",
+        "CURRENT_DATE",
+        "CURRENT_TIME",
+        "CURRENT_TIMESTAMP",
+        "LOCALTIMESTAMP",
+        "DBTIMEZONE",
+        "SESSIONTIMEZONE"
     };
 
     public Tibero2CUBRIDTransformHelper(
@@ -78,14 +77,7 @@ public class Tibero2CUBRIDTransformHelper extends DBTransformHelper {
      */
     protected void adjustPrecision(
             Column srcColumn, Column cubColumn, MigrationConfiguration config) {
-        // UROWID/ROWID/INTERVAL to character varying doesn't need adjust precision
-        final String srcDataType = srcColumn.getDataType();
-        if ("UROWID".equals(srcDataType)
-                || "ROWID".equals(srcDataType)
-                || srcDataType.indexOf("INTERVAL YEAR") > -1
-                || srcDataType.indexOf("INTERVAL DAY") > -1) {
-            return;
-        }
+
         CUBRIDDataTypeHelper cubDTHelper = CUBRIDDataTypeHelper.getInstance(null);
         long expectedPrecision = (long) cubColumn.getPrecision();
         if (cubDTHelper.isStrictNumeric(cubColumn.getDataType())) {
@@ -165,71 +157,20 @@ public class Tibero2CUBRIDTransformHelper extends DBTransformHelper {
      * @param config MigrationConfiguration
      * @return Column
      */
+    @Override
     public Column getCUBRIDColumn(Column srcColumn, MigrationConfiguration config) {
-        Column cubCol = srcColumn.cloneCol();
-
-        String srcDataType = srcColumn.getDataType();
-        Integer srcPrecision = srcColumn.getPrecision();
-        Integer srcScale = srcColumn.getScale();
-
-        MapObject mapping =
-                getDataTypeMapping(
-                        srcColumn,
-                        srcDataType,
-                        srcPrecision,
-                        srcScale,
-                        config.getSrcCatalog().getSupportedDataType());
-
-        String cubridDataType = mapping.getDatatype();
-        String elemDataType = null;
-        int index = cubridDataType.indexOf("(");
-        if (index != -1) {
-            elemDataType = cubridDataType.substring(index + 1, cubridDataType.length() - 1);
-            cubridDataType = cubridDataType.substring(0, index);
-        }
-
-        cubCol.setDataType(cubridDataType);
-        cubCol.setSubDataType(elemDataType);
-        CUBRIDDataTypeHelper dataTypeHelper = CUBRIDDataTypeHelper.getInstance(null);
-        Integer dataTypeID = dataTypeHelper.getCUBRIDDataTypeID(cubridDataType);
-        cubCol.setJdbcIDOfDataType(dataTypeID);
-
-        Integer elementDataTypeID =
-                elemDataType == null ? null : dataTypeHelper.getCUBRIDDataTypeID(elemDataType);
-        cubCol.setJdbcIDOfSubDataType(elementDataTypeID);
+        Column cubCol = super.getCUBRIDColumn(srcColumn, config);
 
         cubCol.setDefaultValue(removeCommentsFromDefaultValue(cubCol.getDefaultValue()));
 
         // if char is char , add '' to default value
+        CUBRIDDataTypeHelper dataTypeHelper = CUBRIDDataTypeHelper.getInstance(null);
         if (dataTypeHelper.isString(cubCol.getDataType())
                 && StringUtils.isNotEmpty(cubCol.getDefaultValue())
                 && !cubCol.getDefaultValue().startsWith("'")
                 && !cubCol.getDefaultValue().startsWith("(")) {
             cubCol.setDefaultValue("'" + cubCol.getDefaultValue() + "'");
         }
-        initPecisionScale(mapping, srcColumn, cubCol);
-
-        String nOrPValue = mapping.getPrecision();
-
-        if (nOrPValue != null) {
-            adjustPrecision(srcColumn, cubCol, config);
-        }
-
-        adjustDefaultValue(srcColumn, cubCol);
-
-        String dataType = cubCol.getDataType();
-        String defaultValue = cubCol.getDefaultValue();
-        Integer scale = cubCol.getScale();
-
-        if (!dataTypeHelper.isSupportAutoIncr(dataType, defaultValue, scale)) {
-            cubCol.setAutoIncrement(false);
-        }
-
-        if ("fbo".equalsIgnoreCase(dataType)) {
-            cubCol.setDataType("blob");
-        }
-        cubCol.setShownDataType(dataTypeHelper.getShownDataType(cubCol));
-        dataTypeHelper.setColumnDataType(cubCol.getShownDataType(), cubCol);
 
         if (srcColumn.getComment() != null) {
             cubCol.setComment(srcColumn.getComment());
@@ -295,8 +236,6 @@ public class Tibero2CUBRIDTransformHelper extends DBTransformHelper {
             return Math.abs(srcScale) + Math.abs(srcPrecision) + 1;
         } else if (srcScale > srcPrecision && srcScale > 38) {
             return Math.abs(srcScale) + 3;
-        } else if ("INTEGER".equalsIgnoreCase(sourceColumn.getDataType())) {
-            return DataTypeConstant.TIBERO_INTEGERTOVARCHAR_MINSIZE;
         }
         return getNumericToCharLength(sourceColumn);
     }
@@ -337,17 +276,29 @@ public class Tibero2CUBRIDTransformHelper extends DBTransformHelper {
      * @return
      */
     private String convertFunctionInDefaultValue(String defaultValue, String dataType) {
-        String lowerCaseDefaultValue = defaultValue.toLowerCase(Locale.US);
+        String upperCaseDefaultValue = defaultValue.toUpperCase(Locale.US);
 
-        switch (lowerCaseDefaultValue) {
-            case "sysdate":
-                return "sys_datetime";
-            case "current_date":
-                return "current_datetime";
+        switch (upperCaseDefaultValue) {
+            case "SYSDATE":
+                return "SYS_DATETIME";
+            case "SYSTIME":
+                return "SYS_TIME";
+            case "SYSTIMESTAMP":
+                return "SYS_TIMESTAMP";
+            case "CURRENT_DATE":
+                return "CURRENT_DATETIME";
         }
 
-        if ("datetime".equalsIgnoreCase(dataType) && lowerCaseDefaultValue.startsWith("to_date")) {
-            return lowerCaseDefaultValue.replaceFirst("to_date", "to_datetime");
+        if ("DATETIME".equalsIgnoreCase(dataType)) {
+            if (upperCaseDefaultValue.startsWith("TO_DATE")) {
+                return upperCaseDefaultValue.replaceFirst("(?i)TO_DATE", "TO_DATETIME");
+            }
+            if (upperCaseDefaultValue.startsWith("TO_TIMESTAMP_TZ")) {
+                return upperCaseDefaultValue.replaceFirst("(?i)TO_TIMESTAMP_TZ", "TO_DATETIMETZ");
+            }
+            if (upperCaseDefaultValue.startsWith("TO_TIMESTAMP")) {
+                return upperCaseDefaultValue.replaceFirst("(?i)TO_TIMESTAMP", "TO_DATETIME");
+            }
         }
 
         return defaultValue;
@@ -360,13 +311,13 @@ public class Tibero2CUBRIDTransformHelper extends DBTransformHelper {
      * @return
      */
     private boolean isDefaultValueExpression(String defaultValue) {
-        String lowerCaseDefaultValue = defaultValue.toLowerCase(Locale.US);
+        String upperCaseDefaultValue = defaultValue.toUpperCase(Locale.US);
 
-        // Function names should be lowerCases
-        String[] functions = {"(", "to_char", "to_date", "cast"};
+        // Function names should be upperCases
+        String[] functions = {"(", "TO_CHAR", "TO_DATE", "TO_TIMESTAMP", "TO_TIMESTAMP_TZ", "CAST"};
 
         for (String function : functions) {
-            if (lowerCaseDefaultValue.startsWith(function)) {
+            if (upperCaseDefaultValue.startsWith(function)) {
                 return true;
             }
         }
