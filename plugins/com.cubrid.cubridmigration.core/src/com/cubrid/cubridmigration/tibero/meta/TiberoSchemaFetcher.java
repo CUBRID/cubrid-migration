@@ -288,6 +288,9 @@ public final class TiberoSchemaFetcher extends AbstractJDBCSchemaFetcher {
         Table sourceTable = super.buildSQLTable(resultSetMeta);
         List<Column> columns = sourceTable.getColumns();
         for (Column column : columns) {
+            column.setDataType(
+                    dtHelper.getNormalizedDataType(
+                            column.getDataType(), column.getPrecision(), column.getScale()));
             if (isNULLType(column.getDataType())) {
                 column.setDataType("VARCHAR2");
                 column.setJdbcIDOfDataType(Types.VARCHAR);
@@ -328,7 +331,7 @@ public final class TiberoSchemaFetcher extends AbstractJDBCSchemaFetcher {
                     if (column == null) {
                         continue;
                     }
-                    fillColumnMetadata(column, rs, dtHelper);
+                    fillColumnMetadata(catalog, column, rs, dtHelper);
                 } catch (Exception ex) {
                     LOG.error("Read table column information error:{}", table.getName(), ex);
                 }
@@ -347,23 +350,23 @@ public final class TiberoSchemaFetcher extends AbstractJDBCSchemaFetcher {
      * @param dtHelper TiberoDataTypeHelper
      * @throws SQLException e
      */
-    private void fillColumnMetadata(Column column, ResultSet rs, TiberoDataTypeHelper dtHelper)
+    private void fillColumnMetadata(
+            Catalog catalog, Column column, ResultSet rs, TiberoDataTypeHelper dtHelper)
             throws SQLException {
-        String dataType = rs.getString("DATA_TYPE");
-        if ("NVARCHAR".equalsIgnoreCase(dataType)) {
-            dataType = "NVARCHAR2";
-        }
+        String rawDataType = rs.getString("DATA_TYPE");
+        String precisionStr = rs.getString("DATA_PRECISION");
+        Integer precision = precisionStr == null ? null : rs.getInt("DATA_PRECISION");
+        String scaleStr = rs.getString("DATA_SCALE");
+        Integer scale = scaleStr == null ? null : rs.getInt("DATA_SCALE");
+
+        String dataType = dtHelper.getNormalizedDataType(rawDataType, precision, scale);
         column.setDataType(dataType);
+        column.setPrecision(precision);
+        column.setScale(scale);
+
+        column.setJdbcIDOfDataType(dtHelper.getJdbcDataTypeID(catalog, dataType, precision, scale));
 
         column.setByteLength(rs.getInt("DATA_LENGTH"));
-        String precisionStr = rs.getString("DATA_PRECISION");
-        column.setPrecision(precisionStr == null ? null : rs.getInt("DATA_PRECISION"));
-        String scaleStr = rs.getString("DATA_SCALE");
-        column.setScale(scaleStr == null ? null : rs.getInt("DATA_SCALE"));
-        if ("NUMBER".equals(column.getDataType()) && precisionStr == null && "0".equals(scaleStr)) {
-            column.setDataType("INTEGER");
-        }
-
         column.setNullable(!"N".equalsIgnoreCase(rs.getString("NULLABLE")));
 
         String defaultValue = rs.getString("DATA_DEFAULT");
