@@ -35,18 +35,10 @@ import com.cubrid.cubridmigration.core.dbobject.Catalog;
 import com.cubrid.cubridmigration.core.dbobject.Column;
 import com.cubrid.cubridmigration.core.dbtype.DatabaseType;
 
-import java.sql.Types;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public final class TiberoDataTypeHelper extends DBDataTypeHelper {
-    private static final String NUMBER = "NUMBER";
-    private static final String INTEGER = "INTEGER";
-
-    private static final Map<String, Integer> FIXED_JDBC_TYPE_IDS = createFixedJdbcTypeIds();
-
     private static final TiberoDataTypeHelper HELPER = new TiberoDataTypeHelper();
 
     /**
@@ -57,70 +49,6 @@ public final class TiberoDataTypeHelper extends DBDataTypeHelper {
      */
     public static TiberoDataTypeHelper getInstance(String version) {
         return HELPER;
-    }
-
-    /**
-     * get the Number type's Show Type
-     *
-     * @param precision Integer
-     * @param scale Integer
-     * @return NUMBER(x),NUMBER(x,y),NUMBER
-     */
-    private static String getNumberShowType(Integer precision, Integer scale) {
-        if (precision == null || precision == 0) {
-            return NUMBER;
-        }
-        if (scale == null) {
-            return "NUMBER(" + precision + ")";
-        }
-        return "NUMBER(" + precision + "," + scale + ")";
-    }
-
-    /**
-     * getNumberType
-     *
-     * @param precision Integer
-     * @param scale Integer
-     * @return Integer
-     */
-    private static Integer getNumberType(Integer precision, Integer scale) {
-        if (precision == null) {
-            if (scale == null) {
-                return Types.NUMERIC;
-            } else if (scale == 0) {
-                return Types.BIGINT;
-            }
-        } else if (scale == null || scale == 0) {
-            if (precision == 1) {
-                return Types.BIT;
-            } else if (precision == 3) {
-                return Types.TINYINT;
-            } else if (precision == 5) {
-                return Types.SMALLINT;
-            } else if (precision <= 10) {
-                return Types.INTEGER;
-            } else if (precision <= 38) {
-                return Types.BIGINT;
-            }
-        }
-        return Types.NUMERIC;
-    }
-
-    private static Map<String, Integer> createFixedJdbcTypeIds() {
-        Map<String, Integer> fixedTypes = new HashMap<String, Integer>();
-        fixedTypes.put("DATE", Types.DATE);
-        fixedTypes.put("NCHAR", Types.CHAR);
-        fixedTypes.put("NVARCHAR2", Types.CHAR);
-        fixedTypes.put("NCLOB", Types.CLOB);
-        fixedTypes.put("LONG", Types.CLOB);
-        fixedTypes.put("BINARY_FLOAT", Types.FLOAT);
-        fixedTypes.put("BINARY_DOUBLE", Types.DOUBLE);
-        fixedTypes.put(INTEGER, Types.INTEGER);
-        return Collections.unmodifiableMap(fixedTypes);
-    }
-
-    private static boolean isUnsupportedJdbcType(String dataType) {
-        return "BFILE".equals(dataType) || "ROWID".equals(dataType) || "UROWID".equals(dataType);
     }
 
     /**
@@ -170,28 +98,18 @@ public final class TiberoDataTypeHelper extends DBDataTypeHelper {
      */
     public Integer getJdbcDataTypeID(
             Catalog catalog, String dataType, Integer precision, Integer scale) {
-        if (NUMBER.equals(dataType)) {
-            return getNumberType(precision, scale);
+        if ("NUMBER".equals(dataType)) {
+            return TiberoJdbcTypeMapper.getNumberType(precision, scale);
         }
 
-        if (isUnsupportedJdbcType(dataType)) {
-            return null;
-        }
-
-        Integer fixedType = FIXED_JDBC_TYPE_IDS.get(dataType);
+        Integer fixedType = TiberoJdbcTypeMapper.getFixedJdbcTypeId(dataType);
         if (fixedType != null) {
             return fixedType;
         }
 
         String key = getTiberoDataTypeKey(dataType);
-
-        // REAL, RAW, BLOB, TIMESTAMP WITH TIME ZONE, TIMESTAMP WITH LOCAL TIME ZONE,
-        // VARCHAR2, LONG RAW, NUMBER, CLOB, CHAR, STRUCT, FLOAT, DATE, LONG,
-        // INTERVALDS, INTERVALYM, ARRAY, TIMESTAMP, REF
         Map<String, List<DataType>> supportedDataType = catalog.getSupportedDataType();
-
         List<DataType> dataTypeList = supportedDataType.get(key);
-
         if (dataTypeList == null) {
             throw new IllegalArgumentException("Not supported Tibero data type(" + dataType + ")");
         }
@@ -217,39 +135,7 @@ public final class TiberoDataTypeHelper extends DBDataTypeHelper {
      * @return String
      */
     public String getShownDataType(Column column) {
-        String colType = column.getDataType();
-        Integer precision = column.getPrecision();
-        Integer scale = column.getScale();
-        if (isString(colType)) {
-            if ("C".equals(column.getCharUsed())) {
-                return colType + "(" + precision + " CHAR)";
-            } else {
-                return colType + "(" + precision + ")";
-            }
-        } else if (isNString(colType)) {
-            return colType + "(" + precision + ")";
-        } else if ("RAW".equals(colType)) {
-            return colType + "(" + precision + ")";
-        } else if (NUMBER.equals(colType)) {
-            return getNumberShowType(precision, scale);
-        } else if ("FLOAT".equals(colType)) {
-            if (precision == 126) {
-                return "FLOAT";
-            } else {
-                return "FLOAT(" + precision + ")";
-            }
-        } else if ("TIMESTAMP".equals(colType)) {
-            return "TIMESTAMP(" + scale + ")";
-        } else if ("TIMESTAMPTZ".equals(colType)) {
-            return "TIMESTAMP(" + scale + ") WITH TIME ZONE";
-        } else if ("TIMESTAMPLTZ".equals(colType)) {
-            return "TIMESTAMP(" + scale + ") WITH LOCAL TIME ZONE";
-        } else if ("INTERVALDS".equals(colType)) {
-            return "INTERVAL DAY(" + precision + ") TO SECOND(" + scale + ")";
-        } else if ("INTERVALYM".equals(colType)) {
-            return "INTERVAL YEAR(" + precision + ") TO MONTH";
-        }
-        return colType;
+        return TiberoTypeFormatter.format(column, this);
     }
 
     /**
