@@ -67,9 +67,9 @@ public final class TiberoDataTypeHelper extends DBDataTypeHelper {
         } else if (dataType.matches("TIMESTAMP\\(\\d*\\) WITH LOCAL TIME ZONE")) {
             key = "TIMESTAMP WITH LOCAL TIME ZONE";
         } else if (dataType.matches("INTERVAL DAY\\(\\d*\\) TO SECOND\\(\\d*\\)")) {
-            key = "INTERVALDS";
+            key = "INTERVAL DAY TO SECOND";
         } else if (dataType.matches("INTERVAL YEAR\\(\\d*\\) TO MONTH")) {
-            key = "INTERVALYM";
+            key = "INTERVAL YEAR TO MONTH";
         }
         return key;
     }

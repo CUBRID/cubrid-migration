@@ -51,44 +51,34 @@ public class TiberoDataTypeMappingHelper extends AbstractDataTypeMappingHelper {
      */
     @Override
     public String getMapKey(String datatype, String precision, String scale) {
-        return new MappingKey(datatype, precision).generate();
+        final String upperType = datatype == null ? "" : datatype.toUpperCase();
+
+        if ("NUMBER".equals(upperType)) {
+            return getNumberMappingKey(precision);
+        }
+        return TiberoDataTypeHelper.getTiberoDataTypeKey(upperType);
     }
 
-    /** MappingKey encapsulates the logic for generating a unique mapping key from Tibero types. */
-    private final class MappingKey {
-        private final String dataType;
-        private final String precision;
-
-        private MappingKey(String dataType, String precision) {
-            this.dataType = dataType == null ? "" : dataType.toUpperCase();
-            this.precision = precision;
+    /**
+     * Generate mapping key for NUMBER type.
+     *
+     * @param precision String
+     * @return key String
+     */
+    private String getNumberMappingKey(String precision) {
+        if (isPOrNumeric(precision)) {
+            return "NUMBER" + MAP_KEY_SEPARATOR + "p" + MAP_KEY_SEPARATOR + "s";
         }
+        return "NUMBER";
+    }
 
-        private String generate() {
-            if ("NUMBER".equals(dataType)) {
-                return generateNumberKey();
-            }
-            if (dataType.matches("INTERVAL DAY\\(\\d*\\) TO SECOND\\(\\d*\\)")) {
-                return "INTERVAL DAY TO SECOND";
-            }
-            if (dataType.matches("INTERVAL YEAR\\(\\d*\\) TO MONTH")) {
-                return "INTERVAL YEAR TO MONTH";
-            }
-            return TiberoDataTypeHelper.getTiberoDataTypeKey(dataType);
-        }
-
-        private String generateNumberKey() {
-            if (isPOrNumeric(precision)) {
-                return "NUMBER" + MAP_KEY_SEPARATOR + "p" + MAP_KEY_SEPARATOR + "s";
-            }
-            return "NUMBER";
-        }
-
-        private boolean isPOrNumeric(String str) {
-            if (str == null) {
-                return false;
-            }
-            return "p".equalsIgnoreCase(str) || str.matches("^-?\\d+$");
-        }
+    /**
+     * Check if the string is "p" or a numeric value.
+     *
+     * @param str String
+     * @return boolean
+     */
+    private boolean isPOrNumeric(String str) {
+        return str != null && ("p".equalsIgnoreCase(str) || str.matches("^-?\\d+$"));
     }
 }
