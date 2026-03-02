@@ -43,16 +43,12 @@ import com.cubrid.cubridmigration.core.mapping.model.MapObject;
 import com.cubrid.cubridmigration.core.mapping.model.VerifyInfo;
 import com.cubrid.cubridmigration.core.trans.DBTransformHelper;
 import com.cubrid.cubridmigration.cubrid.CUBRIDDataTypeHelper;
-import com.cubrid.cubridmigration.cubrid.CUBRIDTimeUtil;
 import com.cubrid.cubridmigration.cubrid.trans.ToCUBRIDDataConverterFacade;
-import com.cubrid.cubridmigration.mysql.trans.MySQL2CUBRIDMigParas;
 
 import org.apache.commons.lang3.StringUtils;
 
-import java.sql.Timestamp;
 import java.util.List;
 import java.util.Locale;
-import java.util.TimeZone;
 
 public class Tibero2CUBRIDTransformHelper extends DBTransformHelper {
 
@@ -330,40 +326,6 @@ public class Tibero2CUBRIDTransformHelper extends DBTransformHelper {
             cubridColumn.setDefaultIsExpression(true);
             cubridColumn.setDefaultValue(defaultValue);
             return;
-        }
-
-        if ("TIMESTAMP".equalsIgnoreCase(dataType)) {
-            try {
-                CUBRIDTimeUtil.parseDatetime2Long(defaultValue, TimeZone.getDefault());
-            } catch (Exception e) {
-                String timestampValue =
-                        MySQL2CUBRIDMigParas.getMigrationParamter(
-                                MySQL2CUBRIDMigParas.UNPARSED_TIMESTAMP);
-                Timestamp replacedTimestamp =
-                        MySQL2CUBRIDMigParas.getReplacedTimestamp(
-                                timestampValue, TimeZone.getDefault());
-
-                if (replacedTimestamp == null) {
-                    cubridColumn.setDefaultValue(null);
-                } else {
-                    String formatValue = CUBRIDTimeUtil.defaultFormatDateTime(replacedTimestamp);
-                    cubridColumn.setDefaultValue(formatValue);
-                }
-            }
-        } else if ("DATE".equalsIgnoreCase(dataType)) {
-            // if there is "0000-00-00" in time field, for example
-            try {
-                CUBRIDTimeUtil.parseDatetime2Long(defaultValue, TimeZone.getDefault());
-            } catch (Exception e) {
-                try {
-                    CUBRIDTimeUtil.parseDate2Long(defaultValue, TimeZone.getDefault());
-                } catch (Exception e2) {
-                    String timeValue =
-                            MySQL2CUBRIDMigParas.getMigrationParamter(
-                                    MySQL2CUBRIDMigParas.UNPARSED_DATE);
-                    cubridColumn.setDefaultValue(timeValue);
-                }
-            }
         }
     }
 
