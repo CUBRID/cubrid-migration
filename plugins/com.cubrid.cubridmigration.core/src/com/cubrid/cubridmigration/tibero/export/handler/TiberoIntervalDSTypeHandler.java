@@ -29,18 +29,13 @@
  */
 package com.cubrid.cubridmigration.tibero.export.handler;
 
-import com.cubrid.common.log.LogUtil;
 import com.cubrid.cubridmigration.core.dbobject.Column;
 import com.cubrid.cubridmigration.core.export.IExportDataHandler;
-
-import org.slf4j.Logger;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
 public class TiberoIntervalDSTypeHandler implements IExportDataHandler {
-    private static final Logger LOG = LogUtil.getLogger(TiberoIntervalDSTypeHandler.class);
-
     /**
      * Retrieves the value object of INTERVALDS column.
      *
@@ -51,11 +46,12 @@ public class TiberoIntervalDSTypeHandler implements IExportDataHandler {
      */
     public Object getJdbcObject(ResultSet rs, Column column) throws SQLException {
         try {
-            String value = rs.getString(column.getName());
-            return value;
+            return rs.getString(column.getName());
+        } catch (SQLException e) {
+            throw e;
         } catch (Exception e) {
-            LOG.error("", e);
-            return null;
+            throw new SQLException(
+                    "Failed to read Tibero INTERVAL DAY TO SECOND value: " + column.getName(), e);
         }
     }
 }

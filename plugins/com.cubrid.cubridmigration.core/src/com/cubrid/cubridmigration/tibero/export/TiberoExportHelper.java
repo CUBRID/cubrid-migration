@@ -62,8 +62,8 @@ public class TiberoExportHelper extends DBExportHelper {
     public TiberoExportHelper() {
         super();
         handlerMap1.put(Types.DATE, new TimestampTypeHandler());
-        handlerMap2.put("INTERVALDS", new TiberoIntervalDSTypeHandler());
-        handlerMap2.put("INTERVALYM", new TiberoIntervalYMTypeHandler());
+        handlerMap2.put("INTERVAL DAY TO SECOND", new TiberoIntervalDSTypeHandler());
+        handlerMap2.put("INTERVAL YEAR TO MONTH", new TiberoIntervalYMTypeHandler());
         handlerMap2.put("TIMESTAMP WITH LOCAL TIME ZONE", new TimestampTypeHandler());
         handlerMap2.put("TIMESTAMP WITH TIME ZONE", new CharTypeHandler());
     }
@@ -113,7 +113,14 @@ public class TiberoExportHelper extends DBExportHelper {
      * @return SQL
      */
     public String getPagedSelectSQL(String sql, long rows, long exportedRecords, PK pk) {
-        return sql;
+        String cleanSql = sql.trim();
+        long endRow = exportedRecords + rows;
+        StringBuilder buf = new StringBuilder(cleanSql.length() + 128);
+        buf.append("SELECT * FROM (SELECT CMT_PAGED_.*, ROWNUM CMT_ROWNUM FROM (");
+        buf.append(cleanSql);
+        buf.append(") CMT_PAGED_ WHERE ROWNUM <= ").append(endRow);
+        buf.append(") WHERE CMT_ROWNUM > ").append(exportedRecords);
+        return buf.toString();
     }
 
     /**

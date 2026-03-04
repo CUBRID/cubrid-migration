@@ -479,7 +479,6 @@ public class JDBCExporter extends MigrationExporter {
         int sourceDBTypeID = config.getSourceDBType().getID();
         if (config.isImplicitEstimate()
                 && (sourceDBTypeID == DatabaseType.ORACLE.getID()
-                        || sourceDBTypeID == DatabaseType.TIBERO.getID()
                         || sourceDBTypeID == DatabaseType.MYSQL.getID())) {
             return true;
         }
