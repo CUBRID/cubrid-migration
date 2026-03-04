@@ -38,8 +38,6 @@ import com.cubrid.cubridmigration.core.dbobject.Column;
  */
 public final class TiberoTypeFormatter {
 
-    private static final String NUMBER = "NUMBER";
-
     private TiberoTypeFormatter() {
         // Prevent instantiation
     }
@@ -67,7 +65,7 @@ public final class TiberoTypeFormatter {
         }
 
         // 2. NUMBER type which needs special formatting logic
-        if (NUMBER.equals(colType)) {
+        if ("NUMBER".equals(colType)) {
             return formatNumber(precision, scale);
         }
 
@@ -84,7 +82,7 @@ public final class TiberoTypeFormatter {
      */
     private static String formatNumber(Integer precision, Integer scale) {
         if (precision == null || precision == 0) {
-            return NUMBER;
+            return "NUMBER";
         }
         if (scale == null) {
             return "NUMBER(" + precision + ")";
