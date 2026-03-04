@@ -30,15 +30,12 @@
 package com.cubrid.cubridmigration.tibero.export.handler;
 
 import com.cubrid.cubridmigration.core.dbobject.Column;
-import com.cubrid.cubridmigration.core.export.handler.ClobTypeHandler;
 
-import java.sql.Clob;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.SQLXML;
 
 /** Reads Tibero XMLTYPE values as plain text for target-side transformation. */
-public class TiberoXmlTypeHandler extends ClobTypeHandler {
+public class TiberoXmlTypeHandler extends AbstractTiberoTextTypeHandler {
 
     /**
      * Retrieves the value object of XMLTYPE column.
@@ -48,39 +45,13 @@ public class TiberoXmlTypeHandler extends ClobTypeHandler {
      * @return value of column
      * @throws SQLException e
      */
+    @Override
     public Object getJdbcObject(ResultSet rs, Column column) throws SQLException {
-        final String colName = column.getName();
-        try {
-            Object value = rs.getObject(colName);
-            if (value == null) {
-                return null;
-            }
-            if (value instanceof SQLXML) {
-                return getStringFromSQLXML((SQLXML) value);
-            }
-            if (value instanceof Clob) {
-                return getCharObject(((Clob) value).getCharacterStream());
-            }
-            if (value instanceof String) {
-                return value;
-            }
-            return rs.getString(colName);
-        } catch (SQLException e) {
-            throw e;
-        } catch (Exception e) {
-            throw new SQLException("Failed to read Tibero XMLTYPE value: " + colName, e);
-        }
+        return readTextValue(rs, column);
     }
 
-    private String getStringFromSQLXML(SQLXML sqlxml) throws SQLException {
-        try {
-            return sqlxml.getString();
-        } finally {
-            try {
-                sqlxml.free();
-            } catch (Exception ignored) {
-                // ignore SQLXML cleanup failure
-            }
-        }
+    @Override
+    protected String getTypeNameForError() {
+        return "XMLTYPE";
     }
 }

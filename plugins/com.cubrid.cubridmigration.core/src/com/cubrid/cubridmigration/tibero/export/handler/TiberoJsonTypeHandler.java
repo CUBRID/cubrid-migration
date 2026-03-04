@@ -31,19 +31,14 @@ package com.cubrid.cubridmigration.tibero.export.handler;
 
 import com.cubrid.cubridmigration.core.common.Closer;
 import com.cubrid.cubridmigration.core.dbobject.Column;
-import com.cubrid.cubridmigration.core.export.handler.ClobTypeHandler;
 
-import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 import java.sql.Blob;
-import java.sql.Clob;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.SQLXML;
 
 /** Reads Tibero JSON values as String for stable downstream conversion. */
-public class TiberoJsonTypeHandler extends ClobTypeHandler {
+public class TiberoJsonTypeHandler extends AbstractTiberoTextTypeHandler {
 
     /**
      * Retrieves the value object of JSON column.
@@ -61,75 +56,37 @@ public class TiberoJsonTypeHandler extends ClobTypeHandler {
             if (value == null) {
                 return null;
             }
-            if (value instanceof String) {
-                return value;
-            }
-            if (value instanceof SQLXML) {
-                return getStringFromSQLXML((SQLXML) value);
-            }
-            if (value instanceof Clob) {
-                return getCharObject(((Clob) value).getCharacterStream());
-            }
             if (value instanceof Blob) {
-                return getStringFromBlob((Blob) value);
+                return readFromBlob((Blob) value, rs, colName);
             }
             if (value instanceof byte[]) {
-                return new String((byte[]) value, StandardCharsets.UTF_8);
+                String str = tryGetString(rs, colName);
+                return str == null ? decodeBinary((byte[]) value) : str;
             }
             if (value instanceof InputStream) {
-                return getStringFromBinaryStream((InputStream) value);
+                return readFromInputStreamValue((InputStream) value, rs, colName);
             }
-            return rs.getString(colName);
-        } catch (SQLException e) {
-            throw e;
+            return readTextValue(value, rs, colName);
         } catch (Exception e) {
-            throw new SQLException("Failed to read Tibero JSON value: " + colName, e);
+            if (e instanceof SQLException) {
+                throw (SQLException) e;
+            }
+            throw new SQLException(buildReadErrorMessage(colName), e);
         }
     }
 
-    private String getStringFromSQLXML(SQLXML sqlxml) throws SQLException {
-        try {
-            return sqlxml.getString();
-        } finally {
-            try {
-                sqlxml.free();
-            } catch (Exception ignored) {
-                // ignore SQLXML cleanup failure
-            }
-        }
+    @Override
+    protected String getTypeNameForError() {
+        return "JSON";
     }
 
-    private String getStringFromBlob(Blob blob) throws SQLException {
-        try {
-            return getStringFromBinaryStream(blob.getBinaryStream());
-        } finally {
-            try {
-                blob.free();
-            } catch (Exception ignored) {
-                // ignore BLOB cleanup failure
-            }
-        }
-    }
-
-    private String getStringFromBinaryStream(InputStream inputStream) throws SQLException {
-        if (inputStream == null) {
-            return null;
-        }
-        ByteArrayOutputStream out = null;
-        try {
-            out = new ByteArrayOutputStream();
-            byte[] buf = new byte[2048];
-            int len = inputStream.read(buf);
-            while (len != -1) {
-                out.write(buf, 0, len);
-                len = inputStream.read(buf);
-            }
-            return new String(out.toByteArray(), StandardCharsets.UTF_8);
-        } catch (Exception e) {
-            throw new SQLException("Failed to decode Tibero JSON binary value as UTF-8", e);
-        } finally {
+    private String readFromInputStreamValue(InputStream inputStream, ResultSet rs, String colName)
+            throws SQLException {
+        String value = tryGetString(rs, colName);
+        if (value != null) {
             Closer.close(inputStream);
-            Closer.close(out);
+            return value;
         }
+        return readFromInputStream(inputStream);
     }
 }
