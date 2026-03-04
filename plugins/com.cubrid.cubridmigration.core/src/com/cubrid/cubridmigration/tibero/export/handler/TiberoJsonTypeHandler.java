@@ -29,9 +29,14 @@
  */
 package com.cubrid.cubridmigration.tibero.export.handler;
 
+import com.cubrid.cubridmigration.core.common.Closer;
 import com.cubrid.cubridmigration.core.dbobject.Column;
 import com.cubrid.cubridmigration.core.export.handler.ClobTypeHandler;
 
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.sql.Blob;
 import java.sql.Clob;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -48,6 +53,7 @@ public class TiberoJsonTypeHandler extends ClobTypeHandler {
      * @return value of column
      * @throws SQLException e
      */
+    @Override
     public Object getJdbcObject(ResultSet rs, Column column) throws SQLException {
         final String colName = column.getName();
         try {
@@ -63,6 +69,15 @@ public class TiberoJsonTypeHandler extends ClobTypeHandler {
             }
             if (value instanceof Clob) {
                 return getCharObject(((Clob) value).getCharacterStream());
+            }
+            if (value instanceof Blob) {
+                return getStringFromBlob((Blob) value);
+            }
+            if (value instanceof byte[]) {
+                return new String((byte[]) value, StandardCharsets.UTF_8);
+            }
+            if (value instanceof InputStream) {
+                return getStringFromBinaryStream((InputStream) value);
             }
             return rs.getString(colName);
         } catch (SQLException e) {
@@ -81,6 +96,40 @@ public class TiberoJsonTypeHandler extends ClobTypeHandler {
             } catch (Exception ignored) {
                 // ignore SQLXML cleanup failure
             }
+        }
+    }
+
+    private String getStringFromBlob(Blob blob) throws SQLException {
+        try {
+            return getStringFromBinaryStream(blob.getBinaryStream());
+        } finally {
+            try {
+                blob.free();
+            } catch (Exception ignored) {
+                // ignore BLOB cleanup failure
+            }
+        }
+    }
+
+    private String getStringFromBinaryStream(InputStream inputStream) throws SQLException {
+        if (inputStream == null) {
+            return null;
+        }
+        ByteArrayOutputStream out = null;
+        try {
+            out = new ByteArrayOutputStream();
+            byte[] buf = new byte[2048];
+            int len = inputStream.read(buf);
+            while (len != -1) {
+                out.write(buf, 0, len);
+                len = inputStream.read(buf);
+            }
+            return new String(out.toByteArray(), StandardCharsets.UTF_8);
+        } catch (Exception e) {
+            throw new SQLException("Failed to decode Tibero JSON binary value as UTF-8", e);
+        } finally {
+            Closer.close(inputStream);
+            Closer.close(out);
         }
     }
 }
