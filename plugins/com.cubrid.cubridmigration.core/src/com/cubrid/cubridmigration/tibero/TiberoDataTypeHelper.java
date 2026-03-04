@@ -68,7 +68,11 @@ public final class TiberoDataTypeHelper extends DBDataTypeHelper {
         String normalizedType = dataType.trim().toUpperCase(Locale.ENGLISH).replaceAll("\\s+", " ");
         String key = normalizedType;
 
-        if (normalizedType.matches("TIMESTAMP\\(\\d*\\)")) {
+        if ("JSON".equals(normalizedType)) {
+            key = "JSON";
+        } else if ("XMLTYPE".equals(normalizedType) || normalizedType.endsWith(" XMLTYPE")) {
+            key = "XMLTYPE";
+        } else if (normalizedType.matches("TIMESTAMP\\(\\d*\\)")) {
             key = "TIMESTAMP";
         } else if (normalizedType.matches("TIME\\(\\d*\\)")) {
             key = "TIME";

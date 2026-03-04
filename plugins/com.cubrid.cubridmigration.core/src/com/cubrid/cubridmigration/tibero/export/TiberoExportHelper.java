@@ -44,6 +44,8 @@ import com.cubrid.cubridmigration.core.export.handler.TimestampTypeHandler;
 import com.cubrid.cubridmigration.tibero.TiberoDataTypeHelper;
 import com.cubrid.cubridmigration.tibero.export.handler.TiberoIntervalDSTypeHandler;
 import com.cubrid.cubridmigration.tibero.export.handler.TiberoIntervalYMTypeHandler;
+import com.cubrid.cubridmigration.tibero.export.handler.TiberoJsonTypeHandler;
+import com.cubrid.cubridmigration.tibero.export.handler.TiberoXmlTypeHandler;
 
 import org.slf4j.Logger;
 
@@ -64,8 +66,10 @@ public class TiberoExportHelper extends DBExportHelper {
         handlerMap1.put(Types.DATE, new TimestampTypeHandler());
         handlerMap2.put("INTERVAL DAY TO SECOND", new TiberoIntervalDSTypeHandler());
         handlerMap2.put("INTERVAL YEAR TO MONTH", new TiberoIntervalYMTypeHandler());
+        handlerMap2.put("JSON", new TiberoJsonTypeHandler());
         handlerMap2.put("TIMESTAMP WITH LOCAL TIME ZONE", new TimestampTypeHandler());
         handlerMap2.put("TIMESTAMP WITH TIME ZONE", new CharTypeHandler());
+        handlerMap2.put("XMLTYPE", new TiberoXmlTypeHandler());
     }
 
     /**
