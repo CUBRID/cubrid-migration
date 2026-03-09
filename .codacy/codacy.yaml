@@ -17,8 +17,6 @@ exclude_paths:
     - '**/Messages*.properties'
     - '**/plugin*.properties'
     - site/**
-    - build.sh
-    - build.ps1
 runtimes:
     - java@17.0.10
     - python@3.11.11
