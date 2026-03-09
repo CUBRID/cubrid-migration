@@ -1,0 +1,80 @@
+patterns:
+    Lizard_ccn-medium:
+        category: Complexity
+        description: Cyclomatic complexity exceeds warning threshold
+        id: Lizard_ccn-medium
+        level: Warning
+        severityLevel: Warning
+        threshold: 15
+        timeToFix: 30
+        title: Cyclomatic Complexity Warning
+
+    Lizard_ccn-high:
+        category: Complexity
+        description: Cyclomatic complexity exceeds error threshold
+        id: Lizard_ccn-high
+        level: Error
+        severityLevel: Error
+        threshold: 25
+        timeToFix: 60
+        title: High Cyclomatic Complexity
+
+    Lizard_file-nloc-medium:
+        category: Complexity
+        description: File length exceeds warning threshold
+        id: Lizard_file-nloc-medium
+        level: Warning
+        severityLevel: Warning
+        threshold: 1000
+        timeToFix: 60
+        title: File Length Warning
+
+    Lizard_file-nloc-high:
+        category: Complexity
+        description: File length exceeds error threshold
+        id: Lizard_file-nloc-high
+        level: Error
+        severityLevel: Error
+        threshold: 2000
+        timeToFix: 120
+        title: High File Length
+
+    Lizard_nloc-medium:
+        category: Complexity
+        description: Function length exceeds warning threshold
+        id: Lizard_nloc-medium
+        level: Warning
+        severityLevel: Warning
+        threshold: 100
+        timeToFix: 30
+        title: Function Length Warning
+
+    Lizard_nloc-high:
+        category: Complexity
+        description: Function length exceeds error threshold
+        id: Lizard_nloc-high
+        level: Error
+        severityLevel: Error
+        threshold: 150
+        timeToFix: 60
+        title: High Function Length
+
+    Lizard_parameter-count-medium:
+        category: Complexity
+        description: Parameter count exceeds warning threshold
+        id: Lizard_parameter-count-medium
+        level: Warning
+        severityLevel: Warning
+        threshold: 8
+        timeToFix: 20
+        title: Parameter Count Warning
+
+    Lizard_parameter-count-high:
+        category: Complexity
+        description: Parameter count exceeds error threshold
+        id: Lizard_parameter-count-high
+        level: Error
+        severityLevel: Error
+        threshold: 12
+        timeToFix: 30
+        title: High Parameter Count
