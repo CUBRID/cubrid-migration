@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<ruleset name="CUBRID Migration Toolkit PMD Rules"
+    xmlns="http://pmd.sourceforge.net/ruleset/2.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://pmd.sourceforge.net/ruleset/2.0.0 https://pmd.sourceforge.io/ruleset_2_0_0.xsd">
+    <description>
+        PMD ruleset optimized for Eclipse RCP / Tycho / Maven Java codebase.
+        Focuses on Java quality, bugs, performance, and security.
+        Excludes rules that conflict with Eclipse framework patterns.
+    </description>
+
+    <rule ref="category/java/bestpractices.xml">
+        <exclude name="ExcessivePublicCount"/>
+    </rule>
+
+    <rule ref="category/java/codestyle.xml">
+        <exclude name="ShortVariable"/>
+        <exclude name="LongVariable"/>
+    </rule>
+
+    <rule ref="category/java/design.xml">
+        <exclude name="GodClass"/>
+        <exclude name="TooManyFields"/>
+    </rule>
+
+    <rule ref="category/java/errorprone.xml"/>
+    <rule ref="category/java/multithreading.xml"/>
+    <rule ref="category/java/performance.xml"/>
+    <rule ref="category/java/security.xml"/>
+
+</ruleset>
