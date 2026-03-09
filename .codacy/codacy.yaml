@@ -1,0 +1,47 @@
+---
+runtimes:
+    - java@17.0.10
+    - python@3.11.11
+
+tools:
+    - lizard@1.17.31
+    - pmd@6.55.0
+    - spotbugs@4.8.4
+    - semgrep@1.16.2
+    - trivy@0.69.2
+
+# Global exclude paths - applied to all tools
+exclude_paths:
+    # Test code
+    - "test/**"
+    - "**/*Test.java"
+    - "**/*TestFragment*/**"
+
+    # Build artifacts
+    - "**/target/**"
+    - "**/bin/**"
+    - "**/target-ide/**"
+
+    # Generated code (ANTLR4)
+    - "**/generated-sources/**"
+    - "**/antlr4gen/**"
+    - "**/PloParser*.java"
+    - "**/PloLexer*.java"
+
+    # Resources (i18n bundles)
+    - "**/*.properties"
+    - "**/Messages*.properties"
+    - "**/plugin*.properties"
+
+    # Eclipse p2 update site
+    - "site/**"
+
+    # Build scripts (handled by shellcheck/psscriptanalyzer)
+    - "build.sh"
+    - "build.ps1"
+
+# Tool-specific exclusions (optional fine-tuning)
+engines:
+    lizard:
+        exclude_paths:
+            - "**/dbobject/**"  # Data classes - complex by DB schema design
