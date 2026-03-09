@@ -1,0 +1,17 @@
+tools:
+    - name: lizard
+      languages: [Java]
+      extensions: [.java]
+      files: []
+    - name: pmd
+      languages: [Java, SQL, XML]
+      extensions: [.java, .pom, .sql, .wsdl, .xml, .xsl]
+      files: []
+    - name: semgrep
+      languages: [Java, SQL, Shell, YAML]
+      extensions: [.bash, .java, .sh, .sql, .yaml, .yml]
+      files: []
+    - name: trivy
+      languages: [JSON, Java, XML, YAML]
+      extensions: [.java, .json, .pom, .wsdl, .xml, .xsl, .yaml, .yml]
+      files: [gradle.lockfile, pom.xml]
