@@ -158,5 +158,15 @@
                 <module>product</module>
             </modules>
         </profile>
+
+        <profile>
+            <id>unit-test</id>
+            <modules>
+                <module>plugins/com.cubrid.common.log</module>
+                <module>plugins/com.cubrid.common.configuration</module>
+                <module>plugins/com.cubrid.cubridmigration.core</module>
+                <module>tests/unit-test</module>
+            </modules>
+        </profile>
     </profiles>
 </project>
