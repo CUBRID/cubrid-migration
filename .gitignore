@@ -26,3 +26,4 @@ target/
 ## test
 
 testd
+tests/unit-test/logs/
