@@ -38,12 +38,6 @@ import java.sql.SQLException;
 public class TimestampLTZTypeHandler implements IExportDataHandler {
 
     public Object getJdbcObject(ResultSet rs, Column column) throws SQLException {
-        String strValue = rs.getString(column.getName());
-        if (strValue != null) {
-            return strValue;
-        }
-
-        Object value = rs.getObject(column.getName());
-        return value;
+        return rs.getString(column.getName());
     }
 }
