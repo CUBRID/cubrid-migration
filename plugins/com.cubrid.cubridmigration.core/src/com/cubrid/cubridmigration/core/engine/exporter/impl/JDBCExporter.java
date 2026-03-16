@@ -247,8 +247,7 @@ public class JDBCExporter extends MigrationExporter {
             List<SourceColumnConfig> expColConfs = stc.getColumnConfigList();
             long totalExported = 0L;
             long intPageCount = config.getPageFetchCount();
-            String sql;
-            sql = expHelper.getSelectSQL(stc, config);
+            String sql = expHelper.getSelectSQL(stc, config);
             while (true) {
                 if (interrupted) {
                     return;
