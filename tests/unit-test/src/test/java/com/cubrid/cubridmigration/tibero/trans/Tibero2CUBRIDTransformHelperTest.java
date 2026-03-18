@@ -5,7 +5,9 @@ import com.cubrid.cubridmigration.core.dbobject.PartitionInfo;
 import com.cubrid.cubridmigration.core.dbobject.PartitionTable;
 import com.cubrid.cubridmigration.core.dbobject.Table;
 import com.cubrid.cubridmigration.core.dbobject.View;
+import com.cubrid.cubridmigration.core.datatype.DataTypeConstant;
 import com.cubrid.cubridmigration.core.engine.config.MigrationConfiguration;
+import com.cubrid.cubridmigration.core.mapping.model.VerifyInfo;
 import com.cubrid.cubridmigration.cubrid.trans.ToCUBRIDDataConverterFacade;
 
 import org.junit.jupiter.api.DisplayName;
@@ -168,6 +170,198 @@ public class Tibero2CUBRIDTransformHelperTest {
             assertThat(cub.isDefaultIsExpression()).isFalse();
         }
 
+    }
+
+    @Nested
+    @DisplayName("adjustPrecision()")
+    class AdjustPrecision {
+
+        private final MigrationConfiguration CONFIG = new MigrationConfiguration();
+
+        @Test
+        @DisplayName("strict numeric scale<0 -> precision grows and scale resets to zero")
+        void negativeScale_numericPrecisionAdjusted() {
+            Column src = createColumn("NUMBER", 10, -2);
+            Column cub = createColumn("numeric", 10, -2);
+
+            HELPER.adjustPrecision(src, cub, CONFIG);
+
+            assertThat(cub.getPrecision()).isEqualTo(12);
+            assertThat(cub.getScale()).isZero();
+            assertThat(cub.getDataType()).isEqualTo("numeric");
+        }
+
+        @Test
+        @DisplayName("strict numeric scale>precision -> precision follows scale")
+        void scaleGreaterThanPrecision_precisionAdjustedToScale() {
+            Column src = createColumn("NUMBER", 5, 8);
+            Column cub = createColumn("numeric", 5, 8);
+
+            HELPER.adjustPrecision(src, cub, CONFIG);
+
+            assertThat(cub.getPrecision()).isEqualTo(8);
+            assertThat(cub.getScale()).isEqualTo(8);
+        }
+
+        @Test
+        @DisplayName("strict numeric overflow -> converted to varchar")
+        void overflowNumeric_convertedToVarchar() {
+            Column src = createColumn("NUMBER", 10, 45);
+            Column cub = createColumn("numeric", 10, 45);
+
+            HELPER.adjustPrecision(src, cub, CONFIG);
+
+            assertThat(cub.getDataTypeInstance()).isNotNull();
+            assertThat(cub.getDataTypeInstance().getName()).isEqualTo(DataTypeConstant.CUBRID_VARCHAR);
+            assertThat(cub.getDataTypeInstance().getPrecision()).isEqualTo(48);
+            assertThat(cub.getJdbcIDOfDataType()).isEqualTo(DataTypeConstant.CUBRID_DT_VARCHAR);
+        }
+
+        @Test
+        @DisplayName("binary type -> precision is scaled by bytes to bits")
+        void binaryType_precisionScaledToBits() {
+            Column src = createColumn("RAW", 8, null);
+            Column cub = createColumn("bit varying", 8, null);
+
+            HELPER.adjustPrecision(src, cub, CONFIG);
+
+            assertThat(cub.getPrecision()).isEqualTo(64);
+        }
+    }
+
+    @Nested
+    @DisplayName("getCUBRIDColumn()")
+    class GetCUBRIDColumn {
+
+        @Test
+        @DisplayName("string default removes comments, wraps quotes, and preserves source comment")
+        void stringDefault_commentRemovedAndWrappedWithQuotes() {
+            Column src = createColumn("NAME", "VARCHAR", 20, null);
+            src.setDefaultValue("abc /* block */ -- line");
+            src.setComment("source comment");
+
+            Column cub = HELPER.getCUBRIDColumn(src, new MigrationConfiguration());
+
+            assertThat(cub.getDefaultValue()).isEqualTo("'abc'");
+            assertThat(cub.getComment()).isEqualTo("source comment");
+            assertThat(cub.getName()).isEqualTo("name");
+        }
+
+        @Test
+        @DisplayName("expression default starting with parenthesis -> no extra quotes")
+        void expressionDefault_notWrappedWithQuotes() {
+            Column src = createColumn("NAME", "VARCHAR", 20, null);
+            src.setDefaultValue("(USER)");
+
+            Column cub = HELPER.getCUBRIDColumn(src, new MigrationConfiguration());
+
+            assertThat(cub.getDefaultValue()).isEqualTo("(USER)");
+        }
+    }
+
+    @Nested
+    @DisplayName("validateChar()")
+    class ValidateChar {
+
+        @Test
+        @DisplayName("string target shorter than charset-adjusted precision -> no enough length")
+        void stringTargetShorterThanNeeded_returnsNoEnoughLength() {
+            MigrationConfiguration config = configWithCharsetFactor(3);
+            Column src = createColumn("VARCHAR2", 4, null);
+            Column cub = createColumn("varchar", 11, null);
+
+            VerifyInfo result = HELPER.validateChar(src, cub, config);
+
+            assertThat(result.getResult()).isEqualTo(VerifyInfo.TYPE_NOENOUGH_LENGTH);
+            assertThat(result.getMessage()).contains("12");
+        }
+
+        @Test
+        @DisplayName("string target long enough -> match")
+        void stringTargetLongEnough_returnsMatch() {
+            MigrationConfiguration config = configWithCharsetFactor(3);
+            Column src = createColumn("VARCHAR2", 4, null);
+            Column cub = createColumn("varchar", 12, null);
+
+            VerifyInfo result = HELPER.validateChar(src, cub, config);
+
+            assertThat(result.getResult()).isEqualTo(VerifyInfo.TYPE_MATCH);
+        }
+
+        @Test
+        @DisplayName("nstring target shorter than source precision -> no enough length")
+        void nstringTargetShorterThanSource_returnsNoEnoughLength() {
+            MigrationConfiguration config = new MigrationConfiguration();
+            Column src = createColumn("NVARCHAR2", 6, null);
+            Column cub = createColumn("nchar", 5, null);
+
+            VerifyInfo result = HELPER.validateChar(src, cub, config);
+
+            assertThat(result.getResult()).isEqualTo(VerifyInfo.TYPE_NOENOUGH_LENGTH);
+            assertThat(result.getMessage()).contains("6");
+        }
+
+        @Test
+        @DisplayName("nstring target long enough -> match")
+        void nstringTargetLongEnough_returnsMatch() {
+            MigrationConfiguration config = new MigrationConfiguration();
+            Column src = createColumn("NVARCHAR2", 6, null);
+            Column cub = createColumn("nchar", 6, null);
+
+            VerifyInfo result = HELPER.validateChar(src, cub, config);
+
+            assertThat(result.getResult()).isEqualTo(VerifyInfo.TYPE_MATCH);
+        }
+
+        private MigrationConfiguration configWithCharsetFactor(final int charsetFactor) {
+            return new MigrationConfiguration() {
+                @Override
+                public Integer getCharsetFactor() {
+                    return charsetFactor;
+                }
+            };
+        }
+    }
+
+    @Nested
+    @DisplayName("validateNumericToVarchar()")
+    class ValidateNumericToVarchar {
+
+        private final MigrationConfiguration CONFIG = new MigrationConfiguration();
+
+        @Test
+        @DisplayName("negative scale required precision not met -> no enough length")
+        void negativeScalePrecisionTooSmall_returnsNoEnoughLength() {
+            Column src = createColumn("NUMBER", 10, -2);
+            Column cub = createColumn("varchar", 12, null);
+
+            VerifyInfo result = HELPER.validateNumericToVarchar(src, cub, CONFIG);
+
+            assertThat(result.getResult()).isEqualTo(VerifyInfo.TYPE_NOENOUGH_LENGTH);
+            assertThat(result.getMessage()).contains("13");
+        }
+
+        @Test
+        @DisplayName("large scale overflow precision met -> match")
+        void scaleGreaterThanPrecisionAnd38_returnsMatch() {
+            Column src = createColumn("NUMBER", 10, 45);
+            Column cub = createColumn("varchar", 48, null);
+
+            VerifyInfo result = HELPER.validateNumericToVarchar(src, cub, CONFIG);
+
+            assertThat(result.getResult()).isEqualTo(VerifyInfo.TYPE_MATCH);
+        }
+
+        @Test
+        @DisplayName("normal numeric to varchar precision too small -> no enough length")
+        void normalRangePrecisionTooSmall_returnsNoEnoughLength() {
+            Column src = createColumn("NUMBER", 10, 2);
+            Column cub = createColumn("varchar", 11, null);
+
+            VerifyInfo result = HELPER.validateNumericToVarchar(src, cub, CONFIG);
+
+            assertThat(result.getResult()).isEqualTo(VerifyInfo.TYPE_NOENOUGH_LENGTH);
+        }
     }
 
     @Nested

@@ -1,12 +1,22 @@
 package com.cubrid.cubridmigration.tibero;
 
+import com.cubrid.cubridmigration.core.datatype.DataType;
+import com.cubrid.cubridmigration.core.dbobject.Catalog;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
+import java.sql.Types;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @DisplayName("TiberoDataTypeHelper")
 public class TiberoDataTypeHelperTest {
@@ -139,6 +149,90 @@ public class TiberoDataTypeHelperTest {
         void singleton_returnSameInstance() {
             assertThat(TiberoDataTypeHelper.getInstance(null))
                     .isSameAs(TiberoDataTypeHelper.getInstance("1.0"));
+        }
+    }
+
+    @Nested
+    @DisplayName("getJdbcDataTypeID()")
+    class GetJdbcDataTypeID {
+
+        @Test
+        @DisplayName("NUMBER -> delegates to number type mapper")
+        void number_returnsJdbcTypeFromPrecisionAndScale() {
+            Integer jdbcType =
+                    TiberoDataTypeHelper.getInstance(null)
+                            .getJdbcDataTypeID(new Catalog(), "NUMBER", 10, 0);
+
+            assertThat(jdbcType).isEqualTo(Types.INTEGER);
+        }
+
+        @Test
+        @DisplayName("unsupported ROWID -> null")
+        void unsupportedRowid_returnsNull() {
+            Integer jdbcType =
+                    TiberoDataTypeHelper.getInstance(null)
+                            .getJdbcDataTypeID(new Catalog(), "ROWID", null, null);
+
+            assertThat(jdbcType).isNull();
+        }
+
+        @Test
+        @DisplayName("fixed type BINARY_FLOAT -> FLOAT")
+        void fixedType_returnsFixedJdbcType() {
+            Integer jdbcType =
+                    TiberoDataTypeHelper.getInstance(null)
+                            .getJdbcDataTypeID(new Catalog(), "BINARY_FLOAT", null, null);
+
+            assertThat(jdbcType).isEqualTo(Types.FLOAT);
+        }
+
+        @Test
+        @DisplayName("dynamic VARCHAR2 -> jdbc type from supported data types")
+        void dynamicType_returnsJdbcTypeFromCatalogMap() {
+            Catalog catalog = createCatalogWithSupportedType("VARCHAR2", Types.VARCHAR);
+
+            Integer jdbcType =
+                    TiberoDataTypeHelper.getInstance(null)
+                            .getJdbcDataTypeID(catalog, "VARCHAR2", 20, null);
+
+            assertThat(jdbcType).isEqualTo(Types.VARCHAR);
+        }
+
+        @Test
+        @DisplayName("normalized TIMESTAMP(6) -> jdbc type from TIMESTAMP key")
+        void normalizedDynamicType_usesNormalizedLookupKey() {
+            Catalog catalog = createCatalogWithSupportedType("TIMESTAMP", Types.TIMESTAMP);
+
+            Integer jdbcType =
+                    TiberoDataTypeHelper.getInstance(null)
+                            .getJdbcDataTypeID(catalog, "TIMESTAMP(6)", null, 6);
+
+            assertThat(jdbcType).isEqualTo(Types.TIMESTAMP);
+        }
+
+        @Test
+        @DisplayName("missing supported type -> IllegalArgumentException")
+        void missingSupportedType_throwsIllegalArgumentException() {
+            Catalog catalog = new Catalog();
+
+            assertThatThrownBy(
+                            () ->
+                                    TiberoDataTypeHelper.getInstance(null)
+                                            .getJdbcDataTypeID(catalog, "VARCHAR2", 10, null))
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessageContaining("Not supported Tibero data type(VARCHAR2)");
+        }
+
+        private Catalog createCatalogWithSupportedType(String key, int jdbcTypeId) {
+            Catalog catalog = new Catalog();
+            DataType dataType = new DataType();
+            dataType.setTypeName(key);
+            dataType.setJdbcDataTypeID(jdbcTypeId);
+
+            Map<String, List<DataType>> supported = new HashMap<String, List<DataType>>();
+            supported.put(key, Arrays.asList(dataType));
+            catalog.setSupportedDataType(supported);
+            return catalog;
         }
     }
 }
