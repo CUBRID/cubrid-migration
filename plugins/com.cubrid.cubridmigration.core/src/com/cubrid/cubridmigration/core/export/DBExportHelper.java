@@ -215,7 +215,6 @@ public abstract class DBExportHelper implements IDependOnDatabaseType {
      * @param config MigrationConfiguration
      * @return SQL string
      */
-    @SuppressWarnings("unused")
     public String getSelectSQL(final SourceTableConfig stc, final MigrationConfiguration config) {
         return getSelectSQL(stc);
     }
