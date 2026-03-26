@@ -98,6 +98,11 @@ public final class TiberoJdbcTypeMapper {
         fixedTypes.put("BINARY_FLOAT", Types.FLOAT);
         fixedTypes.put("BINARY_DOUBLE", Types.DOUBLE);
         fixedTypes.put("ROWID", Types.VARCHAR);
+        fixedTypes.put("TIMESTAMP WITH TIME ZONE", Types.TIMESTAMP);
+        fixedTypes.put("TIMESTAMP WITH LOCAL TIME ZONE", Types.TIMESTAMP);
+        fixedTypes.put("INTERVAL DAY TO SECOND", Types.OTHER);
+        fixedTypes.put("INTERVAL YEAR TO MONTH", Types.OTHER);
+        fixedTypes.put("XMLTYPE", Types.SQLXML);
         return Collections.unmodifiableMap(fixedTypes);
     }
 }

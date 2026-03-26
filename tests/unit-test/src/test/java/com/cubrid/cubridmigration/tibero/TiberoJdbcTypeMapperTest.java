@@ -104,6 +104,40 @@ public class TiberoJdbcTypeMapperTest {
             assertThat(TiberoJdbcTypeMapper.getFixedJdbcTypeId("ROWID")).isEqualTo(Types.VARCHAR);
         }
 
+        @Test
+        @DisplayName("TIMESTAMP WITH TIME ZONE -> Types.TIMESTAMP")
+        void timestampWithTimeZone_returnTimestamp() {
+            assertThat(TiberoJdbcTypeMapper.getFixedJdbcTypeId("TIMESTAMP WITH TIME ZONE"))
+                    .isEqualTo(Types.TIMESTAMP);
+        }
+
+        @Test
+        @DisplayName("TIMESTAMP WITH LOCAL TIME ZONE -> Types.TIMESTAMP")
+        void timestampWithLocalTimeZone_returnTimestamp() {
+            assertThat(TiberoJdbcTypeMapper.getFixedJdbcTypeId("TIMESTAMP WITH LOCAL TIME ZONE"))
+                    .isEqualTo(Types.TIMESTAMP);
+        }
+
+        @Test
+        @DisplayName("INTERVAL DAY TO SECOND -> Types.OTHER")
+        void intervalDayToSecond_returnOther() {
+            assertThat(TiberoJdbcTypeMapper.getFixedJdbcTypeId("INTERVAL DAY TO SECOND"))
+                    .isEqualTo(Types.OTHER);
+        }
+
+        @Test
+        @DisplayName("INTERVAL YEAR TO MONTH -> Types.OTHER")
+        void intervalYearToMonth_returnOther() {
+            assertThat(TiberoJdbcTypeMapper.getFixedJdbcTypeId("INTERVAL YEAR TO MONTH"))
+                    .isEqualTo(Types.OTHER);
+        }
+
+        @Test
+        @DisplayName("XMLTYPE -> Types.SQLXML")
+        void xmlType_returnSqlXml() {
+            assertThat(TiberoJdbcTypeMapper.getFixedJdbcTypeId("XMLTYPE")).isEqualTo(Types.SQLXML);
+        }
+
         @ParameterizedTest(name = "[{index}] \"{0}\" -> null for non-fixed type")
         @ValueSource(strings = {"VARCHAR2", "NUMBER", "CLOB", "BLOB", "DATE", "TIMESTAMP"})
         void nonFixedTypes_returnsNull(String dataType) {

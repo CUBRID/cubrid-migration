@@ -217,6 +217,60 @@ public class TiberoDataTypeHelperTest {
         }
 
         @Test
+        @DisplayName("TIMESTAMP WITH TIME ZONE -> fixed TIMESTAMP")
+        void timestampWithTimeZone_returnsFixedJdbcType() {
+            Integer jdbcType =
+                    TiberoDataTypeHelper.getInstance(null)
+                            .getJdbcDataTypeID(
+                                    new Catalog(), "TIMESTAMP(6) WITH TIME ZONE", null, null);
+
+            assertThat(jdbcType).isEqualTo(Types.TIMESTAMP);
+        }
+
+        @Test
+        @DisplayName("TIMESTAMP WITH LOCAL TIME ZONE -> fixed TIMESTAMP")
+        void timestampWithLocalTimeZone_returnsFixedJdbcType() {
+            Integer jdbcType =
+                    TiberoDataTypeHelper.getInstance(null)
+                            .getJdbcDataTypeID(
+                                    new Catalog(), "TIMESTAMP(6) WITH LOCAL TIME ZONE", null, null);
+
+            assertThat(jdbcType).isEqualTo(Types.TIMESTAMP);
+        }
+
+        @Test
+        @DisplayName("INTERVAL DAY TO SECOND -> fixed OTHER")
+        void intervalDayToSecond_returnsFixedJdbcType() {
+            Integer jdbcType =
+                    TiberoDataTypeHelper.getInstance(null)
+                            .getJdbcDataTypeID(
+                                    new Catalog(), "INTERVAL DAY(2) TO SECOND(6)", null, null);
+
+            assertThat(jdbcType).isEqualTo(Types.OTHER);
+        }
+
+        @Test
+        @DisplayName("INTERVAL YEAR TO MONTH -> fixed OTHER")
+        void intervalYearToMonth_returnsFixedJdbcType() {
+            Integer jdbcType =
+                    TiberoDataTypeHelper.getInstance(null)
+                            .getJdbcDataTypeID(
+                                    new Catalog(), "INTERVAL YEAR(4) TO MONTH", null, null);
+
+            assertThat(jdbcType).isEqualTo(Types.OTHER);
+        }
+
+        @Test
+        @DisplayName("XMLTYPE -> fixed SQLXML")
+        void xmlType_returnsFixedJdbcType() {
+            Integer jdbcType =
+                    TiberoDataTypeHelper.getInstance(null)
+                            .getJdbcDataTypeID(new Catalog(), "XMLTYPE", null, null);
+
+            assertThat(jdbcType).isEqualTo(Types.SQLXML);
+        }
+
+        @Test
         @DisplayName("dynamic VARCHAR2 -> jdbc type from supported data types")
         void dynamicType_returnsJdbcTypeFromCatalogMap() {
             Catalog catalog = createCatalogWithSupportedType("VARCHAR2", Types.VARCHAR);
