@@ -190,23 +190,34 @@ public final class DBUtils {
         // ******** but  t1 = T1
         // ******** can not use:::table.getColumnByName(columnName);
 
-        Map<String, Column> map = new HashMap<String, Column>();
-
-        for (Column column : table.getColumns()) {
-            map.put(column.getName(), column); // UPPER
-        }
-
         for (String str : names) {
-            // column add '[]' ,such as [column] so cut the '[]'
-            if (str.startsWith("[") && str.endsWith("]")) {
-                str = str.substring(1, str.length() - 1);
-            }
-            if (map.containsKey(str.trim())) { // UPPER
-                list.add(map.get(str.trim())); // UPPER
+            String normalizedColumnName = normalizePartitionColumnName(str);
+            Column column = table.getColumnByName(normalizedColumnName);
+            if (column != null) {
+                list.add(column);
             }
         }
 
         return list;
+    }
+
+    private static String normalizePartitionColumnName(String columnName) {
+        String normalizedColumnName = columnName == null ? null : columnName.trim();
+        if (StringUtils.isEmpty(normalizedColumnName)) {
+            return normalizedColumnName;
+        }
+
+        if (normalizedColumnName.startsWith("[") && normalizedColumnName.endsWith("]")) {
+            normalizedColumnName =
+                    normalizedColumnName.substring(1, normalizedColumnName.length() - 1).trim();
+        }
+
+        if (normalizedColumnName.startsWith("\"") && normalizedColumnName.endsWith("\"")) {
+            normalizedColumnName =
+                    normalizedColumnName.substring(1, normalizedColumnName.length() - 1).trim();
+        }
+
+        return normalizedColumnName;
     }
 
     /**
