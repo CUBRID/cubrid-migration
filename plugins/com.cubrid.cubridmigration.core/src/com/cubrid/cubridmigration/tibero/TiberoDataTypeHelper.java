@@ -112,22 +112,22 @@ public final class TiberoDataTypeHelper extends DBDataTypeHelper {
      */
     public Integer getJdbcDataTypeID(
             Catalog catalog, String dataType, Integer precision, Integer scale) {
-        if ("NUMBER".equals(dataType)) {
+        String key = getTiberoDataTypeKey(dataType);
+        if ("NUMBER".equals(key)) {
             return TiberoJdbcTypeMapper.getNumberType(precision, scale);
         }
 
-        if (TiberoJdbcTypeMapper.isUnsupportedJdbcType(dataType)) {
+        if (TiberoJdbcTypeMapper.isUnsupportedJdbcType(key)) {
             return null;
         }
 
-        Integer fixedType = TiberoJdbcTypeMapper.getFixedJdbcTypeId(dataType);
+        Integer fixedType = TiberoJdbcTypeMapper.getFixedJdbcTypeId(key);
         if (fixedType != null) {
             return fixedType;
         }
 
-        String key = getTiberoDataTypeKey(dataType);
         Map<String, List<DataType>> supportedDataType = catalog.getSupportedDataType();
-        List<DataType> dataTypeList = supportedDataType.get(key);
+        List<DataType> dataTypeList = findSupportedDataType(supportedDataType, key);
         if (dataTypeList == null) {
             throw new IllegalArgumentException("Not supported Tibero data type(" + dataType + ")");
         }
@@ -144,6 +144,29 @@ public final class TiberoDataTypeHelper extends DBDataTypeHelper {
                         + ", s="
                         + scale
                         + ")");
+    }
+
+    private List<DataType> findSupportedDataType(
+            Map<String, List<DataType>> supportedDataType, String key) {
+        List<DataType> dataTypeList = supportedDataType.get(key);
+        if (dataTypeList != null) {
+            return dataTypeList;
+        }
+        String aliasKey = getLookupAliasKey(key);
+        if (aliasKey == null) {
+            return null;
+        }
+        return supportedDataType.get(aliasKey);
+    }
+
+    private String getLookupAliasKey(String key) {
+        if ("VARCHAR".equals(key)) {
+            return "VARCHAR2";
+        }
+        if ("NVARCHAR".equals(key)) {
+            return "NVARCHAR2";
+        }
+        return null;
     }
 
     /**

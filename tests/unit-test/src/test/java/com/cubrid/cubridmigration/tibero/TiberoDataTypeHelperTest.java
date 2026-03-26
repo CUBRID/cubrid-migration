@@ -70,11 +70,13 @@ public class TiberoDataTypeHelperTest {
         @CsvSource({
             // No pattern: keep as is with uppercase normalization.
             "VARCHAR2,             VARCHAR2",
+            "VARCHAR,              VARCHAR",
             "NUMBER,               NUMBER",
             "CLOB,                 CLOB",
             "BLOB,                 BLOB",
             "CHAR,                 CHAR",
             "NCHAR,                NCHAR",
+            "NVARCHAR,             NVARCHAR",
             "NVARCHAR2,            NVARCHAR2",
             "DATE,                 DATE",
             "ROWID,                ROWID",
@@ -222,6 +224,30 @@ public class TiberoDataTypeHelperTest {
             Integer jdbcType =
                     TiberoDataTypeHelper.getInstance(null)
                             .getJdbcDataTypeID(catalog, "VARCHAR2", 20, null);
+
+            assertThat(jdbcType).isEqualTo(Types.VARCHAR);
+        }
+
+        @Test
+        @DisplayName("VARCHAR alias -> jdbc type from VARCHAR2 supported data type")
+        void varcharAlias_usesCanonicalLookupKey() {
+            Catalog catalog = createCatalogWithSupportedType("VARCHAR2", Types.VARCHAR);
+
+            Integer jdbcType =
+                    TiberoDataTypeHelper.getInstance(null)
+                            .getJdbcDataTypeID(catalog, "VARCHAR", 20, null);
+
+            assertThat(jdbcType).isEqualTo(Types.VARCHAR);
+        }
+
+        @Test
+        @DisplayName("NVARCHAR alias -> jdbc type from NVARCHAR2 supported data type")
+        void nvarcharAlias_usesCanonicalLookupKey() {
+            Catalog catalog = createCatalogWithSupportedType("NVARCHAR2", Types.VARCHAR);
+
+            Integer jdbcType =
+                    TiberoDataTypeHelper.getInstance(null)
+                            .getJdbcDataTypeID(catalog, "NVARCHAR", 20, null);
 
             assertThat(jdbcType).isEqualTo(Types.VARCHAR);
         }
