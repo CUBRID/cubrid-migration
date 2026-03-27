@@ -56,6 +56,7 @@ import java.util.List;
 public class UpdateAutoIncColCurrentValueTask extends ImportTask {
 
     private static final Logger LOG = LogUtil.getLogger(UpdateAutoIncColCurrentValueTask.class);
+    private static final int DB_SERIAL_ATTR_NAME_VERSION = 114;
 
     private final MigrationConfiguration config;
 
@@ -76,12 +77,17 @@ public class UpdateAutoIncColCurrentValueTask extends ImportTask {
             con = tcp.createConnection();
             con.setAutoCommit(true);
             stmt = con.createStatement();
+            String attrNameCol = getSerialAttributeColumn(config);
             // Fetch which serial should be updated after migration.
             rs =
                     stmt.executeQuery(
-                            "select name,current_val,increment_val,class_name,att_name from"
+                            "select name,current_val,increment_val,class_name,"
+                                    + attrNameCol
+                                    + " from"
                                     + " db_serial where class_name is not null order by"
-                                    + " class_name,att_name,name");
+                                    + " class_name,"
+                                    + attrNameCol
+                                    + ",name");
             List<String[]> tobeUpdated = new ArrayList<String[]>();
             while (rs.next()) {
                 String tableName = rs.getString(4);
@@ -89,7 +95,7 @@ public class UpdateAutoIncColCurrentValueTask extends ImportTask {
                 if (tt == null) {
                     continue;
                 }
-                String colName = rs.getString(5);
+                String colName = rs.getString(attrNameCol);
                 Column col = tt.getColumnByName(colName);
                 if (col == null) {
                     continue;
@@ -134,6 +140,24 @@ public class UpdateAutoIncColCurrentValueTask extends ImportTask {
             Closer.close(rs);
             Closer.close(stmt);
             Closer.close(con);
+        }
+    }
+
+    static String getSerialAttributeColumn(MigrationConfiguration config) {
+        return getTargetDBVersion(config) >= DB_SERIAL_ATTR_NAME_VERSION ? "attr_name" : "att_name";
+    }
+
+    static int getTargetDBVersion(MigrationConfiguration config) {
+        String version = config == null ? null : config.getTargetDBVersion();
+        if (version == null) {
+            return 0;
+        }
+
+        try {
+            return Integer.parseInt(version);
+        } catch (NumberFormatException e) {
+            LOG.warn("Unexpected target DB version: {}", version, e);
+            return 0;
         }
     }
 }
