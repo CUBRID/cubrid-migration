@@ -160,15 +160,24 @@ class TiberoRoutineTriggerGrantLoader {
                 stmt.setString(3, proc.getProcedureType());
 
                 StringBuilder sb = new StringBuilder();
-                sb.append("CREATE ");
                 try (ResultSet rs = stmt.executeQuery()) {
                     while (rs.next()) {
                         sb.append(rs.getString("TEXT"));
                     }
                 }
-                proc.setDDL(sb.toString());
+                proc.setDDL(normalizeRoutineDDL(sb.toString()));
             }
         }
+    }
+
+    static String normalizeRoutineDDL(String text) {
+        String ddl = StringUtils.defaultString(text).trim();
+
+        if (StringUtils.startsWithIgnoreCase(ddl, "CREATE ")) {
+            return ddl;
+        }
+
+        return "CREATE " + ddl;
     }
 
     private void getPlcsqlProcedureMetaData(
