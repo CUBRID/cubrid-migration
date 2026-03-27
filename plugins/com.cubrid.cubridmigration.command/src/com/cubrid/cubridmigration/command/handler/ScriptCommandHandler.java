@@ -533,6 +533,7 @@ public class ScriptCommandHandler implements ConsoleCommandHandler {
                 return false;
             }
             config.setTargetConParams(tcp);
+            applyTargetOutputOptions(config, dbProperties, tvalue);
         } else if (config.targetIsFile()) {
             String prefix = dbProperties.getProperty(tvalue + ".file_prefix");
             config.setTargetFilePrefix(
@@ -544,17 +545,33 @@ public class ScriptCommandHandler implements ConsoleCommandHandler {
             config.setFileRepositroyPath(dbProperties.getProperty(tvalue + ".output"));
             config.setTargetCharSet(dbProperties.getProperty(tvalue + ".charset"));
             config.setTargetFileTimeZone("Default");
-
-            String splitSchema = dbProperties.getProperty(tvalue + ".split_schema");
-            config.setSplitSchema(isDefaultYes(splitSchema));
-
-            String addSchema = dbProperties.getProperty(tvalue + ".add_schema");
-            config.setAddUserSchema(isDefaultYes(addSchema));
-
-            String oneTableOneFile = dbProperties.getProperty(tvalue + ".one_table_one_file");
-            config.setOneTableOneFile(isDefaultNo(oneTableOneFile));
+            applyTargetOutputOptions(config, dbProperties, tvalue);
+            applyFileTargetOptions(config, dbProperties, tvalue);
         }
         return true;
+    }
+
+    static void applyTargetOutputOptions(
+            MigrationConfiguration config, Properties properties, String targetName) {
+        if (config == null || properties == null || StringUtils.isBlank(targetName)) {
+            return;
+        }
+
+        String addSchema = properties.getProperty(targetName + ".add_schema");
+        config.setAddUserSchema(isDefaultYes(addSchema));
+    }
+
+    static void applyFileTargetOptions(
+            MigrationConfiguration config, Properties properties, String targetName) {
+        if (config == null || properties == null || StringUtils.isBlank(targetName)) {
+            return;
+        }
+
+        String splitSchema = properties.getProperty(targetName + ".split_schema");
+        config.setSplitSchema(isDefaultYes(splitSchema));
+
+        String oneTableOneFile = properties.getProperty(targetName + ".one_table_one_file");
+        config.setOneTableOneFile(isDefaultNo(oneTableOneFile));
     }
 
     /**
@@ -577,7 +594,7 @@ public class ScriptCommandHandler implements ConsoleCommandHandler {
      * @param value the text to check
      * @return true if default is "yes"
      */
-    private boolean isDefaultYes(String value) {
+    private static boolean isDefaultYes(String value) {
         if (value == null) {
             return true;
         }
@@ -590,7 +607,7 @@ public class ScriptCommandHandler implements ConsoleCommandHandler {
      * @param value the text to check
      * @return true if default is "no"
      */
-    private boolean isDefaultNo(String value) {
+    private static boolean isDefaultNo(String value) {
         if (value == null) {
             return false;
         }

@@ -40,6 +40,8 @@ import com.cubrid.cubridmigration.core.engine.config.SourceEntryTableConfig;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import java.util.Properties;
+
 @DisplayName("ScriptCommandHandler")
 class ScriptCommandHandlerTest {
 
@@ -107,6 +109,57 @@ class ScriptCommandHandlerTest {
         assertThat(source.isCreateNewTable()).isFalse();
         assertThat(source.isReplace()).isFalse();
         assertThat(source.isCreatePK()).isFalse();
+    }
+
+    @Test
+    @DisplayName("defaults add schema to yes for online target options")
+    void applyTargetOutputOptions_defaultsAddSchemaToYes() {
+        MigrationConfiguration config = new MigrationConfiguration();
+        Properties properties = new Properties();
+
+        assertThat(config.isAddUserSchema()).isFalse();
+
+        ScriptCommandHandler.applyTargetOutputOptions(config, properties, "target");
+
+        assertThat(config.isAddUserSchema()).isTrue();
+    }
+
+    @Test
+    @DisplayName("honors explicit add_schema no for target options")
+    void applyTargetOutputOptions_honorsExplicitNo() {
+        MigrationConfiguration config = new MigrationConfiguration();
+        Properties properties = new Properties();
+        properties.setProperty("target.add_schema", "no");
+
+        ScriptCommandHandler.applyTargetOutputOptions(config, properties, "target");
+
+        assertThat(config.isAddUserSchema()).isFalse();
+    }
+
+    @Test
+    @DisplayName("applies file target defaults consistently")
+    void applyFileTargetOptions_appliesDefaults() {
+        MigrationConfiguration config = new MigrationConfiguration();
+        Properties properties = new Properties();
+
+        ScriptCommandHandler.applyFileTargetOptions(config, properties, "target");
+
+        assertThat(config.isSplitSchema()).isTrue();
+        assertThat(config.isOneTableOneFile()).isFalse();
+    }
+
+    @Test
+    @DisplayName("applies explicit file target options")
+    void applyFileTargetOptions_honorsExplicitValues() {
+        MigrationConfiguration config = new MigrationConfiguration();
+        Properties properties = new Properties();
+        properties.setProperty("target.split_schema", "no");
+        properties.setProperty("target.one_table_one_file", "yes");
+
+        ScriptCommandHandler.applyFileTargetOptions(config, properties, "target");
+
+        assertThat(config.isSplitSchema()).isFalse();
+        assertThat(config.isOneTableOneFile()).isTrue();
     }
 
     private SourceEntryTableConfig addSourceTable(
