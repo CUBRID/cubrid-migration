@@ -165,6 +165,7 @@
                 <module>plugins/com.cubrid.common.log</module>
                 <module>plugins/com.cubrid.common.configuration</module>
                 <module>plugins/com.cubrid.cubridmigration.core</module>
+                <module>plugins/com.cubrid.cubridmigration.command</module>
                 <module>tests/unit-test</module>
             </modules>
         </profile>

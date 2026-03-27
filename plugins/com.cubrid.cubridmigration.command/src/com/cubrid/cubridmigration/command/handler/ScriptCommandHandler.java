@@ -104,10 +104,26 @@ public class ScriptCommandHandler implements ConsoleCommandHandler {
         if (cl == null || cl.getSchemas().isEmpty()) {
             return;
         }
-        Schema tarSchema = cl.getSchemas().get(0);
+        applyTargetTableMapping(config, cl);
+    }
+
+    static void applyTargetTableMapping(MigrationConfiguration config, Catalog catalog) {
+        if (config == null || catalog == null || catalog.getSchemas().isEmpty()) {
+            return;
+        }
+
         List<SourceEntryTableConfig> tables = config.getExpEntryTableCfg();
         for (SourceEntryTableConfig setc : tables) {
-            Table tt = tarSchema.getTableByName(setc.getTarget());
+            Table tt = null;
+            if (StringUtils.isNotBlank(setc.getTargetOwner())) {
+                Schema tarSchema = findSchemaByName(catalog, setc.getTargetOwner());
+                if (tarSchema != null) {
+                    tt = findTableByNameIgnoreCase(tarSchema, setc.getTarget());
+                }
+            } else {
+                tt = findUniqueTableAcrossSchemas(catalog, setc.getTarget());
+            }
+
             if (tt == null) {
                 continue;
             }
@@ -115,6 +131,49 @@ public class ScriptCommandHandler implements ConsoleCommandHandler {
             setc.setReplace(false);
             setc.setCreatePK(false);
         }
+    }
+
+    private static Schema findSchemaByName(Catalog catalog, String schemaName) {
+        if (catalog == null || StringUtils.isBlank(schemaName)) {
+            return null;
+        }
+        for (Schema schema : catalog.getSchemas()) {
+            if (schemaName.equalsIgnoreCase(schema.getName())) {
+                return schema;
+            }
+        }
+        return null;
+    }
+
+    private static Table findUniqueTableAcrossSchemas(Catalog catalog, String tableName) {
+        if (catalog == null || StringUtils.isBlank(tableName)) {
+            return null;
+        }
+
+        Table matched = null;
+        for (Schema schema : catalog.getSchemas()) {
+            Table table = findTableByNameIgnoreCase(schema, tableName);
+            if (table == null) {
+                continue;
+            }
+            if (matched != null) {
+                return null;
+            }
+            matched = table;
+        }
+        return matched;
+    }
+
+    private static Table findTableByNameIgnoreCase(Schema schema, String tableName) {
+        if (schema == null || StringUtils.isBlank(tableName)) {
+            return null;
+        }
+        for (Table table : schema.getTables()) {
+            if (tableName.equalsIgnoreCase(table.getName())) {
+                return table;
+            }
+        }
+        return null;
     }
 
     /**
