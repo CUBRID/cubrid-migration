@@ -954,9 +954,12 @@ public class MigrationCfgUtils {
             isEffectedByCharacterTypeSize =
                     Integer.parseInt(config.getTargetDBVersion()) < CHAR_SIZE_CHANGE_VERSION;
         }
-        return (DatabaseType.MYSQL.equals(config.getSourceDBType())
-                || DatabaseType.ORACLE.equals(config.getSourceDBType())
-                || DatabaseType.TIBERO.equals(config.getSourceDBType())
+        // TODO: This is still a source-DB-level heuristic.
+        // Oracle/Tibero BYPTE vs CHAR semantics and other DBs(e.g. MSSQL, Informix)
+        // should be evaluated per column in a separate follow-up fix.
+        return DatabaseType.MYSQL.equals(config.getSourceDBType())
+                || ((DatabaseType.ORACLE.equals(config.getSourceDBType())
+                                || DatabaseType.TIBERO.equals(config.getSourceDBType()))
                         && isEffectedByCharacterTypeSize);
     }
 
