@@ -1,0 +1,2 @@
+CREATE /*+ NO_STATS */ INDEX [idx_e2e_order_customer] ON [MAIN_SCHEMA].[e2e_order]([customer_id]);
+CREATE /*+ NO_STATS */ INDEX [idxd_e2e_order_ordered_at] ON [MAIN_SCHEMA].[e2e_order]([ordered_at] DESC);

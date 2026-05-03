@@ -1,0 +1,6 @@
+CREATE TABLE [REF_SCHEMA].[e2e_ref_audit](
+[audit_id] int,
+[audit_message] varchar(200),
+[created_at] datetime
+) REUSE_OID
+;

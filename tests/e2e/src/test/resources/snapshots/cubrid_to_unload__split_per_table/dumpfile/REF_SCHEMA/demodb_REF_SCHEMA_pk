@@ -1,0 +1,1 @@
+ALTER /*+ NO_STATS */ TABLE [REF_SCHEMA].[e2e_ref_audit] ADD PRIMARY KEY([audit_id]);

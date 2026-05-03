@@ -1,0 +1,17 @@
+ALTER TABLE [MAIN_SCHEMA].[e2e_customer] DROP CONSTRAINT [uk_e2e_customer_code];
+ALTER TABLE [MAIN_SCHEMA].[e2e_order] DROP CONSTRAINT [idx_e2e_order_customer];
+ALTER TABLE [MAIN_SCHEMA].[e2e_order] DROP CONSTRAINT [idxd_e2e_order_ordered_at];
+DROP TABLE [MAIN_SCHEMA].[e2e_binary_types];
+DROP TABLE [MAIN_SCHEMA].[e2e_cubrid_enum_types];
+DROP TABLE [MAIN_SCHEMA].[e2e_cubrid_json_types];
+DROP TABLE [MAIN_SCHEMA].[e2e_customer];
+DROP TABLE [MAIN_SCHEMA].[e2e_employee];
+DROP TABLE [MAIN_SCHEMA].[e2e_numeric_types];
+DROP TABLE [MAIN_SCHEMA].[e2e_order];
+DROP TABLE [MAIN_SCHEMA].[e2e_order_line];
+DROP TABLE [MAIN_SCHEMA].[e2e_temporal_types];
+DROP TABLE [MAIN_SCHEMA].[e2e_text_types];
+DROP VIEW [MAIN_SCHEMA].[e2e_order_summary_v];
+DROP SERIAL [MAIN_SCHEMA].[e2e_customer_seq];
+DROP SERIAL [MAIN_SCHEMA].[e2e_order_seq];
+DROP SYNONYM [MAIN_SCHEMA].[e2e_ref_audit_syn];

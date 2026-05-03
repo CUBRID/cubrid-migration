@@ -1,0 +1,9 @@
+%class [MAIN_SCHEMA].[e2e_cubrid_json_types] ([id] [payload])
+1 NULL
+2 '{}'
+3 '[]'
+4 '{"a":[1,2,{"b":"í??êµ­"}]}'
+5 '{"deeply":{"nested":{"json":[{"value":1},{"value":2},{"value":3},{"val'+
+ 'ue":4},{"value":5}]}},"unicode":["í??êµ­","æ¼¢å­?","emoji ð???","accen'+
+ 'ts cafÃ©"],"numbers":[1.5,2.5,3.5,10000000000.0,-1e-10],"flags":[true,'+
+ 'false,null]}'

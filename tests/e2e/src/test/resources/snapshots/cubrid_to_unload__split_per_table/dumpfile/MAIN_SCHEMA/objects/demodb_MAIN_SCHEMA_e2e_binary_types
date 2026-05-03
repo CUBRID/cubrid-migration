@@ -1,0 +1,6 @@
+%class [MAIN_SCHEMA].[e2e_binary_types] ([id] [bit_col] [varbit_col] [blob_col])
+1 NULL NULL NULL
+2 X'0000000000000000' X'' NULL
+3 X'0000000000000000' X'00' NULL
+4 X'ffffffffffffffff' X'00ff00ff00ff00ff00ff00ff00ff00ff' X'00ff00ff00ff00ff00ff00ff00ff00ff'
+5 X'00000000cafebabe' X'cafebabe' X'cafebabe'

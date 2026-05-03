@@ -1,0 +1,9 @@
+demodb_MAIN_SCHEMA_class
+demodb_MAIN_SCHEMA_vclass
+demodb_MAIN_SCHEMA_synonym
+demodb_MAIN_SCHEMA_serial
+demodb_MAIN_SCHEMA_pk
+demodb_MAIN_SCHEMA_fk
+demodb_MAIN_SCHEMA_uk
+demodb_MAIN_SCHEMA_grant.REF_SCHEMA
+demodb_MAIN_SCHEMA_vclass_query_spec

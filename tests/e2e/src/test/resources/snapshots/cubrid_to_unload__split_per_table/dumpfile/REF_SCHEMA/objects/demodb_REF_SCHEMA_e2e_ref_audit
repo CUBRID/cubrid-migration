@@ -1,0 +1,2 @@
+%class [REF_SCHEMA].[e2e_ref_audit] ([audit_id] [audit_message] [created_at])
+1 'reference audit row' datetime'2024-04-20 00:00:00.000'

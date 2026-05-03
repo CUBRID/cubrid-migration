@@ -1,0 +1,89 @@
+CREATE TABLE [MAIN_SCHEMA].[e2e_binary_types](
+[id] int,
+[bit_col] bit(64),
+[varbit_col] bit varying(1024),
+[blob_col] bit varying(1073741823)
+) REUSE_OID
+;
+CREATE TABLE [MAIN_SCHEMA].[e2e_cubrid_enum_types](
+[id] int,
+[status_enum] enum('NEW', 'HOLD', 'DONE', 'CANCEL')
+) REUSE_OID
+;
+CREATE TABLE [MAIN_SCHEMA].[e2e_cubrid_json_types](
+[id] int,
+[payload] json
+) REUSE_OID
+;
+CREATE TABLE [MAIN_SCHEMA].[e2e_customer](
+[customer_id] int,
+[customer_code] char(4) NOT NULL COMMENT 'business key',
+[customer_name] varchar(100) NOT NULL,
+[customer_alias] varchar(60),
+[status] char(1),
+[credit_limit] numeric(15,2),
+[created_on] datetime,
+[updated_on] datetime
+) REUSE_OID
+;
+CREATE TABLE [MAIN_SCHEMA].[e2e_employee](
+[employee_id] int,
+[manager_id] int,
+[emp_name] varchar(100) NOT NULL,
+[hired_on] date
+) REUSE_OID
+;
+CREATE TABLE [MAIN_SCHEMA].[e2e_numeric_types](
+[id] int,
+[smallint_col] short,
+[int_col] int,
+[bigint_col] bigint,
+[numeric_col] numeric(20,6),
+[numeric_p0_col] numeric(38,0),
+[float_col] float,
+[double_col] double,
+[monetary_col] numeric(38,2)
+) REUSE_OID
+;
+CREATE TABLE [MAIN_SCHEMA].[e2e_order](
+[order_id] int,
+[customer_id] int NOT NULL,
+[order_no] varchar(30),
+[order_status] varchar(20),
+[total_amount] numeric(18,2),
+[ordered_at] datetime,
+[settled_at] datetime,
+[source_comment] varchar(200)
+) REUSE_OID
+;
+CREATE TABLE [MAIN_SCHEMA].[e2e_order_line](
+[order_id] int,
+[line_no] short,
+[sku] varchar(30),
+[qty] int,
+[unit_price] numeric(15,2),
+[line_note] varchar(200)
+) REUSE_OID
+;
+CREATE TABLE [MAIN_SCHEMA].[e2e_temporal_types](
+[id] int,
+[date_col] date,
+[time_col] time,
+[datetime_col] datetime,
+[timestamp_col] timestamp,
+[datetimetz_col] datetimetz,
+[datetimeltz_col] datetimeltz,
+[timestamptz_col] timestamptz,
+[timestampltz_col] timestampltz
+) REUSE_OID
+;
+CREATE TABLE [MAIN_SCHEMA].[e2e_text_types](
+[id] int,
+[char_col] char(3),
+[varchar_col] varchar(10),
+[nchar_col] char(3),
+[nvarchar_col] varchar(40),
+[string_col] varchar(1073741823),
+[clob_col] varchar(1073741823)
+) REUSE_OID
+;

@@ -1,0 +1,6 @@
+%class [MAIN_SCHEMA].[e2e_temporal_types] ([id] [date_col] [time_col] [datetime_col] [timestamp_col] [datetimetz_col] [datetimeltz_col] [timestamptz_col] [timestampltz_col])
+1 NULL NULL NULL NULL NULL NULL NULL NULL
+2 date'01/01/1970' time'00:00:00' datetime'1970-01-01 00:00:00.000' timestamp'12:00:00 AM 01/02/1970' datetimetz'12:00:00.000 AM 01/01/1970 +00:00' datetimeltz'12:00:00.000 AM 01/01/1970 UTC UTC' timestamptz'12:00:00 AM 01/02/1970 +00:00' timestampltz'12:00:00 AM 01/02/1970 UTC UTC'
+3 date'01/01/1900' time'00:00:01' datetime'1900-01-01 00:00:00.001' timestamp'12:00:01 AM 01/02/1970' datetimetz'12:00:00.001 AM 01/01/1900 +00:00' datetimeltz'12:00:00.001 AM 01/01/1900 UTC UTC' timestamptz'12:00:01 AM 01/02/1970 +00:00' timestampltz'12:00:01 AM 01/02/1970 UTC UTC'
+4 date'12/31/9999' time'23:59:59' datetime'9999-12-31 23:59:59.999' timestamp'11:59:59 PM 01/18/2038' datetimetz'11:59:59.999 PM 12/31/9999 +14:00' datetimeltz'11:59:59.999 PM 12/31/9999 UTC UTC' timestamptz'11:59:59 PM 01/18/2038 +14:00' timestampltz'11:59:59 PM 01/18/2038 UTC UTC'
+5 date'02/29/2024' time'12:34:56' datetime'2024-02-29 12:34:56.123' timestamp'12:34:56 PM 02/29/2024' datetimetz'12:00:00.123 PM 04/20/2024 Asia/Seoul KST' datetimeltz'12:00:00.123 PM 04/20/2024 UTC UTC' timestamptz'12:00:00 PM 04/20/2024 +09:00' timestampltz'12:00:00 PM 04/20/2024 UTC UTC'

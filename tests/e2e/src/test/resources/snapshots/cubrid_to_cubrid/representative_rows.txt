@@ -1,0 +1,39 @@
+==> customer business values (id=1)
+ customer_code | customer_name  | customer_alias | status | credit_limit
+---------------+----------------+----------------+--------+--------------
+ C001          | ALPHA CUSTOMER | Alpha Alias    | A      | 12500.75
+
+==> order-line composite-key relationship (order_id=1, line_no=1)
+ customer_code | order_no     | sku       | qty | unit_price
+---------------+--------------+-----------+-----+------------
+ C001          | ORD-2024-001 | SKU-ALPHA | 2   | 25.00
+
+==> employee self-reference (Manager A reports to CEO, employee_id=2)
+ emp_name  | manager_name
+-----------+--------------
+ Manager A | CEO
+
+==> text type R_MIN row (id=3) — CUBRID columns
+ char_col | varchar_col | nchar_col | nvarchar_col
+----------+-------------+-----------+--------------
+ A        | A           | A         | A
+
+==> numeric type R_REPRESENTATIVE row (id=6) — CUBRID columns
+ int_col | numeric_col | double_col
+---------+-------------+------------
+ 100     | 42.424242   | 1.41421356
+
+==> temporal date R_EPOCH row (id=2)
+ date_col
+------------
+ 1970-01-01
+
+==> view is queryable (4 orders in dataset)
+ count(*)
+----------
+ 4
+
+==> ref_audit synonym access (1 row)
+ count(*)
+----------
+ 1
