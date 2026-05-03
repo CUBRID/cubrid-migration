@@ -1,0 +1,33 @@
+<configuration>
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>ERROR</level>
+        </filter>
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="PER_TEST_FILE" class="ch.qos.logback.classic.sift.SiftingAppender">
+        <discriminator>
+            <key>testId</key>
+            <defaultValue>_bootstrap</defaultValue>
+        </discriminator>
+        <sift>
+            <appender name="FILE-${testId}" class="ch.qos.logback.core.FileAppender">
+                <file>target/e2e/logs/${testId}/test.log</file>
+                <append>false</append>
+                <encoder>
+                    <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+                </encoder>
+            </appender>
+        </sift>
+    </appender>
+
+    <logger name="com.cmt.e2e" level="DEBUG"/>
+
+    <root level="INFO">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="PER_TEST_FILE"/>
+    </root>
+</configuration>
