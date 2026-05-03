@@ -1,17 +1,25 @@
 package com.cmt.e2e.framework.runner;
 
+import java.nio.file.Path;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.cmt.e2e.framework.command.CommandResult;
+import com.cmt.e2e.framework.env.CmtConsoleEnv;
 import com.cmt.e2e.framework.target.Target;
+import com.cmt.e2e.framework.verify.CatalogSnapshot;
+import com.cmt.e2e.framework.verify.DumpSnapshot;
+import com.cmt.e2e.framework.verify.RowCounts;
+import com.cmt.e2e.framework.verify.RowQueries;
 
 /**
- * Outcome of one {@link Migration#run(java.nio.file.Path)} call. This
- * commit ships the L1 smoke surface ({@link #expectSuccess()},
- * {@link #expectNoFatalStderr()}); L2/L3/L4 verification helpers
- * (catalog / row counts / queries / dumpfile) arrive with the verify
- * package in a later commit.
+ * Outcome of one {@link Migration#run(Path)} call. Verification surface
+ * across four layers (see ARCHITECTURE.md §3): L1 smoke
+ * ({@link #expectSuccess()}, {@link #expectNoFatalStderr()}); L2 coverage
+ * + L3 fidelity ({@link #catalog()} / {@link #rowCounts} / {@link #queries} /
+ * {@link #dumpfile()}); L4 regression (same surface, scoped per
+ * {@code @Test}).
  */
 public final class MigrationOutcome {
 
@@ -65,5 +73,44 @@ public final class MigrationOutcome {
         int end = text.indexOf('\n', index);
         if (end < 0) end = text.length();
         return text.substring(start, end);
+    }
+
+    /** Online-target catalog snapshot helper. Throws on dump-file targets. */
+    public CatalogSnapshot catalog() {
+        requireOnlineTarget("catalog()");
+        return new CatalogSnapshot(target.connection(), scenarioName);
+    }
+
+    /** Online-target row-count snapshot. No args = all user tables; pass owners to restrict. */
+    public RowCounts rowCounts(String... ownerSchemas) {
+        requireOnlineTarget("rowCounts()");
+        return new RowCounts(target.connection(), scenarioName, List.of(ownerSchemas));
+    }
+
+    /** Run all labelled queries from {@code queries/<scenario>.sql} and snapshot the output. */
+    public RowQueries queries(Path sqlFile) {
+        requireOnlineTarget("queries()");
+        return new RowQueries(sqlFile, target.connection(), scenarioName);
+    }
+
+    /** Dump-file snapshot helper rooted at {@code $CMT_CONSOLE_HOME/output/<migration-name>/}. */
+    public DumpSnapshot dumpfile() {
+        if (!target.isDumpfile()) {
+            throw new IllegalStateException(
+                "dumpfile() is for dump-file targets; this is an online migration. "
+                + "Use catalog() / rowCounts() / queries() instead.");
+        }
+        Path outputBase = CmtConsoleEnv.resolve()
+            .resolve("output")
+            .resolve(migrationName);
+        return new DumpSnapshot(outputBase, scenarioName);
+    }
+
+    private void requireOnlineTarget(String op) {
+        if (target.isDumpfile()) {
+            throw new IllegalStateException(
+                op + " is for online targets; this is a dump-file scenario. "
+                + "Use dumpfile() instead.");
+        }
     }
 }
