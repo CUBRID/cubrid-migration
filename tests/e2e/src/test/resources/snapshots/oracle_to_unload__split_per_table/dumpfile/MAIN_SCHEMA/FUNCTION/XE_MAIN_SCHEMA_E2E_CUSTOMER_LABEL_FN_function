@@ -1,0 +1,28 @@
+CREATE FUNCTION [main_schema].[e2e_customer_label_fn] (p_customer_id IN NUMERIC)
+    RETURN VARCHAR AS LANGUAGE PLCSQL BEGIN RAISE_APPLICATION_ERROR(1000, '[e2e_customer_label_fn]: incomplete during loaddb'); /* __CUBRID_NO_BODY__ */ END; 
+
+CREATE OR REPLACE FUNCTION [main_schema].[e2e_customer_label_fn] (p_customer_id IN NUMERIC)
+    RETURN VARCHAR AS
+    v_label VARCHAR(200);
+BEGIN
+    SELECT customer_code || ':' || customer_name
+      INTO v_label
+      FROM e2e_customer
+     WHERE customer_id = p_customer_id;
+    RETURN v_label;
+END;
+
+CREATE FUNCTION e2e_customer_label_fn(p_customer_id IN NUMBER)
+    RETURN VARCHAR2
+AS
+    v_label VARCHAR2(200);
+BEGIN
+    SELECT customer_code || ':' || customer_name
+      INTO v_label
+      FROM e2e_customer
+     WHERE customer_id = p_customer_id;
+    RETURN v_label;
+END;
+
+
+DROP FUNCTION [main_schema].[e2e_customer_label_fn];

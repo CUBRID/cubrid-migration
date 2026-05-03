@@ -1,0 +1,3 @@
+ synonym_owner_name | synonym_name      | target_owner_name | target_name
+--------------------+-------------------+-------------------+---------------
+ MAIN_SCHEMA        | e2e_ref_audit_syn | REF_SCHEMA        | e2e_ref_audit

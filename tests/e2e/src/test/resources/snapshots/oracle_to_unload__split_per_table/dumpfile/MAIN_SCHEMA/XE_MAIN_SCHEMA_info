@@ -1,0 +1,13 @@
+XE_MAIN_SCHEMA_procedure_header
+XE_MAIN_SCHEMA_function_header
+XE_MAIN_SCHEMA_class
+XE_MAIN_SCHEMA_vclass
+XE_MAIN_SCHEMA_synonym
+XE_MAIN_SCHEMA_serial
+XE_MAIN_SCHEMA_procedure
+XE_MAIN_SCHEMA_function
+XE_MAIN_SCHEMA_pk
+XE_MAIN_SCHEMA_fk
+XE_MAIN_SCHEMA_uk
+XE_MAIN_SCHEMA_grant.REF_SCHEMA
+XE_MAIN_SCHEMA_vclass_query_spec

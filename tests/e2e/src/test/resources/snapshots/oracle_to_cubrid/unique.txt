@@ -1,0 +1,3 @@
+ owner_name  | class_name   | index_name           | key_attr_name | key_order | asc_desc
+-------------+--------------+----------------------+---------------+-----------+----------
+ MAIN_SCHEMA | e2e_customer | uk_e2e_customer_code | customer_code | 0         | ASC

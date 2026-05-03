@@ -1,0 +1,5 @@
+CREATE PROCEDURE [main_schema].[e2e_upsert_customer_proc] (
+    p_customer_id   IN NUMERIC,
+    p_customer_name IN VARCHAR
+) AUTHID OWNER  AS LANGUAGE PLCSQL BEGIN RAISE_APPLICATION_ERROR(1000, '[e2e_upsert_customer_proc]: incomplete during loaddb'); /* __CUBRID_NO_BODY__ */ END;
+

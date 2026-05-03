@@ -1,0 +1,10 @@
+CREATE OR REPLACE PROCEDURE [main_schema].[e2e_upsert_customer_proc] (
+    p_customer_id   IN NUMERIC,
+    p_customer_name IN VARCHAR
+) AUTHID OWNER  AS
+BEGIN
+    UPDATE e2e_customer
+       SET customer_name = p_customer_name
+     WHERE customer_id = p_customer_id;
+END;
+

@@ -1,0 +1,87 @@
+CREATE TABLE [MAIN_SCHEMA].[e2e_binary_types](
+[id] numeric(10,0),
+[raw_col] bit varying(128),
+[blob_col] bit varying(1073741823)
+)
+;
+CREATE TABLE [MAIN_SCHEMA].[e2e_customer](
+[customer_id] numeric(10,0),
+[customer_code] char(4) NOT NULL COMMENT 'business key',
+[customer_name] varchar(100) NOT NULL,
+[customer_alias] varchar(60) COMMENT '고객 별칭 (다국어 검증)',
+[status] char(1),
+[credit_limit] numeric(15,2),
+[created_on] datetime,
+[updated_on] datetime
+)
+;
+CREATE TABLE [MAIN_SCHEMA].[e2e_employee](
+[employee_id] numeric(10,0),
+[manager_id] numeric(10,0) COMMENT 'Self-FK to direct manager',
+[emp_name] varchar(100) NOT NULL,
+[hired_on] datetime
+)
+;
+CREATE TABLE [MAIN_SCHEMA].[e2e_numeric_types](
+[id] numeric(10,0),
+[integer_col] int,
+[decimal_col] numeric(20,4),
+[number_p0_col] numeric(38,0),
+[number_ps_col] numeric(20,6),
+[number_round_col] numeric(10,0),
+[number_any_col] numeric(38,15),
+[float_col] double,
+[real_col] double,
+[binary_float_col] float,
+[binary_double_col] double
+)
+;
+CREATE TABLE [MAIN_SCHEMA].[e2e_oracle_locator_types](
+[id] numeric(10,0),
+[rowid_col] varchar(64),
+[urowid_col] varchar(4000)
+)
+;
+CREATE TABLE [MAIN_SCHEMA].[e2e_order](
+[order_id] numeric(10,0),
+[customer_id] numeric(10,0) NOT NULL,
+[order_no] varchar(30),
+[order_status] varchar(20),
+[total_amount] numeric(18,2),
+[ordered_at] datetime,
+[settled_at] datetime,
+[source_comment] varchar(200) COMMENT '주문 비고: 다국어/특수문자 검증'
+)
+;
+CREATE TABLE [MAIN_SCHEMA].[e2e_order_line](
+[order_id] numeric(10,0),
+[line_no] numeric(5,0),
+[sku] varchar(30),
+[qty] numeric(10,0),
+[unit_price] numeric(15,2),
+[line_note] varchar(200)
+)
+;
+CREATE TABLE [MAIN_SCHEMA].[e2e_temporal_types](
+[id] numeric(10,0),
+[date_col] datetime,
+[ts6_col] timestamp,
+[ts9_col] timestamp,
+[tsltz6_col] datetime,
+[tstz9_col] varchar(100),
+[interval_ds_col] varchar(255),
+[interval_ym_col] varchar(255)
+)
+;
+CREATE TABLE [MAIN_SCHEMA].[e2e_text_types](
+[id] numeric(10,0),
+[char_byte_col] char(3),
+[char_char_col] char(3),
+[varchar_byte_col] varchar(10),
+[varchar_char_col] varchar(10),
+[nchar_col] char(10),
+[nvarchar_col] varchar(40),
+[clob_col] varchar(1073741823),
+[nclob_col] varchar(1073741823)
+)
+;

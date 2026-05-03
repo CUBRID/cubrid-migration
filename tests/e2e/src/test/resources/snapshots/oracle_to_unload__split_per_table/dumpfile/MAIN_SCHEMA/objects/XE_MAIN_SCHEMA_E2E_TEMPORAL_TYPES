@@ -1,0 +1,6 @@
+%class [MAIN_SCHEMA].[e2e_temporal_types] ([id] [date_col] [ts6_col] [ts9_col] [tsltz6_col] [tstz9_col] [interval_ds_col] [interval_ym_col])
+1. NULL NULL NULL NULL NULL NULL NULL
+2. datetime'1970-01-01 00:00:00.000' timestamp'12:00:00 AM 01/01/1970' timestamp'12:00:00 AM 01/01/1970' datetime'1970-01-01 00:00:00.000' '1970-01-01 00:00:00.0 +0:00' NULL '0-0'
+3. datetime'1900-01-01 00:00:00.000' timestamp'12:00:00 AM 01/02/1970' timestamp'12:00:00 AM 01/02/1970' datetime'1970-01-02 00:00:00.000' '1970-01-02 00:00:00.0 +0:00' NULL '-10-11'
+4. datetime'9999-12-31 00:00:00.000' timestamp'11:59:59 PM 01/18/2038' timestamp'11:59:59 PM 01/18/2038' datetime'2038-01-18 23:59:59.999' '2038-01-18 23:59:59.0 +14:00' NULL '10-11'
+5. datetime'2024-02-29 00:00:00.000' timestamp'12:34:56 PM 02/29/2024' timestamp'12:34:56 PM 02/29/2024' datetime'2024-02-29 12:34:56.123' '2024-04-20 12:00:00.0 +9:00' NULL '2-6'

@@ -1,0 +1,1 @@
+DROP TABLE [REF_SCHEMA].[e2e_ref_audit];

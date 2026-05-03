@@ -1,0 +1,10 @@
+CREATE VIEW [MAIN_SCHEMA].[e2e_order_summary_v](
+[ORDER_ID] numeric(10,0),
+[ORDER_NO] varchar(30),
+[CUSTOMER_CODE] char(4) COMMENT 'Customer business key (from e2e_customer)',
+[CUSTOMER_NAME] varchar(100),
+[ORDER_STATUS] varchar(20),
+[TOTAL_AMOUNT] numeric(18,2),
+[ORDERED_AT] datetime
+) COMMENT 'Customer-order join summary view'
+;
