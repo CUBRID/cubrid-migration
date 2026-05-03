@@ -1,0 +1,5 @@
+# Re-include Java source packages literally named "target".
+# The parent .gitignore's `target/` rule would otherwise exclude
+# com.cmt.e2e.framework.target package contents.
+!src/test/java/com/cmt/e2e/framework/target/
+!src/test/java/com/cmt/e2e/framework/target/**
