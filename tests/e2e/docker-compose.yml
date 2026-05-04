@@ -1,0 +1,27 @@
+services:
+  e2e-test:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    platform: linux/amd64
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - maven-cache:/root/.m2
+      - ${CMT_CONSOLE_HOME:?Set CMT_CONSOLE_HOME to the extracted CMT Console directory}:/opt/cmt-console
+      # Mount whole project so /app/target stays writable for `mvn clean`.
+      - ./:/app
+    environment:
+      - CMT_CONSOLE_HOME=/opt/cmt-console
+      - DOCKER_HOST=unix:///var/run/docker.sock
+      - TESTCONTAINERS_HOST_OVERRIDE=host.docker.internal
+      - TESTCONTAINERS_RYUK_DISABLED=true
+    # Tibero license path inside the container (host file via ./:/app).
+    command: >
+      mvn clean test
+      -Dmaven.test.failure.ignore=true
+      -Dpicocli.ansi=false
+      -Dorg.fusesource.jansi.Ansi.disable=true
+      -De2e.tibero.license=/app/tibero/license.xml
+
+volumes:
+  maven-cache:
