@@ -1,0 +1,4 @@
+%class [MAIN_SCHEMA].[e2e_employee] ([employee_id] [manager_id] [emp_name] [hired_on])
+1. NULL 'CEO' datetime'2020-01-01 00:00:00.000'
+2. 1. 'Manager A' datetime'2021-01-01 00:00:00.000'
+3. 2. 'Staff A1' datetime'2022-01-01 00:00:00.000'

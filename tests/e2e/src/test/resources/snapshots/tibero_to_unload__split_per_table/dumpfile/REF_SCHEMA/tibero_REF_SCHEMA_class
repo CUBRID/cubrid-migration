@@ -1,0 +1,6 @@
+CREATE TABLE [REF_SCHEMA].[e2e_ref_audit](
+[audit_id] numeric(10,0) COMMENT 'Audit row identifier',
+[audit_message] varchar(200) COMMENT 'Audit message text',
+[created_at] datetime
+)
+;

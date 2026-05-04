@@ -37,12 +37,14 @@ public final class JdbcDriverJars {
 
     public enum DB {
         CUBRID,
-        ORACLE
+        ORACLE,
+        TIBERO
     }
 
     private static final Map<DB, List<String>> PATTERNS = Map.of(
         DB.CUBRID, List.of("JDBC-*-cubrid.jar", "cubrid-jdbc-*.jar"),
-        DB.ORACLE, List.of("ojdbc8-*.jar", "ojdbc8.jar", "ojdbc*.jar")
+        DB.ORACLE, List.of("ojdbc8-*.jar", "ojdbc8.jar", "ojdbc*.jar"),
+        DB.TIBERO, List.of("tibero7-jdbc-17.jar", "tibero7-jdbc-*.jar")
     );
 
     private static final Map<DB, Path> CACHE = new ConcurrentHashMap<>();

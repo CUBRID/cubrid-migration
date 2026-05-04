@@ -1,0 +1,6 @@
+ grantor_name | grantee_name | object_type | object_name   | owner_name | auth_type | is_grantable
+--------------+--------------+-------------+---------------+------------+-----------+--------------
+ REF_SCHEMA   | MAIN_SCHEMA  | CLASS       | e2e_ref_audit | REF_SCHEMA | DELETE    | NO
+ REF_SCHEMA   | MAIN_SCHEMA  | CLASS       | e2e_ref_audit | REF_SCHEMA | INSERT    | NO
+ REF_SCHEMA   | MAIN_SCHEMA  | CLASS       | e2e_ref_audit | REF_SCHEMA | SELECT    | NO
+ REF_SCHEMA   | MAIN_SCHEMA  | CLASS       | e2e_ref_audit | REF_SCHEMA | UPDATE    | NO

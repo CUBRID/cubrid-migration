@@ -1,0 +1,4 @@
+ owner       | sp_name                  | sp_type   | authid
+-------------+--------------------------+-----------+---------
+ MAIN_SCHEMA | e2e_customer_label_fn    | FUNCTION  | DEFINER
+ MAIN_SCHEMA | e2e_upsert_customer_proc | PROCEDURE | DEFINER

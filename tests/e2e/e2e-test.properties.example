@@ -1,0 +1,20 @@
+# tests/e2e/e2e-test.properties — local-only configuration template.
+# Copy to e2e-test.properties (no .example) and fill in the values you need.
+# Resolution order: -Dkey=value sysprop > this file > unset.
+
+# ---- Tibero source-DB scenario --------------------------------------
+# All four keys are required. Tibero @Test methods skip via @EnabledIf
+# when any is missing. Oracle / CUBRID scenarios are unaffected.
+
+# Tibero Docker image.
+e2e.tibero.image=
+
+# License-bound hostname (must match <identified_by_host> in license.xml).
+e2e.tibero.hostname=
+
+# Absolute path to license.xml (relative paths are rejected).
+e2e.tibero.license=
+
+# libfaketime offset — number of days to backdate the container's clock
+# at boot. Must keep (today - N days) inside the license validity window.
+e2e.tibero.faketime=

@@ -1,0 +1,11 @@
+CREATE OR REPLACE FUNCTION [main_schema].[e2e_customer_label_fn] (p_customer_id IN NUMERIC)
+    RETURN VARCHAR AS
+    v_label VARCHAR(200);
+BEGIN
+    SELECT customer_code || ':' || customer_name
+      INTO v_label
+      FROM e2e_customer
+     WHERE customer_id = p_customer_id;
+    RETURN v_label;
+END
+

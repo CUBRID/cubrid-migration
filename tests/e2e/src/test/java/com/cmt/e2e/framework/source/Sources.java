@@ -11,4 +11,5 @@ public final class Sources {
 
     public static Source oracleE2eSeed() { return new OracleSource(); }
     public static Source cubridE2eSeed() { return new CubridSource(); }
+    public static Source tiberoE2eSeed() { return new TiberoSource(); }
 }
