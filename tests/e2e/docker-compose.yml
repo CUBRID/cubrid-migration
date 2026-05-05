@@ -10,18 +10,20 @@ services:
       - ${CMT_CONSOLE_HOME:?Set CMT_CONSOLE_HOME to the extracted CMT Console directory}:/opt/cmt-console
       # Mount whole project so /app/target stays writable for `mvn clean`.
       - ./:/app
+      # Tibero license — defaults to ./tibero/license.xml; override the
+      # host path via TIBERO_LICENSE env var.
+      - ${TIBERO_LICENSE:-./tibero/license.xml}:/run/tibero-license.xml:ro
     environment:
       - CMT_CONSOLE_HOME=/opt/cmt-console
       - DOCKER_HOST=unix:///var/run/docker.sock
       - TESTCONTAINERS_HOST_OVERRIDE=host.docker.internal
       - TESTCONTAINERS_RYUK_DISABLED=true
-    # Tibero license path inside the container (host file via ./:/app).
     command: >
       mvn clean test
       -Dmaven.test.failure.ignore=true
       -Dpicocli.ansi=false
       -Dorg.fusesource.jansi.Ansi.disable=true
-      -De2e.tibero.license=/app/tibero/license.xml
+      -De2e.tibero.license=/run/tibero-license.xml
 
 volumes:
   maven-cache:
