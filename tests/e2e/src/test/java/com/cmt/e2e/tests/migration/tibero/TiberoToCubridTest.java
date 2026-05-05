@@ -12,11 +12,10 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIf;
 
-/** Tibero 7 → CUBRID online migration. Each {@code @Test} maps to one
- *  verification layer (ARCHITECTURE.md §3). Snapshots:
+/** Tibero 7 → CUBRID online migration. Snapshots:
  *  {@code snapshots/tibero_to_cubrid/}. */
 @MigrationE2E(name = "tibero_to_cubrid")
-@DisplayName("TIB-ON: Tibero e2e dataset → CUBRID online migration")
+@DisplayName("Tibero e2e dataset → CUBRID online migration")
 @EnabledIf("com.cmt.e2e.framework.db.containers.TiberoEnvironment#isAvailable")
 class TiberoToCubridTest extends AbstractMigrationE2E {
 

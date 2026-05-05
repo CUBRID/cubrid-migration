@@ -11,11 +11,10 @@ import com.cmt.e2e.framework.target.Targets;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-/** Oracle 11g → CUBRID online migration. Each {@code @Test} maps to one
- *  verification layer (ARCHITECTURE.md §3). Snapshots:
+/** Oracle 11g → CUBRID online migration. Snapshots:
  *  {@code snapshots/oracle_to_cubrid/}. */
 @MigrationE2E(name = "oracle_to_cubrid")
-@DisplayName("ORA-ON: Oracle e2e dataset → CUBRID online migration")
+@DisplayName("Oracle e2e dataset → CUBRID online migration")
 class OracleToCubridTest extends AbstractMigrationE2E {
 
     @Override protected Source source() { return Sources.oracleE2eSeed(); }

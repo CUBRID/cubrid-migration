@@ -7,10 +7,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Formats tabular data as a {@code psql}-style aligned text table — the
- * canonical snapshot format (see ARCHITECTURE.md §7). Caller must
- * {@code ORDER BY} for determinism. SQL {@code NULL} renders as
- * {@code <NULL>}; trailing whitespace is stripped.
+ * Formats tabular data as a {@code psql}-style aligned text table.
+ * Caller must {@code ORDER BY} for determinism. SQL {@code NULL}
+ * renders as {@code <NULL>}; trailing whitespace is stripped.
  */
 public final class Tabulator {
 

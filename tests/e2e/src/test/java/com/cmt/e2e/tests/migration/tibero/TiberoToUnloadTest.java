@@ -11,10 +11,8 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIf;
 
-/** Tibero 7 → CMT {@code unload} (CUBRID LoadDB) dump.
- *  See {@link com.cmt.e2e.tests.migration.oracle.OracleToUnloadTest} for the
- *  variant grouping pattern. */
-@DisplayName("TIB-UN: Tibero e2e dataset → CMT unload (LoadDB) dump")
+/** Tibero 7 → CMT {@code unload} (CUBRID LoadDB) dump. */
+@DisplayName("Tibero e2e dataset → CMT unload (LoadDB) dump")
 @EnabledIf("com.cmt.e2e.framework.db.containers.TiberoEnvironment#isAvailable")
 class TiberoToUnloadTest {
 
@@ -26,7 +24,7 @@ class TiberoToUnloadTest {
             "split_schema=true",
             "one_table_one_file=true",
         })
-    @DisplayName("TIB-UN-SPLIT-PER-TABLE: split_schema=true, one_table_one_file=true (file_prefix=tibero)")
+    @DisplayName("split_schema=true, one_table_one_file=true (file_prefix=tibero)")
     class SplitPerTable extends AbstractMigrationE2E {
 
         @Override protected Source source() { return Sources.tiberoE2eSeed(); }

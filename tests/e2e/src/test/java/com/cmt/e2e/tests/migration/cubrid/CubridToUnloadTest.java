@@ -10,14 +10,12 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
-/** CUBRID → CMT {@code unload} (CUBRID LoadDB) dump. See
- *  {@link com.cmt.e2e.tests.migration.oracle.OracleToUnloadTest} for the
- *  variant grouping pattern. */
-@DisplayName("CUB-UN: CUBRID e2e dataset → CMT unload (LoadDB) dump")
+/** CUBRID → CMT {@code unload} (CUBRID LoadDB) dump. */
+@DisplayName("CUBRID e2e dataset → CMT unload (LoadDB) dump")
 class CubridToUnloadTest {
 
     // one_table_one_file=true required for snapshot stability — CMT does
-    // not stabilise table order inside the combined data dump (D10).
+    // not stabilise table order inside the combined data dump.
     @Nested
     @MigrationE2E(
         name = "cubrid_to_unload__split_per_table",
@@ -26,7 +24,7 @@ class CubridToUnloadTest {
             "split_schema=true",
             "one_table_one_file=true",
         })
-    @DisplayName("CUB-UN-SPLIT-PER-TABLE: split_schema=true, one_table_one_file=true (file_prefix=demodb)")
+    @DisplayName("split_schema=true, one_table_one_file=true (file_prefix=demodb)")
     class SplitPerTable extends AbstractMigrationE2E {
 
         @Override protected Source source() { return Sources.cubridE2eSeed(); }

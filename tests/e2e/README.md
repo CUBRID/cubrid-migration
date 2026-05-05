@@ -56,11 +56,17 @@ When any asset or key is missing, `TiberoToCubridTest` and
 `TiberoToUnloadTest` auto-skip via `@EnabledIf`. Other scenarios are
 unaffected.
 
-`docker-compose.yml` defaults the license to host-side
-`tests/e2e/tibero/license.xml` (mounted at `/app/tibero/license.xml` in
-the container). Place the license there for the compose default, or
-edit the `-De2e.tibero.license=...` override in compose's `command:` to
-point elsewhere.
+When running via `docker compose run`, the license file is mounted
+into the container by path. Default mount source is host-side
+`tests/e2e/tibero/license.xml`. To use a license at any other host
+path, set `TIBERO_LICENSE` env var:
+
+```bash
+TIBERO_LICENSE=/absolute/path/to/license.xml docker compose run --rm e2e-test
+```
+
+Host-side `mvn test` (without compose) honours the `e2e.tibero.license`
+value in `e2e-test.properties` directly — no env var needed.
 
 ## Naming
 

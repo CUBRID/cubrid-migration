@@ -37,12 +37,9 @@ public final class TiberoContainer implements DatabaseContainer {
         DockerImageName image  = DockerImageName.parse(TiberoEnvironment.image());
         String hostname        = TiberoEnvironment.hostname();
         Path   licenseHostPath = TiberoEnvironment.licensePath();
-        // FAKETIME is required by the bundled image entrypoint — without
-        // it the container refuses to start.
         String faketime        = "-" + TiberoEnvironment.faketimeDaysBack() + "d";
 
         this.container = new GenericContainer<>(image)
-            // Force hostname (license binding) + amd64 platform (image is x86_64-only).
             .withCreateContainerCmdModifier(cmd -> {
                 cmd.withHostName(hostname);
                 cmd.withPlatform("linux/amd64");
@@ -54,11 +51,10 @@ public final class TiberoContainer implements DatabaseContainer {
                 MountableFile.forHostPath(licenseHostPath.toString()),
                 LICENSE_IN_CONTAINER)
             .withSharedMemorySize(1024L * 1024 * 1024)  // 1 GB — Tibero requires this
-            // "Tibero is Ready To Use!" prints after SYS init; listener already
-            // accepts connections by then. ~150-180 s under amd64 emulation.
             .waitingFor(
                 Wait.forLogMessage(".*Tibero is Ready To Use.*", 1)
-                    .withStartupTimeout(Duration.ofMinutes(8)));
+                    .withStartupTimeout(Duration.ofMinutes(12)))
+            .withStartupAttempts(2);
     }
 
     public static TiberoContainer create() { return new TiberoContainer(); }

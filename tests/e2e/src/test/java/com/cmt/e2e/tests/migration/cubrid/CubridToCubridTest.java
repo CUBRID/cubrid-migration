@@ -13,7 +13,7 @@ import org.junit.jupiter.api.Test;
 
 /** CUBRID → CUBRID online migration. Snapshots: {@code snapshots/cubrid_to_cubrid/}. */
 @MigrationE2E(name = "cubrid_to_cubrid")
-@DisplayName("CUB-ON: CUBRID e2e dataset → CUBRID online migration")
+@DisplayName("CUBRID e2e dataset → CUBRID online migration")
 class CubridToCubridTest extends AbstractMigrationE2E {
 
     @Override protected Source source() { return Sources.cubridE2eSeed(); }

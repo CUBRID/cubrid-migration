@@ -18,7 +18,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Generates a CMT {@code script.xml} via {@code migration.sh script} and
  * normalizes timestamp + seed-internal noise so the result is byte-
- * deterministic across runs (see ARCHITECTURE.md §7).
+ * deterministic across runs.
  */
 public final class ScriptXmlBuilder {
 

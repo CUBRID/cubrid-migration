@@ -15,9 +15,9 @@ import com.cmt.e2e.framework.verify.RowQueries;
 
 /**
  * Outcome of one {@link Migration#run(Path)} call. Verification surface
- * across four layers (see ARCHITECTURE.md §3): L1 smoke
- * ({@link #expectSuccess()}, {@link #expectNoFatalStderr()}); L2 coverage
- * + L3 fidelity ({@link #catalog()} / {@link #rowCounts} / {@link #queries} /
+ * across four layers: L1 smoke ({@link #expectSuccess()},
+ * {@link #expectNoFatalStderr()}); L2 coverage + L3 fidelity
+ * ({@link #catalog()} / {@link #rowCounts} / {@link #queries} /
  * {@link #dumpfile()}); L4 regression (same surface, scoped per
  * {@code @Test}).
  */

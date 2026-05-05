@@ -10,8 +10,7 @@ import java.lang.annotation.Target;
  * The name resolves to {@code src/test/resources/snapshots/<name>/} and
  * {@code src/test/resources/queries/<name>.sql}.
  *
- * <p>Scenario id grammar (see ARCHITECTURE.md §12):
- * {@code <source>_to_<target>[__<discriminator>]}.
+ * <p>Scenario id grammar: {@code <source>_to_<target>[__<discriminator>]}.
  *
  * <p>{@link #options()} explicitly lists every CMT option whose value
  * affects this TC's verification — relying on CMT defaults silently

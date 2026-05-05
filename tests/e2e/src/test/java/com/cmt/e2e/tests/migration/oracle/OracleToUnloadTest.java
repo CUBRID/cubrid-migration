@@ -13,10 +13,9 @@ import org.junit.jupiter.api.Test;
 /**
  * Oracle 11g → CMT {@code unload} (CUBRID LoadDB) dump. Outer class is
  * the namespace for this source/target shape; each option combination
- * is a {@code @Nested} class with its own {@code @MigrationE2E}
- * (ARCHITECTURE.md §12 / D14).
+ * is a {@code @Nested} class with its own {@code @MigrationE2E}.
  */
-@DisplayName("ORA-UN: Oracle e2e dataset → CMT unload (LoadDB) dump")
+@DisplayName("Oracle e2e dataset → CMT unload (LoadDB) dump")
 class OracleToUnloadTest {
 
     @Nested
@@ -27,7 +26,7 @@ class OracleToUnloadTest {
             "split_schema=true",
             "one_table_one_file=true",
         })
-    @DisplayName("ORA-UN-SPLIT-PER-TABLE: split_schema=true, one_table_one_file=true (file_prefix=XE)")
+    @DisplayName("split_schema=true, one_table_one_file=true (file_prefix=XE)")
     class SplitPerTable extends AbstractMigrationE2E {
 
         @Override protected Source source() { return Sources.oracleE2eSeed(); }

@@ -25,8 +25,6 @@ public class CubridContainer implements DatabaseContainer {
             .withEnv("CUBRID_DB", DATABASE_NAME)
             .withEnv("CUBRID_COMPONENTS", "ALL")
             .withExposedPorts(CUBRID_BROKER_PORT)
-            // Broker port opens before createdb completes — wait for the
-            // post-createdb log line, not just port availability.
             .waitingFor(Wait.forLogMessage(".*\\+\\+ cubrid server start: success.*", 1))
             .withStartupTimeout(Duration.ofMinutes(8));
     }

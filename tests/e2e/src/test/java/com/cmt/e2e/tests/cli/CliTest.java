@@ -17,14 +17,14 @@ import static org.assertj.core.api.Assertions.assertThat;
  * first-run filesystem contracts. No DB required — runs in seconds and
  * gates the rest of the E2E suite.
  */
-@DisplayName("CLI: migration.sh dispatch + first-run filesystem contracts")
+@DisplayName("migration.sh dispatch + first-run filesystem contracts")
 public class CliTest {
 
     @RegisterExtension
     final CmtTestContext ctx = new CmtTestContext();
 
     @Test
-    @DisplayName("CLI-01: lists all subcommands when called with no args")
+    @DisplayName("lists all subcommands when called with no args")
     void should_listAllSubcommands_when_calledWithoutArgs() throws Exception {
         CommandResult result = ctx.commandRunner().run(new RawCommand("./migration.sh"));
 
@@ -37,7 +37,7 @@ public class CliTest {
     // 'start' alone blocks on stdin; pass a nonexistent path to reach the
     // "script not found → printHelp" exit. -sd is unique to start help.
     @Test
-    @DisplayName("CLI-02: dispatches to StartCommandHandler when 'start' subcommand")
+    @DisplayName("dispatches to StartCommandHandler when 'start' subcommand")
     void should_dispatchToStartHandler_when_invokedWithStartSubcommand() throws Exception {
         CommandResult result = ctx.commandRunner().run(
             new RawCommand("./migration.sh", "start", "/__nonexistent_for_smoke__.xml"));
@@ -49,7 +49,7 @@ public class CliTest {
     }
 
     @Test
-    @DisplayName("CLI-03: dispatches to ScriptCommandHandler when 'script' subcommand")
+    @DisplayName("dispatches to ScriptCommandHandler when 'script' subcommand")
     void should_dispatchToScriptHandler_when_invokedWithScriptSubcommand() throws Exception {
         CommandResult result = ctx.commandRunner().run(new RawCommand("./migration.sh", "script"));
 
@@ -60,7 +60,7 @@ public class CliTest {
     }
 
     @Test
-    @DisplayName("CLI-04: dispatches to LogCommandHandler when 'log' subcommand")
+    @DisplayName("dispatches to LogCommandHandler when 'log' subcommand")
     void should_dispatchToLogHandler_when_invokedWithLogSubcommand() throws Exception {
         CommandResult result = ctx.commandRunner().run(new RawCommand("./migration.sh", "log"));
 
@@ -71,7 +71,7 @@ public class CliTest {
     }
 
     @Test
-    @DisplayName("CLI-05: dispatches to ReportCommandHandler when 'report' subcommand")
+    @DisplayName("dispatches to ReportCommandHandler when 'report' subcommand")
     void should_dispatchToReportHandler_when_invokedWithReportSubcommand() throws Exception {
         CommandResult result = ctx.commandRunner().run(new RawCommand("./migration.sh", "report"));
 
@@ -82,7 +82,7 @@ public class CliTest {
     }
 
     @Test
-    @DisplayName("CLI-06: falls back to start help on unknown command")
+    @DisplayName("falls back to start help on unknown command")
     void should_fallbackToStartHelp_when_unknownCommand() throws Exception {
         CommandResult result = ctx.commandRunner().run(
             new RawCommand("./migration.sh", "bogus_command_that_does_not_exist"));
@@ -94,7 +94,7 @@ public class CliTest {
     }
 
     @Test
-    @DisplayName("CLI-07: creates workspace/cmt/log and workspace/cmt/report on any invocation")
+    @DisplayName("creates workspace/cmt/log and workspace/cmt/report on any invocation")
     void should_createWorkspaceDirectories_onAnyInvocation() throws Exception {
         ctx.commandRunner().run(new RawCommand("./migration.sh"));
 
@@ -104,7 +104,7 @@ public class CliTest {
 
     // Capture-then-grow pattern keeps the test valid across repeated runs.
     @Test
-    @DisplayName("CLI-08: appends to cubrid-migration.log on every invocation")
+    @DisplayName("appends to cubrid-migration.log on every invocation")
     void should_appendToLogFile_onAnyInvocation() throws Exception {
         Path logFile = ctx.cmtConsoleHome().resolve("workspace/cmt/log/cubrid-migration.log");
         long sizeBefore = Files.exists(logFile) ? Files.size(logFile) : 0L;
