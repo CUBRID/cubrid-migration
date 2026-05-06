@@ -20,14 +20,14 @@ class OracleToUnloadTest {
 
     @Nested
     @MigrationE2E(
-        name = "oracle_to_unload__split_per_table",
+        name = "oracle_to_unload__split_schema__1t1f",
         options = {
             "file_prefix=XE",
             "split_schema=true",
             "one_table_one_file=true",
         })
     @DisplayName("split_schema=true, one_table_one_file=true (file_prefix=XE)")
-    class SplitPerTable extends AbstractMigrationE2E {
+    class SplitSchema1t1f extends AbstractMigrationE2E {
 
         @Override protected Source source() { return Sources.oracleE2eSeed(); }
         @Override protected Target target() { return Targets.unload("XE", true); }

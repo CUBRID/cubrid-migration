@@ -18,14 +18,14 @@ class TiberoToUnloadTest {
 
     @Nested
     @MigrationE2E(
-        name = "tibero_to_unload__split_per_table",
+        name = "tibero_to_unload__split_schema__1t1f",
         options = {
             "file_prefix=tibero",
             "split_schema=true",
             "one_table_one_file=true",
         })
     @DisplayName("split_schema=true, one_table_one_file=true (file_prefix=tibero)")
-    class SplitPerTable extends AbstractMigrationE2E {
+    class SplitSchema1t1f extends AbstractMigrationE2E {
 
         @Override protected Source source() { return Sources.tiberoE2eSeed(); }
         @Override protected Target target() { return Targets.unload("tibero", true); }
