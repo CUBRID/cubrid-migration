@@ -18,6 +18,11 @@ services:
       - DOCKER_HOST=unix:///var/run/docker.sock
       - TESTCONTAINERS_HOST_OVERRIDE=host.docker.internal
       - TESTCONTAINERS_RYUK_DISABLED=true
+      # Oracle 11g XE tz file (v4) → ORA-01882 on newer region IDs
+      # unless ojdbc sends UTC offset. Required for the CMT subprocess
+      # (which spawns its own JVM and won't inherit sysprops set by
+      # the test JVM in OracleContainer.start()).
+      - JAVA_TOOL_OPTIONS=-Doracle.jdbc.timezoneAsRegion=false
     command: >
       mvn clean test
       -Dmaven.test.failure.ignore=true

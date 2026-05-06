@@ -1,0 +1,12 @@
+ owner_name  | class_name               | comment
+-------------+--------------------------+---------
+ MAIN_SCHEMA | e2e_binary_types         | <NULL>
+ MAIN_SCHEMA | e2e_customer             | <NULL>
+ MAIN_SCHEMA | e2e_employee             | <NULL>
+ MAIN_SCHEMA | e2e_numeric_types        | <NULL>
+ MAIN_SCHEMA | e2e_oracle_locator_types | <NULL>
+ MAIN_SCHEMA | e2e_order                | <NULL>
+ MAIN_SCHEMA | e2e_order_line           | <NULL>
+ MAIN_SCHEMA | e2e_temporal_types       | <NULL>
+ MAIN_SCHEMA | e2e_text_types           | <NULL>
+ REF_SCHEMA  | e2e_ref_audit            | <NULL>

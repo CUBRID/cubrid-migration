@@ -1,0 +1,3 @@
+ owner       | sp_name                  | authid
+-------------+--------------------------+---------
+ MAIN_SCHEMA | e2e_upsert_customer_proc | DEFINER

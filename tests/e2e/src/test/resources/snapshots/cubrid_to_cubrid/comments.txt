@@ -1,3 +1,0 @@
- scope  | owner_name  | class_name   | attr_name     | comment
---------+-------------+--------------+---------------+--------------
- COLUMN | MAIN_SCHEMA | e2e_customer | customer_code | business key

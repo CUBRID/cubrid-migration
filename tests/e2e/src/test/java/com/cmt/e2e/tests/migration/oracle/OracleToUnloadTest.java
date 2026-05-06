@@ -39,6 +39,12 @@ class OracleToUnloadTest {
         }
 
         @Test
+        @DisplayName("Migration report — Exported counts equal Imported counts")
+        void migration_report_no_loss() {
+            run().expectImportMatchesExport();
+        }
+
+        @Test
         @DisplayName("Dump file tree matches snapshot")
         void dump_tree_matches_snapshot() {
             run().dumpfile().matchesSnapshot();

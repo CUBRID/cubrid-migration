@@ -29,9 +29,21 @@ class TiberoToCubridTest extends AbstractMigrationE2E {
     }
 
     @Test
-    @DisplayName("All target classes (tables/views) match snapshot")
-    void classes_match_snapshot() {
-        run().catalog().matchesSnapshot("classes");
+    @DisplayName("Migration report — Exported counts equal Imported counts")
+    void migration_report_no_loss() {
+        run().expectImportMatchesExport();
+    }
+
+    @Test
+    @DisplayName("All target tables match snapshot")
+    void tables_match_snapshot() {
+        run().catalog().matchesSnapshot("tables");
+    }
+
+    @Test
+    @DisplayName("All target views match snapshot")
+    void views_match_snapshot() {
+        run().catalog().matchesSnapshot("views");
     }
 
     @Test
@@ -47,15 +59,15 @@ class TiberoToCubridTest extends AbstractMigrationE2E {
     }
 
     @Test
-    @DisplayName("All stored routines (FUNCTION/PROCEDURE) preserved")
-    void routines_match_snapshot() {
-        run().catalog().matchesSnapshot("routines");
+    @DisplayName("All stored functions preserved")
+    void functions_match_snapshot() {
+        run().catalog().matchesSnapshot("functions");
     }
 
     @Test
-    @DisplayName("Table + column COMMENTs preserved (incl. multi-byte unicode)")
-    void comments_match_snapshot() {
-        run().catalog().matchesSnapshot("comments");
+    @DisplayName("All stored procedures preserved")
+    void procedures_match_snapshot() {
+        run().catalog().matchesSnapshot("procedures");
     }
 
     @Test

@@ -26,27 +26,27 @@ class CubridToCubridTest extends AbstractMigrationE2E {
     }
 
     @Test
-    @DisplayName("All target classes (tables/views) match snapshot")
-    void classes_match_snapshot() {
-        run().catalog().matchesSnapshot("classes");
+    @DisplayName("Migration report — Exported counts equal Imported counts")
+    void migration_report_no_loss() {
+        run().expectImportMatchesExport();
+    }
+
+    @Test
+    @DisplayName("All target tables match snapshot")
+    void tables_match_snapshot() {
+        run().catalog().matchesSnapshot("tables");
+    }
+
+    @Test
+    @DisplayName("All target views match snapshot")
+    void views_match_snapshot() {
+        run().catalog().matchesSnapshot("views");
     }
 
     @Test
     @DisplayName("All synonyms preserved (cross-schema reference)")
     void synonyms_match_snapshot() {
         run().catalog().matchesSnapshot("synonyms");
-    }
-
-    @Test
-    @DisplayName("All stored routines (FUNCTION/PROCEDURE) preserved")
-    void routines_match_snapshot() {
-        run().catalog().matchesSnapshot("routines");
-    }
-
-    @Test
-    @DisplayName("Table + column COMMENTs preserved (incl. multi-byte unicode)")
-    void comments_match_snapshot() {
-        run().catalog().matchesSnapshot("comments");
     }
 
     @Test

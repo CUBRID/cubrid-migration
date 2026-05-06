@@ -1,6 +1,7 @@
 package com.cmt.e2e.framework.runner;
 
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -28,6 +29,11 @@ public final class MigrationOutcome {
     static final Pattern FATAL_STDERR = Pattern.compile(
         "(?m)^(?:ERROR\\b|FATAL\\b|Exception(?:\\s|:)|Caused by:|java\\.lang\\.[A-Za-z]+Exception)");
 
+    /** Matches one line of CMT 's "Migration Report summary" block, e.g.
+     *  "    table: Exported[10]; Imported[10]". */
+    static final Pattern REPORT_LINE = Pattern.compile(
+        "(?m)^\\s+([\\w ]+?):\\s+Exported\\[(\\d+)\\];\\s+Imported\\[(\\d+)\\]");
+
     private final CommandResult result;
     private final Target target;
     private final String migrationName;
@@ -54,6 +60,36 @@ public final class MigrationOutcome {
         if (!result.stdout().contains(SUCCESS_MARKER)) {
             throw new AssertionError(
                 "stdout missing '" + SUCCESS_MARKER + "':\n" + result.stdout());
+        }
+        return this;
+    }
+
+    /**
+     * Asserts every category in CMT's "Migration Report summary" block has
+     * {@code Imported[N]} equal to {@code Exported[N]} — i.e. nothing was
+     * silently dropped between source extraction and target import.
+     */
+    public MigrationOutcome expectImportMatchesExport() {
+        if (!result.stdout().contains("Migration Report summary:")) {
+            throw new AssertionError(
+                "Migration Report summary block not found in CMT stdout:\n"
+                    + result.stdout());
+        }
+        Matcher m = REPORT_LINE.matcher(result.stdout());
+        List<String> mismatches = new ArrayList<>();
+        while (m.find()) {
+            String category = m.group(1).trim();
+            int exported    = Integer.parseInt(m.group(2));
+            int imported    = Integer.parseInt(m.group(3));
+            if (exported != imported) {
+                mismatches.add(String.format(
+                    "%s: exported=%d, imported=%d", category, exported, imported));
+            }
+        }
+        if (!mismatches.isEmpty()) {
+            throw new AssertionError(
+                "Migration Report shows export/import count mismatch:\n  - "
+                    + String.join("\n  - ", mismatches));
         }
         return this;
     }

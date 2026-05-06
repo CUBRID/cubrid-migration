@@ -1,0 +1,3 @@
+ owner_name  | class_name          | comment
+-------------+---------------------+----------------------------------
+ MAIN_SCHEMA | e2e_order_summary_v | Customer-order join summary view

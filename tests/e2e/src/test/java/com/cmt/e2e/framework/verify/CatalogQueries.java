@@ -9,26 +9,34 @@ import java.util.Map;
  * concern, not part of the migration contract). Map keys double as
  * snapshot file names ({@code snapshots/<scenario>/<key>.txt}).
  *
- * <p>Indexes are split by kind into separate snapshots — pk / fk /
- * unique (non-PK) / indexes (everything else) — so a diff immediately
- * tells you which category broke. Each per-kind query joins
- * {@code db_index_key} to keep key columns inline with index identity.
+ * <p>Object kinds are split by category for diff clarity — tables /
+ * views, pk / fk / unique / indexes, functions / procedures — so a
+ * mismatch immediately tells you which category broke.
  */
 public final class CatalogQueries {
 
     private CatalogQueries() {}
 
     private static final Map<String, String> QUERIES = Map.ofEntries(
-        Map.entry("classes", """
-            SELECT owner_name, class_name, class_type
+        Map.entry("tables", """
+            SELECT owner_name, class_name, comment
             FROM db_class
             WHERE owner_name NOT IN ('DBA', 'PUBLIC')
               AND class_name NOT LIKE 'flyway_%'
-            ORDER BY owner_name, class_type, class_name
+              AND class_type = 'CLASS'
+            ORDER BY owner_name, class_name
+            """),
+        Map.entry("views", """
+            SELECT owner_name, class_name, comment
+            FROM db_class
+            WHERE owner_name NOT IN ('DBA', 'PUBLIC')
+              AND class_name NOT LIKE 'flyway_%'
+              AND class_type = 'VCLASS'
+            ORDER BY owner_name, class_name
             """),
         Map.entry("columns", """
             SELECT owner_name, class_name, attr_name, def_order,
-                   data_type, prec, scale, is_nullable
+                   data_type, prec, scale, is_nullable, default_value, comment
             FROM db_attribute
             WHERE owner_name NOT IN ('DBA', 'PUBLIC')
               AND class_name NOT LIKE 'flyway_%'
@@ -89,7 +97,7 @@ public final class CatalogQueries {
             ORDER BY i.owner_name, i.class_name, i.index_name, k.key_order
             """),
         Map.entry("serials", """
-            SELECT name, current_val, increment_val, min_val
+            SELECT name, current_val, increment_val, min_val, max_val, cyclic
             FROM db_serial
             ORDER BY name
             """),
@@ -107,25 +115,19 @@ public final class CatalogQueries {
             WHERE owner_name NOT IN ('DBA', 'PUBLIC')
             ORDER BY grantor_name, grantee_name, owner_name, object_name, auth_type
             """),
-        Map.entry("routines", """
-            SELECT owner, sp_name, sp_type, authid
+        Map.entry("functions", """
+            SELECT owner, sp_name, authid
             FROM db_stored_procedure
             WHERE owner NOT IN ('DBA', 'PUBLIC')
-            ORDER BY owner, sp_type, sp_name
+              AND sp_type = 'FUNCTION'
+            ORDER BY owner, sp_name
             """),
-        Map.entry("comments", """
-            SELECT 'TABLE'  AS scope, owner_name, class_name, ''         AS attr_name, comment
-            FROM db_class
-            WHERE owner_name NOT IN ('DBA', 'PUBLIC')
-              AND class_name NOT LIKE 'flyway_%'
-              AND comment IS NOT NULL AND comment <> ''
-            UNION ALL
-            SELECT 'COLUMN' AS scope, owner_name, class_name, attr_name,    comment
-            FROM db_attribute
-            WHERE owner_name NOT IN ('DBA', 'PUBLIC')
-              AND class_name NOT LIKE 'flyway_%'
-              AND comment IS NOT NULL AND comment <> ''
-            ORDER BY scope, owner_name, class_name, attr_name
+        Map.entry("procedures", """
+            SELECT owner, sp_name, authid
+            FROM db_stored_procedure
+            WHERE owner NOT IN ('DBA', 'PUBLIC')
+              AND sp_type = 'PROCEDURE'
+            ORDER BY owner, sp_name
             """)
     );
 
