@@ -96,7 +96,7 @@ public final class CatalogQueries {
               AND i.is_foreign_key = 'NO'
             ORDER BY i.owner_name, i.class_name, i.index_name, k.key_order
             """),
-        Map.entry("serials", """
+        Map.entry("sequences", """
             SELECT name, current_val, increment_val, min_val, max_val, cyclic
             FROM db_serial
             ORDER BY name

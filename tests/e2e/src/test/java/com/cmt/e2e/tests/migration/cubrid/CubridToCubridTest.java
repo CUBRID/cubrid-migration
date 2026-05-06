@@ -44,18 +44,6 @@ class CubridToCubridTest extends AbstractMigrationE2E {
     }
 
     @Test
-    @DisplayName("All synonyms preserved (cross-schema reference)")
-    void synonyms_match_snapshot() {
-        run().catalog().matchesSnapshot("synonyms");
-    }
-
-    @Test
-    @DisplayName("Cross-schema GRANTs preserved")
-    void grants_match_snapshot() {
-        run().catalog().matchesSnapshot("grants");
-    }
-
-    @Test
     @DisplayName("Column types preserved through CUBRID → CUBRID translation")
     void columns_match_snapshot() {
         run().catalog().matchesSnapshot("columns");
@@ -86,9 +74,21 @@ class CubridToCubridTest extends AbstractMigrationE2E {
     }
 
     @Test
-    @DisplayName("CUBRID SERIAL current_val preserved")
-    void serials_match_snapshot() {
-        run().catalog().matchesSnapshot("serials");
+    @DisplayName("CUBRID SERIAL current_val preserved as sequences")
+    void sequences_match_snapshot() {
+        run().catalog().matchesSnapshot("sequences");
+    }
+
+    @Test
+    @DisplayName("All synonyms preserved (cross-schema reference)")
+    void synonyms_match_snapshot() {
+        run().catalog().matchesSnapshot("synonyms");
+    }
+
+    @Test
+    @DisplayName("Cross-schema GRANTs preserved")
+    void grants_match_snapshot() {
+        run().catalog().matchesSnapshot("grants");
     }
 
     @Test

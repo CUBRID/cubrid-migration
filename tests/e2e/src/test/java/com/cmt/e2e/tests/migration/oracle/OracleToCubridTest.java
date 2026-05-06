@@ -45,30 +45,6 @@ class OracleToCubridTest extends AbstractMigrationE2E {
     }
 
     @Test
-    @DisplayName("All synonyms preserved (cross-schema reference)")
-    void synonyms_match_snapshot() {
-        run().catalog().matchesSnapshot("synonyms");
-    }
-
-    @Test
-    @DisplayName("All stored functions preserved")
-    void functions_match_snapshot() {
-        run().catalog().matchesSnapshot("functions");
-    }
-
-    @Test
-    @DisplayName("All stored procedures preserved")
-    void procedures_match_snapshot() {
-        run().catalog().matchesSnapshot("procedures");
-    }
-
-    @Test
-    @DisplayName("Cross-schema GRANTs preserved")
-    void grants_match_snapshot() {
-        run().catalog().matchesSnapshot("grants");
-    }
-
-    @Test
     @DisplayName("Column types preserved through Oracle → CUBRID translation")
     void columns_match_snapshot() {
         run().catalog().matchesSnapshot("columns");
@@ -99,9 +75,33 @@ class OracleToCubridTest extends AbstractMigrationE2E {
     }
 
     @Test
-    @DisplayName("Oracle SEQUENCE current_val preserved as CUBRID SERIAL current_val")
-    void serials_match_snapshot() {
-        run().catalog().matchesSnapshot("serials");
+    @DisplayName("Sequence current_val preserved through Oracle → CUBRID translation")
+    void sequences_match_snapshot() {
+        run().catalog().matchesSnapshot("sequences");
+    }
+
+    @Test
+    @DisplayName("All synonyms preserved (cross-schema reference)")
+    void synonyms_match_snapshot() {
+        run().catalog().matchesSnapshot("synonyms");
+    }
+
+    @Test
+    @DisplayName("All stored functions preserved")
+    void functions_match_snapshot() {
+        run().catalog().matchesSnapshot("functions");
+    }
+
+    @Test
+    @DisplayName("All stored procedures preserved")
+    void procedures_match_snapshot() {
+        run().catalog().matchesSnapshot("procedures");
+    }
+
+    @Test
+    @DisplayName("Cross-schema GRANTs preserved")
+    void grants_match_snapshot() {
+        run().catalog().matchesSnapshot("grants");
     }
 
     @Test
