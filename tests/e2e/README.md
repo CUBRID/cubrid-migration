@@ -16,12 +16,20 @@ CMT unload (LoadDB) dump.
 ```bash
 cd tests/e2e
 
-# All scenarios
+# Recommended (test.sh dispatcher — auto-extracts Tibero license from
+# e2e-test.properties, applies the standard Maven flag set)
+./test.sh                       # All scenarios
+./test.sh oracle                # OracleTo*Test only
+./test.sh cubrid                # CubridTo*Test only
+./test.sh tibero                # TiberoTo*Test only
+./test.sh cli                   # CliTest only
+
+# docker compose directly
 docker compose run --rm e2e-test
 
 # Single scenario / single fact
 docker compose run --rm e2e-test mvn test -Dtest=OracleToCubridTest
-docker compose run --rm e2e-test mvn test -Dtest='OracleToCubridTest#serials_match_snapshot'
+docker compose run --rm e2e-test mvn test -Dtest='OracleToCubridTest#sequences_match_snapshot'
 ```
 
 ## Snapshot update
@@ -30,6 +38,10 @@ When CMT output legitimately changes (bug fix, naming convention shift,
 new column type), regenerate the golden files:
 
 ```bash
+# All scenarios
+./test.sh snapshot
+
+# Subset
 docker compose run --rm e2e-test mvn test \
     -Dtest='OracleToCubridTest,CubridToCubridTest' \
     -Dsnapshot.update=true
@@ -72,8 +84,5 @@ value in `e2e-test.properties` directly — no env var needed.
 
 | Kind | Scenario id | Class |
 |------|-------------|-------|
-| flat | `oracle_to_cubrid` | `OracleToCubridTest` |
-| `@Nested` variant | `oracle_to_unload__split_per_table` | `OracleToUnloadTest.SplitPerTable` |
-| regression | `oracle_to_cubrid__bug_tools_1234` | `OracleToCubridBugTools1234Test` (in `regression/`) |
-
-Bug regressions: Jira id `TOOLS-1234` → identifier `tools_1234`.
+| online (no nested) | `oracle_to_cubrid` | `OracleToCubridTest` |
+| unload (`@Nested` variant) | `oracle_to_unload__split_schema__1t1f` | `OracleToUnloadTest.SplitSchema1t1f` |
