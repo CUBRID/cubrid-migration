@@ -4,7 +4,7 @@
 
 # ---- Tibero source-DB scenario --------------------------------------
 # All four keys are required. Tibero @Test methods skip via @EnabledIf
-# when any is missing. Oracle / CUBRID scenarios are unaffected.
+# when any is missing. Other source DB scenarios are unaffected.
 
 # Tibero Docker image.
 e2e.tibero.image=
