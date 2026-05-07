@@ -91,7 +91,7 @@ public final class OracleDatabaseInitializer {
             MigrateResult result = buildFlyway(location, user, password).migrate();
             log.info(
                     "[OracleDatabaseInitializer] migrate complete: scenario='{}', user='{}',"
-                        + " executed={}, success={}",
+                            + " executed={}, success={}",
                     scenarioName,
                     user,
                     result.migrationsExecuted,

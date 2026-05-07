@@ -103,7 +103,7 @@ public abstract class AbstractMigrationE2E {
         if (cachedOutcome == null) {
             throw new IllegalStateException(
                     "run() called before @BeforeAll completed — possible JUnit lifecycle"
-                        + " misconfiguration.");
+                            + " misconfiguration.");
         }
         return cachedOutcome;
     }

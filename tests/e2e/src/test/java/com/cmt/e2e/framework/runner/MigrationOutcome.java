@@ -57,7 +57,7 @@ public final class MigrationOutcome {
     static final Pattern FATAL_STDERR =
             Pattern.compile(
                     "(?m)^(?:ERROR\\b|FATAL\\b|Exception(?:\\s|:)|Caused"
-                        + " by:|java\\.lang\\.[A-Za-z]+Exception)");
+                            + " by:|java\\.lang\\.[A-Za-z]+Exception)");
 
     /**
      * Matches one line of CMT 's "Migration Report summary" block, e.g. " table: Exported[10];
