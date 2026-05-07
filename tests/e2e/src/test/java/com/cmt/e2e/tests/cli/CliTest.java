@@ -102,7 +102,6 @@ public class CliTest {
         assertThat(ctx.cmtConsoleHome().resolve("workspace/cmt/report")).isDirectory();
     }
 
-    // Capture-then-grow pattern keeps the test valid across repeated runs.
     @Test
     @DisplayName("appends to cubrid-migration.log on every invocation")
     void should_appendToLogFile_onAnyInvocation() throws Exception {

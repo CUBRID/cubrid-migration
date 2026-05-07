@@ -88,6 +88,9 @@ jobs:
           NO_COLOR: '1'
           CLICOLOR: '0'
           TERM: dumb
+          # Oracle 11g XE tz file (v4) → ORA-01882 on newer region IDs
+          # unless ojdbc sends UTC offset. Required for CMT subprocess.
+          JAVA_TOOL_OPTIONS: -Doracle.jdbc.timezoneAsRegion=false
         run: |
           mvn -B clean test \
             -Dmaven.test.failure.ignore=true \
