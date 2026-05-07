@@ -30,6 +30,9 @@
 
 package com.cmt.e2e.framework.verify;
 
+import com.cmt.e2e.framework.db.JdbcDriverJars.DB;
+import com.cmt.e2e.framework.source.ConnectionConfig;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -41,15 +44,11 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.cmt.e2e.framework.db.JdbcDriverJars.DB;
-import com.cmt.e2e.framework.source.ConnectionConfig;
-
 /**
- * Multi-query snapshot. Reads a labelled SQL file, runs each query, and
- * concatenates formatted results into one snapshot file. File format:
- * each {@code -- @label <text>} introduces a query terminated by
- * {@code ;}; other comment / blank lines are ignored. Snapshot output
- * uses {@code ==> <label>} as a section header per query.
+ * Multi-query snapshot. Reads a labelled SQL file, runs each query, and concatenates formatted
+ * results into one snapshot file. File format: each {@code -- @label <text>} introduces a query
+ * terminated by {@code ;}; other comment / blank lines are ignored. Snapshot output uses {@code ==>
+ * <label>} as a section header per query.
  */
 public final class RowQueries {
 
@@ -60,7 +59,7 @@ public final class RowQueries {
     public RowQueries(Path sqlFile, ConnectionConfig connection, String scenarioName) {
         if (connection.type() != DB.CUBRID) {
             throw new IllegalArgumentException(
-                "RowQueries is CUBRID-specific (got " + connection.type() + ")");
+                    "RowQueries is CUBRID-specific (got " + connection.type() + ")");
         }
         this.sqlFile = sqlFile;
         this.connection = connection;
@@ -97,12 +96,11 @@ public final class RowQueries {
             if (trimmed.startsWith("-- @label")) {
                 if (currentLabel != null) {
                     throw new IllegalStateException(
-                        "Missing trailing ';' for query: '" + currentLabel + "'");
+                            "Missing trailing ';' for query: '" + currentLabel + "'");
                 }
                 currentLabel = trimmed.substring("-- @label".length()).trim();
                 if (currentLabel.isEmpty()) {
-                    throw new IllegalStateException(
-                        "-- @label line must include a label name");
+                    throw new IllegalStateException("-- @label line must include a label name");
                 }
                 continue;
             }
@@ -110,8 +108,7 @@ public final class RowQueries {
                 continue;
             }
             if (currentLabel == null) {
-                throw new IllegalStateException(
-                    "SQL line before any -- @label: " + trimmed);
+                throw new IllegalStateException("SQL line before any -- @label: " + trimmed);
             }
             currentSql.append(line).append('\n');
             if (trimmed.endsWith(";")) {
@@ -124,7 +121,7 @@ public final class RowQueries {
         }
         if (currentLabel != null) {
             throw new IllegalStateException(
-                "Missing trailing ';' for query: '" + currentLabel + "'");
+                    "Missing trailing ';' for query: '" + currentLabel + "'");
         }
         return out;
     }
@@ -138,11 +135,11 @@ public final class RowQueries {
     }
 
     private String runOne(Connection conn, String sql) {
-        try (Statement st = conn.createStatement(); ResultSet rs = st.executeQuery(sql)) {
+        try (Statement st = conn.createStatement();
+                ResultSet rs = st.executeQuery(sql)) {
             return Tabulator.format(rs);
         } catch (SQLException e) {
             throw new RuntimeException("Query failed:\n  " + sql, e);
         }
     }
-
 }

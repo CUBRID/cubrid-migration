@@ -32,6 +32,7 @@ package com.cmt.e2e.framework.core;
 
 import com.cmt.e2e.framework.command.CommandRunner;
 import com.cmt.e2e.framework.env.CmtConsoleEnv;
+
 import org.junit.jupiter.api.extension.AfterEachCallback;
 import org.junit.jupiter.api.extension.BeforeEachCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
@@ -43,9 +44,8 @@ import java.lang.reflect.Method;
 import java.nio.file.Path;
 
 /**
- * JUnit 5 extension wiring per-test plumbing (CommandRunner,
- * WorkspaceCleaner) and per-test log routing via MDC. Register with
- * {@code @RegisterExtension final CmtTestContext ctx = ...}.
+ * JUnit 5 extension wiring per-test plumbing (CommandRunner, WorkspaceCleaner) and per-test log
+ * routing via MDC. Register with {@code @RegisterExtension final CmtTestContext ctx = ...}.
  */
 public class CmtTestContext implements BeforeEachCallback, AfterEachCallback {
     private static final Logger log = LoggerFactory.getLogger(CmtTestContext.class);
@@ -84,6 +84,11 @@ public class CmtTestContext implements BeforeEachCallback, AfterEachCallback {
         }
     }
 
-    public CommandRunner commandRunner() { return commandRunner; }
-    public Path cmtConsoleHome() { return cmtConsoleHome; }
+    public CommandRunner commandRunner() {
+        return commandRunner;
+    }
+
+    public Path cmtConsoleHome() {
+        return cmtConsoleHome;
+    }
 }

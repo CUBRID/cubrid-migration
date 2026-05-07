@@ -35,9 +35,8 @@ import com.cmt.e2e.framework.db.containers.CubridContainer;
 import com.cmt.e2e.framework.source.ConnectionConfig;
 
 /**
- * CUBRID online target — empty CUBRID container that CMT migrates into.
- * Connects as {@code dba} so CMT can {@code CREATE USER} and
- * {@code GRANT} during {@code add_schema}.
+ * CUBRID online target — empty CUBRID container that CMT migrates into. Connects as {@code dba} so
+ * CMT can {@code CREATE USER} and {@code GRANT} during {@code add_schema}.
  */
 final class CubridOnlineTarget implements Target {
 
@@ -58,19 +57,25 @@ final class CubridOnlineTarget implements Target {
     @Override
     public ConnectionConfig connection() {
         return new ConnectionConfig(
-            DB.CUBRID,
-            container.getHost(),
-            container.getDatabasePort(),
-            container.getDatabaseName(),
-            "dba",
-            "",
-            "utf-8",
-            null
-        );
+                DB.CUBRID,
+                container.getHost(),
+                container.getDatabasePort(),
+                container.getDatabaseName(),
+                "dba",
+                "",
+                "utf-8",
+                null);
     }
 
-    @Override public boolean isDumpfile()              { return false; }
-    @Override public DumpfileOptions dumpfileOptions() { return null; }
+    @Override
+    public boolean isDumpfile() {
+        return false;
+    }
+
+    @Override
+    public DumpfileOptions dumpfileOptions() {
+        return null;
+    }
 
     @Override
     public void close() {

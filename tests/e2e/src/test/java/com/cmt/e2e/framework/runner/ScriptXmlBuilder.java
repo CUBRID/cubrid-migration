@@ -30,6 +30,13 @@
 
 package com.cmt.e2e.framework.runner;
 
+import com.cmt.e2e.framework.command.CommandResult;
+import com.cmt.e2e.framework.command.CommandRunner;
+import com.cmt.e2e.framework.command.ScriptCommand;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -38,17 +45,9 @@ import java.util.Comparator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.cmt.e2e.framework.command.CommandResult;
-import com.cmt.e2e.framework.command.CommandRunner;
-import com.cmt.e2e.framework.command.ScriptCommand;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 /**
- * Generates a CMT {@code script.xml} via {@code migration.sh script} and
- * normalizes timestamp + seed-internal noise so the result is byte-
- * deterministic across runs.
+ * Generates a CMT {@code script.xml} via {@code migration.sh script} and normalizes timestamp +
+ * seed-internal noise so the result is byte- deterministic across runs.
  */
 public final class ScriptXmlBuilder {
 
@@ -59,35 +58,40 @@ public final class ScriptXmlBuilder {
     public record Result(Path scriptXml, String migrationName) {}
 
     /**
-     * @param consoleHome  {@code CMT_CONSOLE_HOME}
-     * @param dbConf       full {@code db.conf} text (use {@link DbConfBuilder})
-     * @param outputDir    destination for sanitized {@code script.xml};
-     *                     unsanitized output goes under {@code outputDir/raw/}
-     * @return sanitized script path + the {@code <migration name="...">}
-     *         value (CMT writes dump output under
-     *         {@code $CMT_CONSOLE_HOME/output/<name>/...})
+     * @param consoleHome {@code CMT_CONSOLE_HOME}
+     * @param dbConf full {@code db.conf} text (use {@link DbConfBuilder})
+     * @param outputDir destination for sanitized {@code script.xml}; unsanitized output goes under
+     *     {@code outputDir/raw/}
+     * @return sanitized script path + the {@code <migration name="...">} value (CMT writes dump
+     *     output under {@code $CMT_CONSOLE_HOME/output/<name>/...})
      */
-    public static Result generate(Path consoleHome, String dbConf, Path outputDir) throws Exception {
+    public static Result generate(Path consoleHome, String dbConf, Path outputDir)
+            throws Exception {
         Files.createDirectories(outputDir);
         Path rawDir = outputDir.resolve("raw");
         recreateDirectory(rawDir);
 
-        ScriptCommand cmd = ScriptCommand.builder()
-            .sourceConfig(DbConfBuilder.SOURCE_NAME)
-            .targetConfig(DbConfBuilder.TARGET_NAME)
-            .outputDir(rawDir.toAbsolutePath().toString())
-            .build();
+        ScriptCommand cmd =
+                ScriptCommand.builder()
+                        .sourceConfig(DbConfBuilder.SOURCE_NAME)
+                        .targetConfig(DbConfBuilder.TARGET_NAME)
+                        .outputDir(rawDir.toAbsolutePath().toString())
+                        .build();
 
         CommandRunner runner = new CommandRunner(consoleHome.toFile());
-        CommandResult result = runWithTemporaryDbConf(
-            consoleHome, dbConf, () -> runner.run(cmd));
+        CommandResult result = runWithTemporaryDbConf(consoleHome, dbConf, () -> runner.run(cmd));
 
         log.debug("[ScriptXmlBuilder] migration.sh script — exit={}", result.exitCode());
         if (result.exitCode() != 0) {
             throw new IllegalStateException(
-                "migration.sh script failed (exit " + result.exitCode() + ")\n"
-                    + "stdout:\n" + result.stdout() + "\n"
-                    + "stderr:\n" + result.stderr());
+                    "migration.sh script failed (exit "
+                            + result.exitCode()
+                            + ")\n"
+                            + "stdout:\n"
+                            + result.stdout()
+                            + "\n"
+                            + "stderr:\n"
+                            + result.stderr());
         }
 
         Path raw = findGeneratedXml(rawDir);
@@ -106,51 +110,49 @@ public final class ScriptXmlBuilder {
     }
 
     /**
-     * Strips noise that would defeat snapshot determinism:
-     * (1) the 12-digit wall-clock timestamps CMT puts in {@code <migration name>}
-     *     and {@code wizard_start_date_time}; (2) Flyway's
-     *     {@code flyway_schema_history} table (seed implementation detail);
-     * (3) CUBRID system schemas DBA/PUBLIC (introspected when connecting
-     *     as dba; CMT cannot migrate them); (4) {@code e2e_cubrid_collection_types}
-     *     (CUBRID-only SET/LIST/SEQUENCE — anti-coverage per cubrid SEED_SPEC);
-     * (5) functional indexes on CUBRID source ({@code idxf_*}) — fetcher emits
-     *     no expression, import fails.
+     * Strips noise that would defeat snapshot determinism: (1) the 12-digit wall-clock timestamps
+     * CMT puts in {@code <migration name>} and {@code wizard_start_date_time}; (2) Flyway's {@code
+     * flyway_schema_history} table (seed implementation detail); (3) CUBRID system schemas
+     * DBA/PUBLIC (introspected when connecting as dba; CMT cannot migrate them); (4) {@code
+     * e2e_cubrid_collection_types} (CUBRID-only SET/LIST/SEQUENCE — anti-coverage per cubrid
+     * SEED_SPEC); (5) functional indexes on CUBRID source ({@code idxf_*}) — fetcher emits no
+     * expression, import fails.
      */
     private static String sanitize(String content) {
         // (1) wall-clock timestamps
-        content = content.replaceAll(
-            "(<migration\\s+name=\")([^\"]+?)_\\d{12}(\")",
-            "$1$2$3");
-        content = content.replaceAll(
-            "(wizard_start_date_time=\")\\d{12}(\")",
-            "$1000000000000$2");
+        content = content.replaceAll("(<migration\\s+name=\")([^\"]+?)_\\d{12}(\")", "$1$2$3");
+        content = content.replaceAll("(wizard_start_date_time=\")\\d{12}(\")", "$1000000000000$2");
 
         // (2) flyway_schema_history — both <table>...</table> blocks and
         // self-closing tags that name it.
-        content = content.replaceAll(
-            "(?s)\\s*<table\\b[^>]*\\bname=\"flyway_schema_history\"[^>]*>.*?</table>\\s*",
-            "\n            ");
-        content = content.replaceAll(
-            "(?m)\\s*<\\w+\\b[^>]*\\bname=\"flyway_schema_history\"[^>]*/>\\s*\\R?",
-            "");
+        content =
+                content.replaceAll(
+                        "(?s)\\s*<table\\b[^>]*\\bname=\"flyway_schema_history\"[^>]*>.*?</table>\\s*",
+                        "\n            ");
+        content =
+                content.replaceAll(
+                        "(?m)\\s*<\\w+\\b[^>]*\\bname=\"flyway_schema_history\"[^>]*/>\\s*\\R?",
+                        "");
 
         // (3) CUBRID system schemas DBA/PUBLIC.
-        content = content.replaceAll(
-            "(?m)\\s*<schema\\s+source=\"(?:DBA|PUBLIC)\"[^>]*/>\\s*\\R?",
-            "");
+        content =
+                content.replaceAll(
+                        "(?m)\\s*<schema\\s+source=\"(?:DBA|PUBLIC)\"[^>]*/>\\s*\\R?", "");
 
         // (4) e2e_cubrid_collection_types (CUBRID anti-coverage).
-        content = content.replaceAll(
-            "(?s)\\s*<table\\b[^>]*\\bname=\"e2e_cubrid_collection_types\"[^>]*>.*?</table>\\s*",
-            "\n            ");
-        content = content.replaceAll(
-            "(?m)\\s*<\\w+\\b[^>]*\\bname=\"e2e_cubrid_collection_types\"[^>]*/>\\s*\\R?",
-            "");
+        content =
+                content.replaceAll(
+                        "(?s)\\s*<table\\b[^>]*\\bname=\"e2e_cubrid_collection_types\"[^>]*>.*?</table>\\s*",
+                        "\n            ");
+        content =
+                content.replaceAll(
+                        "(?m)\\s*<\\w+\\b[^>]*\\bname=\"e2e_cubrid_collection_types\"[^>]*/>\\s*\\R?",
+                        "");
 
         // (5) idxf_* on CUBRID source — fetcher does not emit the expression.
-        content = content.replaceAll(
-            "(?m)\\s*<index\\b[^>]*\\bname=\"idxf_[^\"]*\"[^>]*/>\\s*\\R?",
-            "");
+        content =
+                content.replaceAll(
+                        "(?m)\\s*<index\\b[^>]*\\bname=\"idxf_[^\"]*\"[^>]*/>\\s*\\R?", "");
 
         return content;
     }
@@ -179,10 +181,15 @@ public final class ScriptXmlBuilder {
     private static void recreateDirectory(Path dir) throws IOException {
         if (Files.exists(dir)) {
             try (var walk = Files.walk(dir)) {
-                walk.sorted(Comparator.reverseOrder()).forEach(p -> {
-                    try { Files.delete(p); }
-                    catch (IOException e) { throw new RuntimeException("delete failed: " + p, e); }
-                });
+                walk.sorted(Comparator.reverseOrder())
+                        .forEach(
+                                p -> {
+                                    try {
+                                        Files.delete(p);
+                                    } catch (IOException e) {
+                                        throw new RuntimeException("delete failed: " + p, e);
+                                    }
+                                });
             }
         }
         Files.createDirectories(dir);
@@ -190,18 +197,22 @@ public final class ScriptXmlBuilder {
 
     private static Path findGeneratedXml(Path rawDir) throws IOException {
         try (var walk = Files.list(rawDir)) {
-            return walk
-                .filter(Files::isRegularFile)
-                .filter(p -> p.toString().endsWith(".xml"))
-                .max(Comparator.comparingLong(ScriptXmlBuilder::lastModified))
-                .orElseThrow(() -> new IllegalStateException(
-                    "CMT did not produce an XML under " + rawDir));
+            return walk.filter(Files::isRegularFile)
+                    .filter(p -> p.toString().endsWith(".xml"))
+                    .max(Comparator.comparingLong(ScriptXmlBuilder::lastModified))
+                    .orElseThrow(
+                            () ->
+                                    new IllegalStateException(
+                                            "CMT did not produce an XML under " + rawDir));
         }
     }
 
     private static long lastModified(Path p) {
-        try { return Files.getLastModifiedTime(p).toMillis(); }
-        catch (IOException e) { throw new RuntimeException("stat: " + p, e); }
+        try {
+            return Files.getLastModifiedTime(p).toMillis();
+        } catch (IOException e) {
+            throw new RuntimeException("stat: " + p, e);
+        }
     }
 
     @FunctionalInterface

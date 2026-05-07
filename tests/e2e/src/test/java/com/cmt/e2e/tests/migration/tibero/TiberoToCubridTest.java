@@ -30,27 +30,34 @@
 
 package com.cmt.e2e.tests.migration.tibero;
 
-import java.nio.file.Path;
-
 import com.cmt.e2e.framework.junit.AbstractMigrationE2E;
 import com.cmt.e2e.framework.junit.MigrationE2E;
 import com.cmt.e2e.framework.source.Source;
 import com.cmt.e2e.framework.source.Sources;
 import com.cmt.e2e.framework.target.Target;
 import com.cmt.e2e.framework.target.Targets;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIf;
 
-/** Tibero 7 → CUBRID online migration. Snapshots:
- *  {@code snapshots/tibero_to_cubrid/}. */
+import java.nio.file.Path;
+
+/** Tibero 7 → CUBRID online migration. Snapshots: {@code snapshots/tibero_to_cubrid/}. */
 @MigrationE2E(name = "tibero_to_cubrid")
 @DisplayName("Tibero e2e dataset → CUBRID online migration")
 @EnabledIf("com.cmt.e2e.framework.db.containers.TiberoEnvironment#isAvailable")
 class TiberoToCubridTest extends AbstractMigrationE2E {
 
-    @Override protected Source source() { return Sources.tiberoE2eSeed(); }
-    @Override protected Target target() { return Targets.cubridOnline(); }
+    @Override
+    protected Source source() {
+        return Sources.tiberoE2eSeed();
+    }
+
+    @Override
+    protected Target target() {
+        return Targets.cubridOnline();
+    }
 
     @Test
     @DisplayName("CMT exits 0 with MIGRATION RESULT: SUCCESS, no fatal stderr")
@@ -146,6 +153,6 @@ class TiberoToCubridTest extends AbstractMigrationE2E {
     @DisplayName("Representative business rows preserved (8 spot-checks)")
     void representative_rows_match_snapshot() {
         run().queries(Path.of("src/test/resources/queries/tibero_to_cubrid.sql"))
-             .matchesSnapshot("representative_rows");
+                .matchesSnapshot("representative_rows");
     }
 }

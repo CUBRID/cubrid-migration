@@ -30,6 +30,9 @@
 
 package com.cmt.e2e.framework.core;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -37,13 +40,9 @@ import java.nio.file.Path;
 import java.util.Comparator;
 import java.util.stream.Stream;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 /**
- * Cleans the CMT Console working directory ({@code workspace/} and
- * {@code output/}) between tests. Nothing happens in beforeEach; cleanup
- * runs only in afterEach.
+ * Cleans the CMT Console working directory ({@code workspace/} and {@code output/}) between tests.
+ * Nothing happens in beforeEach; cleanup runs only in afterEach.
  */
 public class WorkspaceCleaner {
     private static final Logger log = LoggerFactory.getLogger(WorkspaceCleaner.class);
@@ -62,13 +61,16 @@ public class WorkspaceCleaner {
         }
         try (Stream<Path> walk = Files.walk(workspaceReportDir)) {
             walk.filter(path -> !path.equals(workspaceReportDir))
-                .sorted(Comparator.reverseOrder())
-                .map(Path::toFile)
-                .forEach(f -> {
-                    if (!f.delete()) {
-                        log.warn("Failed to delete workspace file: {}", f.getAbsolutePath());
-                    }
-                });
+                    .sorted(Comparator.reverseOrder())
+                    .map(Path::toFile)
+                    .forEach(
+                            f -> {
+                                if (!f.delete()) {
+                                    log.warn(
+                                            "Failed to delete workspace file: {}",
+                                            f.getAbsolutePath());
+                                }
+                            });
         }
     }
 
@@ -81,12 +83,15 @@ public class WorkspaceCleaner {
         log.debug("Cleaning up migration output directory: {}", outputDir);
         try (Stream<Path> walk = Files.walk(outputDir)) {
             walk.sorted(Comparator.reverseOrder())
-                .map(Path::toFile)
-                .forEach(f -> {
-                    if (!f.delete()) {
-                        log.warn("Failed to delete output file: {}", f.getAbsolutePath());
-                    }
-                });
+                    .map(Path::toFile)
+                    .forEach(
+                            f -> {
+                                if (!f.delete()) {
+                                    log.warn(
+                                            "Failed to delete output file: {}",
+                                            f.getAbsolutePath());
+                                }
+                            });
         }
     }
 }

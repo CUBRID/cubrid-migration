@@ -36,6 +36,7 @@ import com.cmt.e2e.framework.source.Source;
 import com.cmt.e2e.framework.source.Sources;
 import com.cmt.e2e.framework.target.Target;
 import com.cmt.e2e.framework.target.Targets;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -48,17 +49,24 @@ class TiberoToUnloadTest {
 
     @Nested
     @MigrationE2E(
-        name = "tibero_to_unload__split_schema__1t1f",
-        options = {
-            "file_prefix=tibero",
-            "split_schema=true",
-            "one_table_one_file=true",
-        })
+            name = "tibero_to_unload__split_schema__1t1f",
+            options = {
+                "file_prefix=tibero",
+                "split_schema=true",
+                "one_table_one_file=true",
+            })
     @DisplayName("split_schema=true, one_table_one_file=true (file_prefix=tibero)")
     class SplitSchema1t1f extends AbstractMigrationE2E {
 
-        @Override protected Source source() { return Sources.tiberoE2eSeed(); }
-        @Override protected Target target() { return Targets.unload("tibero", true); }
+        @Override
+        protected Source source() {
+            return Sources.tiberoE2eSeed();
+        }
+
+        @Override
+        protected Target target() {
+            return Targets.unload("tibero", true);
+        }
 
         @Test
         @DisplayName("CMT exits 0 with MIGRATION RESULT: SUCCESS, no fatal stderr")

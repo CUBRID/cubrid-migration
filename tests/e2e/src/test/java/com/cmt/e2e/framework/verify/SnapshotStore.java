@@ -37,9 +37,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 /**
- * Compares text against a snapshot file. Default = diff mode (assert on
- * mismatch). With {@code -Dsnapshot.update=true} the actual text is
- * written to the snapshot path instead.
+ * Compares text against a snapshot file. Default = diff mode (assert on mismatch). With {@code
+ * -Dsnapshot.update=true} the actual text is written to the snapshot path instead.
  */
 public final class SnapshotStore {
 
@@ -54,8 +53,12 @@ public final class SnapshotStore {
         }
         if (!Files.exists(snapshotPath)) {
             throw new AssertionError(
-                "Snapshot missing: " + snapshotPath + "\n" +
-                "Run with -D" + UPDATE_PROP + "=true to capture an initial snapshot.");
+                    "Snapshot missing: "
+                            + snapshotPath
+                            + "\n"
+                            + "Run with -D"
+                            + UPDATE_PROP
+                            + "=true to capture an initial snapshot.");
         }
         String expected;
         try {
@@ -90,7 +93,10 @@ public final class SnapshotStore {
         for (int i = 0; i < max; i++) {
             String e = i < expLines.length ? expLines[i] : "<MISSING>";
             String a = i < actLines.length ? actLines[i] : "<MISSING>";
-            if (!e.equals(a)) { firstDiff = i; break; }
+            if (!e.equals(a)) {
+                firstDiff = i;
+                break;
+            }
         }
 
         StringBuilder sb = new StringBuilder();
@@ -106,7 +112,8 @@ public final class SnapshotStore {
         sb.append(actual);
         sb.append("--- end ---\n");
         sb.append("To accept the new snapshot, re-run with -D")
-          .append(UPDATE_PROP).append("=true.\n");
+                .append(UPDATE_PROP)
+                .append("=true.\n");
         return sb.toString();
     }
 

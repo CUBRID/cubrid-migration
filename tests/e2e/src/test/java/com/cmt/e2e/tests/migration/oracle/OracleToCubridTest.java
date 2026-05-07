@@ -30,25 +30,32 @@
 
 package com.cmt.e2e.tests.migration.oracle;
 
-import java.nio.file.Path;
-
 import com.cmt.e2e.framework.junit.AbstractMigrationE2E;
 import com.cmt.e2e.framework.junit.MigrationE2E;
 import com.cmt.e2e.framework.source.Source;
 import com.cmt.e2e.framework.source.Sources;
 import com.cmt.e2e.framework.target.Target;
 import com.cmt.e2e.framework.target.Targets;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-/** Oracle 11g → CUBRID online migration. Snapshots:
- *  {@code snapshots/oracle_to_cubrid/}. */
+import java.nio.file.Path;
+
+/** Oracle 11g → CUBRID online migration. Snapshots: {@code snapshots/oracle_to_cubrid/}. */
 @MigrationE2E(name = "oracle_to_cubrid")
 @DisplayName("Oracle e2e dataset → CUBRID online migration")
 class OracleToCubridTest extends AbstractMigrationE2E {
 
-    @Override protected Source source() { return Sources.oracleE2eSeed(); }
-    @Override protected Target target() { return Targets.cubridOnline(); }
+    @Override
+    protected Source source() {
+        return Sources.oracleE2eSeed();
+    }
+
+    @Override
+    protected Target target() {
+        return Targets.cubridOnline();
+    }
 
     @Test
     @DisplayName("CMT exits 0 with MIGRATION RESULT: SUCCESS, no fatal stderr")
@@ -144,6 +151,6 @@ class OracleToCubridTest extends AbstractMigrationE2E {
     @DisplayName("Representative business rows preserved (8 spot-checks)")
     void representative_rows_match_snapshot() {
         run().queries(Path.of("src/test/resources/queries/oracle_to_cubrid.sql"))
-             .matchesSnapshot("representative_rows");
+                .matchesSnapshot("representative_rows");
     }
 }

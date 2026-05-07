@@ -31,6 +31,7 @@
 package com.cmt.e2e.framework.db.init;
 
 import com.cmt.e2e.framework.db.containers.OracleContainer;
+
 import org.flywaydb.core.Flyway;
 import org.flywaydb.core.api.FlywayException;
 import org.flywaydb.core.api.output.MigrateResult;
@@ -42,8 +43,8 @@ public final class OracleDatabaseInitializer {
 
     private static final Logger log = LoggerFactory.getLogger(OracleDatabaseInitializer.class);
 
-    private static final String ORACLE_DRIVER  = "oracle.jdbc.OracleDriver";
-    private static final String SCENARIO_BASE  = "classpath:db/";
+    private static final String ORACLE_DRIVER = "oracle.jdbc.OracleDriver";
+    private static final String SCENARIO_BASE = "classpath:db/";
 
     private final OracleContainer container;
 
@@ -71,42 +72,63 @@ public final class OracleDatabaseInitializer {
         String resourcePath = "db/" + scenarioName;
         if (Thread.currentThread().getContextClassLoader().getResource(resourcePath) == null) {
             throw new DatabaseInitializationException(
-                "Scenario not found on classpath: '" + resourcePath + "'. " +
-                "Check src/test/resources/" + resourcePath + " exists.", null);
+                    "Scenario not found on classpath: '"
+                            + resourcePath
+                            + "'. "
+                            + "Check src/test/resources/"
+                            + resourcePath
+                            + " exists.",
+                    null);
         }
 
         String location = SCENARIO_BASE + scenarioName;
-        log.info("[OracleDatabaseInitializer] migrate start: scenario='{}', user='{}'",
-            scenarioName, user);
+        log.info(
+                "[OracleDatabaseInitializer] migrate start: scenario='{}', user='{}'",
+                scenarioName,
+                user);
 
         try {
             MigrateResult result = buildFlyway(location, user, password).migrate();
-            log.info("[OracleDatabaseInitializer] migrate complete: scenario='{}', user='{}', executed={}, success={}",
-                scenarioName, user, result.migrationsExecuted, result.success);
+            log.info(
+                    "[OracleDatabaseInitializer] migrate complete: scenario='{}', user='{}',"
+                        + " executed={}, success={}",
+                    scenarioName,
+                    user,
+                    result.migrationsExecuted,
+                    result.success);
 
             if (!result.success) {
                 throw new DatabaseInitializationException(
-                    "Flyway migration reported failure for scenario '" + scenarioName +
-                    "' as user '" + user + "'", null);
+                        "Flyway migration reported failure for scenario '"
+                                + scenarioName
+                                + "' as user '"
+                                + user
+                                + "'",
+                        null);
             }
         } catch (FlywayException e) {
             throw new DatabaseInitializationException(
-                "Failed to migrate Oracle scenario '" + scenarioName +
-                "' as user '" + user + "': " + e.getMessage(), e);
+                    "Failed to migrate Oracle scenario '"
+                            + scenarioName
+                            + "' as user '"
+                            + user
+                            + "': "
+                            + e.getMessage(),
+                    e);
         }
         return this;
     }
 
     private Flyway buildFlyway(String location, String user, String password) {
         return Flyway.configure()
-            .dataSource(container.getJdbcUrl(null, null), user, password)
-            .driver(ORACLE_DRIVER)
-            .defaultSchema(user)
-            .schemas(user)
-            .locations(location)
-            .cleanDisabled(true)
-            .baselineOnMigrate(false)
-            .validateOnMigrate(true)
-            .load();
+                .dataSource(container.getJdbcUrl(null, null), user, password)
+                .driver(ORACLE_DRIVER)
+                .defaultSchema(user)
+                .schemas(user)
+                .locations(location)
+                .cleanDisabled(true)
+                .baselineOnMigrate(false)
+                .validateOnMigrate(true)
+                .load();
     }
 }

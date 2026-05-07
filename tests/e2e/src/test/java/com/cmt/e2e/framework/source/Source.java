@@ -33,10 +33,9 @@ package com.cmt.e2e.framework.source;
 import com.cmt.e2e.framework.db.JdbcDriverJars.DB;
 
 /**
- * Source database for E2E migration. Wraps container lifecycle and seed
- * application behind a single {@link #start()}. Lifecycle: construct →
- * start (container + seed, idempotent) → connection() / type() → close().
- * Tests obtain instances via {@link Sources}.
+ * Source database for E2E migration. Wraps container lifecycle and seed application behind a single
+ * {@link #start()}. Lifecycle: construct → start (container + seed, idempotent) → connection() /
+ * type() → close(). Tests obtain instances via {@link Sources}.
  */
 public interface Source extends AutoCloseable {
 
@@ -47,5 +46,6 @@ public interface Source extends AutoCloseable {
 
     DB type();
 
-    @Override void close();
+    @Override
+    void close();
 }

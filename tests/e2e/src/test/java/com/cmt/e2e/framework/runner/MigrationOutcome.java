@@ -30,12 +30,6 @@
 
 package com.cmt.e2e.framework.runner;
 
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import com.cmt.e2e.framework.command.CommandResult;
 import com.cmt.e2e.framework.env.CmtConsoleEnv;
 import com.cmt.e2e.framework.target.Target;
@@ -44,37 +38,46 @@ import com.cmt.e2e.framework.verify.DumpSnapshot;
 import com.cmt.e2e.framework.verify.RowCounts;
 import com.cmt.e2e.framework.verify.RowQueries;
 
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 /**
- * Outcome of one {@link Migration#run(Path)} call. Verification surface
- * across four layers: L1 smoke ({@link #expectSuccess()},
- * {@link #expectNoFatalStderr()}); L2 coverage + L3 fidelity
- * ({@link #catalog()} / {@link #rowCounts} / {@link #queries} /
- * {@link #dumpfile()}); L4 regression (same surface, scoped per
- * {@code @Test}).
+ * Outcome of one {@link Migration#run(Path)} call. Verification surface across four layers: L1
+ * smoke ({@link #expectSuccess()}, {@link #expectNoFatalStderr()}); L2 coverage + L3 fidelity
+ * ({@link #catalog()} / {@link #rowCounts} / {@link #queries} / {@link #dumpfile()}); L4 regression
+ * (same surface, scoped per {@code @Test}).
  */
 public final class MigrationOutcome {
 
     static final String SUCCESS_MARKER = "MIGRATION RESULT: SUCCESS";
 
-    static final Pattern FATAL_STDERR = Pattern.compile(
-        "(?m)^(?:ERROR\\b|FATAL\\b|Exception(?:\\s|:)|Caused by:|java\\.lang\\.[A-Za-z]+Exception)");
+    static final Pattern FATAL_STDERR =
+            Pattern.compile(
+                    "(?m)^(?:ERROR\\b|FATAL\\b|Exception(?:\\s|:)|Caused"
+                        + " by:|java\\.lang\\.[A-Za-z]+Exception)");
 
-    /** Matches one line of CMT 's "Migration Report summary" block, e.g.
-     *  "    table: Exported[10]; Imported[10]". */
-    static final Pattern REPORT_LINE = Pattern.compile(
-        "(?m)^\\s+([\\w ]+?):\\s+Exported\\[(\\d+)\\];\\s+Imported\\[(\\d+)\\]");
+    /**
+     * Matches one line of CMT 's "Migration Report summary" block, e.g. " table: Exported[10];
+     * Imported[10]".
+     */
+    static final Pattern REPORT_LINE =
+            Pattern.compile(
+                    "(?m)^\\s+([\\w ]+?):\\s+Exported\\[(\\d+)\\];\\s+Imported\\[(\\d+)\\]");
 
     private final CommandResult result;
     private final Target target;
     private final String migrationName;
     private final String scenarioName;
 
-    public MigrationOutcome(CommandResult result, Target target,
-                            String migrationName, String scenarioName) {
-        this.result        = result;
-        this.target        = target;
+    public MigrationOutcome(
+            CommandResult result, Target target, String migrationName, String scenarioName) {
+        this.result = result;
+        this.target = target;
         this.migrationName = migrationName;
-        this.scenarioName  = scenarioName;
+        this.scenarioName = scenarioName;
     }
 
     /** Asserts: not timed out, exit 0, "MIGRATION RESULT: SUCCESS" in stdout. */
@@ -83,43 +86,44 @@ public final class MigrationOutcome {
             throw new AssertionError("migration timed out");
         }
         if (result.exitCode() != 0) {
-            throw new AssertionError(String.format(
-                "migration failed (exit=%d)%nstdout:%n%s%nstderr:%n%s",
-                result.exitCode(), result.stdout(), result.stderr()));
+            throw new AssertionError(
+                    String.format(
+                            "migration failed (exit=%d)%nstdout:%n%s%nstderr:%n%s",
+                            result.exitCode(), result.stdout(), result.stderr()));
         }
         if (!result.stdout().contains(SUCCESS_MARKER)) {
             throw new AssertionError(
-                "stdout missing '" + SUCCESS_MARKER + "':\n" + result.stdout());
+                    "stdout missing '" + SUCCESS_MARKER + "':\n" + result.stdout());
         }
         return this;
     }
 
     /**
-     * Asserts every category in CMT's "Migration Report summary" block has
-     * {@code Imported[N]} equal to {@code Exported[N]} — i.e. nothing was
-     * silently dropped between source extraction and target import.
+     * Asserts every category in CMT's "Migration Report summary" block has {@code Imported[N]}
+     * equal to {@code Exported[N]} — i.e. nothing was silently dropped between source extraction
+     * and target import.
      */
     public MigrationOutcome expectImportMatchesExport() {
         if (!result.stdout().contains("Migration Report summary:")) {
             throw new AssertionError(
-                "Migration Report summary block not found in CMT stdout:\n"
-                    + result.stdout());
+                    "Migration Report summary block not found in CMT stdout:\n" + result.stdout());
         }
         Matcher m = REPORT_LINE.matcher(result.stdout());
         List<String> mismatches = new ArrayList<>();
         while (m.find()) {
             String category = m.group(1).trim();
-            int exported    = Integer.parseInt(m.group(2));
-            int imported    = Integer.parseInt(m.group(3));
+            int exported = Integer.parseInt(m.group(2));
+            int imported = Integer.parseInt(m.group(3));
             if (exported != imported) {
-                mismatches.add(String.format(
-                    "%s: exported=%d, imported=%d", category, exported, imported));
+                mismatches.add(
+                        String.format(
+                                "%s: exported=%d, imported=%d", category, exported, imported));
             }
         }
         if (!mismatches.isEmpty()) {
             throw new AssertionError(
-                "Migration Report shows export/import count mismatch:\n  - "
-                    + String.join("\n  - ", mismatches));
+                    "Migration Report shows export/import count mismatch:\n  - "
+                            + String.join("\n  - ", mismatches));
         }
         return this;
     }
@@ -129,7 +133,7 @@ public final class MigrationOutcome {
         Matcher m = FATAL_STDERR.matcher(result.stderr());
         if (m.find()) {
             throw new AssertionError(
-                "stderr contained fatal pattern: " + extractLine(result.stderr(), m.start()));
+                    "stderr contained fatal pattern: " + extractLine(result.stderr(), m.start()));
         }
         return this;
     }
@@ -163,20 +167,19 @@ public final class MigrationOutcome {
     public DumpSnapshot dumpfile() {
         if (!target.isDumpfile()) {
             throw new IllegalStateException(
-                "dumpfile() is for dump-file targets; this is an online migration. "
-                + "Use catalog() / rowCounts() / queries() instead.");
+                    "dumpfile() is for dump-file targets; this is an online migration. "
+                            + "Use catalog() / rowCounts() / queries() instead.");
         }
-        Path outputBase = CmtConsoleEnv.resolve()
-            .resolve("output")
-            .resolve(migrationName);
+        Path outputBase = CmtConsoleEnv.resolve().resolve("output").resolve(migrationName);
         return new DumpSnapshot(outputBase, scenarioName);
     }
 
     private void requireOnlineTarget(String op) {
         if (target.isDumpfile()) {
             throw new IllegalStateException(
-                op + " is for online targets; this is a dump-file scenario. "
-                + "Use dumpfile() instead.");
+                    op
+                            + " is for online targets; this is a dump-file scenario. "
+                            + "Use dumpfile() instead.");
         }
     }
 }

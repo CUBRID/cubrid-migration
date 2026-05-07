@@ -30,8 +30,6 @@
 
 package com.cmt.e2e.framework.runner;
 
-import java.nio.file.Path;
-
 import com.cmt.e2e.framework.command.CommandResult;
 import com.cmt.e2e.framework.command.CommandRunner;
 import com.cmt.e2e.framework.command.StartCommand;
@@ -42,11 +40,12 @@ import com.cmt.e2e.framework.target.Target;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.nio.file.Path;
+
 /**
- * Single-shot CMT runner: build db.conf → generate sanitized
- * script.xml → run {@code migration.sh start}. Source / Target must
- * already be started; lifecycle belongs to
- * {@link com.cmt.e2e.framework.junit.AbstractMigrationE2E}.
+ * Single-shot CMT runner: build db.conf → generate sanitized script.xml → run {@code migration.sh
+ * start}. Source / Target must already be started; lifecycle belongs to {@link
+ * com.cmt.e2e.framework.junit.AbstractMigrationE2E}.
  */
 public final class Migration {
 
@@ -75,8 +74,10 @@ public final class Migration {
         log.debug("[Migration] db.conf built ({} chars)", dbConf.length());
 
         ScriptXmlBuilder.Result generated = ScriptXmlBuilder.generate(consoleHome, dbConf, workDir);
-        log.info("[Migration] script.xml generated: {} (migration name: {})",
-            generated.scriptXml(), generated.migrationName());
+        log.info(
+                "[Migration] script.xml generated: {} (migration name: {})",
+                generated.scriptXml(),
+                generated.migrationName());
 
         StartCommand cmd = StartCommand.builder().script(generated.scriptXml()).build();
         CommandRunner runner = new CommandRunner(consoleHome.toFile());

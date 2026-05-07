@@ -36,9 +36,8 @@ import com.cmt.e2e.framework.db.init.ClasspathSqlRunner;
 import com.cmt.e2e.framework.db.init.CubridDatabaseInitializer;
 
 /**
- * CUBRID source with two-user (REF + MAIN) e2e seed. CMT connects as
- * {@code dba} so introspection sees both schemas — connecting as a
- * single user would miss {@code REF_SCHEMA.e2e_ref_audit}.
+ * CUBRID source with two-user (REF + MAIN) e2e seed. CMT connects as {@code dba} so introspection
+ * sees both schemas — connecting as a single user would miss {@code REF_SCHEMA.e2e_ref_audit}.
  */
 final class CubridSource implements Source {
 
@@ -58,9 +57,9 @@ final class CubridSource implements Source {
         ClasspathSqlRunner.runDirectory(dbaUrl, "dba", "", "db/cubrid/init");
 
         CubridDatabaseInitializer.of(container, container.getDatabaseName(), "REF_SCHEMA", "cmt")
-            .migrate("cubrid/ref_schema");
+                .migrate("cubrid/ref_schema");
         CubridDatabaseInitializer.of(container, container.getDatabaseName(), "MAIN_SCHEMA", "cmt")
-            .migrate("cubrid/main_schema");
+                .migrate("cubrid/main_schema");
 
         started = true;
     }
@@ -68,15 +67,14 @@ final class CubridSource implements Source {
     @Override
     public ConnectionConfig connection() {
         return new ConnectionConfig(
-            DB.CUBRID,
-            container.getHost(),
-            container.getDatabasePort(),
-            container.getDatabaseName(),
-            "dba",
-            "",
-            "utf-8",
-            null
-        );
+                DB.CUBRID,
+                container.getHost(),
+                container.getDatabasePort(),
+                container.getDatabaseName(),
+                "dba",
+                "",
+                "utf-8",
+                null);
     }
 
     @Override

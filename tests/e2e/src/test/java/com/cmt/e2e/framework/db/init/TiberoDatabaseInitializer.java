@@ -36,10 +36,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Raw-JDBC seed runner for Tibero (Flyway has no Tibero plugin). Two
- * phases mirror {@code OracleSource}: {@link #initAsSys} runs DBA-only
- * DDL (the Tibero image has no entrypoint init hook); {@link #migrateAs}
- * applies schema/data files in lexical order.
+ * Raw-JDBC seed runner for Tibero (Flyway has no Tibero plugin). Two phases mirror {@code
+ * OracleSource}: {@link #initAsSys} runs DBA-only DDL (the Tibero image has no entrypoint init
+ * hook); {@link #migrateAs} applies schema/data files in lexical order.
  */
 public final class TiberoDatabaseInitializer {
 
@@ -60,10 +59,10 @@ public final class TiberoDatabaseInitializer {
     public TiberoDatabaseInitializer initAsSys(String classpathDir) {
         log.info("[TiberoDatabaseInitializer] init as SYS — classpathDir='{}'", classpathDir);
         ClasspathSqlRunner.runDirectory(
-            container.getJdbcUrl(null, null),
-            container.getDbaUser(),
-            container.getDbaPassword(),
-            classpathDir);
+                container.getJdbcUrl(null, null),
+                container.getDbaUser(),
+                container.getDbaPassword(),
+                classpathDir);
         return this;
     }
 
@@ -75,10 +74,12 @@ public final class TiberoDatabaseInitializer {
         if (password == null) {
             throw new IllegalArgumentException("password must not be null");
         }
-        log.info("[TiberoDatabaseInitializer] migrate as user='{}' — classpathDir='{}'", user, classpathDir);
+        log.info(
+                "[TiberoDatabaseInitializer] migrate as user='{}' — classpathDir='{}'",
+                user,
+                classpathDir);
         ClasspathSqlRunner.runDirectory(
-            container.getJdbcUrl(null, null),
-            user, password, classpathDir);
+                container.getJdbcUrl(null, null), user, password, classpathDir);
         return this;
     }
 }

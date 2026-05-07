@@ -40,11 +40,10 @@ import java.util.List;
 import java.util.stream.Stream;
 
 /**
- * Dump-file snapshot — compares the entire CMT {@code unload} output
- * tree against {@code snapshots/<scenario>/dumpfile/}. Update mode
- * ({@code -Dsnapshot.update=true}) wipes and recopies the snapshot
- * tree. For non-determinism in dump content, fix it CMT-side in
- * {@link com.cmt.e2e.framework.runner.ScriptXmlBuilder#sanitize(String)}.
+ * Dump-file snapshot — compares the entire CMT {@code unload} output tree against {@code
+ * snapshots/<scenario>/dumpfile/}. Update mode ({@code -Dsnapshot.update=true}) wipes and recopies
+ * the snapshot tree. For non-determinism in dump content, fix it CMT-side in {@link
+ * com.cmt.e2e.framework.runner.ScriptXmlBuilder#sanitize(String)}.
  */
 public final class DumpSnapshot {
 
@@ -57,9 +56,7 @@ public final class DumpSnapshot {
     }
 
     public DumpSnapshot matchesSnapshot() {
-        Path snapshotBase = CatalogSnapshot.SNAPSHOT_ROOT
-            .resolve(scenarioName)
-            .resolve("dumpfile");
+        Path snapshotBase = CatalogSnapshot.SNAPSHOT_ROOT.resolve(scenarioName).resolve("dumpfile");
 
         if (Boolean.getBoolean(SnapshotStore.UPDATE_PROP)) {
             captureTree(outputBase, snapshotBase);
@@ -72,7 +69,7 @@ public final class DumpSnapshot {
     private static void captureTree(Path actual, Path snapshot) {
         if (!Files.isDirectory(actual)) {
             throw new AssertionError(
-                "Cannot capture dump snapshot: CMT output not found at " + actual);
+                    "Cannot capture dump snapshot: CMT output not found at " + actual);
         }
         try {
             if (Files.exists(snapshot)) {
@@ -99,13 +96,16 @@ public final class DumpSnapshot {
 
     private static void diffTree(Path actual, Path snapshot) {
         if (!Files.isDirectory(actual)) {
-            throw new AssertionError(
-                "CMT did not produce a dump output directory: " + actual);
+            throw new AssertionError("CMT did not produce a dump output directory: " + actual);
         }
         if (!Files.isDirectory(snapshot)) {
             throw new AssertionError(
-                "Dump snapshot missing: " + snapshot + "\n"
-                + "Run with -D" + SnapshotStore.UPDATE_PROP + "=true to capture.");
+                    "Dump snapshot missing: "
+                            + snapshot
+                            + "\n"
+                            + "Run with -D"
+                            + SnapshotStore.UPDATE_PROP
+                            + "=true to capture.");
         }
 
         // Each file in actual must match its snapshot counterpart.
@@ -129,8 +129,8 @@ public final class DumpSnapshot {
         }
         if (!missing.isEmpty()) {
             throw new AssertionError(
-                "Expected dump files missing from CMT output:\n  - "
-                    + String.join("\n  - ", missing));
+                    "Expected dump files missing from CMT output:\n  - "
+                            + String.join("\n  - ", missing));
         }
     }
 
@@ -152,10 +152,15 @@ public final class DumpSnapshot {
 
     private static void deleteRecursively(Path dir) throws IOException {
         try (Stream<Path> walk = Files.walk(dir)) {
-            walk.sorted(Comparator.reverseOrder()).forEach(p -> {
-                try { Files.delete(p); }
-                catch (IOException e) { throw new RuntimeException("delete: " + p, e); }
-            });
+            walk.sorted(Comparator.reverseOrder())
+                    .forEach(
+                            p -> {
+                                try {
+                                    Files.delete(p);
+                                } catch (IOException e) {
+                                    throw new RuntimeException("delete: " + p, e);
+                                }
+                            });
         }
     }
 }

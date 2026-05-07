@@ -37,9 +37,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Formats tabular data as a {@code psql}-style aligned text table.
- * Caller must {@code ORDER BY} for determinism. SQL {@code NULL}
- * renders as {@code <NULL>}; trailing whitespace is stripped.
+ * Formats tabular data as a {@code psql}-style aligned text table. Caller must {@code ORDER BY} for
+ * determinism. SQL {@code NULL} renders as {@code <NULL>}; trailing whitespace is stripped.
  */
 public final class Tabulator {
 
@@ -77,7 +76,7 @@ public final class Tabulator {
         for (List<String> row : rows) {
             if (row.size() != n) {
                 throw new IllegalArgumentException(
-                    "row size " + row.size() + " != header size " + n + ": " + row);
+                        "row size " + row.size() + " != header size " + n + ": " + row);
             }
         }
         int[] widths = computeWidths(headers, rows, n);

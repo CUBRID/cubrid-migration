@@ -30,6 +30,9 @@
 
 package com.cmt.e2e.framework.verify;
 
+import com.cmt.e2e.framework.db.JdbcDriverJars.DB;
+import com.cmt.e2e.framework.source.ConnectionConfig;
+
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.Connection;
@@ -38,19 +41,14 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-import com.cmt.e2e.framework.db.JdbcDriverJars.DB;
-import com.cmt.e2e.framework.source.ConnectionConfig;
-
 /**
- * Fluent CUBRID catalog snapshot. Each {@link #matchesSnapshot(String)}
- * runs the named query from {@link CatalogQueries}, formats with
- * {@link Tabulator}, and compares against
- * {@code snapshots/<scenario>/<name>.txt}.
+ * Fluent CUBRID catalog snapshot. Each {@link #matchesSnapshot(String)} runs the named query from
+ * {@link CatalogQueries}, formats with {@link Tabulator}, and compares against {@code
+ * snapshots/<scenario>/<name>.txt}.
  */
 public final class CatalogSnapshot {
 
-    static final Path SNAPSHOT_ROOT =
-        Paths.get("src", "test", "resources", "snapshots");
+    static final Path SNAPSHOT_ROOT = Paths.get("src", "test", "resources", "snapshots");
 
     private final ConnectionConfig connection;
     private final String scenarioName;
@@ -58,7 +56,7 @@ public final class CatalogSnapshot {
     public CatalogSnapshot(ConnectionConfig connection, String scenarioName) {
         if (connection.type() != DB.CUBRID) {
             throw new IllegalArgumentException(
-                "CatalogSnapshot is CUBRID-specific (got " + connection.type() + ")");
+                    "CatalogSnapshot is CUBRID-specific (got " + connection.type() + ")");
         }
         this.connection = connection;
         this.scenarioName = scenarioName;
@@ -75,12 +73,12 @@ public final class CatalogSnapshot {
     private String runQueryAsTable(String sql) {
         String url = connection.cubridJdbcUrl();
         try (Connection conn = DriverManager.getConnection(url);
-             Statement st = conn.createStatement();
-             ResultSet rs = st.executeQuery(sql)) {
+                Statement st = conn.createStatement();
+                ResultSet rs = st.executeQuery(sql)) {
             return Tabulator.format(rs);
         } catch (SQLException e) {
             throw new RuntimeException(
-                "Catalog query failed:\n  url: " + url + "\n  sql: " + sql, e);
+                    "Catalog query failed:\n  url: " + url + "\n  sql: " + sql, e);
         }
     }
 }

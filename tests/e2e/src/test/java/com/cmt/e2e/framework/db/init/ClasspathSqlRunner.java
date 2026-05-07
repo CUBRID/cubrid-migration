@@ -30,6 +30,9 @@
 
 package com.cmt.e2e.framework.db.init;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
@@ -50,14 +53,10 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Stream;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 /**
- * Runs {@code *.sql} files from the test classpath through plain JDBC.
- * Used for seed steps that don't fit the Flyway model (e.g. CUBRID
- * {@code CREATE USER} as dba). Files run in lexical order; statements
- * run one at a time so a syntax error names the offending statement.
+ * Runs {@code *.sql} files from the test classpath through plain JDBC. Used for seed steps that
+ * don't fit the Flyway model (e.g. CUBRID {@code CREATE USER} as dba). Files run in lexical order;
+ * statements run one at a time so a syntax error names the offending statement.
  */
 public final class ClasspathSqlRunner {
 
@@ -66,20 +65,24 @@ public final class ClasspathSqlRunner {
     private ClasspathSqlRunner() {}
 
     /**
-     * Loads every {@code *.sql} file under {@code classpathDir} and runs
-     * it through a JDBC connection authenticated as {@code user}.
+     * Loads every {@code *.sql} file under {@code classpathDir} and runs it through a JDBC
+     * connection authenticated as {@code user}.
      *
      * @throws SqlRunnerException wrapping any I/O or SQL failure
      */
-    public static void runDirectory(String jdbcUrl, String user, String password, String classpathDir) {
+    public static void runDirectory(
+            String jdbcUrl, String user, String password, String classpathDir) {
         List<String> resourcePaths = listSqlResources(classpathDir);
         if (resourcePaths.isEmpty()) {
             log.info("[ClasspathSqlRunner] no .sql files under '{}' (skipping)", classpathDir);
             return;
         }
 
-        log.info("[ClasspathSqlRunner] running {} file(s) under '{}' as user='{}'",
-            resourcePaths.size(), classpathDir, user);
+        log.info(
+                "[ClasspathSqlRunner] running {} file(s) under '{}' as user='{}'",
+                resourcePaths.size(),
+                classpathDir,
+                user);
 
         try (Connection conn = DriverManager.getConnection(jdbcUrl, user, password)) {
             conn.setAutoCommit(true);
@@ -88,16 +91,24 @@ public final class ClasspathSqlRunner {
             }
         } catch (SQLException e) {
             throw new SqlRunnerException(
-                "Failed to open JDBC connection for SQL bootstrap '" + classpathDir
-                    + "' as user '" + user + "': " + e.getMessage(), e);
+                    "Failed to open JDBC connection for SQL bootstrap '"
+                            + classpathDir
+                            + "' as user '"
+                            + user
+                            + "': "
+                            + e.getMessage(),
+                    e);
         }
     }
 
     private static void runResource(Connection conn, String resourcePath) {
         String sql = readResource(resourcePath);
         List<String> statements = splitStatements(sql);
-        log.debug("[ClasspathSqlRunner] {} ({} statement{})", resourcePath,
-            statements.size(), statements.size() == 1 ? "" : "s");
+        log.debug(
+                "[ClasspathSqlRunner] {} ({} statement{})",
+                resourcePath,
+                statements.size(),
+                statements.size() == 1 ? "" : "s");
 
         try (Statement st = conn.createStatement()) {
             for (int i = 0; i < statements.size(); i++) {
@@ -107,13 +118,21 @@ public final class ClasspathSqlRunner {
                     st.execute(stmt);
                 } catch (SQLException e) {
                     throw new SqlRunnerException(
-                        "SQL bootstrap failed at " + resourcePath + " statement #" + (i + 1)
-                            + " — " + firstLine(stmt) + ": " + e.getMessage(), e);
+                            "SQL bootstrap failed at "
+                                    + resourcePath
+                                    + " statement #"
+                                    + (i + 1)
+                                    + " — "
+                                    + firstLine(stmt)
+                                    + ": "
+                                    + e.getMessage(),
+                            e);
                 }
             }
         } catch (SQLException e) {
             throw new SqlRunnerException(
-                "Failed to create statement against " + resourcePath + ": " + e.getMessage(), e);
+                    "Failed to create statement against " + resourcePath + ": " + e.getMessage(),
+                    e);
         }
     }
 
@@ -136,37 +155,42 @@ public final class ClasspathSqlRunner {
                 }
                 try (Stream<Path> walk = Files.list(dir)) {
                     walk.filter(p -> p.getFileName().toString().endsWith(".sql"))
-                        .sorted(Comparator.comparing(p -> p.getFileName().toString()))
-                        .forEach(p -> out.add(classpathDir + "/" + p.getFileName().toString()));
+                            .sorted(Comparator.comparing(p -> p.getFileName().toString()))
+                            .forEach(p -> out.add(classpathDir + "/" + p.getFileName().toString()));
                 }
             } finally {
                 if (fsToClose != null) fsToClose.close();
             }
         } catch (Exception e) {
             throw new SqlRunnerException(
-                "Failed to enumerate SQL resources under " + classpathDir + ": " + e.getMessage(), e);
+                    "Failed to enumerate SQL resources under "
+                            + classpathDir
+                            + ": "
+                            + e.getMessage(),
+                    e);
         }
         return out;
     }
 
     private static String readResource(String resourcePath) {
-        try (InputStream in = Thread.currentThread().getContextClassLoader().getResourceAsStream(resourcePath)) {
+        try (InputStream in =
+                Thread.currentThread().getContextClassLoader().getResourceAsStream(resourcePath)) {
             if (in == null) {
                 throw new SqlRunnerException("Resource not found: " + resourcePath, null);
             }
             return new String(in.readAllBytes(), StandardCharsets.UTF_8);
         } catch (IOException e) {
-            throw new SqlRunnerException("Failed to read " + resourcePath + ": " + e.getMessage(), e);
+            throw new SqlRunnerException(
+                    "Failed to read " + resourcePath + ": " + e.getMessage(), e);
         }
     }
 
     /**
-     * Splits a SQL file into statements. Uses slash-mode (a line of just
-     * {@code /} ends a statement) when the file contains at least one
-     * such line — required for PL/SQL {@code BEGIN ... END;} bodies.
-     * Otherwise splits on top-level {@code ;} after stripping {@code --}
-     * line comments. Limitations: only backslash string escape, no block
-     * comments, no dollar-quoting, no mixing modes per file.
+     * Splits a SQL file into statements. Uses slash-mode (a line of just {@code /} ends a
+     * statement) when the file contains at least one such line — required for PL/SQL {@code BEGIN
+     * ... END;} bodies. Otherwise splits on top-level {@code ;} after stripping {@code --} line
+     * comments. Limitations: only backslash string escape, no block comments, no dollar-quoting, no
+     * mixing modes per file.
      */
     static List<String> splitStatements(String sql) {
         StringBuilder cleaned = new StringBuilder();
@@ -178,8 +202,7 @@ public final class ClasspathSqlRunner {
             if (line.trim().equals("/")) slashMode = true;
             cleaned.append(stripped).append('\n');
         }
-        return slashMode ? splitOnSlash(cleaned.toString())
-                         : splitOnSemicolon(cleaned.toString());
+        return slashMode ? splitOnSlash(cleaned.toString()) : splitOnSemicolon(cleaned.toString());
     }
 
     private static List<String> splitOnSlash(String sql) {

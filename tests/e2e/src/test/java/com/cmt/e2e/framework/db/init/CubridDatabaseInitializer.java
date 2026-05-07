@@ -31,6 +31,7 @@
 package com.cmt.e2e.framework.db.init;
 
 import com.cmt.e2e.framework.db.containers.CubridContainer;
+
 import org.flywaydb.core.Flyway;
 import org.flywaydb.core.api.FlywayException;
 import org.flywaydb.core.api.output.MigrateResult;
@@ -43,35 +44,36 @@ public final class CubridDatabaseInitializer {
     private static final Logger log = LoggerFactory.getLogger(CubridDatabaseInitializer.class);
 
     private static final String CUBRID_DRIVER = "cubrid.jdbc.driver.CUBRIDDriver";
-    private static final String SCENARIO_BASE  = "classpath:db/";
+    private static final String SCENARIO_BASE = "classpath:db/";
 
     private final CubridContainer container;
     private final String dbName;
     private final String userName;
     private final String password;
 
-    private CubridDatabaseInitializer(CubridContainer container, String dbName, String userName, String password) {
+    private CubridDatabaseInitializer(
+            CubridContainer container, String dbName, String userName, String password) {
         this.container = container;
-        this.dbName    = dbName;
-        this.userName  = userName;
-        this.password  = password;
+        this.dbName = dbName;
+        this.userName = userName;
+        this.password = password;
     }
 
     /** Convenience overload for passwordless users (e.g. fresh-CUBRID dba). */
-    public static CubridDatabaseInitializer of(CubridContainer container,
-                                         String dbName,
-                                         String userName) {
+    public static CubridDatabaseInitializer of(
+            CubridContainer container, String dbName, String userName) {
         return of(container, dbName, userName, "");
     }
 
-    public static CubridDatabaseInitializer of(CubridContainer container,
-                                         String dbName,
-                                         String userName,
-                                         String password) {
+    public static CubridDatabaseInitializer of(
+            CubridContainer container, String dbName, String userName, String password) {
         if (container == null) throw new IllegalArgumentException("container must not be null");
-        if (dbName == null || dbName.isBlank()) throw new IllegalArgumentException("dbName must not be blank");
-        if (userName == null || userName.isBlank()) throw new IllegalArgumentException("userName must not be blank");
-        if (password == null) throw new IllegalArgumentException("password must not be null (use \"\" for none)");
+        if (dbName == null || dbName.isBlank())
+            throw new IllegalArgumentException("dbName must not be blank");
+        if (userName == null || userName.isBlank())
+            throw new IllegalArgumentException("userName must not be blank");
+        if (password == null)
+            throw new IllegalArgumentException("password must not be null (use \"\" for none)");
         return new CubridDatabaseInitializer(container, dbName, userName, password);
     }
 
@@ -85,41 +87,51 @@ public final class CubridDatabaseInitializer {
         String resourcePath = "db/" + scenarioName;
         if (Thread.currentThread().getContextClassLoader().getResource(resourcePath) == null) {
             throw new DatabaseInitializationException(
-                "Scenario not found on classpath: '" + resourcePath + "'. " +
-                "Check src/test/resources/" + resourcePath + " exists.", null);
+                    "Scenario not found on classpath: '"
+                            + resourcePath
+                            + "'. "
+                            + "Check src/test/resources/"
+                            + resourcePath
+                            + " exists.",
+                    null);
         }
 
         String location = SCENARIO_BASE + scenarioName;
-        log.info("[CubridDatabaseInitializer] migrate start: scenario='{}', db='{}', user='{}'",
-            scenarioName, dbName, userName);
+        log.info(
+                "[CubridDatabaseInitializer] migrate start: scenario='{}', db='{}', user='{}'",
+                scenarioName,
+                dbName,
+                userName);
 
         try {
             MigrateResult result = buildFlyway(location).migrate();
-            log.info("[CubridDatabaseInitializer] migrate complete: executed={}, success={}",
-                result.migrationsExecuted, result.success);
+            log.info(
+                    "[CubridDatabaseInitializer] migrate complete: executed={}, success={}",
+                    result.migrationsExecuted,
+                    result.success);
 
             if (!result.success) {
                 throw new DatabaseInitializationException(
-                    "Flyway migration reported failure for scenario: " + scenarioName, null);
+                        "Flyway migration reported failure for scenario: " + scenarioName, null);
             }
         } catch (FlywayException e) {
             throw new DatabaseInitializationException(
-                "Failed to migrate scenario '" + scenarioName + "': " + e.getMessage(), e);
+                    "Failed to migrate scenario '" + scenarioName + "': " + e.getMessage(), e);
         }
     }
 
     private Flyway buildFlyway(String location) {
         String jdbcUrl = container.getJdbcUrl(dbName, userName);
         return Flyway.configure()
-            .dataSource(jdbcUrl, userName, password)
-            .driver(CUBRID_DRIVER)
-            .defaultSchema(userName)
-            .locations(location)
-            .cleanDisabled(true)
-            // Baseline at 0: cross-schema GRANT leaves the user looking "non-empty" to Flyway.
-            .baselineOnMigrate(true)
-            .baselineVersion("0")
-            .validateOnMigrate(true)
-            .load();
+                .dataSource(jdbcUrl, userName, password)
+                .driver(CUBRID_DRIVER)
+                .defaultSchema(userName)
+                .locations(location)
+                .cleanDisabled(true)
+                // Baseline at 0: cross-schema GRANT leaves the user looking "non-empty" to Flyway.
+                .baselineOnMigrate(true)
+                .baselineVersion("0")
+                .validateOnMigrate(true)
+                .load();
     }
 }

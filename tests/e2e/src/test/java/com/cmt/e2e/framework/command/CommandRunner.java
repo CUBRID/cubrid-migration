@@ -30,28 +30,25 @@
 
 package com.cmt.e2e.framework.command;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeoutException;
-
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * Runs a CMT Console command as a child process and captures stdout, stderr,
- * and the exit code.
- */
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeoutException;
+
+/** Runs a CMT Console command as a child process and captures stdout, stderr, and the exit code. */
 public class CommandRunner {
     private static final Logger log = LoggerFactory.getLogger(CommandRunner.class);
 
@@ -79,10 +76,12 @@ public class CommandRunner {
         SharedOutputBuffer buffer = new SharedOutputBuffer();
 
         try {
-            Future<?> stdoutTask = executor.submit(() ->
-                readStream(process.getInputStream(), buffer::appendStdoutLine));
-            Future<?> stderrTask = executor.submit(() ->
-                readStream(process.getErrorStream(), buffer::appendStderrLine));
+            Future<?> stdoutTask =
+                    executor.submit(
+                            () -> readStream(process.getInputStream(), buffer::appendStdoutLine));
+            Future<?> stderrTask =
+                    executor.submit(
+                            () -> readStream(process.getErrorStream(), buffer::appendStderrLine));
 
             boolean finishedInTime = process.waitFor(timeoutSeconds, SECONDS);
             if (!finishedInTime) {
@@ -92,21 +91,30 @@ public class CommandRunner {
 
             waitForStreamReadersOrThrow(stdoutTask, stderrTask);
 
-            CommandResult result = new CommandResult(
-                buffer.stdout(),
-                buffer.stderr(),
-                buffer.combined(),
-                finishedInTime ? process.exitValue() : -1,
-                !finishedInTime
-            );
-            log.debug("Command finished with exitCode: {}, timeOut: {}", result.exitCode(), result.timedOut());
+            CommandResult result =
+                    new CommandResult(
+                            buffer.stdout(),
+                            buffer.stderr(),
+                            buffer.combined(),
+                            finishedInTime ? process.exitValue() : -1,
+                            !finishedInTime);
+            log.debug(
+                    "Command finished with exitCode: {}, timeOut: {}",
+                    result.exitCode(),
+                    result.timedOut());
             // Persist full child-process output to the per-test log (hidden
             // from console by the threshold filter on the CONSOLE appender).
             if (!result.stdout().isEmpty()) {
-                log.info("----- CMT stdout (exit={}) -----\n{}-----", result.exitCode(), result.stdout());
+                log.info(
+                        "----- CMT stdout (exit={}) -----\n{}-----",
+                        result.exitCode(),
+                        result.stdout());
             }
             if (!result.stderr().isEmpty()) {
-                log.info("----- CMT stderr (exit={}) -----\n{}-----", result.exitCode(), result.stderr());
+                log.info(
+                        "----- CMT stderr (exit={}) -----\n{}-----",
+                        result.exitCode(),
+                        result.stderr());
             }
             return result;
         } finally {
@@ -125,7 +133,8 @@ public class CommandRunner {
         }
     }
 
-    private void waitForStreamReadersOrThrow(Future<?> stdoutTask, Future<?> stderrTask) throws IOException, InterruptedException {
+    private void waitForStreamReadersOrThrow(Future<?> stdoutTask, Future<?> stderrTask)
+            throws IOException, InterruptedException {
         try {
             stdoutTask.get(STREAM_READ_TIMEOUT_SECONDS, SECONDS);
             stderrTask.get(STREAM_READ_TIMEOUT_SECONDS, SECONDS);
@@ -154,8 +163,16 @@ public class CommandRunner {
             combined.append(line).append("\n");
         }
 
-        synchronized String stdout() { return stdout.toString(); }
-        synchronized String stderr() { return stderr.toString(); }
-        synchronized String combined() { return combined.toString(); }
+        synchronized String stdout() {
+            return stdout.toString();
+        }
+
+        synchronized String stderr() {
+            return stderr.toString();
+        }
+
+        synchronized String combined() {
+            return combined.toString();
+        }
     }
 }
