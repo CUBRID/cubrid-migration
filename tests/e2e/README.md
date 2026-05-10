@@ -1,7 +1,7 @@
 # CMT E2E Tests
 
 End-to-end migration tests: source DB → `migration.sh` → target DB
-round-trip verification.
+output verification.
 
 Active sources: Oracle / CUBRID / Tibero. Targets: online CUBRID,
 CMT unload (LoadDB) dump.
@@ -64,9 +64,8 @@ Plus four keys in `tests/e2e/e2e-test.properties` (template:
 `e2e-test.properties.example`): `image` / `hostname` / `license` /
 `faketime`.
 
-When any asset or key is missing, `TiberoToCubridTest` and
-`TiberoToUnloadTest` auto-skip via `@EnabledIf`. Other scenarios are
-unaffected.
+When any asset or key is missing, Tibero TCs auto-skip via
+`@EnabledIf`. Other source DB scenarios are unaffected.
 
 When running via `docker compose run`, the license file is mounted
 into the container by path. Default mount source is host-side
