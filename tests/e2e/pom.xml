@@ -13,15 +13,15 @@
         <maven.compiler.target>21</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <junit-jupiter.version>5.13.4</junit-jupiter.version>
-        <assertj.version>3.27.4</assertj.version>
-        <testcontainers.version>1.21.3</testcontainers.version>
+        <junit-jupiter.version>6.0.3</junit-jupiter.version>
+        <assertj.version>3.27.7</assertj.version>
+        <testcontainers.version>2.0.5</testcontainers.version>
         <slf4j.version>2.0.17</slf4j.version>
-        <logback.version>1.5.19</logback.version>
+        <logback.version>1.5.32</logback.version>
         <cubrid-jdbc.version>11.3.2.0053</cubrid-jdbc.version>
         <ojdbc8.version>21.9.0.0</ojdbc8.version>
         <flyway.version>10.22.0</flyway.version>
-        <jackson.version>2.16.2</jackson.version>
+        <jackson.version>2.21.3</jackson.version>
     </properties>
 
     <dependencyManagement>
@@ -30,6 +30,13 @@
                 <groupId>org.testcontainers</groupId>
                 <artifactId>testcontainers-bom</artifactId>
                 <version>${testcontainers.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson</groupId>
+                <artifactId>jackson-bom</artifactId>
+                <version>${jackson.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -61,13 +68,13 @@
 
         <dependency>
             <groupId>org.testcontainers</groupId>
-            <artifactId>junit-jupiter</artifactId>
+            <artifactId>testcontainers-junit-jupiter</artifactId>
             <scope>test</scope>
         </dependency>
 
         <dependency>
             <groupId>org.testcontainers</groupId>
-            <artifactId>oracle-xe</artifactId>
+            <artifactId>testcontainers-oracle-xe</artifactId>
             <scope>test</scope>
         </dependency>
 
@@ -109,17 +116,15 @@
             <scope>test</scope>
         </dependency>
 
-        <!-- Jackson override: see ${jackson.version} property comment above. -->
+        <!-- Jackson override: versions managed by jackson-bom imported above. -->
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-annotations</artifactId>
-            <version>${jackson.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
-            <version>${jackson.version}</version>
             <scope>test</scope>
         </dependency>
 
@@ -144,7 +149,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
-                <version>3.8.1</version>
+                <version>3.10.0</version>
                 <executions>
                     <execution>
                         <id>copy-cubrid-jdbc-driver</id>
@@ -184,7 +189,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>3.5.3</version>
+                <version>3.5.5</version>
                 <configuration>
                     <!-- Trim noisy stack frames; full trace stays in surefire XML/TXT reports. -->
                     <trimStackTrace>true</trimStackTrace>
@@ -217,7 +222,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-resources-plugin</artifactId>
-                        <version>3.3.1</version>
+                        <version>3.5.0</version>
                         <executions>
                             <execution>
                                 <id>copy-tibero-jdbc-driver</id>
