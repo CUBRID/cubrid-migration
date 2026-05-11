@@ -37,11 +37,24 @@ public class ProcedureDDL {
     private final String header;
     private final String body;
     private final boolean hasUnsupportedType;
+    private final boolean hasSyntaxError;
+    private final String syntaxErrorMessage;
 
     public ProcedureDDL(String header, String body, boolean hasUnsupportedType) {
+        this(header, body, hasUnsupportedType, false, null);
+    }
+
+    public ProcedureDDL(
+            String header,
+            String body,
+            boolean hasUnsupportedType,
+            boolean hasSyntaxError,
+            String syntaxErrorMessage) {
         this.header = header;
         this.body = body;
         this.hasUnsupportedType = hasUnsupportedType;
+        this.hasSyntaxError = hasSyntaxError;
+        this.syntaxErrorMessage = syntaxErrorMessage;
     }
 
     public String getHeader() {
@@ -56,6 +69,14 @@ public class ProcedureDDL {
         return hasUnsupportedType;
     }
 
+    public boolean hasSyntaxError() {
+        return hasSyntaxError;
+    }
+
+    public String getSyntaxErrorMessage() {
+        return syntaxErrorMessage;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -63,11 +84,13 @@ public class ProcedureDDL {
         ProcedureDDL that = (ProcedureDDL) o;
         return Objects.equals(header, that.header)
                 && Objects.equals(body, that.body)
-                && hasUnsupportedType == that.hasUnsupportedType;
+                && hasUnsupportedType == that.hasUnsupportedType
+                && hasSyntaxError == that.hasSyntaxError
+                && Objects.equals(syntaxErrorMessage, that.syntaxErrorMessage);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(header, body, hasUnsupportedType);
+        return Objects.hash(header, body, hasUnsupportedType, hasSyntaxError, syntaxErrorMessage);
     }
 }

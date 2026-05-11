@@ -287,6 +287,12 @@ public class JDBCImporter extends Importer {
      */
     @Override
     public void createPlcsqlProcedureHeader(PlcsqlProcedure pd) {
+        if (pd.getParseError() != null) {
+            createObjectFailed(
+                    pd,
+                    new NormalMigrationException("PL/CSQL syntax error: " + pd.getParseError()));
+            return;
+        }
         String ddl =
                 CUBRIDSQLHelper.getInstance(null)
                         .getPlcsqlProcedureHeaderDDL(pd, config.isAddUserSchema());
@@ -305,6 +311,9 @@ public class JDBCImporter extends Importer {
      */
     @Override
     public void createPlcsqlProcedureBody(PlcsqlProcedure pd) {
+        if (pd.getParseError() != null) {
+            return;
+        }
         String ddl =
                 CUBRIDSQLHelper.getInstance(null)
                         .getPlcsqlProcedureDDL(pd, config.isAddUserSchema());
@@ -323,6 +332,12 @@ public class JDBCImporter extends Importer {
      */
     @Override
     public void createPlcsqlFunctionHeader(PlcsqlFunction ft) {
+        if (ft.getParseError() != null) {
+            createObjectFailed(
+                    ft,
+                    new NormalMigrationException("PL/CSQL syntax error: " + ft.getParseError()));
+            return;
+        }
         String ddl =
                 CUBRIDSQLHelper.getInstance(null)
                         .getPlcsqlFunctionHeaderDDL(ft, config.isAddUserSchema());
@@ -341,6 +356,9 @@ public class JDBCImporter extends Importer {
      */
     @Override
     public void createPlcsqlFunctionBody(PlcsqlFunction ft) {
+        if (ft.getParseError() != null) {
+            return;
+        }
         String ddl =
                 CUBRIDSQLHelper.getInstance(null)
                         .getPlcsqlFunctionDDL(ft, config.isAddUserSchema());

@@ -40,6 +40,8 @@ public class PlcsqlFunction extends Function {
     private String headerDDL;
     private String bodyDDL;
 
+    private String parseError;
+
     public String getHeaderDDL() {
         return headerDDL;
     }
@@ -54,6 +56,14 @@ public class PlcsqlFunction extends Function {
 
     public void setBodyDDL(String bodyDDL) {
         this.bodyDDL = bodyDDL;
+    }
+
+    public String getParseError() {
+        return parseError;
+    }
+
+    public void setParseError(String parseError) {
+        this.parseError = parseError;
     }
 
     /**

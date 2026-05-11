@@ -63,6 +63,9 @@ public class AllPlcsqlProcedureHeaderDDLTask extends ImportTask {
         Map<String, String> procedureFiles = config.getTargetAllPlcsqlProcedureHeaderFileName();
 
         for (PlcsqlProcedure procedure : targetProcedures) {
+            if (procedure.getParseError() != null) {
+                continue;
+            }
             String owner = procedure.getOwner();
 
             CUBRIDSQLHelper sqlHelper = CUBRIDSQLHelper.getInstance(null);

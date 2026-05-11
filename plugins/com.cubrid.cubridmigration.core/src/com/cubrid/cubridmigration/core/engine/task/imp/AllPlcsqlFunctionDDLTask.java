@@ -63,6 +63,9 @@ public class AllPlcsqlFunctionDDLTask extends ImportTask {
         Map<String, String> functionFiles = config.getTargetAllPlcsqlFunctionFileName();
 
         for (PlcsqlFunction function : targetFunctions) {
+            if (function.getParseError() != null) {
+                continue;
+            }
             String owner = function.getOwner();
 
             CUBRIDSQLHelper sqlHelper = CUBRIDSQLHelper.getInstance(null);

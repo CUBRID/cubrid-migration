@@ -75,11 +75,12 @@ public class OffsetCollector extends PloParserBaseListener {
             // interested in.
 
             Token isOrAs;
-            if (ctx.IS() == null) {
-                assert ctx.AS() != null;
+            if (ctx.IS() != null) {
+                isOrAs = ctx.IS().getSymbol();
+            } else if (ctx.AS() != null) {
                 isOrAs = ctx.AS().getSymbol();
             } else {
-                isOrAs = ctx.IS().getSymbol();
+                return;
             }
             bodyStartOffset = isOrAs.getStartIndex();
             assert bodyStartOffset > 0;

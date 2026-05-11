@@ -63,6 +63,9 @@ public class PlcsqlFunctionSourceAndDropDDLTask extends ImportTask {
         Map<String, Map<String, String>> functionFiles = config.getTargetPlcsqlFunctionFileName();
 
         for (PlcsqlFunction function : targetFunctions) {
+            if (function.getParseError() != null) {
+                continue;
+            }
             String owner = function.getOwner();
             String name = function.getName();
 

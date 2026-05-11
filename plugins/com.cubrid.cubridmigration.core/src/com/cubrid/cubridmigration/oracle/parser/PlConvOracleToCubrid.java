@@ -55,12 +55,18 @@ public class PlConvOracleToCubrid {
         parser.addErrorListener(sei);
 
         ParseTree tree = parser.sql_script();
+        SyntaxError syntaxError = null;
         if (sei.hasError) {
-            log.error("PL/CSQL syntax error", new SyntaxError(sei.line, sei.column, sei.msg));
+            syntaxError = new SyntaxError(sei.line, sei.column, sei.msg);
+            log.error("PL/CSQL syntax error", syntaxError);
         }
 
         OffsetCollector oc = new OffsetCollector();
         ParseTreeWalker.DEFAULT.walk(oc, tree);
+
+        if (syntaxError != null && oc.bodyStartOffset == 0) {
+            return new ProcedureDDL("", "", false, true, syntaxError.getMessage());
+        }
 
         String header = text.substring(0, oc.bodyStartOffset);
         assert header != null;

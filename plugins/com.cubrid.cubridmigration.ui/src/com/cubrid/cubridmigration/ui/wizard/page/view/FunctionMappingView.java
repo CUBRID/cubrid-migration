@@ -162,13 +162,27 @@ public class FunctionMappingView extends AbstractMappingView {
 
         // Perform parsing when displaying on the screen. Skip parsing during migration.
         final CUBRIDSQLHelper ddlUtils = CUBRIDSQLHelper.getInstance(null);
-        if (targetFunc.getHeaderDDL() == null && targetFunc.getBodyDDL() == null) {
+        if (targetFunc.getParseError() == null
+                && targetFunc.getHeaderDDL() == null
+                && targetFunc.getBodyDDL() == null) {
             ProcedureDDL functionDDL =
                     PlConvOracleToCubrid.getProcedureDDL(targetFunc.getSourceDDL(), true);
-            targetFunc.setHeaderDDL(functionDDL.getHeader());
-            targetFunc.setBodyDDL(functionDDL.getBody());
+            if (functionDDL.hasSyntaxError()) {
+                targetFunc.setParseError(functionDDL.getSyntaxErrorMessage());
+            } else {
+                targetFunc.setHeaderDDL(functionDDL.getHeader());
+                targetFunc.setBodyDDL(functionDDL.getBody());
+            }
         }
-        String funcDDL = ddlUtils.getPlcsqlFunctionDDL(targetFunc, config.isAddUserSchema());
+        String funcDDL;
+        if (targetFunc.getParseError() != null) {
+            funcDDL =
+                    "-- PL/CSQL syntax error: "
+                            + targetFunc.getParseError()
+                            + "\n-- This routine will be skipped during migration.\n";
+        } else {
+            funcDDL = ddlUtils.getPlcsqlFunctionDDL(targetFunc, config.isAddUserSchema());
+        }
         txtTargetSQL.setText(funcDDL);
         // Set controls status
         btnCreate.setEnabled(true);

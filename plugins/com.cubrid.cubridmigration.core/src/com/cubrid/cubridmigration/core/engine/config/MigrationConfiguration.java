@@ -2361,10 +2361,17 @@ public class MigrationConfiguration {
         for (SourcePlcsqlProcedureConfig spc : spcs) {
             PlcsqlProcedure targetProc =
                     getTargetPlcsqlProcedureSchema(spc.getOwner(), spc.getName());
+            if (targetProc.getParseError() != null) {
+                continue;
+            }
             if (StringUtils.isBlank(targetProc.getHeaderDDL())
                     || StringUtils.isBlank(targetProc.getBodyDDL())) {
                 ProcedureDDL procedureDDL =
                         PlConvOracleToCubrid.getProcedureDDL(spc.getSourceDDL(), changeDataType);
+                if (procedureDDL.hasSyntaxError()) {
+                    targetProc.setParseError(procedureDDL.getSyntaxErrorMessage());
+                    continue;
+                }
                 targetProc.setHeaderDDL(procedureDDL.getHeader());
                 targetProc.setBodyDDL(procedureDDL.getBody());
             }
@@ -2374,10 +2381,17 @@ public class MigrationConfiguration {
         for (SourcePlcsqlFunctionConfig fpc : fpcs) {
             PlcsqlFunction targetFunc =
                     getTargetPlcsqlFunctionSchema(fpc.getOwner(), fpc.getName());
+            if (targetFunc.getParseError() != null) {
+                continue;
+            }
             if (StringUtils.isBlank(targetFunc.getHeaderDDL())
                     || StringUtils.isBlank(targetFunc.getBodyDDL())) {
                 ProcedureDDL procedureDDL =
                         PlConvOracleToCubrid.getProcedureDDL(fpc.getSourceDDL(), changeDataType);
+                if (procedureDDL.hasSyntaxError()) {
+                    targetFunc.setParseError(procedureDDL.getSyntaxErrorMessage());
+                    continue;
+                }
                 targetFunc.setHeaderDDL(procedureDDL.getHeader());
                 targetFunc.setBodyDDL(procedureDDL.getBody());
             }

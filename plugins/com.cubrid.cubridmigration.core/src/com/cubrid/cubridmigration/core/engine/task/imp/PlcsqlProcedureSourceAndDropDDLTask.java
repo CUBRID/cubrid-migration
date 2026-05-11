@@ -63,6 +63,9 @@ public class PlcsqlProcedureSourceAndDropDDLTask extends ImportTask {
         Map<String, Map<String, String>> procedureFiles = config.getTargetPlcsqlProcedureFileName();
 
         for (PlcsqlProcedure procedure : targetProcedures) {
+            if (procedure.getParseError() != null) {
+                continue;
+            }
             String owner = procedure.getOwner();
             String name = procedure.getName();
 
