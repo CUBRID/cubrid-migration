@@ -33,8 +33,9 @@ package com.cmt.e2e.framework.core;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -75,7 +76,7 @@ public final class E2eTestProperties {
                     file.toAbsolutePath());
             return p;
         }
-        try (InputStream in = Files.newInputStream(file)) {
+        try (BufferedReader in = Files.newBufferedReader(file, StandardCharsets.UTF_8)) {
             p.load(in);
             log.info("[E2eTestProperties] loaded {} keys from {}", p.size(), file.toAbsolutePath());
         } catch (IOException e) {
