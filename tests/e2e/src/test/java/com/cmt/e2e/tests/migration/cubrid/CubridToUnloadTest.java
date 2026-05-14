@@ -63,7 +63,11 @@ class CubridToUnloadTest {
 
         @Override
         protected Target target() {
-            return Targets.unload("demodb", true);
+            return Targets.unload("demodb")
+                    .addSchema(true)
+                    .splitSchema(true)
+                    .oneTableOneFile(true)
+                    .build();
         }
 
         @Test

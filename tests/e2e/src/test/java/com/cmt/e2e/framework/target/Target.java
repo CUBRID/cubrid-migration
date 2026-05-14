@@ -32,9 +32,16 @@ package com.cmt.e2e.framework.target;
 
 import com.cmt.e2e.framework.source.ConnectionConfig;
 
+import java.util.Map;
+
 /**
  * Migration target — either an online CUBRID DB or a CMT {@code unload} dump output. Online targets
  * boot a container on {@link #start()}; dump targets are no-ops at start (CMT owns the output dir).
+ *
+ * <p>{@link #options()} returns CMT options written into {@code db.conf} as {@code <target>.<key>=
+ * <value>} pairs (e.g. {@code add_schema}, {@code split_schema}, {@code one_table_one_file},
+ * {@code file_prefix}). Connection-derived properties (host, port, ...) come from {@link
+ * #connection()} and are not part of {@code options()}.
  */
 public interface Target extends AutoCloseable {
 
@@ -45,8 +52,8 @@ public interface Target extends AutoCloseable {
 
     boolean isDumpfile();
 
-    /** Dump-only options ({@code file_prefix}, {@code one_table_one_file}); null when online. */
-    DumpfileOptions dumpfileOptions();
+    /** CMT options for this target ({@code <target>.<key>=<value>} in db.conf). Never null. */
+    Map<String, String> options();
 
     @Override
     void close();

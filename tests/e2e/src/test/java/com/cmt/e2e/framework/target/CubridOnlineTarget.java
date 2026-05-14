@@ -34,6 +34,8 @@ import com.cmt.e2e.framework.db.JdbcDriverJars.DB;
 import com.cmt.e2e.framework.db.containers.CubridContainer;
 import com.cmt.e2e.framework.source.ConnectionConfig;
 
+import java.util.Map;
+
 /**
  * CUBRID online target — empty CUBRID container that CMT migrates into. Connects as {@code dba} so
  * CMT can {@code CREATE USER} and {@code GRANT} during {@code add_schema}.
@@ -41,10 +43,12 @@ import com.cmt.e2e.framework.source.ConnectionConfig;
 final class CubridOnlineTarget implements Target {
 
     private final CubridContainer container;
+    private final Map<String, String> options;
     private boolean started;
 
-    CubridOnlineTarget() {
+    CubridOnlineTarget(Map<String, String> options) {
         this.container = CubridContainer.withEmptyDb();
+        this.options = Map.copyOf(options);
     }
 
     @Override
@@ -73,8 +77,8 @@ final class CubridOnlineTarget implements Target {
     }
 
     @Override
-    public DumpfileOptions dumpfileOptions() {
-        return null;
+    public Map<String, String> options() {
+        return options;
     }
 
     @Override

@@ -30,13 +30,38 @@
 
 package com.cmt.e2e.framework.target;
 
+import java.util.LinkedHashMap;
+import java.util.Map;
+
 /**
- * Dump-file target settings ({@code <target>.file_prefix}, {@code <target>.one_table_one_file}).
+ * Fluent builder for the CUBRID online target. Connection-derived properties (host, port, user,
+ * ...) are emitted by the runner from {@link Target#connection()}; this builder only holds
+ * functional CMT options (e.g. {@code add_schema}).
+ *
+ * <p>Nothing is pre-set — tests opt in explicitly so unspecified keys fall back to CMT's own
+ * defaults.
  */
-public record DumpfileOptions(String filePrefix, boolean oneTableOneFile) {
-    public DumpfileOptions {
-        if (filePrefix == null || filePrefix.isBlank()) {
-            throw new IllegalArgumentException("filePrefix must not be blank");
-        }
+public final class CubridOnlineBuilder {
+
+    private final Map<String, String> options = new LinkedHashMap<>();
+
+    CubridOnlineBuilder() {}
+
+    public CubridOnlineBuilder addSchema(boolean value) {
+        return option("add_schema", yn(value));
+    }
+
+    /** Escape hatch for any CMT option not (yet) promoted to a typed method. */
+    public CubridOnlineBuilder option(String key, String value) {
+        options.put(key, value);
+        return this;
+    }
+
+    public Target build() {
+        return new CubridOnlineTarget(options);
+    }
+
+    private static String yn(boolean value) {
+        return value ? "yes" : "no";
     }
 }

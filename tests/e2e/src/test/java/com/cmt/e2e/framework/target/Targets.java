@@ -30,18 +30,22 @@
 
 package com.cmt.e2e.framework.target;
 
-/** Factory for E2E migration targets — one method per CMT {@code DEST_*}. */
+/**
+ * Factory for E2E migration targets — one method per CMT {@code DEST_*}. Each returns a fluent
+ * builder so tests can opt into individual CMT options without forcing the framework to expose
+ * every possible flag as a constructor parameter.
+ */
 public final class Targets {
 
     private Targets() {}
 
     /** {@code DEST_ONLINE} — empty CUBRID 11.4 container; CMT writes as {@code dba}. */
-    public static Target cubridOnline() {
-        return new CubridOnlineTarget();
+    public static CubridOnlineBuilder cubridOnline() {
+        return new CubridOnlineBuilder();
     }
 
     /** {@code DEST_DB_UNLOAD} — CUBRID LoadDB-format dump tree, no container. */
-    public static Target unload(String filePrefix, boolean oneTableOneFile) {
-        return new DumpFileTarget(new DumpfileOptions(filePrefix, oneTableOneFile));
+    public static UnloadBuilder unload(String filePrefix) {
+        return new UnloadBuilder(filePrefix);
     }
 }

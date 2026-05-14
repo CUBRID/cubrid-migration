@@ -32,16 +32,18 @@ package com.cmt.e2e.framework.target;
 
 import com.cmt.e2e.framework.source.ConnectionConfig;
 
+import java.util.Map;
+
 /**
  * Dump-file target — no container; CMT writes to {@code
  * $CMT_CONSOLE_HOME/output/<migration.name>/}.
  */
 final class DumpFileTarget implements Target {
 
-    private final DumpfileOptions options;
+    private final Map<String, String> options;
 
-    DumpFileTarget(DumpfileOptions options) {
-        this.options = options;
+    DumpFileTarget(Map<String, String> options) {
+        this.options = Map.copyOf(options);
     }
 
     @Override
@@ -60,7 +62,7 @@ final class DumpFileTarget implements Target {
     }
 
     @Override
-    public DumpfileOptions dumpfileOptions() {
+    public Map<String, String> options() {
         return options;
     }
 

@@ -67,7 +67,11 @@ class OracleToUnloadTest {
 
         @Override
         protected Target target() {
-            return Targets.unload("XE", true);
+            return Targets.unload("XE")
+                    .addSchema(true)
+                    .splitSchema(true)
+                    .oneTableOneFile(true)
+                    .build();
         }
 
         @Test

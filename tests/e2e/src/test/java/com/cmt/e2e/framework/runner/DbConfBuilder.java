@@ -34,8 +34,9 @@ import com.cmt.e2e.framework.db.JdbcDriverJars;
 import com.cmt.e2e.framework.db.JdbcDriverJars.DB;
 import com.cmt.e2e.framework.source.ConnectionConfig;
 import com.cmt.e2e.framework.source.Source;
-import com.cmt.e2e.framework.target.DumpfileOptions;
 import com.cmt.e2e.framework.target.Target;
+
+import java.util.Map;
 
 /**
  * Builds the {@code db.conf} text for {@code migration.sh script -s ... -t ...}. The {@code .type}
@@ -70,14 +71,13 @@ public final class DbConfBuilder {
     }
 
     private static void appendTarget(StringBuilder sb, Target target) {
-        if (target.isDumpfile()) {
-            appendDumpfileTarget(sb, target.dumpfileOptions());
-            return;
+        if (!target.isDumpfile()) {
+            appendOnlineConnection(sb, target.connection());
         }
-        appendOnlineTarget(sb, target.connection());
+        appendOptions(sb, target.options());
     }
 
-    private static void appendOnlineTarget(StringBuilder sb, ConnectionConfig c) {
+    private static void appendOnlineConnection(StringBuilder sb, ConnectionConfig c) {
         prop(sb, TARGET_NAME + ".type", dbConfType(c.type()));
         prop(sb, TARGET_NAME + ".driver", driverPath(c.type()));
         prop(sb, TARGET_NAME + ".host", c.host());
@@ -86,17 +86,12 @@ public final class DbConfBuilder {
         prop(sb, TARGET_NAME + ".user", c.user());
         prop(sb, TARGET_NAME + ".password", c.password());
         prop(sb, TARGET_NAME + ".charset", c.charset());
-        prop(sb, TARGET_NAME + ".add_schema", "yes");
     }
 
-    private static void appendDumpfileTarget(StringBuilder sb, DumpfileOptions opts) {
-        prop(sb, TARGET_NAME + ".type", "unload");
-        prop(sb, TARGET_NAME + ".output", "./output");
-        prop(sb, TARGET_NAME + ".charset", "utf-8");
-        prop(sb, TARGET_NAME + ".add_schema", "yes");
-        prop(sb, TARGET_NAME + ".split_schema", "yes");
-        prop(sb, TARGET_NAME + ".file_prefix", opts.filePrefix());
-        prop(sb, TARGET_NAME + ".one_table_one_file", opts.oneTableOneFile() ? "yes" : "no");
+    private static void appendOptions(StringBuilder sb, Map<String, String> options) {
+        for (Map.Entry<String, String> e : options.entrySet()) {
+            prop(sb, TARGET_NAME + "." + e.getKey(), e.getValue());
+        }
     }
 
     private static String dbConfType(DB db) {

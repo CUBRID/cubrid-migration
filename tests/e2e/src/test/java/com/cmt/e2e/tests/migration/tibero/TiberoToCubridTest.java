@@ -56,7 +56,7 @@ class TiberoToCubridTest extends AbstractMigrationE2E {
 
     @Override
     protected Target target() {
-        return Targets.cubridOnline();
+        return Targets.cubridOnline().addSchema(true).build();
     }
 
     @Test

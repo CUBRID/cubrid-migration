@@ -65,7 +65,11 @@ class TiberoToUnloadTest {
 
         @Override
         protected Target target() {
-            return Targets.unload("tibero", true);
+            return Targets.unload("tibero")
+                    .addSchema(true)
+                    .splitSchema(true)
+                    .oneTableOneFile(true)
+                    .build();
         }
 
         @Test
