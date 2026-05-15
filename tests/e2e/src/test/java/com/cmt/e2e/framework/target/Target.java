@@ -39,9 +39,9 @@ import java.util.Map;
  * boot a container on {@link #start()}; dump targets are no-ops at start (CMT owns the output dir).
  *
  * <p>{@link #options()} returns CMT options written into {@code db.conf} as {@code <target>.<key>=
- * <value>} pairs (e.g. {@code add_schema}, {@code split_schema}, {@code one_table_one_file},
- * {@code file_prefix}). Connection-derived properties (host, port, ...) come from {@link
- * #connection()} and are not part of {@code options()}.
+ * <value>} pairs (e.g. {@code add_schema}, {@code split_schema}, {@code one_table_one_file}, {@code
+ * file_prefix}). Connection-derived properties (host, port, ...) come from {@link #connection()}
+ * and are not part of {@code options()}.
  */
 public interface Target extends AutoCloseable {
 
