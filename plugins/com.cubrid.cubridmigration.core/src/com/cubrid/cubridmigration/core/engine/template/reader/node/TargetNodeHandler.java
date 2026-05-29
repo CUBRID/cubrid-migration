@@ -122,12 +122,10 @@ public class TargetNodeHandler extends DefaultHandler {
     public void processAttributes(Attributes attributes) {
         config.setTargetDBVersion(attributes.getValue(ATTR_VERSION));
         String type = attributes.getValue(ATTR_TYPE);
-        config.setDestType(MigrationConfiguration.DEST_ONLINE);
-        if (VALUE_ONLINE.equalsIgnoreCase(type)) {
-            config.setDestType(MigrationConfiguration.DEST_ONLINE);
-        } else if (VALUE_DIR.equalsIgnoreCase(type)) {
-            config.setDestType(MigrationConfiguration.DEST_DB_UNLOAD);
+        if (VALUE_DIR.equalsIgnoreCase(type)) {
+            return;
         }
+        config.setDestType(MigrationConfiguration.DEST_ONLINE);
     }
 
     @Override
