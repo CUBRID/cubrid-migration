@@ -53,8 +53,6 @@ import java.util.Locale;
  */
 public final class UrlConnUtils {
 
-    public static final String CHECK_NEW_INFO_URL_KO = "http://www.cubrid.com/news.htm";
-    public static final String CHECK_NEW_INFO_URL_EN = "http://www.cubrid.org/news.php";
     public static final String CHECK_NEW_VERSION_URL = "http://www.cubrid.com/check_version.cub";
     private static final Logger LOGGER = LogUtil.getLogger(UrlConnUtils.class);
 

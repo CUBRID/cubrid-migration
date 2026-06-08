@@ -70,7 +70,6 @@ public class Messages extends NLS {
     public static String btnBrowse;
     public static String btnCancel;
     public static String btnChangeCharColumns;
-    public static String btnCheckNewInfo;
     public static String btnClearMessages;
     public static String btnCommitCount;
     public static String btnCreateNewScript;
@@ -275,7 +274,6 @@ public class Messages extends NLS {
     public static String confrimSQLTables;
     public static String copyButtonLabel;
     public static String cUBRID2CUBRID;
-    public static String cubridNewInfoEditorName;
     public static String dBConnectCompositeBtnBrowse;
     public static String dBConnectCompositeErrDbSys;
     public static String dBConnectCompositeErrDriver;
@@ -309,8 +307,6 @@ public class Messages extends NLS {
     public static String editeButtonLabel;
     public static String editGroup;
     public static String editorMigrationReport;
-    public static String errCannotOpenExternalBrowser;
-    public static String errCannotOpenInternalBrowser;
     public static String errCascadeOnUpdateNotSupported;
     public static String errConnectDatabase;
     public static String errDuplicateSequenceName;

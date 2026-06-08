@@ -47,7 +47,6 @@ public final class GeneralPreference {
 
     private static final Logger LOGGER = LogUtil.getLogger(GeneralPreference.class);
     public static final String MAXIMIZE_WINDOW_ON_START_UP = ".maximize_window_on_start_up";
-    public static final String CHECK_NEW_INFO_ON_START_UP = ".check_new_information_on_start_up";
     public static final String USE_CLICK_SINGLE = ".use_click_single";
     public static final String IS_ALWAYS_EXIT = ".is_always_exit";
     public static final String IS_AUTO_CHECK_UPDATE = ".is_auto_check_update";
@@ -58,7 +57,6 @@ public final class GeneralPreference {
 
     static {
         pref = MigrationUIPlugin.getDefault().getPreferenceStore();
-        pref.setDefault(CHECK_NEW_INFO_ON_START_UP, true);
         pref.setDefault(IS_AUTO_CHECK_UPDATE, ALWAYS);
         pref.setDefault(USE_CLICK_SINGLE, false);
     }
@@ -89,32 +87,6 @@ public final class GeneralPreference {
     public static void setMaximizeWindowOnStartUp(boolean isMax) {
         try {
             pref.setValue(GeneralPreference.MAXIMIZE_WINDOW_ON_START_UP, isMax);
-        } catch (Exception ignored) {
-            LOGGER.error(ignored.getMessage());
-        }
-    }
-
-    /**
-     * Return whether check new information of CUBRID
-     *
-     * @return <code>true</code>if check;<code>false</code> otherwise
-     */
-    public static boolean isCheckNewInfoOnStartUp() {
-        try {
-            return pref.getBoolean(CHECK_NEW_INFO_ON_START_UP);
-        } catch (Exception ignored) {
-            return false;
-        }
-    }
-
-    /**
-     * Set whether check new information of CUBRID
-     *
-     * @param isShowWelcomePage boolean
-     */
-    public static void setCheckNewInfoOnStartUp(boolean isShowWelcomePage) {
-        try {
-            pref.setValue(GeneralPreference.CHECK_NEW_INFO_ON_START_UP, isShowWelcomePage);
         } catch (Exception ignored) {
             LOGGER.error(ignored.getMessage());
         }

@@ -16,8 +16,7 @@ Require-Bundle: org.eclipse.ui,
  com.cubrid.common.configuration,
  com.cubrid.cubridmigration.core
 Bundle-ClassPath: .
-Export-Package: com.cubrid.common.ui.common.notice,
- com.cubrid.common.ui.handler,
+Export-Package: com.cubrid.common.ui.handler,
  com.cubrid.cubridmigration.ui,
  com.cubrid.cubridmigration.ui.common,
  com.cubrid.cubridmigration.ui.preference,

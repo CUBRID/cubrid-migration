@@ -31,7 +31,6 @@
 package com.cubrid.cubridmigration.app;
 
 import com.cubrid.common.log.LogUtil;
-import com.cubrid.common.ui.common.notice.ApplicationType;
 import com.cubrid.common.update.p2.P2Util;
 import com.cubrid.cubridmigration.core.common.CUBRIDIOUtils;
 import com.cubrid.cubridmigration.ui.MigrationUIPlugin;
@@ -70,7 +69,6 @@ import java.io.InputStreamReader;
 @SuppressWarnings("restriction")
 public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
     private static final Logger LOG = LogUtil.getLogger(ApplicationWorkbenchWindowAdvisor.class);
-    private static final String CLIENT = ApplicationType.CUBRID_MIGRATION_TOOLKIT.getRssName();
 
     public ApplicationWorkbenchWindowAdvisor(IWorkbenchWindowConfigurer configurer) {
         super(configurer);

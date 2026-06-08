@@ -47,16 +47,6 @@
       </editor>
    </extension>
     <extension
-         point="org.eclipse.ui.editors">
-      <editor
-            class="com.cubrid.cubridmigration.ui.product.CMTNewInfoEditorPart"
-            default="false"
-            icon="icon/new_info.png"
-            id="com.cubrid.cubridmigration.ui.product.CMTNewInfoEditorPart"
-            name="%CMTNewEditor">
-      </editor>
-   </extension>
-    <extension
          point="org.eclipse.ui.views">
       <category
             id="com.cubrid.cubridmigration.app.category1"
