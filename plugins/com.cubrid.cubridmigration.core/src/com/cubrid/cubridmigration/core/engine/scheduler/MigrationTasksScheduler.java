@@ -361,6 +361,9 @@ public class MigrationTasksScheduler {
 
     protected void createSchema() {
         MigrationConfiguration config = context.getConfig();
+        if (config.targetIsOnline() && !config.isAddUserSchema()) {
+            return;
+        }
         List<Schema> dummySchemaList = config.getTargetSchemaList();
 
         dummySchemaList.stream()

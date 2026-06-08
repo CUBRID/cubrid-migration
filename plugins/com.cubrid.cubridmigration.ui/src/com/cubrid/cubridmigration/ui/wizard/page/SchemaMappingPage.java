@@ -405,6 +405,11 @@ public class SchemaMappingPage extends MigrationWizardPage {
                 return false;
             }
         }
+
+        if (!tarCatalog.isDbHasUserSchema()) {
+            buildNonUserSchemaTargetList(currentSrcTables);
+        }
+
         wizard.setSourceDBNode(srcCatalog);
         return true;
     }
@@ -445,6 +450,27 @@ public class SchemaMappingPage extends MigrationWizardPage {
             checkNewSchemaDuplicate.add(newSchema.getName());
             config.setNewTargetSchema(newSchema.getName());
         }
+    }
+
+    private void buildNonUserSchemaTargetList(List<SrcTable> currentSrcTables) {
+        List<Schema> targetSchemaList = new ArrayList<>();
+        List<String> addedSchemas = new ArrayList<>();
+        for (SrcTable srcTable : currentSrcTables) {
+            if (!srcTable.isSelected()) {
+                continue;
+            }
+            Schema srcSchema = srcCatalog.getSchemaByName(srcTable.getSrcSchema());
+            if (srcSchema == null || addedSchemas.contains(srcSchema.getName())) {
+                continue;
+            }
+            srcSchema.setTargetSchemaName(srcSchema.getName());
+            targetSchemaList.add(srcSchema);
+            addedSchemas.add(srcSchema.getName());
+        }
+        if (!config.getTargetSchemaList().isEmpty()) {
+            config.removeTargetSchemaList();
+        }
+        config.setTargetSchemaList(targetSchemaList);
     }
 
     /**

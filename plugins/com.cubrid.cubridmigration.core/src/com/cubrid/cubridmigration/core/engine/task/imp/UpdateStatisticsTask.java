@@ -140,6 +140,9 @@ public class UpdateStatisticsTask extends ImportTask {
     /** Execute import */
     protected void executeImport() {
         if (config.targetIsOnline() && config.isUpdateStatistics()) {
+            if (!config.isAddUserSchema()) {
+                return;
+            }
             List<Schema> schemaList = config.getTargetSchemaList();
             for (Schema schema : schemaList) {
                 LOG.debug("Execute update statistics for " + schema.getTargetSchemaName());
