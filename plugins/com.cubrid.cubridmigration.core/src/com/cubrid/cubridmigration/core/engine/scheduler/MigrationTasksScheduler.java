@@ -367,6 +367,7 @@ public class MigrationTasksScheduler {
         List<Schema> dummySchemaList = config.getTargetSchemaList();
 
         dummySchemaList.stream()
+                .filter(Schema::isNewTargetSchema)
                 .distinct()
                 .forEach(
                         schema -> {

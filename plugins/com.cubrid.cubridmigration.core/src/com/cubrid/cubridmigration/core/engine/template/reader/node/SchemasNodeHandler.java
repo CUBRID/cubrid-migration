@@ -50,12 +50,14 @@ public class SchemasNodeHandler extends DefaultHandler {
         if (TAG_SCHEMA.equals(qName)) {
             String src = attributes.getValue(ATTR_SOURCE);
             String trg = attributes.getValue(ATTR_TARGET);
+            String isNew = attributes.getValue(ATTR_NEW);
 
             if (src != null && trg != null) {
                 Schema schema = new Schema();
                 schema.setName(src);
                 schema.setTargetSchemaName(trg);
                 schema.setMigration(true);
+                schema.setNewTargetSchema(isNew == null ? true : Boolean.parseBoolean(isNew));
 
                 config.addScriptSchemaMapping(src, schema);
                 config.addTargetSchemaList(schema);

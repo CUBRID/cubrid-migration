@@ -394,6 +394,11 @@ public class SchemaMappingPage extends MigrationWizardPage {
             return false;
         }
 
+        config.clearNewTargetShemaList();
+        for (Schema srcSchema : srcCatalog.getSchemas()) {
+            srcSchema.setTargetSchemaName(null);
+        }
+
         List<String> checkNewSchemaDuplicate = new ArrayList<>();
         config.setTarSchemaDuplicate(false);
 
@@ -406,9 +411,7 @@ public class SchemaMappingPage extends MigrationWizardPage {
             }
         }
 
-        if (!tarCatalog.isDbHasUserSchema()) {
-            buildNonUserSchemaTargetList(currentSrcTables);
-        }
+        config.rebuildTargetSchemaListFromSource(srcCatalog);
 
         wizard.setSourceDBNode(srcCatalog);
         return true;
@@ -418,6 +421,10 @@ public class SchemaMappingPage extends MigrationWizardPage {
             SrcTable srcTable, Catalog tarCatalog, List<String> checkNewSchemaDuplicate) {
         if (!(tarCatalog.isDbHasUserSchema())) {
             srcTable.setTarSchema(null);
+            Schema srcSchema = srcCatalog.getSchemaByName(srcTable.getSrcSchema());
+            if (srcSchema != null) {
+                srcSchema.setTargetSchemaName(srcSchema.getName());
+            }
             return true;
         }
 
@@ -450,27 +457,6 @@ public class SchemaMappingPage extends MigrationWizardPage {
             checkNewSchemaDuplicate.add(newSchema.getName());
             config.setNewTargetSchema(newSchema.getName());
         }
-    }
-
-    private void buildNonUserSchemaTargetList(List<SrcTable> currentSrcTables) {
-        List<Schema> targetSchemaList = new ArrayList<>();
-        List<String> addedSchemas = new ArrayList<>();
-        for (SrcTable srcTable : currentSrcTables) {
-            if (!srcTable.isSelected()) {
-                continue;
-            }
-            Schema srcSchema = srcCatalog.getSchemaByName(srcTable.getSrcSchema());
-            if (srcSchema == null || addedSchemas.contains(srcSchema.getName())) {
-                continue;
-            }
-            srcSchema.setTargetSchemaName(srcSchema.getName());
-            targetSchemaList.add(srcSchema);
-            addedSchemas.add(srcSchema.getName());
-        }
-        if (!config.getTargetSchemaList().isEmpty()) {
-            config.removeTargetSchemaList();
-        }
-        config.setTargetSchemaList(targetSchemaList);
     }
 
     /**

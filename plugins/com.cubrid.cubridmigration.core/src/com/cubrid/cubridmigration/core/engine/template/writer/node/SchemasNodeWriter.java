@@ -49,11 +49,15 @@ public class SchemasNodeWriter {
             return;
         }
 
+        boolean online = config.targetIsOnline();
         writer.writeStartElement(TAG_SCHEMAS);
         for (Schema schema : schemas) {
             writer.writeEmptyElement(TAG_SCHEMA);
             writer.writeAttribute(ATTR_SOURCE, schema.getName());
             writer.writeAttribute(ATTR_TARGET, schema.getTargetSchemaName());
+            if (online) {
+                writer.writeAttribute(ATTR_NEW, String.valueOf(schema.isNewTargetSchema()));
+            }
         }
         writer.writeEndElement(); // </schemas>
     }

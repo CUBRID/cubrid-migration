@@ -801,12 +801,27 @@ public class MigrationConfiguration {
      * @param isReset
      */
     private void buildSchemaCfg(boolean isReset) {
-        for (String schemaName : newTargetSchema) {
-            Schema dummySchema = new Schema();
-            dummySchema.setName(schemaName);
-            dummySchema.setNewTargetSchema(true);
+        if (!targetIsOnline()) {
+            return;
+        }
+        if (!scriptSchemaMapping.isEmpty()) {
+            return;
+        }
+        rebuildTargetSchemaListFromSource(srcCatalog);
+    }
 
-            targetSchemaList.add(dummySchema);
+    public void rebuildTargetSchemaListFromSource(Catalog sourceCatalog) {
+        removeTargetSchemaList();
+        for (Schema sourceSchema : sourceCatalog.getSchemas()) {
+            String target = sourceSchema.getTargetSchemaName();
+            if (StringUtils.isBlank(target)) {
+                continue;
+            }
+            Schema entry = new Schema();
+            entry.setName(sourceSchema.getName());
+            entry.setTargetSchemaName(target);
+            entry.setNewTargetSchema(newTargetSchema.contains(target));
+            targetSchemaList.add(entry);
         }
     }
 
