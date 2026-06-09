@@ -71,13 +71,17 @@ public class UpdateStatisticsTask extends ImportTask {
      * @return UPDATE STATISTICS ON SQLs
      */
     private List<String> getUpdateStatisticsSQLs(String schemaName) {
+        return getUpdateStatisticsSQLs(schemaName, config.getSourceDBType().isSupportMultiSchema());
+    }
+
+    private List<String> getUpdateStatisticsSQLs(String schemaName, boolean qualifyBySchema) {
         List<String> result = new ArrayList<String>();
         if (config.sourceIsSQL()) {
             return result;
         }
         List<String> objectsToBeUpdated = new ArrayList<String>();
 
-        if (config.getSourceDBType().isSupportMultiSchema()) {
+        if (qualifyBySchema) {
             if (config.sourceIsCSV()) {
                 List<SourceCSVConfig> csvConfigs = config.getCSVConfigs();
                 for (SourceCSVConfig csvf : csvConfigs) {
@@ -141,6 +145,7 @@ public class UpdateStatisticsTask extends ImportTask {
     protected void executeImport() {
         if (config.targetIsOnline() && config.isUpdateStatistics()) {
             if (!config.isAddUserSchema()) {
+                execSQLList(getUpdateStatisticsSQLs(null, false));
                 return;
             }
             List<Schema> schemaList = config.getTargetSchemaList();
