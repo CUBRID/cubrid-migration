@@ -253,7 +253,9 @@ public final class ConnParameters implements Serializable, IDBSource, IJDBCConne
      * @param value of the parameter
      */
     public void setParameter(String key, Object value) {
-    	// No nothing
+    	if ("conServer".equals(key)) {
+            this.conServer = (String) value;
+        }
     }
 
     /**
@@ -263,6 +265,9 @@ public final class ConnParameters implements Serializable, IDBSource, IJDBCConne
      * @return value of the parameter
      */
     public Object getParameter(String key) {
+    	if ("conServer".equals(key)) {
+            return getConServer();
+        }
         return null;
     }
 
@@ -360,7 +365,12 @@ public final class ConnParameters implements Serializable, IDBSource, IJDBCConne
                         newCon.getDriverFileName(),
                         "");
         if (newCon instanceof ConnParameters conPar) {
-        	cp.setConServer(conPar.getConServer());
+            cp.setConServer(conPar.getConServer());
+        } else {
+            Object conServerObj = newCon.getParameter("conServer");
+            if (conServerObj != null) {
+                cp.setConServer(String.valueOf(conServerObj));
+            }
         }
         return cp;
     }
