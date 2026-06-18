@@ -282,6 +282,7 @@ public class Messages extends NLS {
     public static String dBConnectCompositeErrEmptyConnNm;
     public static String dBConnectCompositeErrName;
     public static String dBConnectCompositeErrPort;
+    public static String dBConnectCompositeErrServer;
     public static String dBConnectCompositeLblCharset;
     public static String dBConnectCompositeLblConnNm;
     public static String dBConnectCompositeLblDbName;
@@ -290,6 +291,7 @@ public class Messages extends NLS {
     public static String dBConnectCompositeLblIP;
     public static String dBConnectCompositeLblPassword;
     public static String dBConnectCompositeLblPort;
+    public static String dBConnectCompositeLblServer;
     public static String dBConnectCompositeLblUsername;
     public static String dBConnectCompositeStatusCharset;
     public static String dBConnectCompositeStatusIP;

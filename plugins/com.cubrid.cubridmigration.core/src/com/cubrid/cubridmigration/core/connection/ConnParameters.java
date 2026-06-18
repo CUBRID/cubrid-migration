@@ -64,6 +64,7 @@ public final class ConnParameters implements Serializable, IDBSource, IJDBCConne
     private String timeZone;
     private String conUser;
     private String userJDBCURL;
+    private String conServer;
 
     private ConnParameters() {}
 
@@ -80,6 +81,7 @@ public final class ConnParameters implements Serializable, IDBSource, IJDBCConne
         this.driverFileName = src.driverFileName;
         this.userJDBCURL = src.userJDBCURL;
         this.conName = src.conName;
+        this.conServer = src.conServer;
     }
 
     public String getCharset() {
@@ -164,6 +166,14 @@ public final class ConnParameters implements Serializable, IDBSource, IJDBCConne
         return userJDBCURL;
     }
 
+    public String getConServer() {
+    	return StringUtils.defaultString(conServer);
+    }
+
+    public void setConServer(String conServer) {
+        this.conServer = conServer;
+    }
+
     public void setCharset(String charSet) {
         this.charSet = charSet;
     }
@@ -243,7 +253,9 @@ public final class ConnParameters implements Serializable, IDBSource, IJDBCConne
      * @param value of the parameter
      */
     public void setParameter(String key, Object value) {
-        // No nothing
+        if ("conServer".equals(key)) {
+            this.conServer = (String) value;
+        }
     }
 
     /**
@@ -253,6 +265,9 @@ public final class ConnParameters implements Serializable, IDBSource, IJDBCConne
      * @return value of the parameter
      */
     public Object getParameter(String key) {
+        if ("conServer".equals(key)) {
+            return getConServer();
+        }
         return null;
     }
 
@@ -349,6 +364,10 @@ public final class ConnParameters implements Serializable, IDBSource, IJDBCConne
                         newCon.getConPassword(),
                         newCon.getDriverFileName(),
                         "");
+        cp.setConServer((String) newCon.getParameter("conServer"));
+        if (newCon instanceof ConnParameters) {
+            cp.setConServer(((ConnParameters) newCon).getConServer());
+        }
         return cp;
     }
 
@@ -434,6 +453,7 @@ public final class ConnParameters implements Serializable, IDBSource, IJDBCConne
         this.driverFileName = cp.driverFileName;
         this.userJDBCURL = cp.userJDBCURL;
         this.conName = cp.conName;
+        this.conServer = cp.conServer;
     }
 
     /**

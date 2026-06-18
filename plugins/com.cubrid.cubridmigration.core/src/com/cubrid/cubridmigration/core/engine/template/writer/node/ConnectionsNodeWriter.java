@@ -94,5 +94,6 @@ public class ConnectionsNodeWriter {
         writer.writeAttribute(ATTR_CHARSET, cp.getCharset());
         writer.writeAttribute(ATTR_TIMEZONE, cp.getTimeZone());
         writer.writeAttribute(ATTR_USER_JDBC_URL, cp.getUserJDBCURL());
+        writer.writeAttribute(ATTR_CON_SERVER, cp.getConServer());
     }
 }

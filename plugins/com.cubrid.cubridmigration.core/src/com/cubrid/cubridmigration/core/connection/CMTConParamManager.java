@@ -151,6 +151,7 @@ public final class CMTConParamManager implements IJDBCInfoChangedSubject {
                                     driverPath,
                                     schema);
                     cp.setUserJDBCURL(child.getString("user_jdbc_url"));
+                    cp.setConServer(child.getString("con_server"));
                     addConnection(cp, true);
                 }
             } finally {
@@ -187,6 +188,7 @@ public final class CMTConParamManager implements IJDBCInfoChangedSubject {
                 child.putString("port", cp.getPort() + "");
                 child.putString("driverPath", cp.getDriverFileName());
                 child.putString("user_jdbc_url", cp.getUserJDBCURL());
+                child.putString("con_server", cp.getConServer());
                 // child.putString("schema", cp.getSchema());
             }
             FileOutputStream writer = new FileOutputStream(defaultFile);

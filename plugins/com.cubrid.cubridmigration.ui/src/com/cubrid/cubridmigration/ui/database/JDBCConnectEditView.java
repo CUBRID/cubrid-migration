@@ -84,6 +84,8 @@ public class JDBCConnectEditView {
     private Spinner txtHostPort;
     private Text txtPassword;
     private Text txtUserName;
+    private Label lblServer;
+    private Text txtServer;
 
     private String userJDBCURL;
 
@@ -194,6 +196,11 @@ public class JDBCConnectEditView {
                                 Messages.dBConnectCompositeLblDbName,
                                 str);
                 return (new Status(IStatus.ERROR, errMess));
+            }
+            if (DatabaseType.INFORMIX.equals(getDBType())) {
+                if (StringUtils.isBlank(txtServer.getText())) {
+                    return new Status(IStatus.ERROR, Messages.dBConnectCompositeErrServer);
+                }
             }
         }
 
@@ -313,6 +320,16 @@ public class JDBCConnectEditView {
         txtHostPort.setMinimum(0);
         txtHostPort.setMaximum(65535);
 
+        lblServer = new Label(group, SWT.NONE);
+        lblServer.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false));
+        lblServer.setText(Messages.dBConnectCompositeLblServer);
+
+        txtServer = new Text(group, SWT.BORDER);
+        final GridData gdServer = new GridData(SWT.FILL, SWT.CENTER, true, false);
+        gdServer.horizontalSpan = 3;
+        txtServer.setLayoutData(gdServer);
+        txtServer.setTextLimit(256);
+
         final Label databaseNameLabel = new Label(group, SWT.NONE);
         databaseNameLabel.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false));
         databaseNameLabel.setText(Messages.dBConnectCompositeLblDbName);
@@ -406,6 +423,16 @@ public class JDBCConnectEditView {
         } else {
             cboCharset.select(0);
         }
+
+        boolean isInformix = DatabaseType.INFORMIX.equals(dt);
+        if (lblServer != null && txtServer != null) {
+            lblServer.setVisible(isInformix);
+            txtServer.setVisible(isInformix);
+            ((GridData) lblServer.getLayoutData()).exclude = !isInformix;
+            ((GridData) txtServer.getLayoutData()).exclude = !isInformix;
+            lblServer.getParent().layout(true, true);
+        }
+
         // If there is no driver.
         if (CollectionUtils.isEmpty(driverList)) {
             cboDrivers.setItems(new String[0]);
@@ -469,6 +496,9 @@ public class JDBCConnectEditView {
                 ConnParameters.getConParam(
                         name, hostIp, port, dbName, dt, charSet, user, pass, driverPath, "");
         cp.setUserJDBCURL(userJDBCURL);
+        if (txtServer != null && DatabaseType.INFORMIX.equals(dt)) {
+            cp.setConServer(txtServer.getText().trim());
+        }
         return cp;
     }
 
@@ -570,6 +600,9 @@ public class JDBCConnectEditView {
             setUsername(cp.getConUser());
             setPassword(cp.getConPassword());
             setCharsetText(cp.getCharset());
+            if (txtServer != null) {
+                txtServer.setText(StringUtils.defaultString(cp.getConServer()));
+            }
 
             userJDBCURL = cp.getUserJDBCURL();
         }

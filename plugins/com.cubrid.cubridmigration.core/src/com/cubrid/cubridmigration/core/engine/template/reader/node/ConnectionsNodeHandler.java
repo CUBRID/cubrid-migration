@@ -70,6 +70,7 @@ public class ConnectionsNodeHandler extends DefaultHandler {
                             attributes.getValue(ATTR_SCHEMA));
             scp.setUserJDBCURL(attributes.getValue(ATTR_USER_JDBC_URL));
             scp.setTimeZone(attributes.getValue(ATTR_TIMEZONE));
+            scp.setConServer(attributes.getValue(ATTR_CON_SERVER));
             config.setSourceConParams(scp);
         } else if ("target".equals(id)) {
             ConnParameters cp =
@@ -86,6 +87,7 @@ public class ConnectionsNodeHandler extends DefaultHandler {
                             attributes.getValue(ATTR_SCHEMA));
             cp.setUserJDBCURL(attributes.getValue(ATTR_USER_JDBC_URL));
             cp.setTimeZone(attributes.getValue(ATTR_TIMEZONE));
+            cp.setConServer(attributes.getValue(ATTR_CON_SERVER));
 
             config.setTargetConParams(cp);
             config.setCreateConstrainsBeforeData(

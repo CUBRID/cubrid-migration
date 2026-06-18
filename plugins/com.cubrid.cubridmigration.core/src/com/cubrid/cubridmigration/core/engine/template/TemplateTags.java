@@ -55,6 +55,7 @@ public final class TemplateTags {
     public static final String ATTR_COMMENT = "comment";
     public static final String ATTR_COMMIT_COUNT = "commit_count";
     public static final String ATTR_CONDITION = "condition";
+    public static final String ATTR_CON_SERVER = "con_server";
     public static final String ATTR_CREATE = "create";
     public static final String ATTR_CREATE_CONSTRAINT_NOW = "create_constraints_before_data";
     public static final String ATTR_CREATE_USER_SQL = "create_user_sql";
