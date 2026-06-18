@@ -197,10 +197,8 @@ public class JDBCConnectEditView {
                                 str);
                 return (new Status(IStatus.ERROR, errMess));
             }
-            if (DatabaseType.INFORMIX.equals(getDBType())) {
-                if (StringUtils.isBlank(txtServer.getText())) {
-                    return new Status(IStatus.ERROR, Messages.dBConnectCompositeErrServer);
-                }
+            if (DatabaseType.INFORMIX.equals(getDBType()) && StringUtils.isBlank(txtServer.getText())) {
+                return new Status(IStatus.ERROR, Messages.dBConnectCompositeErrServer);
             }
         }
 
