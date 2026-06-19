@@ -167,7 +167,7 @@ public final class ConnParameters implements Serializable, IDBSource, IJDBCConne
     }
 
     public String getConServer() {
-    	return StringUtils.defaultString(conServer);
+        return StringUtils.defaultString(conServer);
     }
 
     public void setConServer(String conServer) {
@@ -253,7 +253,7 @@ public final class ConnParameters implements Serializable, IDBSource, IJDBCConne
      * @param value of the parameter
      */
     public void setParameter(String key, Object value) {
-    	if ("conServer".equals(key)) {
+        if ("conServer".equals(key)) {
             this.conServer = (String) value;
         }
     }
@@ -265,7 +265,7 @@ public final class ConnParameters implements Serializable, IDBSource, IJDBCConne
      * @return value of the parameter
      */
     public Object getParameter(String key) {
-    	if ("conServer".equals(key)) {
+        if ("conServer".equals(key)) {
             return getConServer();
         }
         return null;
