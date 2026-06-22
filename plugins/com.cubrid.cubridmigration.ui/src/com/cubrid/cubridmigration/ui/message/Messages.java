@@ -245,6 +245,7 @@ public class Messages extends NLS {
     public static String confirmMultipleSchemas;
     public static String confirmPath;
     public static String confirmPort;
+	public static String confirmServer;
     public static String confirmSettingsSourceDatabase;
     public static String confirmSettingsTargetDatabase;
     public static String confirmSettingsType;

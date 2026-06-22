@@ -149,6 +149,14 @@ public class ConfirmationPage extends BaseConfirmationPage {
                 text.append(srcConnParameters.getTimeZone().substring(0, length))
                         .append(lineSeparator);
             }
+            // display server value only for INFORMIX
+            if (DatabaseType.INFORMIX.equals(srcConnParameters.getDatabaseType())) {
+                text.append(tabSeparator)
+                        .append(Messages.confirmServer)
+                        .append("  ")
+                        .append(srcConnParameters.getConServer())
+                        .append(lineSeparator);
+            }
 
         } else {
             text.append("MYSQL XML Dump file").append(lineSeparator).append(tabSeparator);
