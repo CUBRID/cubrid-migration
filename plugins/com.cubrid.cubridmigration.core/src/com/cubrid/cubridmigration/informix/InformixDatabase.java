@@ -82,7 +82,7 @@ public class InformixDatabase extends DatabaseType {
                 return "";
             }
             String cubridJdbcURLPattern = "jdbc:informix-sqli://%s:%s/%s:INFORMIXSERVER=%s";
-            String conServer = StringUtils.defaultIfBlank(conParam.getConServer(), "{server}");
+            String conServer = StringUtils.defaultIfBlank(conParam.getConServer(), "informix");
 
             String url =
                     String.format(
