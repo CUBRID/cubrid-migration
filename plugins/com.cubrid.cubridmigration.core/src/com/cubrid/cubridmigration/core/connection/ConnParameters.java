@@ -167,7 +167,7 @@ public final class ConnParameters implements Serializable, IDBSource, IJDBCConne
     }
 
     public String getConServer() {
-    	return StringUtils.defaultIfBlank(conServer, "informix");
+        return StringUtils.defaultIfBlank(conServer, "informix");
     }
 
     public void setConServer(String conServer) {
