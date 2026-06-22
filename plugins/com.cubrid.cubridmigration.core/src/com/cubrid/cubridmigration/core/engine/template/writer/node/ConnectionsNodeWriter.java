@@ -33,6 +33,7 @@ import static com.cubrid.cubridmigration.core.engine.template.MigrationTemplateU
 import static com.cubrid.cubridmigration.core.engine.template.TemplateTags.*;
 
 import com.cubrid.cubridmigration.core.connection.ConnParameters;
+import com.cubrid.cubridmigration.core.dbtype.DBConstant;
 import com.cubrid.cubridmigration.core.engine.config.MigrationConfiguration;
 
 import javax.xml.stream.XMLStreamException;
@@ -94,6 +95,8 @@ public class ConnectionsNodeWriter {
         writer.writeAttribute(ATTR_CHARSET, cp.getCharset());
         writer.writeAttribute(ATTR_TIMEZONE, cp.getTimeZone());
         writer.writeAttribute(ATTR_USER_JDBC_URL, cp.getUserJDBCURL());
-        writer.writeAttribute(ATTR_CON_SERVER, cp.getConServer());
+        if (cp.getDbType() == DBConstant.DBTYPE_INFORMIX) {
+            writer.writeAttribute(ATTR_CON_SERVER, cp.getConServer());
+        }
     }
 }

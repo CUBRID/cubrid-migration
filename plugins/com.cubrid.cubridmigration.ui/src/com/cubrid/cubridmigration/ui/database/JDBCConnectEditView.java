@@ -600,7 +600,7 @@ public class JDBCConnectEditView {
             setPassword(cp.getConPassword());
             setCharsetText(cp.getCharset());
             if (txtServer != null) {
-                txtServer.setText(StringUtils.defaultString(cp.getConServer()));
+                txtServer.setText(cp.getConServer());
             }
 
             userJDBCURL = cp.getUserJDBCURL();
