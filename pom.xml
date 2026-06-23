@@ -48,7 +48,7 @@
 
         <eclipse-repo-url>https://download.eclipse.org/releases</eclipse-repo-url>
         <eclipse-p2-repo.url>${eclipse-repo-url}/${eclipse-version}/</eclipse-p2-repo.url>
-        <cmt-p2-site>https://ftp.cubrid.org/CUBRID_Tools/Dev/p2-site</cmt-p2-site>
+        <cmt-p2-site>https://ftp.cubrid.org/cubrid_dev/CMT/p2-site</cmt-p2-site>
         <jre.download.url>https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.7%2B6</jre.download.url>
     </properties>
 
