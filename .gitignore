@@ -8,7 +8,9 @@ tmp/
 *.swp
 *~.nib
 .DS_Store
-*.log
+/cubrid-migration.log
+/cubrid-migration.*.log.gz
+/logback-status.log
 .settings
 local.properties
 .loadpath
