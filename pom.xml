@@ -26,12 +26,6 @@
         <maven.compiler.source>${java.version}</maven.compiler.source>
         <maven.compiler.target>${java.version}</maven.compiler.target>
 
-        <com.cubrid.bundle.configuration.version>1.0.0</com.cubrid.bundle.configuration.version>
-        <com.cubrid.bundle.core.version>1.0.0</com.cubrid.bundle.core.version>
-        <com.cubrid.bundle.ui.version>1.0.0</com.cubrid.bundle.ui.version>
-        <com.cubrid.bundle.apache.poi-ooxmlversion>5.4.1</com.cubrid.bundle.apache.poi-ooxmlversion>
-        <com.cubrid.bundle.antlr4.version>4.13.2</com.cubrid.bundle.antlr4.version>
-
         <commons-lang3.version>3.17.0</commons-lang3.version>
         <commons-collections4.version>4.5.0</commons-collections4.version>
         <commons-text.version>1.13.1</commons-text.version>
