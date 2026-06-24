@@ -15,6 +15,7 @@ The tool automatically maps complex schemas and data from source databases to CU
     * MS SQL Server (MSSQL)
     * MariaDB
     * Informix
+    * Tibero
 *   **Schema & Data Migration**
 	* Converts table structures, indexes, and views to CUBRID-compatible formats.
 	* Automatically converts data types based on predefined CUBRID type mappings.
