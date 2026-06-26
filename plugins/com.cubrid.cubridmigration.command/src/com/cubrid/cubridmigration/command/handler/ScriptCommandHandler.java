@@ -325,6 +325,9 @@ public class ScriptCommandHandler implements ConsoleCommandHandler {
                 mappingSchema.setName(schemaName);
                 mappingSchema.setTargetSchemaName(schemaName);
                 schemaMappingList.add(mappingSchema);
+                if (config.targetIsOnline()) {
+                    config.setNewTargetSchema(schemaName);
+                }
             }
             config.removeTargetSchemaList();
             config.setTargetSchemaList(schemaMappingList);

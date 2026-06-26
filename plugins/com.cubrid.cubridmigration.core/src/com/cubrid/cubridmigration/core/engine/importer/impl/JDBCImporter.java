@@ -64,6 +64,7 @@ import com.cubrid.cubridmigration.cubrid.stmt.CUBRIDParameterSetter;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
@@ -574,11 +575,33 @@ public class JDBCImporter extends Importer {
     public void createSchema(Schema dummySchema) {
         String ddl = CUBRIDSQLHelper.getInstance(null).getSchemaDDL(dummySchema);
         dummySchema.setDDL(ddl);
+        if (targetUserExists(dummySchema.getTargetSchemaName())) {
+            createObjectSuccess(dummySchema);
+            return;
+        }
         try {
             executeDDL(ddl);
             createObjectSuccess(dummySchema);
         } catch (RuntimeException e) {
             createObjectFailed(dummySchema, e);
+        }
+    }
+
+    private boolean targetUserExists(String userName) {
+        if (userName == null || userName.trim().isEmpty()) {
+            return false;
+        }
+        Connection conn = connectionManager.getTargetConnection();
+        try (PreparedStatement stmt =
+                conn.prepareStatement("SELECT 1 FROM db_user WHERE name = ?")) {
+            stmt.setString(1, userName.toUpperCase());
+            try (ResultSet rs = stmt.executeQuery()) {
+                return rs.next();
+            }
+        } catch (SQLException ex) {
+            return false;
+        } finally {
+            connectionManager.closeTar(conn);
         }
     }
 }
