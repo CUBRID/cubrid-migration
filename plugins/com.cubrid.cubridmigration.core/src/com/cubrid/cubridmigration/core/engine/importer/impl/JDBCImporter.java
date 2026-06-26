@@ -30,6 +30,7 @@
  */
 package com.cubrid.cubridmigration.core.engine.importer.impl;
 
+import com.cubrid.common.log.LogUtil;
 import com.cubrid.cubridmigration.core.common.Closer;
 import com.cubrid.cubridmigration.core.common.DBUtils;
 import com.cubrid.cubridmigration.core.dbobject.Column;
@@ -62,6 +63,8 @@ import com.cubrid.cubridmigration.core.trans.DBTransformHelper;
 import com.cubrid.cubridmigration.cubrid.CUBRIDSQLHelper;
 import com.cubrid.cubridmigration.cubrid.stmt.CUBRIDParameterSetter;
 
+import org.slf4j.Logger;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -78,6 +81,8 @@ import java.util.Map;
  * @version 1.0 - 2011-8-3 created by Kevin Cao
  */
 public class JDBCImporter extends Importer {
+
+    private static final Logger LOG = LogUtil.getLogger(JDBCImporter.class);
 
     private final JDBCConManager connectionManager;
     private final MigrationConfiguration config;
@@ -575,11 +580,11 @@ public class JDBCImporter extends Importer {
     public void createSchema(Schema dummySchema) {
         String ddl = CUBRIDSQLHelper.getInstance(null).getSchemaDDL(dummySchema);
         dummySchema.setDDL(ddl);
-        if (targetUserExists(dummySchema.getTargetSchemaName())) {
-            createObjectSuccess(dummySchema);
-            return;
-        }
         try {
+            if (targetUserExists(dummySchema.getTargetSchemaName())) {
+                createObjectSuccess(dummySchema);
+                return;
+            }
             executeDDL(ddl);
             createObjectSuccess(dummySchema);
         } catch (RuntimeException e) {
@@ -599,6 +604,10 @@ public class JDBCImporter extends Importer {
                 return rs.next();
             }
         } catch (SQLException ex) {
+            LOG.warn(
+                    "Failed to check existence of target user [{}]; assuming absent.",
+                    userName,
+                    ex);
             return false;
         } finally {
             connectionManager.closeTar(conn);
