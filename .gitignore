@@ -7,6 +7,10 @@ tmp/
 *.bak
 *.swp
 *~.nib
+.DS_Store
+/cubrid-migration.log
+/cubrid-migration.*.log.gz
+/logback-status.log
 .settings
 local.properties
 .loadpath

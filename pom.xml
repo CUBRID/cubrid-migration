@@ -26,12 +26,6 @@
         <maven.compiler.source>${java.version}</maven.compiler.source>
         <maven.compiler.target>${java.version}</maven.compiler.target>
 
-        <com.cubrid.bundle.configuration.version>1.0.0</com.cubrid.bundle.configuration.version>
-        <com.cubrid.bundle.core.version>1.0.0</com.cubrid.bundle.core.version>
-        <com.cubrid.bundle.ui.version>1.0.0</com.cubrid.bundle.ui.version>
-        <com.cubrid.bundle.apache.poi-ooxmlversion>5.4.1</com.cubrid.bundle.apache.poi-ooxmlversion>
-        <com.cubrid.bundle.antlr4.version>4.13.2</com.cubrid.bundle.antlr4.version>
-
         <commons-lang3.version>3.17.0</commons-lang3.version>
         <commons-collections4.version>4.5.0</commons-collections4.version>
         <commons-text.version>1.13.1</commons-text.version>
@@ -48,7 +42,7 @@
 
         <eclipse-repo-url>https://download.eclipse.org/releases</eclipse-repo-url>
         <eclipse-p2-repo.url>${eclipse-repo-url}/${eclipse-version}/</eclipse-p2-repo.url>
-        <cmt-p2-site>https://ftp.cubrid.org/CUBRID_Tools/Dev/p2-site</cmt-p2-site>
+        <cmt-p2-site>https://ftp.cubrid.org/cubrid_dev/CMT/p2-site</cmt-p2-site>
         <jre.download.url>https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.7%2B6</jre.download.url>
     </properties>
 
