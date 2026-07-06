@@ -347,7 +347,7 @@ public class MigrationDirAndFilesManager implements ICanDispose {
         synchronized (MigrationDirAndFilesManager.class) {
             DataFileInfo dfi = dataFiles.get(fileName);
             if (dfi == null) {
-                return false;
+                return nextCount > maxCount;
             }
             return dfi.getRecordCount() + nextCount > maxCount;
         }
