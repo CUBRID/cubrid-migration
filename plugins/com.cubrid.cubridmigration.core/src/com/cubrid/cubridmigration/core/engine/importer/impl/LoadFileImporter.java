@@ -82,9 +82,7 @@ public class LoadFileImporter extends OfflineImporter {
                 String name,
                 String ext,
                 String pathID) {
-            this.fileHeader = header;
-            this.fileExt = ext;
-            this.fileTableFullName =
+            this.fileHeader =
                     header
                             + File.separator
                             + owner
@@ -95,8 +93,9 @@ public class LoadFileImporter extends OfflineImporter {
                             + "_"
                             + pathID
                             + "_"
-                            + name
-                            + ext;
+                            + name;
+            this.fileExt = ext;
+            this.fileTableFullName = this.fileHeader + ext;
             this.fileFullName = fileFullName;
         }
 
@@ -223,7 +222,7 @@ public class LoadFileImporter extends OfflineImporter {
             CurrentDataFileInfo es = tableFiles.get(schemaName + stc.getName());
 
             // If the target file is full.
-            if (mdfm.isDataFileFull(es.fileTableFullName)) {
+            if (mdfm.isDataFileFull(es.fileTableFullName, impCount)) {
                 // Full name will be changed.
                 es.nextFile();
             }

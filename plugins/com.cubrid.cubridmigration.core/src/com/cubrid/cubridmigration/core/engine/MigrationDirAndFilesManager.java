@@ -325,7 +325,23 @@ public class MigrationDirAndFilesManager implements ICanDispose {
      * @return true if full.
      */
     public boolean isDataFileFull(String fileName) {
-        if (!config.isOneTableOneFile() || config.getMaxCountPerFile() <= 0) {
+        return isDataFileFull(fileName, 0);
+    }
+
+    /**
+     * Check if the data file is full when adding next count of records
+     *
+     * @param fileName String
+     * @param nextCount int
+     * @return true if full.
+     */
+    public boolean isDataFileFull(String fileName, int nextCount) {
+        int maxCount = config.getMaxCountPerFile();
+        if (config.targetIsXLS()) {
+            if (maxCount <= 0 || maxCount > MigrationConfiguration.XLS_MAX_COUNT) {
+                maxCount = MigrationConfiguration.XLS_MAX_COUNT;
+            }
+        } else if (!config.isOneTableOneFile() || maxCount <= 0) {
             return false;
         }
         synchronized (MigrationDirAndFilesManager.class) {
@@ -333,7 +349,7 @@ public class MigrationDirAndFilesManager implements ICanDispose {
             if (dfi == null) {
                 return false;
             }
-            return dfi.getRecordCount() >= config.getMaxCountPerFile();
+            return dfi.getRecordCount() + nextCount > maxCount;
         }
     }
 
