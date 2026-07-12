@@ -1,0 +1,6 @@
+%class [MAIN_SCHEMA].[e2e_binary_types] ([id] [binary_col] [varbinary_col] [tinyblob_col] [blob_col] [mediumblob_col] [longblob_col])
+1 NULL NULL NULL NULL NULL NULL
+2 X'00000000000000000000000000000000' X'' X'' X'' X'' X''
+3 X'00000000000000000000000000000000' X'00' X'00' X'00' X'00' X'00'
+4 X'00ff00ff00ff00ff00ff00ff00ff00ff' X'00ff00ff00ff00ff' X'deadbeef' X'00ff00ff00ff00ff' X'cafed00d' X'0011223344556677'
+5 X'cafebabe000000000000000000000000' X'cafebabe' X'cafebabe' X'cafebabe' X'cafebabe' X'cafebabe'

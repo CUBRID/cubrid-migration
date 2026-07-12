@@ -30,28 +30,50 @@
 
 package com.cmt.e2e.framework.source;
 
-/**
- * Factory for E2E source databases. Adding a new source: implement a {@code XxxSource}
- * package-private class, add a factory method here, add seed under {@code
- * src/test/resources/db/<engine>/}.
- */
-public final class Sources {
+import com.cmt.e2e.framework.db.JdbcDriverJars.DB;
+import com.cmt.e2e.framework.db.containers.MySqlContainer;
+import com.cmt.e2e.framework.db.init.MySqlDatabaseInitializer;
 
-    private Sources() {}
+/** MySQL 8.0 source with single-schema ({@code main_schema}) e2e seed. */
+final class MySqlSource implements Source {
 
-    public static Source oracleE2eSeed() {
-        return new OracleSource();
+    private final MySqlContainer container;
+    private boolean started;
+
+    MySqlSource() {
+        this.container = MySqlContainer.withMainSchema();
     }
 
-    public static Source cubridE2eSeed() {
-        return new CubridSource();
+    @Override
+    public void start() {
+        if (started) return;
+        container.start();
+        MySqlDatabaseInitializer.of(container).migrate("mysql/main_schema");
+        started = true;
     }
 
-    public static Source tiberoE2eSeed() {
-        return new TiberoSource();
+    @Override
+    public ConnectionConfig connection() {
+        return new ConnectionConfig(
+                DB.MYSQL,
+                container.getHost(),
+                container.getDatabasePort(),
+                container.getDatabaseName(),
+                container.getUser(),
+                container.getPassword(),
+                "utf-8",
+                null);
     }
 
-    public static Source mysqlE2eSeed() {
-        return new MySqlSource();
+    @Override
+    public DB type() {
+        return DB.MYSQL;
+    }
+
+    @Override
+    public void close() {
+        if (started) {
+            container.close();
+        }
     }
 }

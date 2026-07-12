@@ -1,0 +1,4 @@
+%class [MAIN_SCHEMA].[e2e_employee] ([employee_id] [manager_id] [emp_name] [hired_on])
+1 NULL 'CEO' date'01/01/2020'
+2 1 'Manager A' date'01/01/2021'
+3 2 'Staff A1' date'01/01/2022'

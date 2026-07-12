@@ -1,0 +1,2 @@
+ grantor_name | grantee_name | object_type | object_name | owner_name | auth_type | is_grantable
+--------------+--------------+-------------+-------------+------------+-----------+--------------

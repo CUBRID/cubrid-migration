@@ -1,0 +1,5 @@
+%class [MAIN_SCHEMA].[e2e_order] ([order_id] [customer_id] [order_no] [order_status] [total_amount] [ordered_at] [settled_at] [source_comment])
+1 1 'ORD-2024-001' 'NEW' 50. date'01/15/2024' NULL 'first order'
+2 1 'ORD-2024-002' 'DONE' 125.5 date'02/01/2024' date'02/05/2024' 'done-order'
+3 2 'ORD-2024-003' 'HOLD' NULL date'03/01/2024' NULL '  padded comment  '
+4 3 'ORD-2024-004' 'CANCEL' 0. date'04/10/2024' NULL '취소 주문 !@#'

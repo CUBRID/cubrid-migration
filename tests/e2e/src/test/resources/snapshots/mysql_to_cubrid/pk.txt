@@ -1,0 +1,11 @@
+ owner_name  | class_name         | index_name                         | key_attr_name | key_order | asc_desc
+-------------+--------------------+------------------------------------+---------------+-----------+----------
+ MAIN_SCHEMA | e2e_binary_types   | pk_e2e_binary_types_id             | id            | 0         | ASC
+ MAIN_SCHEMA | e2e_customer       | pk_e2e_customer_customer_id        | customer_id   | 0         | ASC
+ MAIN_SCHEMA | e2e_employee       | pk_e2e_employee_employee_id        | employee_id   | 0         | ASC
+ MAIN_SCHEMA | e2e_numeric_types  | pk_e2e_numeric_types_id            | id            | 0         | ASC
+ MAIN_SCHEMA | e2e_order          | pk_e2e_order_order_id              | order_id      | 0         | ASC
+ MAIN_SCHEMA | e2e_order_line     | pk_e2e_order_line_order_id_line_no | order_id      | 0         | ASC
+ MAIN_SCHEMA | e2e_order_line     | pk_e2e_order_line_order_id_line_no | line_no       | 1         | ASC
+ MAIN_SCHEMA | e2e_temporal_types | pk_e2e_temporal_types_id           | id            | 0         | ASC
+ MAIN_SCHEMA | e2e_text_types     | pk_e2e_text_types_id               | id            | 0         | ASC
