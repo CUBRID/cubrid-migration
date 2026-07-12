@@ -16,6 +16,7 @@
         <junit-jupiter.version>6.0.3</junit-jupiter.version>
         <assertj.version>3.27.7</assertj.version>
         <testcontainers.version>2.0.5</testcontainers.version>
+        <testcontainers-cubrid.version>0.1.0</testcontainers-cubrid.version>
         <slf4j.version>2.0.17</slf4j.version>
         <logback.version>1.5.32</logback.version>
         <cubrid-jdbc.version>11.3.2.0053</cubrid-jdbc.version>
@@ -76,6 +77,32 @@
             <groupId>org.testcontainers</groupId>
             <artifactId>testcontainers-oracle-xe</artifactId>
             <scope>test</scope>
+        </dependency>
+
+        <!-- JdbcDatabaseContainer (2.x): parent class of the CUBRID module below. -->
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>testcontainers-jdbc</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- Exclude the module's legacy 1.x jdbc/database-commons: they duplicate JdbcDatabaseContainer
+             from testcontainers-jdbc (2.x) and would clash on the classpath. -->
+        <dependency>
+            <groupId>org.cubrid</groupId>
+            <artifactId>testcontainers-cubrid</artifactId>
+            <version>${testcontainers-cubrid.version}</version>
+            <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.testcontainers</groupId>
+                    <artifactId>jdbc</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.testcontainers</groupId>
+                    <artifactId>database-commons</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <!-- JDBC drivers -->

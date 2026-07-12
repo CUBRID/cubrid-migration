@@ -32,33 +32,19 @@ package com.cmt.e2e.framework.db.containers;
 
 import com.cmt.e2e.framework.db.JdbcDriverJars.DB;
 
-import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.containers.wait.strategy.Wait;
-import org.testcontainers.utility.DockerImageName;
-
-import java.time.Duration;
-
 /**
- * CUBRID 11.4 Testcontainer. {@code CUBRID_DB} env fixes the DB name; {@code --privileged} is
- * required so the image can tune kernel parameters (vm.swappiness, kernel.shmmax) at startup.
+ * CUBRID 11.4 test container backed by the official {@code org.cubrid:testcontainers-cubrid}
+ * module.
  */
 public class CubridContainer implements DatabaseContainer {
-    private static final DockerImageName IMAGE = DockerImageName.parse("cubrid/cubrid:11.4");
-    private static final int CUBRID_BROKER_PORT = 33000;
-    private static final String DATABASE_NAME = "e2e_db";
 
-    private final GenericContainer<?> container;
+    private static final String DATABASE_NAME = "e2e_db";
+    private static final int CUBRID_BROKER_PORT = 33000;
+
+    private final DbaProbeContainer container;
 
     private CubridContainer() {
-        this.container =
-                new GenericContainer<>(IMAGE)
-                        .withPrivilegedMode(true)
-                        .withEnv("CUBRID_DB", DATABASE_NAME)
-                        .withEnv("CUBRID_COMPONENTS", "ALL")
-                        .withExposedPorts(CUBRID_BROKER_PORT)
-                        .waitingFor(
-                                Wait.forLogMessage(".*\\+\\+ cubrid server start: success.*", 1))
-                        .withStartupTimeout(Duration.ofMinutes(8));
+        this.container = new DbaProbeContainer();
     }
 
     public static CubridContainer withEmptyDb() {
@@ -98,5 +84,32 @@ public class CubridContainer implements DatabaseContainer {
 
     public String getDatabaseName() {
         return DATABASE_NAME;
+    }
+
+    /**
+     * Probes readiness as the built-in {@code dba} (only {@code CUBRID_DB} is set) so no app user
+     * is created.
+     */
+    private static final class DbaProbeContainer extends org.testcontainers.cubrid.CubridContainer {
+
+        private DbaProbeContainer() {
+            super("cubrid/cubrid:11.4");
+            withDatabaseName(DATABASE_NAME);
+        }
+
+        @Override
+        protected void configure() {
+            addEnv("CUBRID_DB", getDatabaseName());
+        }
+
+        @Override
+        public String getUsername() {
+            return "dba";
+        }
+
+        @Override
+        public String getPassword() {
+            return "";
+        }
     }
 }
