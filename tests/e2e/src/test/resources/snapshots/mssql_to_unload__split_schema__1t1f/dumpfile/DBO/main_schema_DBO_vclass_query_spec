@@ -1,0 +1,2 @@
+ALTER VIEW [DBO].[v_customer_summary] ADD QUERY SELECT customer_id, customer_code, customer_name, status
+    FROM dbo.e2e_customer;

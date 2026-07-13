@@ -75,7 +75,8 @@ public final class JdbcDriverJars {
         TIBERO,
         MYSQL,
         MARIADB,
-        INFORMIX
+        INFORMIX,
+        MSSQL
     }
 
     private static final Map<DB, List<String>> PATTERNS =
@@ -85,7 +86,8 @@ public final class JdbcDriverJars {
                     DB.TIBERO, List.of("tibero7-jdbc-17.jar", "tibero7-jdbc-*.jar"),
                     DB.MYSQL, List.of("mysql-connector-j-*.jar", "mysql-connector-java-*.jar"),
                     DB.MARIADB, List.of("mariadb-java-client-*.jar"),
-                    DB.INFORMIX, List.of("informix-jdbc-*.jar"));
+                    DB.INFORMIX, List.of("informix-jdbc-*.jar"),
+                    DB.MSSQL, List.of("mssql-jdbc-*.jar"));
 
     private static final Map<DB, Path> CACHE = new ConcurrentHashMap<>();
 

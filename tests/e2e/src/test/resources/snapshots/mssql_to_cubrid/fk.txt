@@ -1,0 +1,5 @@
+ owner_name | class_name     | index_name              | key_attr_name | key_order | asc_desc
+------------+----------------+-------------------------+---------------+-----------+----------
+ DBO        | e2e_employee   | fk_e2e_employee_manager | manager_id    | 0         | ASC
+ DBO        | e2e_order      | fk_e2e_order_customer   | customer_id   | 0         | ASC
+ DBO        | e2e_order_line | fk_e2e_order_line_order | order_id      | 0         | ASC

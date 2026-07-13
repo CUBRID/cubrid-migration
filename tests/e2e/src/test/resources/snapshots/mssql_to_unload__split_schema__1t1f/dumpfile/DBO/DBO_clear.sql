@@ -1,0 +1,13 @@
+ALTER TABLE [DBO].[e2e_customer] DROP CONSTRAINT [uk_e2e_customer_code];
+ALTER TABLE [DBO].[e2e_order] DROP CONSTRAINT [idx_e2e_order_status];
+ALTER TABLE [DBO].[e2e_order] DROP CONSTRAINT [idxd_e2e_order_ordered_at];
+DROP TABLE [DBO].[e2e_binary_types];
+DROP TABLE [DBO].[e2e_customer];
+DROP TABLE [DBO].[e2e_employee];
+DROP TABLE [DBO].[e2e_numeric_types];
+DROP TABLE [DBO].[e2e_order];
+DROP TABLE [DBO].[e2e_order_line];
+DROP TABLE [DBO].[e2e_temporal_types];
+DROP TABLE [DBO].[e2e_text_types];
+DROP VIEW [DBO].[v_customer_summary];
+DROP SYNONYM [DBO].[syn_e2e_customer];

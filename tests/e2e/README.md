@@ -3,8 +3,8 @@
 End-to-end migration tests: source DB → `migration.sh` → target DB
 output verification.
 
-Active sources: Oracle / CUBRID / MySQL / MariaDB / Informix / Tibero. Targets:
-online CUBRID, CMT unload (LoadDB) dump.
+Active sources: Oracle / CUBRID / MySQL / MariaDB / Informix / MSSQL / Tibero.
+Targets: online CUBRID, CMT unload (LoadDB) dump.
 
 ## Prerequisites
 
@@ -24,6 +24,7 @@ cd tests/e2e
 ./test.sh mysql                 # MySqlTo*Test only
 ./test.sh mariadb               # MariaDbTo*Test only
 ./test.sh informix              # InformixTo*Test only
+./test.sh mssql                 # MsSqlTo*Test only
 ./test.sh tibero                # TiberoTo*Test only
 ./test.sh cli                   # CliTest only
 

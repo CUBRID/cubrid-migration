@@ -1,0 +1,3 @@
+ owner_name | class_name         | comment
+------------+--------------------+---------
+ DBO        | v_customer_summary | <NULL>

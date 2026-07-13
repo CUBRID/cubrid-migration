@@ -1,0 +1,2 @@
+CREATE /*+ NO_STATS */ INDEX [idx_e2e_order_status] ON [DBO].[e2e_order]([order_status]);
+CREATE /*+ NO_STATS */ INDEX [idxd_e2e_order_ordered_at] ON [DBO].[e2e_order]([ordered_at] DESC);

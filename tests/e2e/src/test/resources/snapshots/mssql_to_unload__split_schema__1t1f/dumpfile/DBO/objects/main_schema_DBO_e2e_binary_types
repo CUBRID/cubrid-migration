@@ -1,0 +1,4 @@
+%class [DBO].[e2e_binary_types] ([id] [binary_col] [varbinary_col])
+1 X'01020304' X'deadbeef'
+2 NULL NULL
+3 X'00000000' X'ff'

@@ -1,0 +1,3 @@
+ synonym_owner_name | synonym_name     | target_owner_name | target_name
+--------------------+------------------+-------------------+--------------
+ DBO                | syn_e2e_customer | DBO               | e2e_customer

@@ -1,0 +1,4 @@
+%class [DBO].[e2e_text_types] ([id] [char_col] [varchar_col] [nchar_col] [nvarchar_col])
+1 'CHAR10    ' 'varchar value' 'NCHAR     ' 'nvarchar 한글'
+2 NULL NULL NULL NULL
+3 'AB        ' 'x' 'Y         ' 'z'

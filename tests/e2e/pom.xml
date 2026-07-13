@@ -24,6 +24,10 @@
         <mysql-connector.version>8.4.0</mysql-connector.version>
         <mariadb-connector.version>3.4.1</mariadb-connector.version>
         <informix-jdbc.version>15.0.1.3</informix-jdbc.version>
+        <!-- 9.4.x defaults encrypt=false; 10.2+ flipped it to true. CMT's fixed MSSQL URL
+             (jdbc:sqlserver://host:port;databaseName=db) can't pass trustServerCertificate,
+             so a pre-10.2 driver is required to connect to the cert-less test container. -->
+        <mssql-jdbc.version>9.4.1.jre11</mssql-jdbc.version>
         <flyway.version>10.22.0</flyway.version>
         <jackson.version>2.21.3</jackson.version>
     </properties>
@@ -94,6 +98,12 @@
             <scope>test</scope>
         </dependency>
 
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>testcontainers-mssqlserver</artifactId>
+            <scope>test</scope>
+        </dependency>
+
         <!-- JdbcDatabaseContainer (2.x): parent class of the CUBRID module below. -->
         <dependency>
             <groupId>org.testcontainers</groupId>
@@ -156,7 +166,14 @@
             <scope>test</scope>
         </dependency>
 
-        <!-- Flyway (community edition has no Informix support; Informix is seeded via direct JDBC) -->
+        <dependency>
+            <groupId>com.microsoft.sqlserver</groupId>
+            <artifactId>mssql-jdbc</artifactId>
+            <version>${mssql-jdbc.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- Flyway (community edition has no Informix/MSSQL bootstrap here; both are seeded via direct JDBC) -->
         <dependency>
             <groupId>org.flywaydb</groupId>
             <artifactId>flyway-core</artifactId>
@@ -298,6 +315,22 @@
                                     <version>${informix-jdbc.version}</version>
                                     <outputDirectory>${project.build.testOutputDirectory}/driver</outputDirectory>
                                     <destFileName>informix-jdbc-${informix-jdbc.version}.jar</destFileName>
+                                </artifactItem>
+                            </artifactItems>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>copy-mssql-jdbc-driver</id>
+                        <phase>generate-test-resources</phase>
+                        <goals><goal>copy</goal></goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>com.microsoft.sqlserver</groupId>
+                                    <artifactId>mssql-jdbc</artifactId>
+                                    <version>${mssql-jdbc.version}</version>
+                                    <outputDirectory>${project.build.testOutputDirectory}/driver</outputDirectory>
+                                    <destFileName>mssql-jdbc-${mssql-jdbc.version}.jar</destFileName>
                                 </artifactItem>
                             </artifactItems>
                         </configuration>

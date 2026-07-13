@@ -1,0 +1,7 @@
+CREATE VIEW [DBO].[v_customer_summary](
+[customer_id] int,
+[customer_code] char(4),
+[customer_name] varchar(100),
+[status] char(1)
+)
+;

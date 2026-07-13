@@ -1,0 +1,4 @@
+%class [DBO].[e2e_numeric_types] ([id] [bit_col] [tinyint_col] [smallint_col] [int_col] [bigint_col] [decimal_col] [numeric_col] [money_col] [smallmoney_col] [float_col] [real_col])
+1 1 255 32767 2147483647 9223372036854775807 12345.6789 123456.78 922337203685477.5807 214748.3647 1.5 1.5
+2 0 0 -32768 -2147483648 -9223372036854775808 -12345.6789 -1. -922337203685477.5808 -214748.3648 -3.14159 -3.14
+3 NULL NULL 0 0 0 0. 0. 0. 0. 0.0 0.0

@@ -1,0 +1,5 @@
+%class [DBO].[e2e_order_line] ([order_id] [line_no] [sku] [qty] [unit_price] [line_note])
+1000 1 'SKU-A' 2 100. NULL
+1000 2 'SKU-B' 3 100. 'bulk'
+1001 1 'SKU-C' 1 1200.5 NULL
+1002 1 'SKU-A' 5 0. 'free'

@@ -62,4 +62,8 @@ public final class Sources {
     public static Source informixE2eSeed() {
         return new InformixSource();
     }
+
+    public static Source mssqlE2eSeed() {
+        return new MsSqlSource();
+    }
 }

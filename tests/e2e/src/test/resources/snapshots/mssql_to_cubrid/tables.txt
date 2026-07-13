@@ -1,0 +1,10 @@
+ owner_name | class_name         | comment
+------------+--------------------+---------
+ DBO        | e2e_binary_types   | <NULL>
+ DBO        | e2e_customer       | <NULL>
+ DBO        | e2e_employee       | <NULL>
+ DBO        | e2e_numeric_types  | <NULL>
+ DBO        | e2e_order          | <NULL>
+ DBO        | e2e_order_line     | <NULL>
+ DBO        | e2e_temporal_types | <NULL>
+ DBO        | e2e_text_types     | <NULL>

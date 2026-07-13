@@ -1,0 +1,4 @@
+ owner_name | class_name | index_name                | key_attr_name | key_order | asc_desc | func
+------------+------------+---------------------------+---------------+-----------+----------+--------
+ DBO        | e2e_order  | idx_e2e_order_status      | order_status  | 0         | ASC      | <NULL>
+ DBO        | e2e_order  | idxd_e2e_order_ordered_at | ordered_at    | 0         | DESC     | <NULL>

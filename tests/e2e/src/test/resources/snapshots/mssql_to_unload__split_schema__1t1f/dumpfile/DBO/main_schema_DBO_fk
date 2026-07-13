@@ -1,0 +1,3 @@
+ALTER /*+ NO_STATS */ TABLE [DBO].[e2e_employee] ADD CONSTRAINT [fk_e2e_employee_manager] FOREIGN KEY ([manager_id]) REFERENCES [DBO].[e2e_employee]([employee_id]) ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER /*+ NO_STATS */ TABLE [DBO].[e2e_order] ADD CONSTRAINT [fk_e2e_order_customer] FOREIGN KEY ([customer_id]) REFERENCES [DBO].[e2e_customer]([customer_id]) ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER /*+ NO_STATS */ TABLE [DBO].[e2e_order_line] ADD CONSTRAINT [fk_e2e_order_line_order] FOREIGN KEY ([order_id]) REFERENCES [DBO].[e2e_order]([order_id]) ON DELETE NO ACTION ON UPDATE NO ACTION;
