@@ -1,0 +1,29 @@
+==> customer business values (id=1)
+ customer_code | customer_name  | customer_alias | status | credit_limit
+---------------+----------------+----------------+--------+--------------
+ C001          | ALPHA CUSTOMER | Alpha Alias    | A      | 12500.75
+
+==> order-line composite-key relationship (order_id=1000, line_no=1)
+ customer_code | order_no | sku   | qty | unit_price
+---------------+----------+-------+-----+------------
+ C001          | ORD-1000 | SKU-A | 2   | 100.00
+
+==> employee self-reference (Alice reports to Root Manager, employee_id=2)
+ emp_name | manager_name
+----------+--------------
+ ALICE    | ROOT MANAGER
+
+==> text type minimal row (id=3)
+ char_col   | varchar_col | lvarchar_col
+------------+-------------+--------------
+ AB         | x           | y
+
+==> numeric type maximum row (id=1)
+ int_col    | bigint_col          | decimal_col
+------------+---------------------+-------------
+ 2147483647 | 9223372036854775807 | 12345.6789
+
+==> temporal representative row (id=1)
+ date_col   | dt_sec_col
+------------+-------------------------
+ 2024-01-10 | 2024-01-10 08:30:00.000

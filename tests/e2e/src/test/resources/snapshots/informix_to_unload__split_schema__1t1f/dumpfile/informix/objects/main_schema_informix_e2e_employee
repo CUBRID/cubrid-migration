@@ -1,0 +1,5 @@
+%class [INFORMIX].[e2e_employee] ([employee_id] [manager_id] [emp_name] [hired_on])
+1 NULL 'ROOT MANAGER' date'01/01/2020'
+2 1 'ALICE' date'03/15/2021'
+3 1 'BOB' date'06/01/2022'
+4 2 'CAROL' date'09/10/2023'

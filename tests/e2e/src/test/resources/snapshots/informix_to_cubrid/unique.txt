@@ -1,0 +1,3 @@
+ owner_name | class_name   | index_name | key_attr_name | key_order | asc_desc
+------------+--------------+------------+---------------+-----------+----------
+ INFORMIX   | e2e_customer | 100_2      | customer_code | 0         | ASC

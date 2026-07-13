@@ -1,0 +1,7 @@
+UPDATE STATISTICS ON e2e_customer;
+UPDATE STATISTICS ON e2e_order;
+UPDATE STATISTICS ON e2e_order_line;
+UPDATE STATISTICS ON e2e_employee;
+UPDATE STATISTICS ON e2e_text_types;
+UPDATE STATISTICS ON e2e_numeric_types;
+UPDATE STATISTICS ON e2e_temporal_types;

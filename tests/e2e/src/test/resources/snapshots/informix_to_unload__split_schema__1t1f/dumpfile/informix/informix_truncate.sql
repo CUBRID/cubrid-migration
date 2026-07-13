@@ -1,0 +1,7 @@
+TRUNCATE TABLE [INFORMIX].[e2e_customer];
+TRUNCATE TABLE [INFORMIX].[e2e_order];
+TRUNCATE TABLE [INFORMIX].[e2e_order_line];
+TRUNCATE TABLE [INFORMIX].[e2e_employee];
+TRUNCATE TABLE [INFORMIX].[e2e_text_types];
+TRUNCATE TABLE [INFORMIX].[e2e_numeric_types];
+TRUNCATE TABLE [INFORMIX].[e2e_temporal_types];

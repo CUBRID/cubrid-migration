@@ -1,0 +1,1 @@
+CREATE /*+ NO_STATS */  UNIQUE INDEX [100_2] ON [INFORMIX].[e2e_customer]([customer_code]);

@@ -1,0 +1,3 @@
+ALTER TABLE [INFORMIX].[e2e_order] DROP CONSTRAINT [fk_e2e_order_customer];
+ALTER TABLE [INFORMIX].[e2e_order_line] DROP CONSTRAINT [fk_e2e_order_line_order];
+ALTER TABLE [INFORMIX].[e2e_employee] DROP CONSTRAINT [fk_e2e_employee_manager];

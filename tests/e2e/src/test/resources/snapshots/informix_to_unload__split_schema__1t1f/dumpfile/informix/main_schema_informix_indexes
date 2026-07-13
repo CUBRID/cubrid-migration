@@ -1,0 +1,5 @@
+CREATE /*+ NO_STATS */ INDEX [101_8] ON [INFORMIX].[e2e_order]([customer_id]);
+CREATE /*+ NO_STATS */ INDEX [idx_e2e_order_status] ON [INFORMIX].[e2e_order]([order_status]);
+CREATE /*+ NO_STATS */ INDEX [idxd_e2e_order_ordered_at] ON [INFORMIX].[e2e_order]([ordered_at]);
+CREATE /*+ NO_STATS */ INDEX [102_13] ON [INFORMIX].[e2e_order_line]([order_id]);
+CREATE /*+ NO_STATS */ INDEX [103_18] ON [INFORMIX].[e2e_employee]([manager_id]);

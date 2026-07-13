@@ -1,0 +1,64 @@
+CREATE TABLE [INFORMIX].[e2e_customer](
+[customer_id] int,
+[customer_code] char(4) NOT NULL,
+[customer_name] varchar(100) NOT NULL,
+[customer_alias] varchar(60),
+[status] char(1),
+[credit_limit] numeric(15,2),
+[created_on] date,
+[updated_on] date
+)
+;
+CREATE TABLE [INFORMIX].[e2e_order](
+[order_id] int,
+[customer_id] int NOT NULL,
+[order_no] varchar(30),
+[order_status] varchar(20),
+[total_amount] numeric(18,2),
+[ordered_at] date,
+[settled_at] date,
+[source_comment] varchar(200)
+)
+;
+CREATE TABLE [INFORMIX].[e2e_order_line](
+[order_id] int,
+[line_no] int,
+[sku] varchar(30),
+[qty] int,
+[unit_price] numeric(15,2),
+[line_note] varchar(200)
+)
+;
+CREATE TABLE [INFORMIX].[e2e_employee](
+[employee_id] int,
+[manager_id] int,
+[emp_name] varchar(100) NOT NULL,
+[hired_on] date
+)
+;
+CREATE TABLE [INFORMIX].[e2e_text_types](
+[id] int,
+[char_col] char(10),
+[varchar_col] varchar(100),
+[lvarchar_col] varchar(2000)
+)
+;
+CREATE TABLE [INFORMIX].[e2e_numeric_types](
+[id] int,
+[smallint_col] short,
+[int_col] int,
+[bigint_col] bigint,
+[decimal_col] numeric(20,4),
+[money_col] numeric(16,2),
+[smallfloat_col] float,
+[float_col] double,
+[boolean_col] int
+)
+;
+CREATE TABLE [INFORMIX].[e2e_temporal_types](
+[id] int,
+[date_col] date,
+[dt_sec_col] datetime,
+[dt_frac_col] datetime
+)
+;

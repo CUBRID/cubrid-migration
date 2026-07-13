@@ -1,0 +1,9 @@
+ OWNER_NAME | CLASS_NAME         | ROW_COUNT
+------------+--------------------+-----------
+ INFORMIX   | e2e_customer       | 4
+ INFORMIX   | e2e_employee       | 4
+ INFORMIX   | e2e_numeric_types  | 3
+ INFORMIX   | e2e_order          | 4
+ INFORMIX   | e2e_order_line     | 4
+ INFORMIX   | e2e_temporal_types | 3
+ INFORMIX   | e2e_text_types     | 3

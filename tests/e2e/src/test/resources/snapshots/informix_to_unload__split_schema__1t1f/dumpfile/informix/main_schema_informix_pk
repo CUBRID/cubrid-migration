@@ -1,0 +1,7 @@
+ALTER /*+ NO_STATS */ TABLE [INFORMIX].[e2e_customer] ADD PRIMARY KEY([customer_id]);
+ALTER /*+ NO_STATS */ TABLE [INFORMIX].[e2e_order] ADD PRIMARY KEY([order_id]);
+ALTER /*+ NO_STATS */ TABLE [INFORMIX].[e2e_order_line] ADD PRIMARY KEY([order_id],[line_no]);
+ALTER /*+ NO_STATS */ TABLE [INFORMIX].[e2e_employee] ADD PRIMARY KEY([employee_id]);
+ALTER /*+ NO_STATS */ TABLE [INFORMIX].[e2e_text_types] ADD PRIMARY KEY([id]);
+ALTER /*+ NO_STATS */ TABLE [INFORMIX].[e2e_numeric_types] ADD PRIMARY KEY([id]);
+ALTER /*+ NO_STATS */ TABLE [INFORMIX].[e2e_temporal_types] ADD PRIMARY KEY([id]);

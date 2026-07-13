@@ -1,0 +1,5 @@
+%class [INFORMIX].[e2e_order] ([order_id] [customer_id] [order_no] [order_status] [total_amount] [ordered_at] [settled_at] [source_comment])
+1000 1 'ORD-1000' 'DONE' 500. date'01/11/2024' date'01/20/2024' 'first order'
+1001 1 'ORD-1001' 'NEW' 1200.5 date'02/01/2024' NULL NULL
+1002 2 'ORD-1002' 'HOLD' 0. date'03/01/2024' NULL 'on hold'
+1003 3 'ORD-1003' 'CANCEL' 75.25 date'03/20/2024' NULL NULL

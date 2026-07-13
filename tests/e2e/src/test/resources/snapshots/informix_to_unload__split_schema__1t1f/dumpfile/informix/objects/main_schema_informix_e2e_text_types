@@ -1,0 +1,4 @@
+%class [INFORMIX].[e2e_text_types] ([id] [char_col] [varchar_col] [lvarchar_col])
+1 'CHAR10    ' 'varchar value' 'lvarchar long value'
+2 NULL NULL NULL
+3 'AB        ' 'x' 'y'

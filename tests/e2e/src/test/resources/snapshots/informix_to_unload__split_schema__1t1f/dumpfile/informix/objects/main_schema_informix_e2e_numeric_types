@@ -1,0 +1,4 @@
+%class [INFORMIX].[e2e_numeric_types] ([id] [smallint_col] [int_col] [bigint_col] [decimal_col] [money_col] [smallfloat_col] [float_col] [boolean_col])
+1 32767 2147483647 9223372036854775807 12345.6789 99999999999999.99 1.5 2.718281828 1
+2 -32767 -2147483647 -9223372036854775807 -12345.6789 -1. -1.5 -3.14159 0
+3 0 0 0 0. 0. 0.0 0.0 0

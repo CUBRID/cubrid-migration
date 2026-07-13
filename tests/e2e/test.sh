@@ -43,6 +43,7 @@ Commands:
   cubrid         Run only CUBRID migration tests
   mysql          Run only MySQL migration tests
   mariadb        Run only MariaDB migration tests
+  informix       Run only Informix migration tests
   tibero         Run only Tibero migration tests
   cli            Run only CLI tests
   snapshot       Regenerate snapshot golden files (-Dsnapshot.update=true)
@@ -68,6 +69,9 @@ case "${1:-}" in
         ;;
     mariadb)
         "${COMPOSE[@]}" mvn test "${MVN_FLAGS[@]}" -Dtest='MariaDbTo*Test'
+        ;;
+    informix)
+        "${COMPOSE[@]}" mvn test "${MVN_FLAGS[@]}" -Dtest='InformixTo*Test'
         ;;
     tibero)
         "${COMPOSE[@]}" mvn test "${MVN_FLAGS[@]}" -Dtest='TiberoTo*Test'

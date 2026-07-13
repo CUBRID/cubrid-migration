@@ -58,4 +58,8 @@ public final class Sources {
     public static Source mariadbE2eSeed() {
         return new MariaDbSource();
     }
+
+    public static Source informixE2eSeed() {
+        return new InformixSource();
+    }
 }
