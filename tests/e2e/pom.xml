@@ -22,6 +22,7 @@
         <cubrid-jdbc.version>11.3.2.0053</cubrid-jdbc.version>
         <ojdbc8.version>21.9.0.0</ojdbc8.version>
         <mysql-connector.version>8.4.0</mysql-connector.version>
+        <mariadb-connector.version>3.4.1</mariadb-connector.version>
         <flyway.version>10.22.0</flyway.version>
         <jackson.version>2.21.3</jackson.version>
     </properties>
@@ -86,6 +87,12 @@
             <scope>test</scope>
         </dependency>
 
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>testcontainers-mariadb</artifactId>
+            <scope>test</scope>
+        </dependency>
+
         <!-- JdbcDatabaseContainer (2.x): parent class of the CUBRID module below. -->
         <dependency>
             <groupId>org.testcontainers</groupId>
@@ -134,6 +141,13 @@
             <scope>test</scope>
         </dependency>
 
+        <dependency>
+            <groupId>org.mariadb.jdbc</groupId>
+            <artifactId>mariadb-java-client</artifactId>
+            <version>${mariadb-connector.version}</version>
+            <scope>test</scope>
+        </dependency>
+
         <!-- Flyway -->
         <dependency>
             <groupId>org.flywaydb</groupId>
@@ -142,7 +156,8 @@
             <scope>test</scope>
         </dependency>
 
-        <!-- Flyway database SPIs: register support for jdbc:cubrid: / jdbc:oracle: / jdbc:mysql: URLs -->
+        <!-- Flyway database SPIs: jdbc:cubrid: / jdbc:oracle: / jdbc:mysql: (flyway-mysql also covers jdbc:mariadb:) -->
+        <!-- flyway-mysql handles both MySQL and MariaDB, so no separate flyway-mariadb is needed. -->
         <dependency>
             <groupId>org.flywaydb</groupId>
             <artifactId>flyway-database-cubrid</artifactId>
@@ -243,6 +258,22 @@
                                     <version>${mysql-connector.version}</version>
                                     <outputDirectory>${project.build.testOutputDirectory}/driver</outputDirectory>
                                     <destFileName>mysql-connector-j-${mysql-connector.version}.jar</destFileName>
+                                </artifactItem>
+                            </artifactItems>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>copy-mariadb-jdbc-driver</id>
+                        <phase>generate-test-resources</phase>
+                        <goals><goal>copy</goal></goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>org.mariadb.jdbc</groupId>
+                                    <artifactId>mariadb-java-client</artifactId>
+                                    <version>${mariadb-connector.version}</version>
+                                    <outputDirectory>${project.build.testOutputDirectory}/driver</outputDirectory>
+                                    <destFileName>mariadb-java-client-${mariadb-connector.version}.jar</destFileName>
                                 </artifactItem>
                             </artifactItems>
                         </configuration>

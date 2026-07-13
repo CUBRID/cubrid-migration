@@ -1,0 +1,80 @@
+CREATE TABLE [MAIN_SCHEMA].[e2e_binary_types](
+[id] int,
+[binary_col] bit(128),
+[varbinary_col] bit varying(2040),
+[tinyblob_col] bit varying(16320),
+[blob_col] bit varying(4194240),
+[mediumblob_col] bit varying(1073741823),
+[longblob_col] bit varying(1073741823)
+)
+;
+CREATE TABLE [MAIN_SCHEMA].[e2e_customer](
+[customer_id] int,
+[customer_code] char(4) NOT NULL COMMENT 'business key',
+[customer_name] varchar(100) NOT NULL,
+[customer_alias] varchar(60) COMMENT '고객 별칭 (다국어 검증)',
+[status] char(1),
+[credit_limit] numeric(15,2),
+[created_on] date,
+[updated_on] date
+)
+;
+CREATE TABLE [MAIN_SCHEMA].[e2e_employee](
+[employee_id] int,
+[manager_id] int COMMENT 'Self-FK to direct manager',
+[emp_name] varchar(100) NOT NULL,
+[hired_on] date
+)
+;
+CREATE TABLE [MAIN_SCHEMA].[e2e_numeric_types](
+[id] int,
+[tinyint_col] short,
+[smallint_col] short,
+[mediumint_col] int,
+[int_col] int,
+[bigint_col] bigint,
+[decimal_col] numeric(20,4),
+[float_col] float,
+[double_col] double,
+[bit_col] bit(8)
+)
+;
+CREATE TABLE [MAIN_SCHEMA].[e2e_order](
+[order_id] int,
+[customer_id] int NOT NULL,
+[order_no] varchar(30),
+[order_status] varchar(20),
+[total_amount] numeric(18,2),
+[ordered_at] date,
+[settled_at] date,
+[source_comment] varchar(200) COMMENT '주문 비고: 다국어/특수문자 검증'
+)
+;
+CREATE TABLE [MAIN_SCHEMA].[e2e_order_line](
+[order_id] int,
+[line_no] int,
+[sku] varchar(30),
+[qty] int,
+[unit_price] numeric(15,2),
+[line_note] varchar(200)
+)
+;
+CREATE TABLE [MAIN_SCHEMA].[e2e_temporal_types](
+[id] int,
+[date_col] date,
+[datetime_col] datetime,
+[timestamp_col] timestamp,
+[time_col] time,
+[year_col] char(4)
+)
+;
+CREATE TABLE [MAIN_SCHEMA].[e2e_text_types](
+[id] int,
+[char_col] char(10),
+[varchar_col] varchar(100),
+[tinytext_col] varchar(255),
+[text_col] varchar(65535),
+[mediumtext_col] varchar(16277215),
+[longtext_col] varchar(1073741823)
+)
+;

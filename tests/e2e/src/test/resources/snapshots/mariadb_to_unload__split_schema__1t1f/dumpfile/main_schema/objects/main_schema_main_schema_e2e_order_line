@@ -1,0 +1,5 @@
+%class [MAIN_SCHEMA].[e2e_order_line] ([order_id] [line_no] [sku] [qty] [unit_price] [line_note])
+1 1 'SKU-ALPHA' 2 25. 'normal'
+2 1 'SKU-BETA' 1 125.5 NULL
+3 1 'SKU-HOLD' 10 9.99 'hold line'
+4 1 'SKU-CANCEL' 1 1. 'cancelled'

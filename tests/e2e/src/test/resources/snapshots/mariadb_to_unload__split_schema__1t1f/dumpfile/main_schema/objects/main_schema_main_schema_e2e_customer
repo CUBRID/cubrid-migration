@@ -1,0 +1,5 @@
+%class [MAIN_SCHEMA].[e2e_customer] ([customer_id] [customer_code] [customer_name] [customer_alias] [status] [credit_limit] [created_on] [updated_on])
+1 'C001' 'ALPHA CUSTOMER' 'Alpha Alias' 'A' 12500.75 date'01/10/2024' date'01/01/0001'
+2 'C002' 'BETA CUSTOMER' NULL 'I' NULL date'02/29/2024' date'01/01/0001'
+3 'C003' '한국 고객' '별칭-한글' 'D' 0. date'03/15/2024' date'01/01/0001'
+4 'C004' 'HIGH LIMIT CUSTOMER' 'High' 'A' 9999999999999.99 date'04/20/2024' date'01/01/0001'

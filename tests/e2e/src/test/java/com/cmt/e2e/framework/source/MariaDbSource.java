@@ -30,32 +30,50 @@
 
 package com.cmt.e2e.framework.source;
 
-/**
- * Factory for E2E source databases. Adding a new source: implement a {@code XxxSource}
- * package-private class, add a factory method here, add seed under {@code
- * src/test/resources/db/<engine>/}.
- */
-public final class Sources {
+import com.cmt.e2e.framework.db.JdbcDriverJars.DB;
+import com.cmt.e2e.framework.db.containers.MariaDbContainer;
+import com.cmt.e2e.framework.db.init.MariaDbDatabaseInitializer;
 
-    private Sources() {}
+/** MariaDB 11 source with single-schema ({@code main_schema}) e2e seed. */
+final class MariaDbSource implements Source {
 
-    public static Source oracleE2eSeed() {
-        return new OracleSource();
+    private final MariaDbContainer container;
+    private boolean started;
+
+    MariaDbSource() {
+        this.container = MariaDbContainer.withMainSchema();
     }
 
-    public static Source cubridE2eSeed() {
-        return new CubridSource();
+    @Override
+    public void start() {
+        if (started) return;
+        container.start();
+        MariaDbDatabaseInitializer.of(container).migrate("mariadb/main_schema");
+        started = true;
     }
 
-    public static Source tiberoE2eSeed() {
-        return new TiberoSource();
+    @Override
+    public ConnectionConfig connection() {
+        return new ConnectionConfig(
+                DB.MARIADB,
+                container.getHost(),
+                container.getDatabasePort(),
+                container.getDatabaseName(),
+                container.getUser(),
+                container.getPassword(),
+                "utf-8",
+                null);
     }
 
-    public static Source mysqlE2eSeed() {
-        return new MySqlSource();
+    @Override
+    public DB type() {
+        return DB.MARIADB;
     }
 
-    public static Source mariadbE2eSeed() {
-        return new MariaDbSource();
+    @Override
+    public void close() {
+        if (started) {
+            container.close();
+        }
     }
 }

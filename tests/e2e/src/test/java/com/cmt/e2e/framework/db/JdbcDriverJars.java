@@ -73,7 +73,8 @@ public final class JdbcDriverJars {
         CUBRID,
         ORACLE,
         TIBERO,
-        MYSQL
+        MYSQL,
+        MARIADB
     }
 
     private static final Map<DB, List<String>> PATTERNS =
@@ -81,7 +82,8 @@ public final class JdbcDriverJars {
                     DB.CUBRID, List.of("JDBC-*-cubrid.jar", "cubrid-jdbc-*.jar"),
                     DB.ORACLE, List.of("ojdbc8-*.jar", "ojdbc8.jar", "ojdbc*.jar"),
                     DB.TIBERO, List.of("tibero7-jdbc-17.jar", "tibero7-jdbc-*.jar"),
-                    DB.MYSQL, List.of("mysql-connector-j-*.jar", "mysql-connector-java-*.jar"));
+                    DB.MYSQL, List.of("mysql-connector-j-*.jar", "mysql-connector-java-*.jar"),
+                    DB.MARIADB, List.of("mariadb-java-client-*.jar"));
 
     private static final Map<DB, Path> CACHE = new ConcurrentHashMap<>();
 

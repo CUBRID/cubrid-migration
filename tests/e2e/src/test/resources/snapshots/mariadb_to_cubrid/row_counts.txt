@@ -1,0 +1,10 @@
+ OWNER_NAME  | CLASS_NAME         | ROW_COUNT
+-------------+--------------------+-----------
+ MAIN_SCHEMA | e2e_binary_types   | 5
+ MAIN_SCHEMA | e2e_customer       | 4
+ MAIN_SCHEMA | e2e_employee       | 3
+ MAIN_SCHEMA | e2e_numeric_types  | 5
+ MAIN_SCHEMA | e2e_order          | 4
+ MAIN_SCHEMA | e2e_order_line     | 4
+ MAIN_SCHEMA | e2e_temporal_types | 5
+ MAIN_SCHEMA | e2e_text_types     | 6
