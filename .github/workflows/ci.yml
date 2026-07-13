@@ -1,4 +1,4 @@
-name: Build & E2E
+name: CI
 
 on:
   push:
@@ -54,9 +54,27 @@ jobs:
           if-no-files-found: error
 
   e2e-test:
-    name: e2e-test
+    name: e2e-${{ matrix.name }}
     needs: build-console
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: oracle
+            tests: 'OracleTo*Test'
+          - name: cubrid
+            tests: 'CubridTo*Test'
+          - name: mysql
+            tests: 'MySqlTo*Test'
+          - name: mariadb
+            tests: 'MariaDbTo*Test'
+          - name: informix
+            tests: 'InformixTo*Test'
+          - name: mssql
+            tests: 'MsSqlTo*Test'
+          - name: cli
+            tests: 'CliTest'
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -80,9 +98,9 @@ jobs:
           tar xzf target/CUBRID-Migration-Toolkit-console-*.tar.gz \
             --strip-components=1 -C cmt-console
           chmod +x cmt-console/migration.sh
-          echo "CMT_CONSOLE_HOME=$GITHUB_WORKSPACE/cmt-console" >> $GITHUB_ENV
+          echo "CMT_CONSOLE_HOME=$GITHUB_WORKSPACE/cmt-console" >> "$GITHUB_ENV"
 
-      - name: Run E2E Tests
+      - name: Run E2E Tests (${{ matrix.name }})
         working-directory: tests/e2e
         env:
           NO_COLOR: '1'
@@ -93,6 +111,7 @@ jobs:
           JAVA_TOOL_OPTIONS: -Doracle.jdbc.timezoneAsRegion=false
         run: |
           mvn -B clean test \
+            -Dtest='${{ matrix.tests }}' \
             -Dmaven.test.failure.ignore=true \
             -Dpicocli.ansi=false \
             -Dorg.fusesource.jansi.Ansi.disable=true
@@ -101,9 +120,8 @@ jobs:
         uses: EnricoMi/publish-unit-test-result-action@c950f6fb443cb5af20a377fd0dfaa78838901040  # v2.23.0
         if: always()
         with:
-          check_name: E2E Test Results
+          check_name: E2E Results (${{ matrix.name }})
           files: tests/e2e/target/surefire-reports/*.xml
-          # 'failures' keeps the PR conversation clean.
           comment_mode: failures
           report_individual_runs: true
           check_run_annotations: all tests, skipped tests
@@ -114,7 +132,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: surefire-reports
+          name: surefire-reports-${{ matrix.name }}
           path: tests/e2e/target/surefire-reports/**
           if-no-files-found: ignore
 
@@ -122,6 +140,6 @@ jobs:
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: e2e-failure-artifacts
+          name: e2e-failure-artifacts-${{ matrix.name }}
           path: tests/e2e/target/e2e/**
           if-no-files-found: ignore
