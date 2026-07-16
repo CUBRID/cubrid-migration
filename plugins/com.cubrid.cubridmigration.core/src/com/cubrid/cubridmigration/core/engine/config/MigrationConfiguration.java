@@ -2544,9 +2544,16 @@ public class MigrationConfiguration {
     /**
      * Commit count
      *
-     * @return the commitCount default 500
+     * @return the commitCount default 1000
      */
     public int getCommitCount() {
+        if (targetIsXLS()) {
+            int maxCount = getMaxCountPerFile();
+            if (maxCount <= 0 || maxCount > XLS_MAX_COUNT) {
+                maxCount = XLS_MAX_COUNT;
+            }
+            return Math.min(commitCount, maxCount);
+        }
         return commitCount;
     }
 
