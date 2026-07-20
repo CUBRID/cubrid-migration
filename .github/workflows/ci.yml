@@ -74,7 +74,7 @@ jobs:
           - name: mssql
             tests: 'MsSqlTo*Test'
           - name: cli
-            tests: 'CliTest'
+            tests: 'Cli*Test'
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -109,9 +109,10 @@ jobs:
           # Oracle 11g XE tz file (v4) → ORA-01882 on newer region IDs
           # unless ojdbc sends UTC offset. Required for CMT subprocess.
           JAVA_TOOL_OPTIONS: -Doracle.jdbc.timezoneAsRegion=false
+          TEST_PATTERN: ${{ matrix.tests }}
         run: |
           mvn -B clean test \
-            -Dtest='${{ matrix.tests }}' \
+            -Dtest="$TEST_PATTERN" \
             -Dmaven.test.failure.ignore=true \
             -Dpicocli.ansi=false \
             -Dorg.fusesource.jansi.Ansi.disable=true
