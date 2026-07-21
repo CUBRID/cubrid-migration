@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
-MVN="`which mvn`"
+MVN="$(command -v mvn)"
 PROFILE="all"
-MVN_DEBUG=""
+MVN_DEBUG=()
 DIR=$PWD
 TARGET=$DIR/target
 PRODUCT_TARGET=$DIR/product/com.cubrid.cubridmigration.desktop/target
@@ -33,7 +33,7 @@ function get_options ()
   while getopts ":p:X" opt; do
     case $opt in
 	  p ) PROFILE=$(printf %s "$OPTARG" | tr '[:upper:]' '[:lower:]') ;;
-          X ) MVN_DEBUG="-Dtycho.debug.resolver=true -X" ;;
+          X ) MVN_DEBUG=(-Dtycho.debug.resolver=true -X) ;;
           * ) show_usage 
               exit ;;
     esac
@@ -43,11 +43,11 @@ function get_options ()
 function check_configuration ()
 {
   if [ -n "${JAVA_HOME}" ]; then
-    echo JAVA_HOME: ${JAVA_HOME}
+    echo "JAVA_HOME: ${JAVA_HOME}"
   fi
 
   if [ -n "${MAVEN_HOME}" ]; then
-    echo MAVEN_HOME: ${MAVEN_HOME}
+    echo "MAVEN_HOME: ${MAVEN_HOME}"
     MVN="${MAVEN_HOME}/bin/mvn"
   fi
 
@@ -61,79 +61,79 @@ function update_build_version ()
 {
   echo "Version File Update....  (plugins/com.cubrid.cubridmigration.ui/version.properties)"
 
-  if [ -d ${DIR}/.git ]; then
+  if [ -d "${DIR}/.git" ]; then
     COMMIT_NUMBER=$(git rev-list --count HEAD | awk '{ printf "%04d", $1 }')
   else
     COMMIT_NUMBER=0000
   fi
 
-  VERSION=$(cat ${VERSION_FILE_PATH} | grep version | cut -d '=' -f2)
-  sed -i "/releaseVersion/d" $RELEASE_VERSION_FILE_PATH
-  echo "releaseVersion=" $VERSION >> $RELEASE_VERSION_FILE_PATH
+  VERSION=$(grep '^version=' "$VERSION_FILE_PATH" | cut -d '=' -f2)
+  sed -i "/releaseVersion/d" "$RELEASE_VERSION_FILE_PATH"
+  echo "releaseVersion=$VERSION" >> "$RELEASE_VERSION_FILE_PATH"
 
   RELEASE_VERSION=$VERSION.$COMMIT_NUMBER
-  sed -i "/buildVersionId/d" $RELEASE_VERSION_FILE_PATH
-  echo "buildVersionId="$RELEASE_VERSION >> $RELEASE_VERSION_FILE_PATH
+  sed -i "/buildVersionId/d" "$RELEASE_VERSION_FILE_PATH"
+  echo "buildVersionId=$RELEASE_VERSION" >> "$RELEASE_VERSION_FILE_PATH"
   
-  echo "VERSION=" $VERSION
-  echo "COMMIT_NUMBER=" $COMMIT_NUMBER
-  echo "RELEASE_VERSION=" $RELEASE_VERSION
+  echo "VERSION=$VERSION"
+  echo "COMMIT_NUMBER=$COMMIT_NUMBER"
+  echo "RELEASE_VERSION=$RELEASE_VERSION"
 }
 
 function copy_desktopcmt_to_directory ()
 {
   CMT_LINUX=$PRODUCT_TARGET/$CMT_PRODUCT_NAME-$RELEASE_VERSION-linux-x86_64.tar.gz
-  if [ -e $CMT_LINUX ]; then
-    cp -vfp $CMT_LINUX $TARGET
+  if [ -e "$CMT_LINUX" ]; then
+    cp -vfp "$CMT_LINUX" "$TARGET"
   fi
 
   CMT_MAC=$PRODUCT_TARGET/$CMT_PRODUCT_NAME-$RELEASE_VERSION-macosx-cocoa-x86_64.tar.gz
-  if [ -e $CMT_MAC ]; then
-    cp -vfp $CMT_MAC $TARGET
+  if [ -e "$CMT_MAC" ]; then
+    cp -vfp "$CMT_MAC" "$TARGET"
   fi
 
   CMT_WINDOWS=$PRODUCT_TARGET/$CMT_PRODUCT_NAME-$RELEASE_VERSION-windows-x64.zip
-  if [ -e $CMT_WINDOWS ]; then
-    cp -vfp $CMT_WINDOWS $TARGET
+  if [ -e "$CMT_WINDOWS" ]; then
+    cp -vfp "$CMT_WINDOWS" "$TARGET"
   fi
 
   CMT_SITE_TAR_GZ=$PRODUCT_TARGET/$CMT_SITE_NAME-$RELEASE_VERSION.tar.gz
-  if [ -e $CMT_SITE_TAR_GZ ]; then
-    cp -vfp $CMT_SITE_TAR_GZ $TARGET
+  if [ -e "$CMT_SITE_TAR_GZ" ]; then
+    cp -vfp "$CMT_SITE_TAR_GZ" "$TARGET"
   fi
 
   CMT_SITE_ZIP=$PRODUCT_TARGET/$CMT_SITE_NAME-$RELEASE_VERSION.zip
-  if [ -e $CMT_SITE_ZIP ]; then
-    cp -vfp $CMT_SITE_ZIP $TARGET
+  if [ -e "$CMT_SITE_ZIP" ]; then
+    cp -vfp "$CMT_SITE_ZIP" "$TARGET"
   fi
 }
 
 function copy_consolecmt_to_directory ()
 {
   CONSOLE_LINUX=$CONSOLE_TARGET/$CMT_CONSOLE_NAME-$RELEASE_VERSION-linux.tar.gz
-  if [ -e $CONSOLE_LINUX ]; then
-    cp -vfp $CONSOLE_LINUX $TARGET
+  if [ -e "$CONSOLE_LINUX" ]; then
+    cp -vfp "$CONSOLE_LINUX" "$TARGET"
   fi
 
   CONSOLE_WINDOWS=$CONSOLE_TARGET/$CMT_CONSOLE_NAME-$RELEASE_VERSION-windows.zip
-  if [ -e $CONSOLE_WINDOWS ]; then
-    cp -vfp $CONSOLE_WINDOWS $TARGET
+  if [ -e "$CONSOLE_WINDOWS" ]; then
+    cp -vfp "$CONSOLE_WINDOWS" "$TARGET"
   fi
 
 }
 
 function copy_cmt_to_directory ()
 {
-  if [ ! -d $TARGET ]; then
-    mkdir $TARGET
+  if [ ! -d "$TARGET" ]; then
+    mkdir "$TARGET"
   fi
 
-  if [ $PROFILE = "all" ] || [ $PROFILE = "a" ]; then
+  if [ "$PROFILE" = "all" ] || [ "$PROFILE" = "a" ]; then
     copy_desktopcmt_to_directory
     copy_consolecmt_to_directory
-  elif [ $PROFILE = "desktop" ] || [ $PROFILE = "d" ]; then
+  elif [ "$PROFILE" = "desktop" ] || [ "$PROFILE" = "d" ]; then
     copy_desktopcmt_to_directory
-  elif [ $PROFILE = "console" ] || [ $PROFILE = "c" ]; then
+  elif [ "$PROFILE" = "console" ] || [ "$PROFILE" = "c" ]; then
     copy_consolecmt_to_directory
   fi
 }
@@ -161,13 +161,13 @@ get_options "$@"
 check_configuration
 update_build_version
 
-if [ $PROFILE = "all" ] || [ $PROFILE = "a" ]; then
-  $MVN clean package -Dcubridmigration-version=$RELEASE_VERSION -Pdesktop $MVN_DEBUG || exit $?
-  $MVN clean package -Dcubridmigration-version=$RELEASE_VERSION -Pconsole $MVN_DEBUG || exit $?
-elif [ $PROFILE = "desktop" ] || [ $PROFILE = "d" ]; then
-  $MVN clean package -Dcubridmigration-version=$RELEASE_VERSION -Pdesktop $MVN_DEBUG || exit $?
-elif [ $PROFILE = "console" ] || [ $PROFILE = "c" ]; then
-  $MVN clean package -Dcubridmigration-version=$RELEASE_VERSION -Pconsole $MVN_DEBUG || exit $?
+if [ "$PROFILE" = "all" ] || [ "$PROFILE" = "a" ]; then
+  $MVN clean package -Dcubridmigration-version="$RELEASE_VERSION" -Pdesktop "${MVN_DEBUG[@]}" || exit $?
+  $MVN clean package -Dcubridmigration-version="$RELEASE_VERSION" -Pconsole "${MVN_DEBUG[@]}" || exit $?
+elif [ "$PROFILE" = "desktop" ] || [ "$PROFILE" = "d" ]; then
+  $MVN clean package -Dcubridmigration-version="$RELEASE_VERSION" -Pdesktop "${MVN_DEBUG[@]}" || exit $?
+elif [ "$PROFILE" = "console" ] || [ "$PROFILE" = "c" ]; then
+  $MVN clean package -Dcubridmigration-version="$RELEASE_VERSION" -Pconsole "${MVN_DEBUG[@]}" || exit $?
 else
   show_usage
 fi
