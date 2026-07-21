@@ -1,0 +1,3 @@
+# Code under tests/ is owned by @Srltas.
+# Changes there auto-request @Srltas as a PR reviewer.
+/tests/ @Srltas
