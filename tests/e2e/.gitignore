@@ -3,3 +3,7 @@
 # com.cmt.e2e.framework.target package contents.
 !src/test/java/com/cmt/e2e/framework/target/
 !src/test/java/com/cmt/e2e/framework/target/**
+
+# Tibero JDBC driver is proprietary and supplied locally (see pom.xml
+# systemPath), so it must not be committed to this public repo.
+/lib/

@@ -11,7 +11,6 @@ tmp/
 /cubrid-migration.log
 /cubrid-migration.*.log.gz
 /logback-status.log
-.settings
 local.properties
 .loadpath
 
@@ -35,6 +34,3 @@ tests/unit-test/logs/
 ## E2E test
 
 tests/e2e/e2e-test.properties
-
-## Mac
-.DS_Store
