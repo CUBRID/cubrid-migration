@@ -27,12 +27,14 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
-      - uses: jitterbit/get-changed-files@v1
+        with:
+          fetch-depth: 0
+      - uses: tj-actions/changed-files@24d32ffd492484c1d75e0c0b894501ddb9d30d62
         id: files
         continue-on-error: true
       - name: Check license
         env:
-          CHANGED_FILES: "${{ steps.files.outputs.added_modified }}"
+          CHANGED_FILES: "${{ steps.files.outputs.all_changed_files }}"
         run: |
           set +e
           license_headers=.github/workflows/license_headers
