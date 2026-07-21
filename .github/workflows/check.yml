@@ -90,17 +90,37 @@ jobs:
           files: |
             **/*.java
           write_output_files: true
-      - uses: axel-op/googlejavaformat-action@c1134ebd196c4cbffb077f9476585b0be8b6afcd
+      - id: format
+        uses: axel-op/googlejavaformat-action@c1134ebd196c4cbffb077f9476585b0be8b6afcd
         if: steps.changed.outputs.any_changed == 'true'
         with:
           release-name: v1.32.0
           args: "--aosp --replace --set-exit-if-changed @.github/outputs/all_changed_files.txt"
           skip-commit: true
-      - name: Suggest code changes
-        if: failure()
-        uses: reviewdog/action-suggester@aa38384ceb608d00f84b4690cacc83a5aba307ff
-        with:
-          tool_name: code-style (indent, googlejavaformat)
+      - name: Report required formatting
+        if: ${{ failure() && steps.format.outcome == 'failure' }}
+        run: |
+          echo "::group::Required formatting changes"
+          git --no-pager diff
+          echo "::endgroup::"
+          {
+            echo "## Code style check failed"
+            echo ""
+            echo "Some Java files are not formatted with google-java-format (AOSP)."
+            echo "Run the formatter locally on the changed files and commit the result:"
+            echo ""
+            echo '```bash'
+            echo 'java -jar google-java-format-1.32.0-all-deps.jar --aosp --replace <changed .java files>'
+            echo '```'
+            echo ""
+            echo "<details><summary>Required changes (diff)</summary>"
+            echo ""
+            echo '```diff'
+            git --no-pager diff | head -n 800
+            echo '```'
+            echo ""
+            echo "</details>"
+          } >> "$GITHUB_STEP_SUMMARY"
   unit-test:
     name: unit-test
     runs-on: ubuntu-24.04
