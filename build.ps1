@@ -143,8 +143,6 @@ $MvnDebug = if ($Debug) { @("-Dtycho.debug.resolver=true", "-X") } else { @() }
 Show-Env
 Update-BuildVersion
 
-# mvn is a native command; $ErrorActionPreference does not stop on its non-zero
-# exit before PowerShell 7.4, so check $LASTEXITCODE after each run explicitly.
 switch ($SelectedProfile) {
     "all" {
         & $Mvn clean package "-Dcubridmigration-version=$ReleaseVersion" -Pdesktop $MvnDebug

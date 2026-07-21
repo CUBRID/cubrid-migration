@@ -40,7 +40,6 @@ jobs:
           license_headers=.github/workflows/license_headers
           result="PASS"
 
-          # CHANGED_FILES is a space-separated list; word-splitting is intended.
           # shellcheck disable=SC2086
           for f in $CHANGED_FILES; do
             if [ -d "$f" ]; then
