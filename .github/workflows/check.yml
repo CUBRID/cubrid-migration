@@ -26,7 +26,7 @@ jobs:
     name: license
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - uses: jitterbit/get-changed-files@v1
         id: files
         continue-on-error: true
@@ -70,7 +70,7 @@ jobs:
     name: pr-style
     runs-on: ubuntu-24.04
     steps:
-      - uses: deepakputhraya/action-pr-title@master
+      - uses: deepakputhraya/action-pr-title@3864bebc79c5f829d25dd42d3c6579d040b0ef16
         with:
           regex: '^\[[A-Z]+-\d+\]\s.+'
   code-style:
