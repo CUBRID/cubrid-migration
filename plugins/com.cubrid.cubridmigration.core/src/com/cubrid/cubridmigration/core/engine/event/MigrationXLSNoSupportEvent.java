@@ -52,7 +52,7 @@ public class MigrationXLSNoSupportEvent extends MigrationEvent {
     public String toString() {
         return "Row Index : "
                 + rowIndex
-                + ", Colum Index : "
+                + ", Column Index : "
                 + columIndex
                 + " in "
                 + tableName
