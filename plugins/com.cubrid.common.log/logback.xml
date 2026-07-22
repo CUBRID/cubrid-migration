@@ -25,9 +25,38 @@
         <appender-ref ref="ROLLING_FILE"/>
     </appender>
 
+    <appender name="ERROR_ROLLING_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>ERROR</level>
+        </filter>
+        <file>${log.dir}/cubrid-migration-error.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${log.dir}/cubrid-migration-error.%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
+            <maxFileSize>100MB</maxFileSize>
+        </rollingPolicy>
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="ASYNC_ERROR_FILE" class="ch.qos.logback.classic.AsyncAppender">
+        <discardingThreshold>0</discardingThreshold>
+        <queueSize>8192</queueSize>
+        <appender-ref ref="ERROR_ROLLING_FILE"/>
+    </appender>
+
     <statusListener class="ch.qos.logback.core.status.OnFileStatusListener">
         <filename>${log.dir}/logback-status.log</filename>
     </statusListener>
+
+    <!--
+        Migration engine only: errors from this package also go to ASYNC_ERROR_FILE.
+        additivity="true" (default) keeps them flowing up to root's ASYNC_FILE as well,
+        so the general log is unaffected; only the scope of the error file narrows.
+    -->
+    <logger name="com.cubrid.cubridmigration.core.engine" level="INFO" additivity="true">
+        <appender-ref ref="ASYNC_ERROR_FILE"/>
+    </logger>
 
     <root level="INFO">
         <!-- <appender-ref ref="CONSOLE"/> -->
