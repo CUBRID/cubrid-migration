@@ -306,7 +306,7 @@ public abstract class OfflineImporter extends Importer {
 
                     int index = 0;
                     for (String val : res) {
-                        sheet.addCell(new jxl.write.Label(index++, total, val));
+                        sheet.addCell(new jxl.write.Label(index++, total, val != null ? val : ""));
                     }
                     total++;
                 }
