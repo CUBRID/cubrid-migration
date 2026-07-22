@@ -286,26 +286,27 @@ public abstract class OfflineImporter extends Importer {
 
                     boolean hasError = false;
                     for (int i = 0; i < res.size(); i++) {
-                    	String val = res.get(i);
-                    	if (val != null && val.length() > MAX_EXCEL_CELL_LENGTH) {
-                    		hasError = true;
-                    		eventHandler.handleEvent(
+                        String val = res.get(i);
+                        if (val != null && val.length() > MAX_EXCEL_CELL_LENGTH) {
+                            hasError = true;
+                            eventHandler.handleEvent(
                                     new MigrationXLSNoSupportEvent(
                                             tt.getName(),
                                             recordNo,
-                                            i+1,
+                                            i + 1,
                                             "Too long data (data length in xml must be less than"
-                                                    + " 32768. - Row is skipped, no output generated.)"));
-                    	}
+                                                    + " 32768. - Row is skipped, no output"
+                                                    + " generated.)"));
+                        }
                     }
 
                     if (hasError) {
-                    	continue;
+                        continue;
                     }
 
                     int index = 0;
                     for (String val : res) {
-                    	sheet.addCell(new jxl.write.Label(index++, total, val));
+                        sheet.addCell(new jxl.write.Label(index++, total, val));
                     }
                     total++;
                 }
