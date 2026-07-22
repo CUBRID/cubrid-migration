@@ -275,7 +275,6 @@ public abstract class OfflineImporter extends Importer {
             try {
                 List<String> lobFiles = new ArrayList<String>();
                 for (Record re : records) {
-                    recordNo++;
                     if (re == null) {
                         continue;
                     }
@@ -283,6 +282,7 @@ public abstract class OfflineImporter extends Importer {
                     if (res == null) {
                         continue;
                     }
+                    recordNo++;
 
                     boolean hasError = false;
                     for (int i = 0; i < res.size(); i++) {
