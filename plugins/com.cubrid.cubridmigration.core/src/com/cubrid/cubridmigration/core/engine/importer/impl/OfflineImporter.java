@@ -270,11 +270,12 @@ public abstract class OfflineImporter extends Importer {
             WritableWorkbook workbook = Workbook.createWorkbook(file, workbookSettings);
             WritableSheet sheet = workbook.createSheet(tt.getName(), 0);
 
+            int total = 0;
+            int recordNo = 0;
             try {
                 List<String> lobFiles = new ArrayList<String>();
-                int total = 0;
-                int fail = 0;
                 for (Record re : records) {
+                    recordNo++;
                     if (re == null) {
                         continue;
                     }
@@ -283,28 +284,34 @@ public abstract class OfflineImporter extends Importer {
                         continue;
                     }
 
-                    int index = 0;
-                    for (String val : res) {
-                        if (val.length() > MAX_EXCEL_CELL_LENGTH) {
-                            sheet.addCell(new jxl.write.Label(index++, total, ""));
-                            eventHandler.handleEvent(
+                    boolean hasError = false;
+                    for (int i = 0; i < res.size(); i++) {
+                    	String val = res.get(i);
+                    	if (val != null && val.length() > MAX_EXCEL_CELL_LENGTH) {
+                    		hasError = true;
+                    		eventHandler.handleEvent(
                                     new MigrationXLSNoSupportEvent(
                                             tt.getName(),
-                                            total,
-                                            index,
+                                            recordNo,
+                                            i+1,
                                             "Too long data (data length in xml must be less than"
-                                                    + " 32768.)"));
-                            fail++;
-                        } else {
-                            sheet.addCell(new jxl.write.Label(index++, total, val));
-                        }
+                                                    + " 32768. - Row is skipped, no output generated.)"));
+                    	}
                     }
 
+                    if (hasError) {
+                    	continue;
+                    }
+
+                    int index = 0;
+                    for (String val : res) {
+                    	sheet.addCell(new jxl.write.Label(index++, total, val));
+                    }
                     total++;
                 }
 
                 workbook.write();
-                return total - fail;
+                return total;
             } finally {
                 workbook.close();
             }
