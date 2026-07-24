@@ -2,4 +2,4 @@
 1 1 'ORD-2024-001' 'NEW' 50. datetime'2024-01-15 00:00:00.000' NULL 'first order'
 2 1 'ORD-2024-002' 'DONE' 125.5 datetime'2024-02-01 00:00:00.000' datetime'2024-02-05 00:00:00.000' 'done-order'
 3 2 'ORD-2024-003' 'HOLD' NULL datetime'2024-03-01 00:00:00.000' NULL '  padded comment  '
-4 3 'ORD-2024-004' 'CANCEL' 0. datetime'2024-04-10 00:00:00.000' NULL 'ì·¨ì ì£¼ë¬¸ !@#'
+4 3 'ORD-2024-004' 'CANCEL' 0. datetime'2024-04-10 00:00:00.000' NULL '취소 주문 !@#'

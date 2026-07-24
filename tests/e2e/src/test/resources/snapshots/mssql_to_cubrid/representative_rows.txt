@@ -1,7 +1,7 @@
 ==> customer business values (id=1)
- customer_code | customer_name  | status | credit_limit
----------------+----------------+--------+--------------
- C001          | ALPHA CUSTOMER | A      | 12500.75
+ customer_code | customer_name  | customer_alias | status | credit_limit
+---------------+----------------+----------------+--------+--------------
+ C001          | ALPHA CUSTOMER | 한국 고객          | A      | 12500.75
 
 ==> order-line composite-key relationship (order_id=1000, line_no=1)
  customer_code | order_no | sku   | qty | unit_price

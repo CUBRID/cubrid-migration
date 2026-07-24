@@ -33,6 +33,12 @@ CREATE TABLE [MAIN_SCHEMA].[e2e_employee](
 [hired_on] date
 ) REUSE_OID
 ;
+CREATE TABLE [MAIN_SCHEMA].[e2e_i18n](
+[id] int,
+[label] varchar(40) NOT NULL,
+[sample] varchar(1073741823)
+) REUSE_OID
+;
 CREATE TABLE [MAIN_SCHEMA].[e2e_numeric_types](
 [id] int,
 [smallint_col] short,

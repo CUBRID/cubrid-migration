@@ -1,5 +1,5 @@
 %class [MAIN_SCHEMA].[e2e_customer] ([customer_id] [customer_code] [customer_name] [customer_alias] [status] [credit_limit] [created_on] [updated_on])
 1 'C001' 'ALPHA CUSTOMER' 'Alpha Alias' 'A' 12500.75 datetime'2024-01-10 00:00:00.000' NULL
 2 'C002' 'BETA CUSTOMER' NULL 'I' NULL datetime'2024-02-29 00:00:00.000' NULL
-3 'C003' 'íêµ­ ê³ ê°' 'ë³ì¹­-íê¸' 'D' 0. datetime'2024-03-15 00:00:00.000' NULL
+3 'C003' '한국 고객' '별칭-한글' 'D' 0. datetime'2024-03-15 00:00:00.000' NULL
 4 'C004' 'HIGH LIMIT CUSTOMER' 'High' 'A' 9999999999999.99 datetime'2024-04-20 00:00:00.000' NULL

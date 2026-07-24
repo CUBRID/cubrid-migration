@@ -5,6 +5,7 @@
  MAIN_SCHEMA | e2e_cubrid_json_types | 5
  MAIN_SCHEMA | e2e_customer          | 4
  MAIN_SCHEMA | e2e_employee          | 3
+ MAIN_SCHEMA | e2e_i18n              | 14
  MAIN_SCHEMA | e2e_numeric_types     | 6
  MAIN_SCHEMA | e2e_order             | 4
  MAIN_SCHEMA | e2e_order_line        | 4

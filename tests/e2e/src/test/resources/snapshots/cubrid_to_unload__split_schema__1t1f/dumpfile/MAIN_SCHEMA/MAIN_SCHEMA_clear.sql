@@ -6,6 +6,7 @@ DROP TABLE [MAIN_SCHEMA].[e2e_cubrid_enum_types];
 DROP TABLE [MAIN_SCHEMA].[e2e_cubrid_json_types];
 DROP TABLE [MAIN_SCHEMA].[e2e_customer];
 DROP TABLE [MAIN_SCHEMA].[e2e_employee];
+DROP TABLE [MAIN_SCHEMA].[e2e_i18n];
 DROP TABLE [MAIN_SCHEMA].[e2e_numeric_types];
 DROP TABLE [MAIN_SCHEMA].[e2e_order];
 DROP TABLE [MAIN_SCHEMA].[e2e_order_line];

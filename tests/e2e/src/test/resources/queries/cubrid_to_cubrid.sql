@@ -45,3 +45,8 @@ FROM "MAIN_SCHEMA"."e2e_order_summary_v";
 -- @label ref_audit synonym access (1 row)
 SELECT COUNT(*)
 FROM "MAIN_SCHEMA"."e2e_ref_audit_syn";
+
+-- @label i18n character battery (all scripts round-trip intact)
+SELECT id, label, sample
+FROM "MAIN_SCHEMA"."e2e_i18n"
+ORDER BY id;

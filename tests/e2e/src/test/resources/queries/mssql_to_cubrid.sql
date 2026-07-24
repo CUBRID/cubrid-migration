@@ -5,14 +5,9 @@
 -- We connect to CUBRID as 'dba' so schema-qualification ("OWNER"."table")
 -- is required. CMT upper-cases the MSSQL schema, so the CUBRID owner is DBO;
 -- SQL Server preserves identifier case, so table names stay lowercase.
---
--- customer_alias (multilingual NVARCHAR) is intentionally NOT asserted here:
--- the e2e CUBRID database is created with the iso88591 charset, so multibyte
--- values are corrupted on the online round-trip. Multilingual data stays in
--- the seed and is verified through the unload dump (export side, correct).
 
 -- @label customer business values (id=1)
-SELECT customer_code, customer_name, status, credit_limit
+SELECT customer_code, customer_name, customer_alias, status, credit_limit
 FROM "DBO"."e2e_customer"
 WHERE customer_id = 1;
 

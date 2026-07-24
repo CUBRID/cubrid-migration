@@ -100,6 +100,7 @@ public class CubridContainer implements DatabaseContainer {
         @Override
         protected void configure() {
             addEnv("CUBRID_DB", getDatabaseName());
+            addEnv("CUBRID_LOCALE", "en_US.utf8");
         }
 
         @Override

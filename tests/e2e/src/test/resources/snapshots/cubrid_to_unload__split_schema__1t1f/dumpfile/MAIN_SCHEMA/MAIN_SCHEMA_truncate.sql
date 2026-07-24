@@ -3,6 +3,7 @@ TRUNCATE TABLE [MAIN_SCHEMA].[e2e_cubrid_enum_types];
 TRUNCATE TABLE [MAIN_SCHEMA].[e2e_cubrid_json_types];
 TRUNCATE TABLE [MAIN_SCHEMA].[e2e_customer];
 TRUNCATE TABLE [MAIN_SCHEMA].[e2e_employee];
+TRUNCATE TABLE [MAIN_SCHEMA].[e2e_i18n];
 TRUNCATE TABLE [MAIN_SCHEMA].[e2e_numeric_types];
 TRUNCATE TABLE [MAIN_SCHEMA].[e2e_order];
 TRUNCATE TABLE [MAIN_SCHEMA].[e2e_order_line];

@@ -1,12 +1,12 @@
  owner_name  | class_name               | attr_name         | def_order | data_type | prec       | scale | is_nullable | default_value | comment
--------------+--------------------------+-------------------+-----------+-----------+------------+-------+-------------+---------------+----------------------------------------------
+-------------+--------------------------+-------------------+-----------+-----------+------------+-------+-------------+---------------+-------------------------------------------
  MAIN_SCHEMA | e2e_binary_types         | id                | 0         | NUMERIC   | 10         | 0     | NO          | <NULL>        | <NULL>
  MAIN_SCHEMA | e2e_binary_types         | raw_col           | 1         | VARBIT    | 128        | 0     | YES         | <NULL>        | <NULL>
  MAIN_SCHEMA | e2e_binary_types         | blob_col          | 2         | VARBIT    | 1073741823 | 0     | YES         | <NULL>        | <NULL>
  MAIN_SCHEMA | e2e_customer             | customer_id       | 0         | NUMERIC   | 10         | 0     | NO          | <NULL>        | <NULL>
  MAIN_SCHEMA | e2e_customer             | customer_code     | 1         | CHAR      | 4          | 0     | NO          | <NULL>        | business key
  MAIN_SCHEMA | e2e_customer             | customer_name     | 2         | STRING    | 100        | 0     | NO          | <NULL>        | <NULL>
- MAIN_SCHEMA | e2e_customer             | customer_alias    | 3         | STRING    | 60         | 0     | YES         | <NULL>        | ê³ ê° ë³ì¹­ (ë¤êµ­ì´ ê²ì¦)
+ MAIN_SCHEMA | e2e_customer             | customer_alias    | 3         | STRING    | 60         | 0     | YES         | <NULL>        | 고객 별칭 (다국어 검증)
  MAIN_SCHEMA | e2e_customer             | status            | 4         | CHAR      | 1          | 0     | YES         | <NULL>        | <NULL>
  MAIN_SCHEMA | e2e_customer             | credit_limit      | 5         | NUMERIC   | 15         | 2     | YES         | <NULL>        | <NULL>
  MAIN_SCHEMA | e2e_customer             | created_on        | 6         | DATETIME  | 23         | 3     | YES         | <NULL>        | <NULL>
@@ -36,7 +36,7 @@
  MAIN_SCHEMA | e2e_order                | total_amount      | 4         | NUMERIC   | 18         | 2     | YES         | <NULL>        | <NULL>
  MAIN_SCHEMA | e2e_order                | ordered_at        | 5         | DATETIME  | 23         | 3     | YES         | <NULL>        | <NULL>
  MAIN_SCHEMA | e2e_order                | settled_at        | 6         | DATETIME  | 23         | 3     | YES         | <NULL>        | <NULL>
- MAIN_SCHEMA | e2e_order                | source_comment    | 7         | STRING    | 200        | 0     | YES         | <NULL>        | ì£¼ë¬¸ ë¹ê³ : ë¤êµ­ì´/í¹ìë¬¸ì ê²ì¦
+ MAIN_SCHEMA | e2e_order                | source_comment    | 7         | STRING    | 200        | 0     | YES         | <NULL>        | 주문 비고: 다국어/특수문자 검증
  MAIN_SCHEMA | e2e_order_line           | order_id          | 0         | NUMERIC   | 10         | 0     | NO          | <NULL>        | <NULL>
  MAIN_SCHEMA | e2e_order_line           | line_no           | 1         | NUMERIC   | 5          | 0     | NO          | <NULL>        | <NULL>
  MAIN_SCHEMA | e2e_order_line           | sku               | 2         | STRING    | 30         | 0     | YES         | <NULL>        | <NULL>

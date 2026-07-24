@@ -20,6 +20,9 @@
  MAIN_SCHEMA | e2e_employee          | manager_id       | 1         | INTEGER      | 10         | 0     | YES         | <NULL>        | <NULL>
  MAIN_SCHEMA | e2e_employee          | emp_name         | 2         | STRING       | 100        | 0     | NO          | <NULL>        | <NULL>
  MAIN_SCHEMA | e2e_employee          | hired_on         | 3         | DATE         | 10         | 0     | YES         | <NULL>        | <NULL>
+ MAIN_SCHEMA | e2e_i18n              | id               | 0         | INTEGER      | 10         | 0     | NO          | <NULL>        | <NULL>
+ MAIN_SCHEMA | e2e_i18n              | label            | 1         | STRING       | 40         | 0     | NO          | <NULL>        | <NULL>
+ MAIN_SCHEMA | e2e_i18n              | sample           | 2         | STRING       | 1073741823 | 0     | YES         | <NULL>        | <NULL>
  MAIN_SCHEMA | e2e_numeric_types     | id               | 0         | INTEGER      | 10         | 0     | NO          | <NULL>        | <NULL>
  MAIN_SCHEMA | e2e_numeric_types     | smallint_col     | 1         | SHORT        | 5          | 0     | YES         | <NULL>        | <NULL>
  MAIN_SCHEMA | e2e_numeric_types     | int_col          | 2         | INTEGER      | 10         | 0     | YES         | <NULL>        | <NULL>
