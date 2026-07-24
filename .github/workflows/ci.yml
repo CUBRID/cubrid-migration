@@ -120,21 +120,21 @@ jobs:
         run: |
           mvn -B clean test \
             -Dtest="$TEST_PATTERN" \
-            -Dmaven.test.failure.ignore=true \
             -Dpicocli.ansi=false \
             -Dorg.fusesource.jansi.Ansi.disable=true
 
       - name: Publish Test Results
         uses: EnricoMi/publish-unit-test-result-action@c950f6fb443cb5af20a377fd0dfaa78838901040  # v2.23.0
         if: always()
+        continue-on-error: true
         with:
           check_name: E2E Results (${{ matrix.name }})
           files: tests/e2e/target/surefire-reports/*.xml
           comment_mode: failures
           report_individual_runs: true
           check_run_annotations: all tests, skipped tests
-          action_fail: true
-          action_fail_on_inconclusive: true
+          action_fail: false
+          action_fail_on_inconclusive: false
 
       - name: Upload Surefire Reports
         if: always()
