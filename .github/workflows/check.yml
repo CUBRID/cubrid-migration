@@ -78,9 +78,12 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
-      - uses: deepakputhraya/action-pr-title@3864bebc79c5f829d25dd42d3c6579d040b0ef16
+      - if: ${{ github.actor != 'dependabot[bot]' }}
+        uses: deepakputhraya/action-pr-title@3864bebc79c5f829d25dd42d3c6579d040b0ef16
         with:
           regex: '^\[[A-Z]+-\d+\]\s.+'
+      - if: ${{ github.actor == 'dependabot[bot]' }}
+        run: echo "pr-style skipped for bot PR"
   code-style:
     name: code-style
     runs-on: ubuntu-24.04
