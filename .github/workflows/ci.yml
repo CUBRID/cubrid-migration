@@ -196,6 +196,9 @@ jobs:
           NO_COLOR: '1'
           CLICOLOR: '0'
           TERM: dumb
+          # Snapshots hold wall-clock DATE values; a DST-observing runner TZ
+          # shifts them by an hour. Pin UTC like the GitHub-hosted matrix.
+          TZ: UTC
         run: |
           mvn -B clean test \
             -Dtest='TiberoTo*Test' \
