@@ -69,7 +69,7 @@ public final class TiberoEnvironment {
         if (!driverOnClasspath()) {
             log.info(
                     "[Tibero] skipping — JDBC driver com.tmax.tibero.jdbc.TbDriver "
-                            + "not on classpath. Place tibero7-jdbc-*.jar at tests/e2e/lib/.");
+                            + "not on classpath. Place tibero-jdbc.jar at tests/e2e/lib/.");
             return false;
         }
         String missing = firstMissingRequiredKey();
