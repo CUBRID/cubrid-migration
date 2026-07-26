@@ -151,3 +151,105 @@ jobs:
           name: e2e-failure-artifacts-${{ matrix.name }}
           path: tests/e2e/target/e2e/**
           if-no-files-found: ignore
+
+  e2e-tibero:
+    name: e2e-tibero
+    needs: build-console
+    runs-on: [self-hosted, tibero]
+    timeout-minutes: 60
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.pull_request.author_association)
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Set up Java 21
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+
+      - name: Download Console tarball
+        uses: actions/download-artifact@v8
+        with:
+          name: cmt-console-tarball
+          path: target
+
+      - name: Provision Console
+        run: |
+          mkdir -p cmt-console
+          tar xzf target/CUBRID-Migration-Toolkit-console-*.tar.gz \
+            --strip-components=1 -C cmt-console
+          chmod +x cmt-console/migration.sh
+          echo "CMT_CONSOLE_HOME=$GITHUB_WORKSPACE/cmt-console" >> "$GITHUB_ENV"
+
+      - name: Prepare Tibero Environment
+        run: |
+          : "${E2E_TIBERO_PREPARE:?E2E_TIBERO_PREPARE is not set on this runner}"
+          bash "$E2E_TIBERO_PREPARE" "$GITHUB_WORKSPACE" >> "$GITHUB_ENV"
+
+      - name: Run Tibero E2E
+        working-directory: tests/e2e
+        env:
+          NO_COLOR: '1'
+          CLICOLOR: '0'
+          TERM: dumb
+        run: |
+          mvn -B clean test \
+            -Dtest='TiberoTo*Test' \
+            -Dpicocli.ansi=false \
+            -Dorg.fusesource.jansi.Ansi.disable=true \
+            -De2e.tibero.image="$E2E_TIBERO_IMAGE" \
+            -De2e.tibero.hostname="$E2E_TIBERO_HOSTNAME" \
+            -De2e.tibero.license="$E2E_TIBERO_LICENSE" \
+            -De2e.tibero.faketime="$E2E_TIBERO_FAKETIME"
+
+      # @EnabledIf skips silently when the Tibero environment is broken, so an
+      # all-skipped run would otherwise pass. This job exists to guarantee
+      # Tibero coverage — fail unless at least one test actually executed.
+      - name: Assert Tibero Tests Executed
+        working-directory: tests/e2e
+        run: |
+          executed=0
+          for f in target/surefire-reports/TEST-*.xml; do
+            [ -f "$f" ] || continue
+            tests=$(grep -o 'tests="[0-9]*"' "$f" | head -n1 | tr -dc '0-9')
+            skipped=$(grep -o 'skipped="[0-9]*"' "$f" | head -n1 | tr -dc '0-9')
+            executed=$((executed + ${tests:-0} - ${skipped:-0}))
+          done
+          echo "non-skipped Tibero tests executed: $executed"
+          if [ "$executed" -eq 0 ]; then
+            echo "::error::e2e-tibero executed zero tests — the Tibero environment was silently skipped; check runner provisioning"
+            exit 1
+          fi
+
+      - name: Publish Test Results
+        uses: EnricoMi/publish-unit-test-result-action@d0a4676d0e0b938bc201470d88276b7c74c712b3  # v2.24.0
+        if: always()
+        continue-on-error: true
+        with:
+          check_name: E2E Results (tibero)
+          files: tests/e2e/target/surefire-reports/*.xml
+          comment_mode: failures
+          report_individual_runs: true
+          check_run_annotations: all tests, skipped tests
+          action_fail: false
+          action_fail_on_inconclusive: false
+
+      - name: Upload Surefire Reports
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: surefire-reports-tibero
+          path: tests/e2e/target/surefire-reports/**
+          if-no-files-found: ignore
+
+      - name: Upload E2E Failure Artifacts
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: e2e-failure-artifacts-tibero
+          path: tests/e2e/target/e2e/**
+          if-no-files-found: ignore
