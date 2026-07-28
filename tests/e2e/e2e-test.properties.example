@@ -15,6 +15,5 @@ e2e.tibero.hostname=
 # Absolute path to license.xml (relative paths are rejected).
 e2e.tibero.license=
 
-# libfaketime offset — number of days to backdate the container's clock
-# at boot. Must keep (today - N days) inside the license validity window.
+# Clock offset applied to the container at boot, in days back from today.
 e2e.tibero.faketime=

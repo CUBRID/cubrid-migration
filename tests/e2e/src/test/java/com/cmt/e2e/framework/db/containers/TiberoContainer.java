@@ -43,8 +43,8 @@ import java.time.Duration;
 /**
  * Tibero 7 Testcontainer.
  *
- * <p>Image, hostname, license path, and FAKETIME come from {@link TiberoEnvironment} (config keys
- * e2e.tibero.image / hostname / license / faketime — see {@code e2e-test.properties.example}).
+ * <p>Image, hostname, license path, and clock offset come from {@link TiberoEnvironment} (config
+ * keys e2e.tibero.image / hostname / license / faketime — see {@code e2e-test.properties.example}).
  * Constants below ({@code TIBERO_PORT}, {@code SID}, {@code LICENSE_IN_CONTAINER}, DBA credentials,
  * schema users) are fixed by the bundled image and seed scripts.
  */
@@ -66,7 +66,7 @@ public final class TiberoContainer implements DatabaseContainer {
         DockerImageName image = DockerImageName.parse(TiberoEnvironment.image());
         String hostname = TiberoEnvironment.hostname();
         Path licenseHostPath = TiberoEnvironment.licensePath();
-        String faketime = "-" + TiberoEnvironment.faketimeDaysBack() + "d";
+        String clockOffset = "-" + TiberoEnvironment.faketimeDaysBack() + "d";
 
         this.container =
                 new GenericContainer<>(image)
@@ -77,7 +77,7 @@ public final class TiberoContainer implements DatabaseContainer {
                                 })
                         .withExposedPorts(TIBERO_PORT)
                         .withEnv("TB_ROOT_PASSWORD", DBA_PASSWORD)
-                        .withEnv("FAKETIME", faketime)
+                        .withEnv("FAKETIME", clockOffset)
                         .withCopyFileToContainer(
                                 MountableFile.forHostPath(licenseHostPath.toString()),
                                 LICENSE_IN_CONTAINER)

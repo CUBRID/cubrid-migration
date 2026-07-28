@@ -102,8 +102,7 @@ public final class TiberoEnvironment {
         if (days == null) {
             log.info(
                     "[Tibero] skipping — config '{}' must be a positive "
-                            + "integer (= days back). Got: '{}'. Example: '100' is "
-                            + "translated to FAKETIME=-100d.",
+                            + "integer (= days back). Got: '{}'.",
                     FAKETIME_KEY,
                     rawValue(FAKETIME_KEY));
             return false;
@@ -127,7 +126,7 @@ public final class TiberoEnvironment {
         return Paths.get(required(LICENSE_KEY));
     }
 
-    /** Days back for libfaketime; container env becomes {@code FAKETIME=-Nd}. */
+    /** Clock offset in days back, applied to the container at start. */
     public static int faketimeDaysBack() {
         Integer days = parseFaketimeDaysBack(rawValue(FAKETIME_KEY));
         if (days == null) {
