@@ -10,6 +10,9 @@ on:
       - '**'
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -64,6 +67,10 @@ jobs:
     needs: build-console
     runs-on: ubuntu-latest
     timeout-minutes: 60
+    permissions:
+      contents: read
+      checks: write
+      pull-requests: write
     strategy:
       fail-fast: false
       matrix:
@@ -157,6 +164,10 @@ jobs:
     needs: build-console
     runs-on: [self-hosted, tibero]
     timeout-minutes: 60
+    permissions:
+      contents: read
+      checks: write
+      pull-requests: write
     if: >
       github.event_name == 'workflow_dispatch' ||
       contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.pull_request.author_association)
