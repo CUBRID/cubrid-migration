@@ -355,8 +355,6 @@
             <id>tibero</id>
             <activation>
                 <file>
-                    <!-- ${basedir}, not ${project.basedir}: pre-3.9 Maven does not
-                         interpolate the latter in file activation (silently inactive). -->
                     <exists>${basedir}/lib/tibero-jdbc.jar</exists>
                 </file>
             </activation>
