@@ -42,7 +42,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIf;
 
-/** Tibero 7 → CMT {@code unload} (CUBRID LoadDB) dump. */
+/** Tibero 6 → CMT {@code unload} (CUBRID LoadDB) dump. */
 @DisplayName("Tibero e2e dataset → CMT unload (LoadDB) dump")
 @EnabledIf("com.cmt.e2e.framework.db.containers.TiberoEnvironment#isAvailable")
 class TiberoToUnloadTest {

@@ -37,8 +37,8 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Raw-JDBC seed runner for Tibero (Flyway has no Tibero plugin). Two phases mirror {@code
- * OracleSource}: {@link #initAsSys} runs DBA-only DDL (the Tibero image has no entrypoint init
- * hook); {@link #migrateAs} applies schema/data files in lexical order.
+ * OracleSource}: {@link #initAsSys} runs DBA-only DDL; {@link #migrateAs} applies schema/data files
+ * in lexical order.
  */
 public final class TiberoDatabaseInitializer {
 
