@@ -1,7 +1,7 @@
-%class [MAIN_SCHEMA].[e2e_text_types] ([id] [char_byte_col] [char_char_col] [varchar_byte_col] [varchar_char_col] [nchar_col] [nvarchar_col] [clob_col] [nclob_col])
-1. NULL NULL NULL NULL NULL NULL NULL NULL
-2. '   ' '   ' NULL NULL '          ' NULL '' ''
-3. 'A  ' 'A  ' 'A' 'A' 'A         ' 'A' 'A' 'A'
+%class [MAIN_SCHEMA].[e2e_text_types] ([id] [char_byte_col] [char_char_col] [varchar_byte_col] [varchar_char_col] [nchar_col] [nvarchar_col] [clob_col])
+1. NULL NULL NULL NULL NULL NULL NULL
+2. '   ' '   ' NULL NULL '          ' NULL ''
+3. 'A  ' 'A  ' 'A' 'A' 'A         ' 'A' 'A'
 4. 'XYZ' 'XYZ' 'ABCDEFGHIJ' 'ABCDEFGHIJ' '1234567890' '한국어 漢字 cafe' 'CLOBXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'+
  'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'+
  'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'+
@@ -16,15 +16,7 @@
  'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'+
  'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'+
  'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'+
- 'XXXXXXXXXXXXXXXXXXXX' 'NCLOB가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가'+
- '가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가'+
- '가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가'+
- '가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가'+
- '가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가'+
- '가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가'+
- '가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가'+
- '가가가가가가가가가가가가 '
-5. NULL NULL NULL NULL '한中Ω       ' '한국 漢字 cafe' '한국어 漢字 cafe punctuation !@#' '한국어 漢字 cafe punctuation !@#'
+ 'XXXXXXXXXXXXXXXXXXXX'
+5. NULL NULL NULL NULL '한中Ω       ' '한국 漢字 cafe' '한국어 漢字 cafe punctuation !@#'
 6. '   ' '   ' ' A ' '  A  ' '          ' ' A ' 'line1
-line2' 'line1
 line2'

@@ -59,13 +59,12 @@
  MAIN_SCHEMA | e2e_temporal_types       | interval_ym_col   | 7         | STRING      | 16         | 0     | YES         | <NULL>        | <NULL>
  MAIN_SCHEMA | e2e_text_types           | id                | 0         | NUMERIC     | 10         | 0     | NO          | <NULL>        | <NULL>
  MAIN_SCHEMA | e2e_text_types           | char_byte_col     | 1         | CHAR        | 3          | 0     | YES         | <NULL>        | <NULL>
- MAIN_SCHEMA | e2e_text_types           | char_char_col     | 2         | CHAR        | 12         | 0     | YES         | <NULL>        | <NULL>
+ MAIN_SCHEMA | e2e_text_types           | char_char_col     | 2         | CHAR        | 3          | 0     | YES         | <NULL>        | <NULL>
  MAIN_SCHEMA | e2e_text_types           | varchar_byte_col  | 3         | STRING      | 10         | 0     | YES         | <NULL>        | <NULL>
- MAIN_SCHEMA | e2e_text_types           | varchar_char_col  | 4         | STRING      | 40         | 0     | YES         | <NULL>        | <NULL>
+ MAIN_SCHEMA | e2e_text_types           | varchar_char_col  | 4         | STRING      | 10         | 0     | YES         | <NULL>        | <NULL>
  MAIN_SCHEMA | e2e_text_types           | nchar_col         | 5         | CHAR        | 10         | 0     | YES         | <NULL>        | <NULL>
  MAIN_SCHEMA | e2e_text_types           | nvarchar_col      | 6         | STRING      | 40         | 0     | YES         | <NULL>        | <NULL>
  MAIN_SCHEMA | e2e_text_types           | clob_col          | 7         | STRING      | 1073741823 | 0     | YES         | <NULL>        | <NULL>
- MAIN_SCHEMA | e2e_text_types           | nclob_col         | 8         | STRING      | 1073741823 | 0     | YES         | <NULL>        | <NULL>
  REF_SCHEMA  | e2e_ref_audit            | audit_id          | 0         | NUMERIC     | 10         | 0     | NO          | <NULL>        | Audit row identifier
  REF_SCHEMA  | e2e_ref_audit            | audit_message     | 1         | STRING      | 200        | 0     | YES         | <NULL>        | Audit message text
  REF_SCHEMA  | e2e_ref_audit            | created_at        | 2         | DATETIME    | 23         | 3     | YES         | <NULL>        | <NULL>

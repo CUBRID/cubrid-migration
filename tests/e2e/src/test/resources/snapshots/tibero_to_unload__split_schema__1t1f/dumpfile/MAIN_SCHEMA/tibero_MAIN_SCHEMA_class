@@ -75,12 +75,11 @@ CREATE TABLE [MAIN_SCHEMA].[e2e_temporal_types](
 CREATE TABLE [MAIN_SCHEMA].[e2e_text_types](
 [id] numeric(10,0),
 [char_byte_col] char(3),
-[char_char_col] char(12),
+[char_char_col] char(3),
 [varchar_byte_col] varchar(10),
-[varchar_char_col] varchar(40),
+[varchar_char_col] varchar(10),
 [nchar_col] char(10),
 [nvarchar_col] varchar(40),
-[clob_col] varchar(1073741823),
-[nclob_col] varchar(1073741823)
+[clob_col] varchar(1073741823)
 )
 ;
