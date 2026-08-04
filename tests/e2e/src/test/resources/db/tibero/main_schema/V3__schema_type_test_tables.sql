@@ -17,6 +17,11 @@
 --   • UROWID — Tibero 7 SQL parser 가 컬럼 타입으로 거부
 --     ("JDBC-7454: Datatype 'MAIN_SCHEMA.UROWID' is invalid"). 본 시드에서
 --     아예 컬럼을 만들지 않는다.
+--   • NCLOB — 이 스위트는 다른 DB 와 맞추어 national charset 도 UTF8 로 쓰는데,
+--     그 조합에서 Tibero 6 는 NCLOB 쓰기에 서버가 죽는다 (td_lob_write assertion
+--     후 crash recovery). 1 글자, 그리고 멀티바이트 1000 자 모두 재현되어
+--     값 조정으로는 우회할 수 없다. CLOB 은 같은 조건에서 정상이므로
+--     문자 LOB 커버리지는 CLOB 이 담당한다.
 -- ============================================================
 
 -- ====== §5.1 e2e_text_types ======================================
@@ -29,7 +34,6 @@ CREATE TABLE e2e_text_types (
     nchar_col        NCHAR(10),
     nvarchar_col     NVARCHAR2(40),
     clob_col         CLOB,
-    nclob_col        NCLOB,
     CONSTRAINT pk_e2e_text_types PRIMARY KEY (id)
 );
 
