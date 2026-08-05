@@ -174,6 +174,8 @@ public class Messages extends NLS {
     public static String btnUseSingleClick;
     public static String btnViewReport;
     public static String btnWriteErrorRecords;
+    public static String btnXLS;
+    public static String btnXLSX;
     public static String btnYes;
     public static String checkSQLProgressTitle;
     public static String colColumnName;
@@ -352,6 +354,7 @@ public class Messages extends NLS {
     public static String errOtherMigrationRunning;
     public static String errSequenceName;
     public static String failedLogDialogSaveErrMsg;
+    public static String fileFormat;
     public static String fileRepositoryEmptyWarning;
     public static String groupNameExisted;
     public static String groupNameInvalid;
@@ -550,6 +553,7 @@ public class Messages extends NLS {
     public static String msgCubridDump;
     public static String msgCubridSQL;
     public static String msgCubridXLS;
+    public static String msgCubridXLSX;
     public static String msgCubridHelpSiteUrl;
     public static String msgCubridHomePageUrl;
     public static String msgCubridProjectSiteUrl;

@@ -320,8 +320,10 @@ public class SelectDestinationPage extends MigrationWizardPage {
         private Label lblCharsetSP;
         private Label lblLobPath;
         private Label lblDBVersion;
+        private Label lblFileFormat;
         private Text txtLobPath;
 
+        private Button[] btnFileFormat;
         private Button[] btnAddUserSchema;
         private Button btnSplitSchema;
         private Button btnCreateUserSQL;
@@ -474,6 +476,22 @@ public class SelectDestinationPage extends MigrationWizardPage {
             }
 
             new Label(fileRepositoryContainer, SWT.NONE);
+
+            lblFileFormat = new Label(fileRepositoryContainer, SWT.NONE);
+            lblFileFormat.setLayoutData(new GridData(SWT.END, SWT.CENTER, false, false));
+            lblFileFormat.setText(Messages.fileFormat);
+
+            Composite fileFormatComposite = new Composite(fileRepositoryContainer, SWT.NONE);
+            GridLayout gdFileFormat = new GridLayout(2, false);
+            fileFormatComposite.setLayout(gdFileFormat);
+            btnFileFormat = new Button[2];
+            btnFileFormat[0] = new Button(fileFormatComposite, SWT.RADIO);
+            btnFileFormat[0].setText(Messages.btnXLSX);
+
+            btnFileFormat[1] = new Button(fileFormatComposite, SWT.RADIO);
+            btnFileFormat[1].setText(Messages.btnXLS);
+
+            new Label(fileRepositoryContainer, SWT.NONE);
             new Label(fileRepositoryContainer, SWT.NONE);
 
             Image questionImage = Display.getDefault().getSystemImage(SWT.ICON_QUESTION);
@@ -586,6 +604,14 @@ public class SelectDestinationPage extends MigrationWizardPage {
             if (config.getTargetLOBRootPath() != null) {
                 txtLobPath.setText(config.getTargetLOBRootPath());
             }
+            boolean isExcel = config.targetIsXLS() || config.targetIsXLSX();
+            lblFileFormat.setVisible(isExcel);
+            btnFileFormat[0].getParent().setVisible(isExcel);
+            if (isExcel) {
+                boolean isXLSX = config.targetIsXLSX();
+                btnFileFormat[0].setSelection(isXLSX);
+                btnFileFormat[1].setSelection(!isXLSX);
+            }
             fileRepositoryContainer.layout();
         }
 
@@ -609,6 +635,13 @@ public class SelectDestinationPage extends MigrationWizardPage {
             config.setTargetFileTimeZone(
                     targetFileTimezoneCombo.getItem(targetFileTimezoneCombo.getSelectionIndex()));
             config.setTargetCharSet(cboCharset.getText());
+            if (config.targetIsXLS() || config.targetIsXLSX()) {
+                if (btnFileFormat[0].getSelection()) {
+                    config.setDestType(MigrationConfiguration.DEST_XLSX);
+                } else {
+                    config.setDestType(MigrationConfiguration.DEST_XLS);
+                }
+            }
 
             // change to migration configuration
             config.setAddUserSchema(btnAddUserSchema[0].getSelection() ? true : false);

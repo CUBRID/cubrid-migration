@@ -108,6 +108,7 @@ public class MigrationConfiguration {
     private static final Logger LOG = LogUtil.getLogger(MigrationConfiguration.class);
 
     public static final int XLS_MAX_COUNT = 65536;
+    public static final int XLSX_MAX_COUNT = 1048576;
     public static final char CSV_NO_CHAR = '\u0000';
 
     public static final int DEST_DB_UNLOAD = 0;
@@ -115,6 +116,7 @@ public class MigrationConfiguration {
     public static final int DEST_SQL = 2;
     public static final int DEST_XLS = 3;
     public static final int DEST_ONLINE = 4;
+    public static final int DEST_XLSX = 5;
 
     public static final int SOURCE_TYPE_CUBRID = DatabaseType.CUBRID.getID();
     public static final int SOURCE_TYPE_MYSQL = DatabaseType.MYSQL.getID();
@@ -150,8 +152,9 @@ public class MigrationConfiguration {
     // Previously, data files had the ".txt" extension attached, but deleted the ".txt" extension
     // when changing it to _object to match the unloaddb format
     private static final String[] DATA_FORMAT_EXT =
-            new String[] {"", ".csv", ".sql", ".xls", "", ""};
-    private static final String[] DATA_FORMAT_LABEL = new String[] {"LoadDB", "CSV", "SQL", "XLS"};
+            new String[] {"", ".csv", ".sql", ".xls", "", ".xlsx"};
+    private static final String[] DATA_FORMAT_LABEL =
+            new String[] {"LoadDB", "CSV", "SQL", "XLS", "", "XLSX"};
 
     /**
      * Retrieves all fomrat exts
@@ -2547,10 +2550,11 @@ public class MigrationConfiguration {
      * @return the commitCount default 1000
      */
     public int getCommitCount() {
-        if (targetIsXLS()) {
+        if (targetIsXLS() || targetIsXLSX()) {
+            int limit = targetIsXLS() ? XLS_MAX_COUNT : XLSX_MAX_COUNT;
             int maxCount = getMaxCountPerFile();
-            if (maxCount <= 0 || maxCount > XLS_MAX_COUNT) {
-                maxCount = XLS_MAX_COUNT;
+            if (maxCount <= 0 || maxCount > limit) {
+                maxCount = limit;
             }
             return Math.min(commitCount, maxCount);
         }
@@ -4833,6 +4837,8 @@ public class MigrationConfiguration {
             setDestType(MigrationConfiguration.DEST_DB_UNLOAD);
         } else if (destName.equalsIgnoreCase("xls")) {
             setDestType(MigrationConfiguration.DEST_XLS);
+        } else if (destName.equalsIgnoreCase("xlsx")) {
+            setDestType(MigrationConfiguration.DEST_XLSX);
         } else {
             throw new RuntimeException("Invalid target type in the db.conf of " + destName);
         }
@@ -4964,9 +4970,9 @@ public class MigrationConfiguration {
      * @param maxCountPerFile integer
      */
     public void setMaxCountPerFile(int maxCountPerFile) {
-        if (destType == DEST_XLS) {
-            this.maxCountPerFile =
-                    maxCountPerFile > XLS_MAX_COUNT ? XLS_MAX_COUNT : maxCountPerFile;
+        if (destType == DEST_XLS || destType == DEST_XLSX) {
+            int limit = destType == DEST_XLS ? XLS_MAX_COUNT : XLSX_MAX_COUNT;
+            this.maxCountPerFile = maxCountPerFile > limit ? limit : maxCountPerFile;
         } else {
             this.maxCountPerFile = maxCountPerFile;
         }
@@ -5455,6 +5461,7 @@ public class MigrationConfiguration {
         return destType == DEST_CSV
                 || destType == DEST_SQL
                 || destType == DEST_XLS
+                || destType == DEST_XLSX
                 || destType == DEST_DB_UNLOAD;
     }
 
@@ -5481,6 +5488,15 @@ public class MigrationConfiguration {
      */
     public boolean targetIsXLS() {
         return destType == DEST_XLS;
+    }
+
+    /**
+     * Is export source to a xlsx.
+     *
+     * @return true if export to a dictionary
+     */
+    public boolean targetIsXLSX() {
+        return destType == DEST_XLSX;
     }
 
     /**

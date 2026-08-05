@@ -30,17 +30,28 @@
  */
 package com.cubrid.cubridmigration.core.engine.task;
 
+import com.cubrid.common.log.LogUtil;
 import com.cubrid.cubridmigration.core.common.CUBRIDIOUtils;
 import com.cubrid.cubridmigration.core.common.PathUtils;
 
-import jxl.Cell;
-import jxl.Sheet;
 import jxl.Workbook;
 import jxl.WorkbookSettings;
 import jxl.write.WritableSheet;
 import jxl.write.WritableWorkbook;
 
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.xssf.streaming.SXSSFWorkbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.slf4j.Logger;
+
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Merge template files to output files in thread.
@@ -49,6 +60,10 @@ import java.io.File;
  * @version 1.0 - 2011-10-19 created by Kevin Cao
  */
 public class FileMergeRunnable implements Runnable, IMigrationTask {
+    private static final Logger LOG = LogUtil.getLogger(FileMergeRunnable.class);
+    private static final Map<String, SXSSFWorkbook> openXLSX =
+            new ConcurrentHashMap<String, SXSSFWorkbook>();
+
     private final String sourceFile;
     private final String targetFile;
     private final String targetCharset;
@@ -77,7 +92,11 @@ public class FileMergeRunnable implements Runnable, IMigrationTask {
             if (isTextFile) {
                 CUBRIDIOUtils.mergeFile(sourceFile, targetFile);
             } else {
-                mergeXLSFile();
+                if (targetFile.endsWith(".xlsx")) {
+                    mergeXLSXFile();
+                } else {
+                    mergeXLSFile();
+                }
             }
             if (listener != null) {
                 listener.success();
@@ -103,7 +122,7 @@ public class FileMergeRunnable implements Runnable, IMigrationTask {
         Workbook tarWB = null;
         try {
             srcWB = Workbook.getWorkbook(new File(sourceFile));
-            Sheet sheet = srcWB.getSheet(0);
+            jxl.Sheet sheet = srcWB.getSheet(0);
 
             File targetXLSFile = new File(targetFile);
             if (!targetXLSFile.exists()) {
@@ -124,7 +143,7 @@ public class FileMergeRunnable implements Runnable, IMigrationTask {
             }
             int total = tarSheet.getRows();
             for (int i = 0; i < sheet.getRows(); i++) {
-                Cell[] values = sheet.getRow(i);
+                jxl.Cell[] values = sheet.getRow(i);
                 for (int j = 0; j < values.length; j++) {
                     tarSheet.addCell(new jxl.write.Label(j, total, values[j].getContents()));
                 }
@@ -140,6 +159,72 @@ public class FileMergeRunnable implements Runnable, IMigrationTask {
             }
             if (tarWB != null) {
                 tarWB.close();
+            }
+        }
+    }
+
+    /** Merge XLSX files */
+    private void mergeXLSXFile() throws Exception {
+        SXSSFWorkbook tarWB = openXLSX.get(targetFile);
+        if (tarWB == null) {
+            tarWB = new SXSSFWorkbook(100);
+            openXLSX.put(targetFile, tarWB);
+        }
+
+        File srcFile = new File(sourceFile);
+        try (FileInputStream srcFis = new FileInputStream(srcFile);
+                XSSFWorkbook srcWB = new XSSFWorkbook(srcFis)) {
+
+            Sheet srcSheet = srcWB.getSheetAt(0);
+            Sheet tarSheet = tarWB.getSheet(srcSheet.getSheetName());
+            if (tarSheet == null) {
+                tarSheet = tarWB.createSheet(srcSheet.getSheetName());
+            }
+
+            int total = tarSheet.getPhysicalNumberOfRows() > 0 ? tarSheet.getLastRowNum() + 1 : 0;
+            for (int i = 0; i <= srcSheet.getLastRowNum(); i++) {
+                Row srcRow = srcSheet.getRow(i);
+                if (srcRow == null) {
+                    continue;
+                }
+                Row tarRow = tarSheet.createRow(total++);
+                for (int j = 0; j < srcRow.getLastCellNum(); j++) {
+                    Cell srcCell = srcRow.getCell(j);
+                    Cell tarCell = tarRow.createCell(j);
+                    if (srcCell != null) {
+                        tarCell.setCellValue(srcCell.toString());
+                    } else {
+                        tarCell.setCellValue("");
+                    }
+                }
+            }
+        }
+    }
+
+    /** Flush, write to disk, and close target XLSX workbook */
+    public static void flushAndCloseXLSX(String targetFile) {
+        if (targetFile == null) {
+            return;
+        }
+        SXSSFWorkbook wb = openXLSX.remove(targetFile);
+        if (wb == null) {
+            return;
+        }
+        File file = new File(targetFile);
+        File parent = file.getParentFile();
+        if (parent != null && !parent.exists()) {
+            parent.mkdirs();
+        }
+        try (FileOutputStream fos = new FileOutputStream(file)) {
+            wb.write(fos);
+            fos.flush();
+        } catch (IOException e) {
+            LOG.error("Failed to write XLSX file: " + targetFile, e);
+        } finally {
+            try {
+                wb.close();
+            } catch (IOException e) {
+                LOG.error("Failed to close XLSX workbook: " + targetFile, e);
             }
         }
     }

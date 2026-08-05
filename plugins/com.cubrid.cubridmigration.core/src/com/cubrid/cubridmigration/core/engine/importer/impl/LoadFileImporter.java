@@ -163,12 +163,15 @@ public class LoadFileImporter extends OfflineImporter {
                         config.getTargetCharSet(),
                         listener,
                         deleteFile,
-                        isSchemaFile || !config.targetIsXLS()));
+                        isSchemaFile || (!config.targetIsXLS() && !config.targetIsXLSX())));
     }
 
     /** Ensure header exists at the top of a target data file. */
     private void ensureHeaderPresent(String fileFullName, SourceTableConfig stc) {
-        if (config.targetIsCSV() || config.targetIsXLS() || config.targetIsSQL()) {
+        if (config.targetIsCSV()
+                || config.targetIsXLS()
+                || config.targetIsXLSX()
+                || config.targetIsSQL()) {
             return;
         }
         File target = new File(fileFullName);
@@ -223,8 +226,12 @@ public class LoadFileImporter extends OfflineImporter {
 
             // If the target file is full.
             if (mdfm.isDataFileFull(es.fileTableFullName, impCount)) {
+                String prevFile = es.fileTableFullName;
                 // Full name will be changed.
                 es.nextFile();
+                if (config.targetIsXLSX()) {
+                    FileMergeRunnable.flushAndCloseXLSX(prevFile);
+                }
             }
             final String fileTableFullName = es.fileTableFullName;
             final String fileFullName = es.fileFullName;
@@ -241,7 +248,19 @@ public class LoadFileImporter extends OfflineImporter {
                             sm.addImpCount(stc.getOwner(), stc.getName(), expCount);
                             if (config.targetIsCSV()
                                     || config.targetIsXLS()
+                                    || config.targetIsXLSX()
                                     || config.isOneTableOneFile()) {
+                                if (config.targetIsXLSX()) {
+                                    final long totalEc =
+                                            sm.getExpCount(stc.getOwner(), stc.getName());
+                                    final long totalIc =
+                                            sm.getImpCount(stc.getOwner(), stc.getName());
+                                    final boolean expEnd =
+                                            sm.getExpFlag(stc.getOwner(), stc.getName());
+                                    if (expEnd && totalEc == totalIc) {
+                                        FileMergeRunnable.flushAndCloseXLSX(fileTableFullName);
+                                    }
+                                }
                                 return;
                             }
                             final Table st;

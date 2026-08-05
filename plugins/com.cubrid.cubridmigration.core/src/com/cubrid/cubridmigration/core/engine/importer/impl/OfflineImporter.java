@@ -68,11 +68,16 @@ import com.opencsv.CSVWriter;
 
 import jxl.Workbook;
 import jxl.WorkbookSettings;
+import jxl.write.Label;
 import jxl.write.WritableSheet;
 import jxl.write.WritableWorkbook;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.slf4j.Logger;
 
 import java.io.BufferedWriter;
@@ -306,12 +311,88 @@ public abstract class OfflineImporter extends Importer {
 
                     int index = 0;
                     for (String val : res) {
-                        sheet.addCell(new jxl.write.Label(index++, total, val != null ? val : ""));
+                        sheet.addCell(new Label(index++, total, val != null ? val : ""));
                     }
                     total++;
                 }
 
                 workbook.write();
+                return total;
+            } finally {
+                workbook.close();
+            }
+        }
+    }
+
+    /**
+     * XLSXFileWriter responses to write data to XLSX
+     *
+     * @author Longha Seng
+     * @version 1.0 - 2026-07-27
+     */
+    protected class XLSXFileWriter implements ImportFileWriter {
+        /**
+         * Write data to a XLSX file
+         *
+         * @param stc SourceTableConfig
+         * @param records List<Record> records
+         * @param file File
+         * @param tt Table
+         * @return total count
+         * @throws Exception ex
+         */
+        public int writeData(
+                final SourceTableConfig stc, final List<Record> records, File file, final Table tt)
+                throws Exception {
+            XSSFWorkbook workbook = new XSSFWorkbook();
+            Sheet sheet = workbook.createSheet(tt.getName());
+
+            int total = 0;
+            int recordNo = 0;
+            try {
+                List<String> lobFiles = new ArrayList<String>();
+                for (Record re : records) {
+                    if (re == null) {
+                        continue;
+                    }
+                    List<String> res = getRecordString(stc, tt, re, lobFiles);
+                    if (res == null) {
+                        continue;
+                    }
+                    recordNo++;
+
+                    boolean hasError = false;
+                    for (int i = 0; i < res.size(); i++) {
+                        String val = res.get(i);
+                        if (val != null && val.length() > MAX_EXCEL_CELL_LENGTH) {
+                            hasError = true;
+                            eventHandler.handleEvent(
+                                    new MigrationXLSNoSupportEvent(
+                                            tt.getName(),
+                                            recordNo,
+                                            i + 1,
+                                            "Too long data (data length in xml must be less than"
+                                                    + " 32768. - Row is skipped, no output"
+                                                    + " generated.)"));
+                        }
+                    }
+
+                    if (hasError) {
+                        continue;
+                    }
+
+                    Row row = sheet.createRow(total);
+                    int index = 0;
+                    for (String val : res) {
+                        Cell cell = row.createCell(index++);
+                        cell.setCellValue(val != null ? val : "");
+                    }
+                    total++;
+                }
+
+                try (FileOutputStream fileOut = new FileOutputStream(file)) {
+                    workbook.write(fileOut);
+                }
                 return total;
             } finally {
                 workbook.close();
@@ -405,6 +486,8 @@ public abstract class OfflineImporter extends Importer {
             importFileWriter = new CSVFileWriter();
         } else if (config.targetIsXLS()) {
             importFileWriter = new XLSFileWriter();
+        } else if (config.targetIsXLSX()) {
+            importFileWriter = new XLSXFileWriter();
         } else if (config.targetIsSQL()) {
             importFileWriter = new SQLFileWriter();
         } else {

@@ -83,6 +83,7 @@ public class SelectSrcTarTypesView {
     private final List<Button> srcButtons = new ArrayList<Button>(4);
 
     private final List<Button> tarButtons = new ArrayList<Button>(6);
+    private int selectedTarType = MigrationConfiguration.DEST_ONLINE;
 
     public SelectSrcTarTypesView(Composite parent) {
         Composite sectionClient = new Composite(parent, SWT.NONE);
@@ -242,7 +243,15 @@ public class SelectSrcTarTypesView {
     public int getTargetType() {
         for (Button btn : tarButtons) {
             if (btn.getSelection()) {
-                return (Integer) btn.getData();
+                int type = (Integer) btn.getData();
+                if (btn == btnXLSTar) {
+                    if (selectedTarType == MigrationConfiguration.DEST_XLS
+                            || selectedTarType == MigrationConfiguration.DEST_XLSX) {
+                        return selectedTarType;
+                    }
+                    return MigrationConfiguration.DEST_XLSX;
+                }
+                return type;
             }
         }
         return MigrationConfiguration.DEST_ONLINE;
@@ -295,6 +304,7 @@ public class SelectSrcTarTypesView {
      * @param tarType type of target
      */
     public void showCfg(int srcType, int tarType) {
+        this.selectedTarType = tarType;
         boolean flag = false;
         for (Button btn : srcButtons) {
             btn.setSelection(false);
@@ -309,7 +319,11 @@ public class SelectSrcTarTypesView {
         flag = false;
         for (Button btn : tarButtons) {
             btn.setSelection(false);
-            if (((Integer) btn.getData()).intValue() == tarType) {
+            int type = ((Integer) btn.getData()).intValue();
+            if (type == tarType
+                    || (btn == btnXLSTar
+                            && (tarType == MigrationConfiguration.DEST_XLS
+                                    || tarType == MigrationConfiguration.DEST_XLSX))) {
                 btn.setSelection(true);
                 flag = true;
             }

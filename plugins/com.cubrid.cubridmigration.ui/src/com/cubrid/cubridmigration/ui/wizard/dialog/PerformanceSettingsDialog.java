@@ -151,6 +151,8 @@ public class PerformanceSettingsDialog extends Dialog {
             int maxValue = Integer.MAX_VALUE;
             if (config.getDestType() == MigrationConfiguration.DEST_XLS) {
                 maxValue = MigrationConfiguration.XLS_MAX_COUNT;
+            } else if (config.getDestType() == MigrationConfiguration.DEST_XLSX) {
+                maxValue = MigrationConfiguration.XLSX_MAX_COUNT;
             }
             txtFileMaxSize.setValues(config.getMaxCountPerFile(), 0, maxValue, 0, 1, 1000);
         }

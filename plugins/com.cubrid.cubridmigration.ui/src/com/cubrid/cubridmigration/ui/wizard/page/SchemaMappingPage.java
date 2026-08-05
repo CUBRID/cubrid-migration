@@ -288,6 +288,8 @@ public class SchemaMappingPage extends MigrationWizardPage {
                 srcTable.setTarDBType(Messages.msgCubridCSV);
             } else if (config.targetIsXLS()) {
                 srcTable.setTarDBType(Messages.msgCubridXLS);
+            } else if (config.targetIsXLSX()) {
+                srcTable.setTarDBType(Messages.msgCubridXLSX);
             } else {
                 srcTable.setTarDBType(Messages.msgCubridDump);
             }

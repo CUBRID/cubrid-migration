@@ -336,12 +336,16 @@ public class MigrationDirAndFilesManager implements ICanDispose {
      * @return true if full.
      */
     public boolean isDataFileFull(String fileName, int nextCount) {
-        if (!config.targetIsXLS()) {
+        if (!config.targetIsXLS() && !config.targetIsXLSX()) {
             return false;
         }
         int maxCount = config.getMaxCountPerFile();
-        if (maxCount <= 0 || maxCount > MigrationConfiguration.XLS_MAX_COUNT) {
-            maxCount = MigrationConfiguration.XLS_MAX_COUNT;
+        int limit =
+                config.targetIsXLS()
+                        ? MigrationConfiguration.XLS_MAX_COUNT
+                        : MigrationConfiguration.XLSX_MAX_COUNT;
+        if (maxCount <= 0 || maxCount > limit) {
+            maxCount = limit;
         }
         synchronized (MigrationDirAndFilesManager.class) {
             DataFileInfo dfi = dataFiles.get(fileName);
