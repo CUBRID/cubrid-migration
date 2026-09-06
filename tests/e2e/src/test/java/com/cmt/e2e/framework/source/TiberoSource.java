@@ -35,9 +35,9 @@ import com.cmt.e2e.framework.db.containers.TiberoContainer;
 import com.cmt.e2e.framework.db.init.TiberoDatabaseInitializer;
 
 /**
- * Tibero 7 source with two-user seed (REF + MAIN). Init via JDBC after boot (no entrypoint hook in
- * the Tibero image); seed via raw JDBC ({@link TiberoDatabaseInitializer}, Flyway has no Tibero
- * plugin). Order matters: SYS init → REF → MAIN, since MAIN's V5 synonym points at REF's V1 object.
+ * Tibero 6 source with two-user seed (REF + MAIN). Init and seed run over raw JDBC after boot
+ * ({@link TiberoDatabaseInitializer}, Flyway has no Tibero plugin). Order matters: SYS init → REF →
+ * MAIN, since MAIN's V5 synonym points at REF's V1 object.
  */
 final class TiberoSource implements Source {
 

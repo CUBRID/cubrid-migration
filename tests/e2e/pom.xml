@@ -355,17 +355,17 @@
             <id>tibero</id>
             <activation>
                 <file>
-                    <exists>${project.basedir}/lib/tibero7-jdbc-17.jar</exists>
+                    <exists>${basedir}/lib/tibero-jdbc.jar</exists>
                 </file>
             </activation>
 
             <dependencies>
                 <dependency>
                     <groupId>com.tmax.tibero</groupId>
-                    <artifactId>tibero7-jdbc</artifactId>
-                    <version>17</version>
+                    <artifactId>tibero-jdbc</artifactId>
+                    <version>local</version>
                     <scope>system</scope>
-                    <systemPath>${project.basedir}/lib/tibero7-jdbc-17.jar</systemPath>
+                    <systemPath>${basedir}/lib/tibero-jdbc.jar</systemPath>
                 </dependency>
             </dependencies>
 
@@ -386,7 +386,7 @@
                                         <resource>
                                             <directory>${project.basedir}/lib</directory>
                                             <includes>
-                                                <include>tibero7-jdbc-*.jar</include>
+                                                <include>tibero-jdbc.jar</include>
                                             </includes>
                                         </resource>
                                     </resources>

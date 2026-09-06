@@ -68,32 +68,32 @@ VALUES (3, 2,    'Staff A1',  DATE '2022-01-01');
 -- §5.1 e2e_text_types  (R_NULL, R_EMPTY, R_MIN, R_MAX, R_UNICODE, R_BOUNDARY)
 -- =====================================================================
 -- id=1 R_NULL
-INSERT INTO e2e_text_types (id, char_byte_col, char_char_col, varchar_byte_col, varchar_char_col, nchar_col, nvarchar_col, clob_col, nclob_col)
-VALUES (1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO e2e_text_types (id, char_byte_col, char_char_col, varchar_byte_col, varchar_char_col, nchar_col, nvarchar_col, clob_col)
+VALUES (1, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
 -- id=2 R_EMPTY (Tibero, like Oracle, stores empty string as NULL)
-INSERT INTO e2e_text_types (id, char_byte_col, char_char_col, varchar_byte_col, varchar_char_col, nchar_col, nvarchar_col, clob_col, nclob_col)
-VALUES (2, ' ', ' ', '', '', ' ', '', EMPTY_CLOB(), EMPTY_CLOB());
+INSERT INTO e2e_text_types (id, char_byte_col, char_char_col, varchar_byte_col, varchar_char_col, nchar_col, nvarchar_col, clob_col)
+VALUES (2, ' ', ' ', '', '', ' ', '', EMPTY_CLOB());
 -- id=3 R_MIN
-INSERT INTO e2e_text_types (id, char_byte_col, char_char_col, varchar_byte_col, varchar_char_col, nchar_col, nvarchar_col, clob_col, nclob_col)
-VALUES (3, 'A', 'A', 'A', 'A', N'A', N'A', 'A', N'A');
+INSERT INTO e2e_text_types (id, char_byte_col, char_char_col, varchar_byte_col, varchar_char_col, nchar_col, nvarchar_col, clob_col)
+VALUES (3, 'A', 'A', 'A', 'A', N'A', N'A', 'A');
 -- id=4 R_MAX
--- char_char_col, varchar_char_col, and nchar_col use ASCII content because CMT
--- maps Tibero CHAR(n CHAR), VARCHAR2(n CHAR), and NCHAR(n) to byte-counted
--- CUBRID CHAR(n)/VARCHAR(n); n multi-byte chars overflow when n equals the
--- byte budget. Multi-byte coverage stays in NVARCHAR2(40)/CLOB/NCLOB columns.
-INSERT INTO e2e_text_types (id, char_byte_col, char_char_col, varchar_byte_col, varchar_char_col, nchar_col, nvarchar_col, clob_col, nclob_col)
+-- char_char_col, varchar_char_col, and nchar_col carry ASCII, inherited from when
+-- the CUBRID target counted CHAR(n)/VARCHAR(n) in bytes and n multi-byte chars
+-- overflowed. That no longer holds: the target runs the en_US.utf8 locale, where
+-- CHAR(n) counts characters, and Tibero 6 reports these columns as n so the target
+-- comes out the same width as the source. Multi-byte coverage sits in
+-- NVARCHAR2(40)/CLOB either way.
+INSERT INTO e2e_text_types (id, char_byte_col, char_char_col, varchar_byte_col, varchar_char_col, nchar_col, nvarchar_col, clob_col)
 VALUES (4, 'XYZ', 'XYZ', 'ABCDEFGHIJ', 'ABCDEFGHIJ', N'1234567890', N'한국어 漢字 cafe',
-        TO_CLOB(RPAD('CLOB', 1000, 'X')), TO_NCLOB(RPAD(N'NCLOB', 1000, N'가')));
--- id=5 R_UNICODE  (char_char_col / varchar_char_col are NULL for the byte-vs-char reason)
-INSERT INTO e2e_text_types (id, char_byte_col, char_char_col, varchar_byte_col, varchar_char_col, nchar_col, nvarchar_col, clob_col, nclob_col)
+        TO_CLOB(RPAD('CLOB', 1000, 'X')));
+-- id=5 R_UNICODE  (char_char_col / varchar_char_col are NULL, same inherited reason as id=4)
+INSERT INTO e2e_text_types (id, char_byte_col, char_char_col, varchar_byte_col, varchar_char_col, nchar_col, nvarchar_col, clob_col)
 VALUES (5, NULL, NULL, NULL, NULL, N'한中Ω', N'한국 漢字 cafe',
-        TO_CLOB('한국어 漢字 cafe punctuation !@#'),
-        TO_NCLOB(N'한국어 漢字 cafe punctuation !@#'));
+        TO_CLOB('한국어 漢字 cafe punctuation !@#'));
 -- id=6 R_BOUNDARY  (whitespace and embedded newlines)
-INSERT INTO e2e_text_types (id, char_byte_col, char_char_col, varchar_byte_col, varchar_char_col, nchar_col, nvarchar_col, clob_col, nclob_col)
+INSERT INTO e2e_text_types (id, char_byte_col, char_char_col, varchar_byte_col, varchar_char_col, nchar_col, nvarchar_col, clob_col)
 VALUES (6, '   ', '   ', ' A ', '  A  ', N'   ', N' A ',
-        TO_CLOB('line1' || CHR(10) || 'line2'),
-        TO_NCLOB(N'line1' || CHR(10) || N'line2'));
+        TO_CLOB('line1' || CHR(10) || 'line2'));
 
 -- =====================================================================
 -- §5.2 e2e_numeric_types  (R_NULL, R_EMPTY, R_MIN, R_MAX, R_BOUNDARY, R_REPRESENTATIVE)

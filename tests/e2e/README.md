@@ -57,8 +57,9 @@ Review the diff before committing.
 
 Executing Tibero scenarios requires a bring your own assets setup.
 
-- **JDBC jar** — must be at `tests/e2e/lib/tibero7-jdbc-17.jar`
-  (Maven profile activates only when this exact path exists)
+- **JDBC jar** — must be at `tests/e2e/lib/tibero-jdbc.jar`
+  (Maven profile activates only when this exact path exists; the name is
+  version-neutral, so copy either the Tibero 6 or 7 driver to it)
 - **License file** — anywhere on the host; absolute path set via
   `e2e.tibero.license`
 - **Docker image** — built or pulled into the local Docker daemon;

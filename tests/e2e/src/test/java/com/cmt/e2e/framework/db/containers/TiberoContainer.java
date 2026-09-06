@@ -34,6 +34,7 @@ import com.cmt.e2e.framework.db.JdbcDriverJars.DB;
 
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
+import org.testcontainers.images.builder.Transferable;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 
@@ -41,18 +42,34 @@ import java.nio.file.Path;
 import java.time.Duration;
 
 /**
- * Tibero 7 Testcontainer.
+ * Tibero 6 Testcontainer.
  *
- * <p>Image, hostname, license path, and FAKETIME come from {@link TiberoEnvironment} (config keys
- * e2e.tibero.image / hostname / license / faketime — see {@code e2e-test.properties.example}).
- * Constants below ({@code TIBERO_PORT}, {@code SID}, {@code LICENSE_IN_CONTAINER}, DBA credentials,
- * schema users) are fixed by the bundled image and seed scripts.
+ * <p>Image, hostname, license path, and clock offset come from {@link TiberoEnvironment} (config
+ * keys e2e.tibero.image / hostname / license / faketime — see {@code e2e-test.properties.example}).
+ * Constants below ({@code TIBERO_PORT}, {@code SID}, container paths, DBA credentials, schema
+ * users) are fixed by the bundled image and seed scripts.
+ *
+ * <p>The image creates the database on first boot from three files: the license, an {@code
+ * account-list} (empty is fine, but a missing one aborts the non-interactive init), and an {@code
+ * init.sql} that sets the SYS password ({@code TB_ROOT_PASSWORD} is ignored). They are copied, not
+ * bind-mounted: init ends by deleting {@code account-list}, which fails on a mount and takes the
+ * container down with it.
  */
 public final class TiberoContainer implements DatabaseContainer {
 
     private static final int TIBERO_PORT = 8629;
     private static final String SID = "tibero";
-    private static final String LICENSE_IN_CONTAINER = "/opt/tibero7/license/license.xml";
+    private static final String PERSIST_DIR = "/opt/tibero/persistable";
+    private static final String LICENSE_IN_CONTAINER = PERSIST_DIR + "/config/license/license.xml";
+    private static final String ACCOUNT_LIST_IN_CONTAINER = PERSIST_DIR + "/account-list";
+    private static final String INIT_SQL_IN_CONTAINER = PERSIST_DIR + "/config/sql/init.sql";
+
+    /** Printed verbatim by the image once the service is up. */
+    private static final String READY_MARKER = "CMT_E2E_TIBERO_READY";
+
+    private static final long SHM_GB = 1L;
+    private static final long MEMORY_TARGET_GB = 2L;
+
     private static final String DBA_USER = "sys";
     private static final String DBA_PASSWORD = "tibero123";
     private static final String MAIN_USER = "MAIN_SCHEMA";
@@ -66,7 +83,7 @@ public final class TiberoContainer implements DatabaseContainer {
         DockerImageName image = DockerImageName.parse(TiberoEnvironment.image());
         String hostname = TiberoEnvironment.hostname();
         Path licenseHostPath = TiberoEnvironment.licensePath();
-        String faketime = "-" + TiberoEnvironment.faketimeDaysBack() + "d";
+        String clockOffset = "-" + TiberoEnvironment.faketimeDaysBack() + "d";
 
         this.container =
                 new GenericContainer<>(image)
@@ -76,15 +93,22 @@ public final class TiberoContainer implements DatabaseContainer {
                                     cmd.withPlatform("linux/amd64");
                                 })
                         .withExposedPorts(TIBERO_PORT)
-                        .withEnv("TB_ROOT_PASSWORD", DBA_PASSWORD)
-                        .withEnv("FAKETIME", faketime)
+                        .withEnv("FAKETIME", clockOffset)
+                        .withEnv("TB_READY_SIGNAL_PATTERN", READY_MARKER)
+                        .withEnv("TB_TOTAL_SHM_SIZE", SHM_GB + "G")
+                        .withEnv("TB_MEMORY_TARGET", MEMORY_TARGET_GB + "G")
                         .withCopyFileToContainer(
                                 MountableFile.forHostPath(licenseHostPath.toString()),
                                 LICENSE_IN_CONTAINER)
-                        .withSharedMemorySize(1024L * 1024 * 1024) // 1 GB — Tibero requires this
+                        .withCopyToContainer(Transferable.of(""), ACCOUNT_LIST_IN_CONTAINER)
+                        .withCopyToContainer(
+                                Transferable.of(
+                                        "ALTER USER SYS IDENTIFIED BY '" + DBA_PASSWORD + "';\n"),
+                                INIT_SQL_IN_CONTAINER)
+                        .withSharedMemorySize(SHM_GB * 1024 * 1024 * 1024)
                         .waitingFor(
-                                Wait.forLogMessage(".*Tibero is Ready To Use.*", 1)
-                                        .withStartupTimeout(Duration.ofMinutes(12)))
+                                Wait.forLogMessage(".*" + READY_MARKER + ".*", 1)
+                                        .withStartupTimeout(Duration.ofMinutes(15)))
                         .withStartupAttempts(2);
     }
 
