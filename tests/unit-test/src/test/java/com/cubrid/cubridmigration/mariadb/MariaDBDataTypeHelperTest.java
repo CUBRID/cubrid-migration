@@ -281,6 +281,22 @@ class MariaDBDataTypeHelperTest {
         }
 
         @Test
+        @DisplayName("unclosed parenthesis -> StringIndexOutOfBoundsException")
+        void unclosedParenthesis_throwStringIndexOutOfBoundsException() {
+            // DEFECT: substring(index + 1, length() - 1) inverts its bounds when '(' is the
+            // last character, so an unclosed type crashes instead of returning null
+            // - see MariaDBDataTypeHelper.java:320
+            assertThatThrownBy(() -> helper.parseTypeRemain("char("))
+                    .isInstanceOf(StringIndexOutOfBoundsException.class);
+        }
+
+        @Test
+        @DisplayName("quoted enum elements -> the element list with the quotes kept")
+        void quotedEnumElements_returnElementListWithQuotes() {
+            assertThat(helper.parseTypeRemain("enum('a','b')")).isEqualTo("'a','b'");
+        }
+
+        @Test
         @DisplayName("null -> NullPointerException")
         void nullType_throwNullPointerException() {
             assertThatThrownBy(() -> helper.parseTypeRemain(null))

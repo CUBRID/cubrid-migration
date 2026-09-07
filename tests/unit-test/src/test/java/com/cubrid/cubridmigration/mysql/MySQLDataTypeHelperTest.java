@@ -36,6 +36,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.cubrid.cubridmigration.core.datatype.DataType;
 import com.cubrid.cubridmigration.core.dbobject.Catalog;
+import com.cubrid.cubridmigration.core.dbtype.DatabaseType;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -54,6 +55,31 @@ import java.util.Map;
 class MySQLDataTypeHelperTest {
 
     private final MySQLDataTypeHelper helper = MySQLDataTypeHelper.getInstance(null);
+
+    @Nested
+    @DisplayName("getInstance()")
+    class GetInstance {
+
+        @Test
+        @DisplayName("singleton returns same instance regardless of version")
+        void singleton_returnSameInstance() {
+            assertThat(MySQLDataTypeHelper.getInstance(null))
+                    .isSameAs(MySQLDataTypeHelper.getInstance("5.7"))
+                    .isSameAs(MySQLDataTypeHelper.getInstance("8.0"));
+        }
+    }
+
+    @Nested
+    @DisplayName("getDBType()")
+    class GetDBType {
+
+        @Test
+        @DisplayName("MySQL helper -> DatabaseType.MYSQL")
+        void mySqlHelper_returnMySqlDatabaseType() {
+            assertThat(helper.getDBType()).isSameAs(DatabaseType.MYSQL);
+            assertThat(helper.getDBType().getName()).isEqualTo("MYSQL");
+        }
+    }
 
     @Nested
     @DisplayName("getShownDataType()")
@@ -283,6 +309,23 @@ class MySQLDataTypeHelperTest {
             assertThatThrownBy(() -> helper.parsePrecision("varchar(a)"))
                     .isInstanceOf(NumberFormatException.class);
         }
+
+        @Test
+        @DisplayName("upper case enum -> NumberFormatException")
+        void uppercaseEnum_throwsNumberFormatException() {
+            // DEFECT: the enum/set guard compares against the lower-case names only, so an
+            // upper-case ENUM/SET reaches Integer.parseInt() instead of returning -1
+            // - see MySQLDataTypeHelper.java:254
+            assertThatThrownBy(() -> helper.parsePrecision("ENUM(a)"))
+                    .isInstanceOf(NumberFormatException.class);
+        }
+
+        @Test
+        @DisplayName("null -> NullPointerException")
+        void null_throwsNullPointerException() {
+            assertThatThrownBy(() -> helper.parsePrecision(null))
+                    .isInstanceOf(NullPointerException.class);
+        }
     }
 
     @Nested
@@ -321,6 +364,23 @@ class MySQLDataTypeHelperTest {
         @DisplayName("empty argument list -> null")
         void emptyArgumentList_returnNull() {
             assertThat(helper.parseScale("()")).isNull();
+        }
+
+        @Test
+        @DisplayName("upper case enum -> NumberFormatException")
+        void uppercaseEnum_throwsNumberFormatException() {
+            // DEFECT: the enum/set guard compares against the lower-case names only, so an
+            // upper-case ENUM/SET reaches Integer.parseInt() instead of returning null
+            // - see MySQLDataTypeHelper.java:286
+            assertThatThrownBy(() -> helper.parseScale("ENUM(a,b)"))
+                    .isInstanceOf(NumberFormatException.class);
+        }
+
+        @Test
+        @DisplayName("null -> NullPointerException")
+        void null_throwsNullPointerException() {
+            assertThatThrownBy(() -> helper.parseScale(null))
+                    .isInstanceOf(NullPointerException.class);
         }
     }
 
@@ -452,6 +512,80 @@ class MySQLDataTypeHelperTest {
         @DisplayName("empty string -> false")
         void emptyString_returnFalse() {
             assertThat(helper.isBinary("")).isFalse();
+        }
+    }
+
+    @Nested
+    @DisplayName("isCollection()")
+    class IsCollection {
+
+        @ParameterizedTest(name = "[{index}] \"{0}\" -> {1}")
+        @CsvSource({
+            "set,        true",
+            "set(int),   true",
+
+            // checkType() lower-cases the type and drops the argument list, so unlike
+            // isBinary() this predicate is case insensitive.
+            "SET,        true",
+            "Set,        true",
+            "'SET(a,b)', true",
+
+            // enum is DATA_TYPE_4 too, but only "set" is a collection.
+            "enum,       false",
+            "int,        false",
+            "setof,      false",
+
+            // The CUBRID collection types are not MySQL types, the model holds "set" only.
+            "multiset,   false",
+            "sequence,   false",
+        })
+        void dataType_returnWhetherCollection(String dataType, boolean expected) {
+            assertThat(helper.isCollection(dataType)).isEqualTo(expected);
+        }
+
+        @Test
+        @DisplayName("null -> false")
+        void null_returnFalse() {
+            assertThat(helper.isCollection(null)).isFalse();
+        }
+
+        @Test
+        @DisplayName("empty string -> false")
+        void emptyString_returnFalse() {
+            assertThat(helper.isCollection("")).isFalse();
+        }
+    }
+
+    @Nested
+    @DisplayName("isYear()")
+    class IsYear {
+
+        @ParameterizedTest(name = "[{index}] \"{0}\" -> {1}")
+        @CsvSource({
+            // No production code calls isYear(), the rows pin the public contract only.
+            "year,       true",
+            "year(4),    true",
+            "YEAR,       true",
+            "Year,       true",
+            "int,        false",
+            "date,       false",
+            "datetime,   false",
+            "years,      false",
+        })
+        void dataType_returnWhetherYear(String dataType, boolean expected) {
+            assertThat(helper.isYear(dataType)).isEqualTo(expected);
+        }
+
+        @Test
+        @DisplayName("null -> false")
+        void null_returnFalse() {
+            assertThat(helper.isYear(null)).isFalse();
+        }
+
+        @Test
+        @DisplayName("empty string -> false")
+        void emptyString_returnFalse() {
+            assertThat(helper.isYear("")).isFalse();
         }
     }
 }
