@@ -57,18 +57,16 @@ class MSSQLDataTypeHelperTest {
     private static final MSSQLDataTypeHelper HELPER = MSSQLDataTypeHelper.getInstance(null);
 
     @Test
-    @DisplayName("MSSQL_DT_DATETIMEOFFSET is the driver specific id -155")
+    @DisplayName("MSSQL_DT_DATETIMEOFFSET is -155, the driver id of DATETIMEOFFSET")
     void datetimeOffsetTypeId_isMinus155() {
-        // MSSQLExportHelper.java:65 keys a handler on this constant. It reads the same symbol,
-        // so the two can never disagree; the literal below is what pins the value itself.
         assertThat(MSSQLDataTypeHelper.MSSQL_DT_DATETIMEOFFSET).isEqualTo(-155);
     }
 
     @Test
-    @DisplayName("MSSQL_DT_SQL_VARIANT is the driver specific id -150")
+    @DisplayName("MSSQL_DT_SQL_VARIANT is -150, which is not the driver id of SQL_VARIANT")
     void sqlVariantTypeId_isMinus150() {
-        // MSSQLExportHelper.java:66 keys a handler on this constant. It reads the same symbol,
-        // so the two can never disagree; the literal below is what pins the value itself.
+        // DEFECT: microsoft.sql.Types declares SQL_VARIANT as -156 and -150 as SMALLDATETIME,
+        // so the sql_variant export handler is keyed on the smalldatetime id instead
         assertThat(MSSQLDataTypeHelper.MSSQL_DT_SQL_VARIANT).isEqualTo(-150);
     }
 
@@ -293,8 +291,8 @@ class MSSQLDataTypeHelperTest {
         })
         void variousDataTypes_renderTheDialectSpecificShownType(
                 String dataType, Integer precision, Integer scale, String expected) {
-            assertThat(HELPER.getShownDataType(createColumn(dataType.trim(), precision, scale)))
-                    .isEqualTo(expected.trim());
+            assertThat(HELPER.getShownDataType(createColumn(dataType, precision, scale)))
+                    .isEqualTo(expected);
         }
 
         @ParameterizedTest(name = "[{index}] \"{0}\" -> \"{1}\"")
@@ -305,8 +303,7 @@ class MSSQLDataTypeHelperTest {
             "TEXT,        TEXT",
         })
         void upperCaseDataType_classifiesTheTypeButKeepsItsCase(String dataType, String expected) {
-            assertThat(HELPER.getShownDataType(createColumn(dataType.trim(), 10, 2)))
-                    .isEqualTo(expected.trim());
+            assertThat(HELPER.getShownDataType(createColumn(dataType, 10, 2))).isEqualTo(expected);
         }
 
         @Test

@@ -53,10 +53,7 @@ class CUBRIDDataTypeHelperTest {
 
     private final CUBRIDDataTypeHelper helper = CUBRIDDataTypeHelper.getInstance(null);
 
-    /**
-     * setColumnDataType() is the only way to give a Column the JDBC type ids that the shown/DDL
-     * data type rendering depends on.
-     */
+    /** Fills in the JDBC type ids that the shown and DDL rendering read off the column. */
     private Column columnOf(String spelling) {
         Column column = createColumn(spelling);
         helper.setColumnDataType(spelling, column);
@@ -213,8 +210,7 @@ class CUBRIDDataTypeHelperTest {
             "json,                          json",
         })
         void spelling_returnsStandardShownDataType(String spelling, String expected) {
-            assertThat(helper.getShownDataType(columnOf(spelling.trim())))
-                    .isEqualTo(expected.trim());
+            assertThat(helper.getShownDataType(columnOf(spelling))).isEqualTo(expected);
         }
 
         @Test
@@ -416,7 +412,7 @@ class CUBRIDDataTypeHelperTest {
             "list_of(int),                  list",
         })
         void synonym_returnsStandardMainDataType(String spelling, String expected) {
-            assertThat(helper.getStdMainDataType(spelling.trim())).isEqualTo(expected.trim());
+            assertThat(helper.getStdMainDataType(spelling)).isEqualTo(expected);
         }
 
         @Test
@@ -656,7 +652,7 @@ class CUBRIDDataTypeHelperTest {
             // DEFECT: the closing parenthesis is assumed to be the last character, so an
             // unbalanced instance yields a silently truncated string instead of null - see
             // CUBRIDDataTypeHelper.java:556
-            assertThat(helper.getRemain(dataType.trim())).isEqualTo(expected.trim());
+            assertThat(helper.getRemain(dataType)).isEqualTo(expected);
         }
     }
 
@@ -850,7 +846,7 @@ class CUBRIDDataTypeHelperTest {
             "datetimeltz,   39",
         })
         void standardName_returnsDataTypeId(String dataType, int expected) {
-            assertThat(helper.getCUBRIDDataTypeID(dataType.trim())).isEqualTo(expected);
+            assertThat(helper.getCUBRIDDataTypeID(dataType)).isEqualTo(expected);
         }
 
         @ParameterizedTest(name = "[{index}] \"{0}\" -> {1}")
@@ -890,7 +886,7 @@ class CUBRIDDataTypeHelperTest {
             "JSON,                      71111",
         })
         void synonymOrDecoratedName_returnsDataTypeId(String dataType, int expected) {
-            assertThat(helper.getCUBRIDDataTypeID(dataType.trim())).isEqualTo(expected);
+            assertThat(helper.getCUBRIDDataTypeID(dataType)).isEqualTo(expected);
         }
 
         @Test
@@ -994,7 +990,7 @@ class CUBRIDDataTypeHelperTest {
         })
         void defaultValue_validatedAgainstDataType(
                 String dataType, String value, boolean expected) {
-            assertThat(helper.isValidValue(dataType.trim(), value.trim())).isEqualTo(expected);
+            assertThat(helper.isValidValue(dataType, value)).isEqualTo(expected);
         }
 
         @ParameterizedTest(name = "[{index}] bit(8) default \"{0}\" -> true")
@@ -1047,7 +1043,7 @@ class CUBRIDDataTypeHelperTest {
             // DEFECT: StringUtils.isNumeric() rejects a decimal point and a sign, so legal
             // defaults such as 12.5 or -5 are reported invalid - see
             // CUBRIDDataTypeHelper.java:917
-            assertThat(helper.isValidValue(dataType.trim(), value.trim())).isEqualTo(expected);
+            assertThat(helper.isValidValue(dataType, value)).isEqualTo(expected);
         }
 
         @ParameterizedTest(name = "[{index}] datetime default \"{0}\" -> true")

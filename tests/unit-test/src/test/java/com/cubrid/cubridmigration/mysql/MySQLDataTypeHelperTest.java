@@ -127,8 +127,6 @@ class MySQLDataTypeHelperTest {
             "int unsigned,            10, 2,  int(10) unsigned",
             "float unsigned,          10, 2,  'float(10,2) unsigned'",
             "bigint unsigned,         20, 2,  bigint(20) unsigned",
-
-            // Unrecognized types are returned unchanged.
             "character(10),           10, 2,  character(10)",
             "unknowntype,             10, 2,  unknowntype",
 
@@ -139,8 +137,8 @@ class MySQLDataTypeHelperTest {
         })
         void variousTypes_returnShownDataType(
                 String dataType, Integer precision, Integer scale, String expected) {
-            assertThat(helper.getShownDataType(createColumn(dataType.trim(), precision, scale)))
-                    .isEqualTo(expected.trim());
+            assertThat(helper.getShownDataType(createColumn(dataType, precision, scale)))
+                    .isEqualTo(expected);
         }
 
         @Test
@@ -189,7 +187,7 @@ class MySQLDataTypeHelperTest {
             "'decimal(10,2) unsigned', decimal unsigned",
         })
         void typeWithArguments_returnMainType(String type, String expected) {
-            assertThat(helper.parseMainType(type.trim())).isEqualTo(expected.trim());
+            assertThat(helper.parseMainType(type)).isEqualTo(expected);
         }
 
         @Test
@@ -218,8 +216,6 @@ class MySQLDataTypeHelperTest {
                     "varchar(200),              200",
                     "'decimal(5,2)',            '5,2'",
                     "set(int),                  int",
-
-                    // No argument list at all -> null.
                     "integer,                   null",
 
                     // DEFECT: the closing parenthesis is assumed to be the last
@@ -229,7 +225,7 @@ class MySQLDataTypeHelperTest {
                     "'decimal(10,2) unsigned',  '10,2) unsigne'",
                 })
         void typeWithArguments_returnArgumentPart(String type, String expected) {
-            assertThat(helper.parseTypeRemain(type.trim())).isEqualTo(expected);
+            assertThat(helper.parseTypeRemain(type)).isEqualTo(expected);
         }
 
         @Test
@@ -278,8 +274,6 @@ class MySQLDataTypeHelperTest {
             "varchar(200),             200",
             "'number(38,2)',           38",
             "char(0),                  0",
-
-            // No argument list -> -1.
             "enum,                     -1",
             "integer,                  -1",
 
@@ -293,7 +287,7 @@ class MySQLDataTypeHelperTest {
             "'decimal(10,2) unsigned', 10",
         })
         void typeWithArguments_returnPrecision(String type, int expected) {
-            assertThat(helper.parsePrecision(type.trim())).isEqualTo(expected);
+            assertThat(helper.parsePrecision(type)).isEqualTo(expected);
         }
 
         @Test
@@ -344,8 +338,6 @@ class MySQLDataTypeHelperTest {
                     // A single argument is a precision, not a scale -> null.
                     "char(10),                  null",
                     "varchar(200),              null",
-
-                    // No argument list -> null.
                     "enum,                      null",
                     "integer,                   null",
 
@@ -357,7 +349,7 @@ class MySQLDataTypeHelperTest {
                     "int(10) unsigned,          null",
                 })
         void typeWithArguments_returnScale(String type, Integer expected) {
-            assertThat(helper.parseScale(type.trim())).isEqualTo(expected);
+            assertThat(helper.parseScale(type)).isEqualTo(expected);
         }
 
         @Test
@@ -478,8 +470,6 @@ class MySQLDataTypeHelperTest {
             "mediumblob, true",
             "longblob,   true",
             "bit,        true",
-
-            // Non binary types.
             "int,        false",
             "text,       false",
             "tinytext,   false",
@@ -499,7 +489,7 @@ class MySQLDataTypeHelperTest {
             "Blob,       false",
         })
         void dataType_returnWhetherBinary(String dataType, boolean expected) {
-            assertThat(helper.isBinary(dataType.trim())).isEqualTo(expected);
+            assertThat(helper.isBinary(dataType)).isEqualTo(expected);
         }
 
         @Test

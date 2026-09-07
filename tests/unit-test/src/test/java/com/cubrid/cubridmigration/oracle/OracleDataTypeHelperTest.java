@@ -113,8 +113,6 @@ class OracleDataTypeHelperTest {
             // INTERVAL types collapse onto their catalog key.
             "INTERVAL DAY(2) TO SECOND(10),       INTERVALDS",
             "INTERVAL YEAR(2012) TO MONTH,        INTERVALYM",
-
-            // No pattern matches: the input is returned untouched.
             "NUMBER,                              NUMBER",
             "VARCHAR2,                            VARCHAR2",
             "TIMESTAMP,                           TIMESTAMP",
@@ -127,8 +125,7 @@ class OracleDataTypeHelperTest {
             "timestamp(6),                        timestamp(6)",
         })
         void variousTypes_returnLookupKey(String input, String expected) {
-            assertThat(OracleDataTypeHelper.getOracleDataTypeKey(input.trim()))
-                    .isEqualTo(expected.trim());
+            assertThat(OracleDataTypeHelper.getOracleDataTypeKey(input)).isEqualTo(expected);
         }
 
         @Test
@@ -360,8 +357,6 @@ class OracleDataTypeHelperTest {
                     "TIMESTAMPLTZ,  null,      6,     TIMESTAMP(6) WITH LOCAL TIME ZONE",
                     "INTERVALDS,    2,         6,     INTERVAL DAY(2) TO SECOND(6)",
                     "INTERVALYM,    4,         null,  INTERVAL YEAR(4) TO MONTH",
-
-                    // Everything else is returned as is.
                     "CLOB,          null,      null,  CLOB",
                     "BLOB,          null,      null,  BLOB",
                     "DATE,          null,      null,  DATE",
@@ -370,8 +365,8 @@ class OracleDataTypeHelperTest {
                 })
         void column_returnsShownDataType(
                 String dataType, Integer precision, Integer scale, String expected) {
-            assertThat(HELPER.getShownDataType(createColumn(dataType.trim(), precision, scale)))
-                    .isEqualTo(expected.trim());
+            assertThat(HELPER.getShownDataType(createColumn(dataType, precision, scale)))
+                    .isEqualTo(expected);
         }
 
         @Test
@@ -407,8 +402,7 @@ class OracleDataTypeHelperTest {
             "TIMESTAMP,  TIMESTAMP(0)",
         })
         void unsetPrecision_rendersZero(String dataType, String expected) {
-            assertThat(HELPER.getShownDataType(createColumn(dataType.trim())))
-                    .isEqualTo(expected.trim());
+            assertThat(HELPER.getShownDataType(createColumn(dataType))).isEqualTo(expected);
         }
 
         @Test

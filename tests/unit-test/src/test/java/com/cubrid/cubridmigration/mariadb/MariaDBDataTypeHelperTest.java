@@ -125,8 +125,8 @@ class MariaDBDataTypeHelperTest {
         })
         void knownTypes_returnShownDataType(
                 String dataType, Integer precision, Integer scale, String expected) {
-            assertThat(helper.getShownDataType(createColumn(dataType.trim(), precision, scale)))
-                    .isEqualTo(expected.trim());
+            assertThat(helper.getShownDataType(createColumn(dataType, precision, scale)))
+                    .isEqualTo(expected);
         }
 
         @ParameterizedTest(name = "[{index}] {0}(p=10,s=2) -> \"{1}\"")
@@ -139,8 +139,7 @@ class MariaDBDataTypeHelperTest {
             "'enum unsigned',       'enum unsigned'",
         })
         void unsignedTypes_keepUnsignedSuffixAfterPrecision(String dataType, String expected) {
-            assertThat(helper.getShownDataType(createColumn(dataType.trim(), 10, 2)))
-                    .isEqualTo(expected.trim());
+            assertThat(helper.getShownDataType(createColumn(dataType, 10, 2))).isEqualTo(expected);
         }
 
         @Test
@@ -212,7 +211,7 @@ class MariaDBDataTypeHelperTest {
             "'decimal(10,2) unsigned',  'decimal unsigned'",
         })
         void variousTypes_returnMainType(String type, String expected) {
-            assertThat(helper.parseMainType(type.trim())).isEqualTo(expected.trim());
+            assertThat(helper.parseMainType(type)).isEqualTo(expected);
         }
 
         @Test
@@ -248,14 +247,11 @@ class MariaDBDataTypeHelperTest {
                     "'decimal(5,2)',    '5,2'",
                     "enum(int),         int",
                     "set(int),          int",
-
-                    // No parenthesis at all -> null.
                     "integer,           null",
                     "enum,              null",
                 })
         void variousTypes_returnRemainPart(String type, String expected) {
-            assertThat(helper.parseTypeRemain(type.trim()))
-                    .isEqualTo(expected == null ? null : expected.trim());
+            assertThat(helper.parseTypeRemain(type)).isEqualTo(expected);
         }
 
         @Test
@@ -320,8 +316,6 @@ class MariaDBDataTypeHelperTest {
             // The ") unsigne" left over by parseTypeRemain() is stripped again here.
             "'int(10) unsigned',        10",
             "'decimal(10,2) unsigned',  10",
-
-            // No parenthesis -> -1.
             "integer,                   -1",
 
             // enum/set are always -1 even when they carry an element list.
@@ -331,7 +325,7 @@ class MariaDBDataTypeHelperTest {
             "set(int),                  -1",
         })
         void variousTypes_returnPrecision(String type, int expected) {
-            assertThat(helper.parsePrecision(type.trim())).isEqualTo(expected);
+            assertThat(helper.parsePrecision(type)).isEqualTo(expected);
         }
 
         @ParameterizedTest(name = "[{index}] \"{0}\" -> NumberFormatException")
@@ -371,8 +365,6 @@ class MariaDBDataTypeHelperTest {
                     "'number(38,2)',            2",
                     "'double(10,0)',            0",
                     "'decimal(10,2) unsigned',  2",
-
-                    // Single or missing remain part -> null.
                     "char(10),                  null",
                     "varchar(200),              null",
                     "integer,                   null",
@@ -387,7 +379,7 @@ class MariaDBDataTypeHelperTest {
                     "set(int),                  null",
                 })
         void variousTypes_returnScale(String type, Integer expected) {
-            assertThat(helper.parseScale(type.trim())).isEqualTo(expected);
+            assertThat(helper.parseScale(type)).isEqualTo(expected);
         }
 
         @Test
