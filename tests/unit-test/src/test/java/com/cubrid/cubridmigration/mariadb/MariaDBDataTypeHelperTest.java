@@ -163,7 +163,7 @@ class MariaDBDataTypeHelperTest {
         void uppercaseType_losePrecision() {
             // DEFECT: the type lists are matched case sensitively, so an uppercase data type
             // silently falls through to the "unknown type" branch and loses its precision
-            // - see MariaDBDataTypeHelper.java:177
+            // - see MariaDBDataTypeHelper.getShownDataType()
             assertThat(helper.getShownDataType(createColumn("CHAR", 10, 2))).isEqualTo("CHAR");
         }
 
@@ -171,7 +171,7 @@ class MariaDBDataTypeHelperTest {
         @DisplayName("null precision and scale -> rendered as 0")
         void nullPrecisionAndScale_renderZero() {
             // Column.getPrecision()/getScale() substitute 0 for null, so the helper never sees null
-            // - see Column.java:198
+            // - see Column.getPrecision()
             assertThat(helper.getShownDataType(createColumn("char", null, null)))
                     .isEqualTo("char(0)");
             assertThat(helper.getShownDataType(createColumn("decimal", null, null)))
@@ -271,7 +271,7 @@ class MariaDBDataTypeHelperTest {
         void unsignedType_returnTruncatedRemainPart() {
             // DEFECT: the remain part is cut at length()-1 assuming ')' is the last character, so
             // everything after the closing parenthesis leaks in minus its last character
-            // - see MariaDBDataTypeHelper.java:320
+            // - see MariaDBDataTypeHelper.parseTypeRemain()
             assertThat(helper.parseTypeRemain("int(10) unsigned")).isEqualTo("10) unsigne");
             assertThat(helper.parseTypeRemain("decimal(10,2) unsigned")).isEqualTo("10,2) unsigne");
         }
@@ -281,7 +281,7 @@ class MariaDBDataTypeHelperTest {
         void unclosedParenthesis_throwStringIndexOutOfBoundsException() {
             // DEFECT: substring(index + 1, length() - 1) inverts its bounds when '(' is the
             // last character, so an unclosed type crashes instead of returning null
-            // - see MariaDBDataTypeHelper.java:320
+            // - see MariaDBDataTypeHelper.parseTypeRemain()
             assertThatThrownBy(() -> helper.parseTypeRemain("char("))
                     .isInstanceOf(StringIndexOutOfBoundsException.class);
         }
@@ -340,7 +340,7 @@ class MariaDBDataTypeHelperTest {
         void uppercaseEnum_throwNumberFormatException() {
             // DEFECT: the enum/set guard compares against lowercase literals only, so an uppercase
             // ENUM/SET reaches Integer.parseInt() and blows up instead of returning -1
-            // - see MariaDBDataTypeHelper.java:253
+            // - see MariaDBDataTypeHelper.parsePrecision()
             assertThatThrownBy(() -> helper.parsePrecision("ENUM(a)"))
                     .isInstanceOf(NumberFormatException.class);
         }
@@ -387,7 +387,7 @@ class MariaDBDataTypeHelperTest {
         void uppercaseEnum_throwNumberFormatException() {
             // DEFECT: the enum/set guard compares against lowercase literals only, so an uppercase
             // ENUM/SET reaches Integer.parseInt() and blows up instead of returning null
-            // - see MariaDBDataTypeHelper.java:285
+            // - see MariaDBDataTypeHelper.parseScale()
             assertThatThrownBy(() -> helper.parseScale("ENUM(a,b)"))
                     .isInstanceOf(NumberFormatException.class);
         }
@@ -421,7 +421,7 @@ class MariaDBDataTypeHelperTest {
         void byteStringTypes_returnFalse(String dataType) {
             // DEFECT: binary/varbinary hold raw bytes and the base class lists them in
             // BINARY_TYPES, but DATA_TYPE_5 omits them so isBinary() reports false
-            // - see MariaDBDataTypeHelper.java:94
+            // - see MariaDBDataTypeHelper.DATA_TYPE_5
             assertThat(helper.isBinary(dataType)).isFalse();
         }
 
@@ -430,7 +430,7 @@ class MariaDBDataTypeHelperTest {
         void unnormalizedBinaryTypes_returnFalse(String dataType) {
             // DEFECT: isBinary() does an exact list lookup instead of the checkType()
             // normalization used by isCollection()/isYear(), so case and precision defeat it
-            // - see MariaDBDataTypeHelper.java:198
+            // - see MariaDBDataTypeHelper.isBinary()
             assertThat(helper.isBinary(dataType)).isFalse();
         }
 
@@ -553,7 +553,7 @@ class MariaDBDataTypeHelperTest {
                                     createDataType("INT", Types.BIGINT)));
 
             // DEFECT: the message contains a double space after "Not supported"
-            // - see MariaDBDataTypeHelper.java:150
+            // - see MariaDBDataTypeHelper.getJdbcDataTypeID()
             assertThatThrownBy(() -> helper.getJdbcDataTypeID(catalog, "INT", 10, 0))
                     .isInstanceOf(IllegalArgumentException.class)
                     .hasMessage("Not supported  MariaDB data type(INT: p=10, s=0)");
@@ -566,7 +566,7 @@ class MariaDBDataTypeHelperTest {
 
             // DEFECT: an empty candidate list is not the ambiguous case, but the size == 1 check
             // sends it to the ambiguous message anyway
-            // - see MariaDBDataTypeHelper.java:145
+            // - see MariaDBDataTypeHelper.getJdbcDataTypeID()
             assertThatThrownBy(() -> helper.getJdbcDataTypeID(catalog, "VARCHAR", 200, null))
                     .isInstanceOf(IllegalArgumentException.class)
                     .hasMessage("Not supported  MariaDB data type(VARCHAR: p=200, s=null)");

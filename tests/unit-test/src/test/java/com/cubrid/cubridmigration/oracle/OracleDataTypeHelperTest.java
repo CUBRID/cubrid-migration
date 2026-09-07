@@ -139,7 +139,7 @@ class OracleDataTypeHelperTest {
         void nullDataType_throwsNullPointerException() {
             // DEFECT: null is dereferenced instead of being rejected or normalized, unlike the
             // sibling TiberoDataTypeHelper.getTiberoDataTypeKey() which returns ""
-            // - see OracleDataTypeHelper.java:120
+            // - see OracleDataTypeHelper.getOracleDataTypeKey()
             assertThatThrownBy(() -> OracleDataTypeHelper.getOracleDataTypeKey(null))
                     .isInstanceOf(NullPointerException.class);
         }
@@ -166,7 +166,7 @@ class OracleDataTypeHelperTest {
                     "5,           null,   5", // SMALLINT
                     // DEFECT: the exact-match chain makes the mapping non-monotonic - NUMBER(4)
                     // widens to INTEGER while the larger NUMBER(5) narrows to SMALLINT
-                    // - see OracleDataTypeHelper.java:102
+                    // - see OracleDataTypeHelper.getNumberType()
                     "2,           0,      4", // INTEGER
                     "4,           0,      4", // INTEGER
                     "6,           0,      4", // INTEGER
@@ -200,7 +200,7 @@ class OracleDataTypeHelperTest {
         @ValueSource(strings = {"NCHAR", "NVARCHAR2"})
         void nationalCharTypes_returnChar(String dataType) {
             // DEFECT: NVARCHAR2 is variable length but is mapped to the fixed-length Types.CHAR,
-            // exactly like NCHAR - see OracleDataTypeHelper.java:162
+            // exactly like NCHAR - see OracleDataTypeHelper.getJdbcDataTypeID()
             assertThat(HELPER.getJdbcDataTypeID(null, dataType, 100, null)).isEqualTo(Types.CHAR);
         }
 
@@ -277,7 +277,7 @@ class OracleDataTypeHelperTest {
         @DisplayName("empty catalog entry -> IllegalArgumentException of the ambiguous branch")
         void emptySupportedTypeList_throwsIllegalArgumentException() {
             // DEFECT: only a missing key is treated as unsupported, an empty candidate list falls
-            // through to the ambiguous message - see OracleDataTypeHelper.java:193
+            // through to the ambiguous message - see OracleDataTypeHelper.getJdbcDataTypeID()
             Catalog catalog = catalogWithSupportedTypes("VARCHAR2", Arrays.<DataType>asList());
 
             assertThatThrownBy(() -> HELPER.getJdbcDataTypeID(catalog, "VARCHAR2", 10, null))
@@ -396,7 +396,7 @@ class OracleDataTypeHelperTest {
         @CsvSource({
             // DEFECT: Column.getPrecision()/getScale() coerce an unset value to 0, so an
             // unspecified length is rendered as a literal 0 and produces invalid Oracle DDL
-            // - see OracleDataTypeHelper.java:215
+            // - see OracleDataTypeHelper.getShownDataType()
             "VARCHAR2,   VARCHAR2(0)",
             "FLOAT,      FLOAT(0)",
             "TIMESTAMP,  TIMESTAMP(0)",
@@ -412,7 +412,7 @@ class OracleDataTypeHelperTest {
                     .isEqualTo("varchar2(100)");
             // DEFECT: NUMBER/RAW/FLOAT/TIMESTAMP are compared case sensitively while the
             // isString() check is not, so a lowercase number column silently loses its
-            // precision and scale - see OracleDataTypeHelper.java:227
+            // precision and scale - see OracleDataTypeHelper.getShownDataType()
             assertThat(HELPER.getShownDataType(createColumn("number", 38, 2))).isEqualTo("number");
         }
 

@@ -97,10 +97,9 @@ class MSSQLDataTypeHelperTest {
     @DisplayName("getJdbcDataTypeID()")
     class GetJdbcDataTypeID {
 
-        // Nothing in plugins/ calls this override: the only getJdbcDataTypeID(catalog, ...) call
-        // sites are TiberoSchemaFetcher.java:360 and OracleSchemaFetcher.java:596, both on their
-        // own helper type, and MSSQLSchemaFetcher.java:516 does its own inline
-        // supportedDataType.get(dataType). These tests pin the public API, not a migration path.
+        // No production code calls this override: MSSQLSchemaFetcher.buildTableColumns() reads
+        // supportedDataType directly, and the only getJdbcDataTypeID(catalog, ...) call sites
+        // are on the Oracle and Tibero helpers. These tests pin the public API only.
 
         @Test
         @DisplayName("supported type -> the id of the single catalog entry")
@@ -138,9 +137,8 @@ class MSSQLDataTypeHelperTest {
         @Test
         @DisplayName("upper case type name -> IllegalArgumentException")
         void upperCaseDataType_throwsIllegalArgumentException() {
-            // The raw data type is the map key, with no case normalization
-            // (MSSQLDataTypeHelper.java:160), so a catalog built with lower case keys rejects
-            // "VARCHAR". MySQLDataTypeHelper.java:136 is written the same way.
+            // The raw data type is the map key, with no case normalization, so a catalog built
+            // with lower case keys rejects "VARCHAR" - see MSSQLDataTypeHelper.getJdbcDataTypeID()
             Catalog catalog = createCatalogWithSupportedType("varchar", Types.VARCHAR);
 
             assertThatThrownBy(() -> HELPER.getJdbcDataTypeID(catalog, "VARCHAR", 10, null))
@@ -151,9 +149,8 @@ class MSSQLDataTypeHelperTest {
         @Test
         @DisplayName("type name carrying a precision suffix -> IllegalArgumentException")
         void dataTypeWithPrecisionSuffix_throwsIllegalArgumentException() {
-            // The raw string is the map key; the main data type is not extracted. Code that
-            // needs that strips the arguments itself, the way MSSQLSchemaFetcher.java:512 does
-            // for its own inline lookup at :516 - which does not go through this method.
+            // The raw string is the map key; the arguments are not stripped off first, so a
+            // caller that needs that does it itself - see MSSQLSchemaFetcher.buildTableColumns()
             Catalog catalog = createCatalogWithSupportedType("varchar", Types.VARCHAR);
 
             assertThatThrownBy(() -> HELPER.getJdbcDataTypeID(catalog, "varchar(10)", 10, null))
@@ -208,8 +205,8 @@ class MSSQLDataTypeHelperTest {
         void emptySupportedTypeList_throwsIllegalArgumentException() {
             // DEFECT: only a missing key is treated as unsupported, an empty candidate list
             // falls through to the "ambiguous data type" message instead. The inline copy of
-            // this lookup in MSSQLSchemaFetcher.java:517 guards with CollectionUtils.isEmpty()
-            // - see MSSQLDataTypeHelper.java:168
+            // this lookup in MSSQLSchemaFetcher.buildTableColumns() guards with
+            // CollectionUtils.isEmpty() - see MSSQLDataTypeHelper.getJdbcDataTypeID()
             Catalog catalog = new Catalog();
             Map<String, List<DataType>> supported = new HashMap<String, List<DataType>>();
             supported.put("varchar", new ArrayList<DataType>());
@@ -240,8 +237,8 @@ class MSSQLDataTypeHelperTest {
     @DisplayName("getShownDataType()")
     class GetShownDataType {
 
-        // The production consumers are MSSQLSchemaFetcher.java:467, 550 and 602, which store the
-        // result in Column.setShownDataType(). It is the user visible mapping label.
+        // MSSQLSchemaFetcher stores this in Column.setShownDataType() from buildSQLTable(),
+        // buildTableColumns() and buildViewColumns(). It is the user visible mapping label.
 
         @ParameterizedTest(name = "[{index}] {0}(p={1}, s={2}) -> \"{3}\"")
         @CsvSource({
@@ -317,7 +314,7 @@ class MSSQLDataTypeHelperTest {
         @DisplayName("\"identity\" alone -> the whole type name is erased")
         void identityOnly_erasesTheTypeName() {
             // The keyword is cut out with String.replace(), so a type name that is nothing but
-            // the keyword is left empty - see MSSQLDataTypeHelper.java:191
+            // the keyword is left empty - see MSSQLDataTypeHelper.getShownDataType()
             assertThat(HELPER.getShownDataType(createColumn("identity", 10, 2))).isEmpty();
         }
 
@@ -325,7 +322,7 @@ class MSSQLDataTypeHelperTest {
         @DisplayName("\"identityint\" -> \"int\"")
         void identityInsideTheTypeName_isRemovedToo() {
             // The replace is global, not a suffix strip, so the keyword goes wherever it sits
-            // - see MSSQLDataTypeHelper.java:191
+            // - see MSSQLDataTypeHelper.getShownDataType()
             assertThat(HELPER.getShownDataType(createColumn("identityint", 10, 2)))
                     .isEqualTo("int");
         }
@@ -335,7 +332,7 @@ class MSSQLDataTypeHelperTest {
         void upperCaseIdentitySuffix_isKept() {
             // DEFECT: the method classifies the type case insensitively (checkType() lower cases
             // it) but strips the identity keyword case sensitively, so an upper case suffix
-            // leaks into the shown data type - see MSSQLDataTypeHelper.java:191
+            // leaks into the shown data type - see MSSQLDataTypeHelper.getShownDataType()
             assertThat(HELPER.getShownDataType(createColumn("int IDENTITY", 10, 2)))
                     .isEqualTo("int IDENTITY");
         }
@@ -375,10 +372,9 @@ class MSSQLDataTypeHelperTest {
         @Test
         @DisplayName("missing precision -> zero length string type")
         void missingPrecision_returnsZeroLength() {
-            // The helper cannot tell "no precision" from "precision 0": Column.getPrecision()
-            // coalesces null to 0 (Column.java:199). No MSSQL fetcher passes null - the three
-            // call sites all assign the precision from a JDBC int first
-            // (MSSQLSchemaFetcher.java:522, AbstractJDBCSchemaFetcher.java:468-470 and :991).
+            // The helper cannot tell "no precision" from "precision 0", because
+            // Column.getPrecision() coalesces null to 0. No MSSQL fetcher passes null: every
+            // call site assigns the precision from a JDBC int first.
             assertThat(HELPER.getShownDataType(createColumn("varchar", null, null)))
                     .isEqualTo("varchar(0)");
         }
@@ -395,7 +391,7 @@ class MSSQLDataTypeHelperTest {
         void dataTypeWithPrecision_appendsPrecisionTwice() {
             // DEFECT: the branch is decided on the main data type (checkType() drops the
             // arguments) but the raw string is concatenated, so a full data type instance is
-            // rendered as "varchar(10)(10)" - see MSSQLDataTypeHelper.java:195
+            // rendered as "varchar(10)(10)" - see MSSQLDataTypeHelper.getShownDataType()
             assertThat(HELPER.getShownDataType(createColumn("varchar(10)", 10, null)))
                     .isEqualTo("varchar(10)(10)");
         }

@@ -113,10 +113,10 @@ class InformixDataTypeHelperTest {
         @Test
         @DisplayName("upper case type name -> IllegalArgumentException")
         void upperCaseTypeName_throwsIllegalArgumentException() {
-            // DEFECT: the raw data type is used as the map key with no case folding, so only an
-            // exact key match resolves - see InformixDataTypeHelper.java:73. The keys are the
-            // driver's TYPE_NAME values, stored verbatim
-            // - see AbstractJDBCSchemaFetcher.java:1197,1241
+            // DEFECT: the raw data type is used as the map key with no case folding, so only
+            // an exact key match resolves. The keys are the driver's TYPE_NAME values, stored
+            // verbatim by AbstractJDBCSchemaFetcher.getSupportedSqlTypes()
+            // - see InformixDataTypeHelper.getJdbcDataTypeID()
             Catalog catalog = createCatalogWithSupportedType("varchar", Types.VARCHAR);
 
             assertThatThrownBy(() -> HELPER.getJdbcDataTypeID(catalog, "VARCHAR", 255, null))
@@ -128,7 +128,8 @@ class InformixDataTypeHelperTest {
         @DisplayName("type name carrying its precision -> IllegalArgumentException")
         void typeNameWithPrecision_throwsIllegalArgumentException() {
             // DEFECT: getMainDataType() is not applied to the key either, so a name that carries
-            // its arguments never matches a catalog key - see InformixDataTypeHelper.java:73
+            // its arguments never matches a catalog key
+            // - see InformixDataTypeHelper.getJdbcDataTypeID()
             Catalog catalog = createCatalogWithSupportedType("varchar", Types.VARCHAR);
 
             assertThatThrownBy(() -> HELPER.getJdbcDataTypeID(catalog, "varchar(255)", 255, null))
@@ -184,7 +185,7 @@ class InformixDataTypeHelperTest {
         void emptyCandidateList_throwsIllegalArgumentException() {
             // DEFECT: only size() == 1 is resolved, so an empty list is not distinguished from an
             // ambiguous one and the message blames the precision and scale of a type that has no
-            // candidate at all - see InformixDataTypeHelper.java:81
+            // candidate at all - see InformixDataTypeHelper.getJdbcDataTypeID()
             Catalog catalog = new Catalog();
             Map<String, List<DataType>> supported = new HashMap<String, List<DataType>>();
             supported.put("varchar", new ArrayList<DataType>());
@@ -219,16 +220,15 @@ class InformixDataTypeHelperTest {
         @CsvSource(
                 nullValues = "null",
                 value = {
-                    // String types get their precision, from isGenericString() at
-                    // InformixDataTypeHelper.java:103.
+                    // String types get their precision from the isGenericString() branch.
                     "char,          10,     null,   char(10)",
                     "varchar,       255,    null,   varchar(255)",
                     "nchar,         10,     null,   nchar(10)",
                     "nvarchar,      20,     null,   nvarchar(20)",
 
-                    // "serial" is the only reachable member of the model list at
-                    // InformixDataTypeHelper.java:105: char/varchar/nchar in that list are
-                    // already matched at line 103. serial8/bigserial are in no list at all.
+                    // "serial" is the only reachable member of the "/char/varchar/nchar/serial/"
+                    // branch: its other members are matched by isGenericString() first, and
+                    // serial8/bigserial are in no list at all.
                     "serial,        10,     0,      serial(10)",
                     "serial8,       10,     0,      serial8",
                     "bigserial,     10,     0,      bigserial",
@@ -239,11 +239,10 @@ class InformixDataTypeHelperTest {
                     "money,         16,     2,      'money(16,2)'",
                     "decimal,       10,     null,   'decimal(10,0)'",
 
-                    // Everything else falls through unchanged at
-                    // InformixDataTypeHelper.java:110. "text" and "xml" also match the first
-                    // branch at line 101 - copied from MSSQLDataTypeHelper.java:192, where both
-                    // are real types - but that branch returns the type name as well, so no
-                    // input can tell the two apart.
+                    // Everything else falls through unchanged. "text" and "xml" also match the
+                    // "/text/xml/" branch inherited from MSSQLDataTypeHelper.getShownDataType(),
+                    // but that branch returns the type name as well, so no input can tell the
+                    // two apart.
                     "text,          null,   null,   text",
                     "text,          10,     2,      text",
                     "xml,           null,   null,   xml",
@@ -277,7 +276,8 @@ class InformixDataTypeHelperTest {
         @DisplayName("upper case type name -> case is preserved, precision still appended")
         void upperCaseTypeName_keepsCaseAndAppendsPrecision() {
             // Unlike getJdbcDataTypeID(), the classification here is case insensitive because it
-            // goes through checkType(), which lower cases the input - see DBDataTypeHelper.java:83
+            // goes through checkType(), which lower cases the input
+            // - see DBDataTypeHelper.checkType()
             assertThat(HELPER.getShownDataType(createColumn("VARCHAR", 255, null)))
                     .isEqualTo("VARCHAR(255)");
         }
@@ -285,16 +285,14 @@ class InformixDataTypeHelperTest {
         @Test
         @DisplayName("lvarchar -> precision is lost")
         void lvarcharWithPrecision_dropsPrecision() {
-            // DEFECT: lvarchar is a supported Informix source type with a length - see
-            // INFORMIX2CUBRID.xml:130-131, which maps lvarchar(n) to varchar(n) - but it is in
-            // none of the model lists, so it falls through and the length is dropped
-            // - see InformixDataTypeHelper.java:110
+            // DEFECT: INFORMIX2CUBRID.xml maps lvarchar(n) to varchar(n), so it is a supported
+            // source type with a length, but it is in none of the model lists, so it falls
+            // through and the length is dropped - see InformixDataTypeHelper.getShownDataType()
             assertThat(HELPER.getShownDataType(createColumn("lvarchar", 2048, null)))
                     .isEqualTo("lvarchar");
             // The length only survives when it is already part of the name, and the only caller
             // takes the name from ResultSetMetaData.getColumnTypeName(), which carries no
-            // arguments - see AbstractJDBCSchemaFetcher.java:466, called from
-            // InformixSchemaFetcher.java:120,124
+            // arguments - see AbstractJDBCSchemaFetcher.buildSQLTable()
             assertThat(HELPER.getShownDataType(createColumn("lvarchar(2048)", 2048, null)))
                     .isEqualTo("lvarchar(2048)");
         }
@@ -302,9 +300,9 @@ class InformixDataTypeHelperTest {
         @Test
         @DisplayName("null data type -> empty string")
         void nullDataType_returnsEmptyString() {
-            // Line 97 codes for a null data type explicitly, but the state cannot survive in
+            // The method codes for a null data type explicitly, but the state cannot survive in
             // production: the only caller dereferences column.getDataType() one line after
-            // storing the result - see InformixSchemaFetcher.java:124-125
+            // storing the result - see InformixSchemaFetcher.buildSQLTable()
             assertThat(HELPER.getShownDataType(createColumn(null, 255, null))).isEmpty();
         }
 
@@ -330,9 +328,9 @@ class InformixDataTypeHelperTest {
         @Test
         @DisplayName("missing precision -> zero is rendered")
         void missingPrecision_rendersZeroPrecision() {
-            // Column.getPrecision() maps null to 0 - see Column.java:199. The only caller never
-            // supplies null: buildSQLTable() clamps a non-positive precision to 1
-            // - see AbstractJDBCSchemaFetcher.java:467-468
+            // Column.getPrecision() maps null to 0. The only caller never supplies null: it
+            // clamps a non-positive precision to 1 first
+            // - see AbstractJDBCSchemaFetcher.buildSQLTable()
             assertThat(HELPER.getShownDataType(createColumn("varchar", null, null)))
                     .isEqualTo("varchar(0)");
         }
@@ -341,9 +339,9 @@ class InformixDataTypeHelperTest {
         @DisplayName("data type already carrying its precision -> precision appended twice")
         void dataTypeWithArguments_appendsPrecisionTwice() {
             // The arguments of the incoming data type are not stripped with getMainDataType(), so
-            // the precision is appended a second time - see InformixDataTypeHelper.java:104. Not
-            // reachable from the only caller, which passes the argument-free
-            // ResultSetMetaData.getColumnTypeName() - see AbstractJDBCSchemaFetcher.java:466
+            // the precision is appended a second time. Not reachable from the only caller,
+            // which passes the argument-free ResultSetMetaData.getColumnTypeName()
+            // - see InformixDataTypeHelper.getShownDataType()
             assertThat(HELPER.getShownDataType(createColumn("varchar(255)", 255, null)))
                     .isEqualTo("varchar(255)(255)");
         }
@@ -351,8 +349,8 @@ class InformixDataTypeHelperTest {
         @Test
         @DisplayName("\"identity\" inside the type name -> removed")
         void identityInTypeName_isRemoved() {
-            // The removal is inherited from the MSSQL helper this method was copied from - see
-            // MSSQLDataTypeHelper.java:191. No Informix source type carries "identity".
+            // The removal is inherited from MSSQLDataTypeHelper.getShownDataType(), which this
+            // method was copied from. No Informix source type carries "identity".
             assertThat(HELPER.getShownDataType(createColumn("varchar identity", 255, null)))
                     .isEqualTo("varchar(255)");
         }
@@ -361,7 +359,7 @@ class InformixDataTypeHelperTest {
         @DisplayName("\"identity\" glued to the type name -> still removed")
         void identityGluedToTypeName_isRemoved() {
             // "identity" is removed as a plain substring, not as a word
-            // - see InformixDataTypeHelper.java:100
+            // - see InformixDataTypeHelper.getShownDataType()
             assertThat(HELPER.getShownDataType(createColumn("identityvarchar", 255, null)))
                     .isEqualTo("varchar(255)");
         }
@@ -376,7 +374,7 @@ class InformixDataTypeHelperTest {
         @DisplayName("datetime with a qualifier -> unchanged")
         void datetimeWithQualifier_returnsTypeNameUnchanged() {
             // The helper does not normalize the qualifier, InformixSchemaFetcher rewrites the
-            // column to plain "datetime" afterwards - see InformixSchemaFetcher.java:125-128
+            // column to plain "datetime" afterwards - see InformixSchemaFetcher.buildSQLTable()
             assertThat(HELPER.getShownDataType(createColumn("datetime year to fraction", 5, 5)))
                     .isEqualTo("datetime year to fraction");
         }
@@ -390,8 +388,7 @@ class InformixDataTypeHelperTest {
         @CsvSource(
                 nullValues = "null",
                 value = {
-                    // INFORMIX_BIN_TYPES is "/byte/bson/blob/" - see
-                    // InformixDataTypeHelper.java:51
+                    // InformixDataTypeHelper.INFORMIX_BIN_TYPES is "/byte/bson/blob/".
                     "byte,           true",
                     "BYTE,           true",
                     "byte(255),      true",
@@ -402,7 +399,7 @@ class InformixDataTypeHelperTest {
                     // clob and text are Informix LOB types, but they are not in that list.
                     "clob,           false",
                     "text,           false",
-                    // json has its own export handler - see InformixExportHelper.java:59 - but it
+                    // json has its own handler in the InformixExportHelper constructor, but it
                     // is not in that list either.
                     "json,           false",
                     "boolean,        false",
@@ -448,10 +445,10 @@ class InformixDataTypeHelperTest {
             // DEFECT: the implementation is commented out and false is hard coded, so the
             // Informix collection types set/list/multiset are never recognized even though
             // INFOMRIX_COLLECTION_TYPES lists them and InformixExportHelper registers a handler
-            // for each of them - see InformixDataTypeHelper.java:122 and
-            // InformixExportHelper.java:62-64. Latent today: no production code passes an
-            // Informix helper to isCollection() or to the inherited parseDTInstance(), the only
-            // consumer of it inside the base class - see DBDataTypeHelper.java:341
+            // for each of them in its constructor. Latent today: no production code passes an
+            // Informix helper to isCollection() or to DBDataTypeHelper.parseDTInstance(), the
+            // only consumer of it inside the base class
+            // - see InformixDataTypeHelper.isCollection()
             assertThat(HELPER.isCollection(dataType)).isFalse();
         }
     }
@@ -473,10 +470,9 @@ class InformixDataTypeHelperTest {
                     "'',              false",
                 })
         void variousDataTypes_classifyEnumType(String dataType, boolean expected) {
-            // The override at InformixDataTypeHelper.java:126 repeats the body of
-            // DBDataTypeHelper.isEnum() - see DBDataTypeHelper.java:162-164 - so it changes
-            // nothing. No production code calls isEnum() on an Informix helper either, so the
-            // rows below pin the public contract, not a migration path.
+            // InformixDataTypeHelper.isEnum() repeats the body of DBDataTypeHelper.isEnum(), so
+            // the override changes nothing. No production code calls isEnum() on an Informix
+            // helper either, so the rows below pin the public contract, not a migration path.
             assertThat(HELPER.isEnum(dataType)).isEqualTo(expected);
         }
     }

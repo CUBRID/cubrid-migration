@@ -131,7 +131,7 @@ class MySQLDataTypeHelperTest {
             "unknowntype,             10, 2,  unknowntype",
 
             // DEFECT: the type lists hold lower-case names only, so an upper-case
-            // type silently loses its precision - see MySQLDataTypeHelper.java:178
+            // type silently loses its precision - see MySQLDataTypeHelper.getShownDataType()
             "INT,                     10, 2,  INT",
             "BLOB,                    10, 2,  BLOB",
         })
@@ -220,7 +220,7 @@ class MySQLDataTypeHelperTest {
 
                     // DEFECT: the closing parenthesis is assumed to be the last
                     // character, so anything after it is mangled instead of ignored
-                    // - see MySQLDataTypeHelper.java:321
+                    // - see MySQLDataTypeHelper.parseTypeRemain()
                     "int(10) unsigned,          '10) unsigne'",
                     "'decimal(10,2) unsigned',  '10,2) unsigne'",
                 })
@@ -250,7 +250,7 @@ class MySQLDataTypeHelperTest {
         @DisplayName("unclosed parenthesis -> StringIndexOutOfBoundsException")
         void unclosedParenthesis_throwsStringIndexOutOfBoundsException() {
             // DEFECT: an unbalanced argument list is not rejected, it overflows the
-            // substring range - see MySQLDataTypeHelper.java:321
+            // substring range - see MySQLDataTypeHelper.parseTypeRemain()
             assertThatThrownBy(() -> helper.parseTypeRemain("char("))
                     .isInstanceOf(StringIndexOutOfBoundsException.class);
         }
@@ -309,7 +309,7 @@ class MySQLDataTypeHelperTest {
         void uppercaseEnum_throwsNumberFormatException() {
             // DEFECT: the enum/set guard compares against the lower-case names only, so an
             // upper-case ENUM/SET reaches Integer.parseInt() instead of returning -1
-            // - see MySQLDataTypeHelper.java:254
+            // - see MySQLDataTypeHelper.parsePrecision()
             assertThatThrownBy(() -> helper.parsePrecision("ENUM(a)"))
                     .isInstanceOf(NumberFormatException.class);
         }
@@ -363,7 +363,7 @@ class MySQLDataTypeHelperTest {
         void uppercaseEnum_throwsNumberFormatException() {
             // DEFECT: the enum/set guard compares against the lower-case names only, so an
             // upper-case ENUM/SET reaches Integer.parseInt() instead of returning null
-            // - see MySQLDataTypeHelper.java:286
+            // - see MySQLDataTypeHelper.parseScale()
             assertThatThrownBy(() -> helper.parseScale("ENUM(a,b)"))
                     .isInstanceOf(NumberFormatException.class);
         }
@@ -424,7 +424,7 @@ class MySQLDataTypeHelperTest {
                     createCatalog("VARCHAR", dataType(Types.VARCHAR), dataType(Types.LONGVARCHAR));
 
             // DEFECT: the message has a doubled space after "Not supported"
-            // - see MySQLDataTypeHelper.java:151
+            // - see MySQLDataTypeHelper.getJdbcDataTypeID()
             assertThatThrownBy(() -> helper.getJdbcDataTypeID(catalog, "VARCHAR", 200, null))
                     .isInstanceOf(IllegalArgumentException.class)
                     .hasMessage("Not supported  MySQL data type(VARCHAR: p=200, s=null)");
@@ -483,7 +483,7 @@ class MySQLDataTypeHelperTest {
 
             // DEFECT: List.indexOf against a lower-case-only DATA_TYPE_5 makes this
             // case sensitive, so upper-case blob types are not binary
-            // - see MySQLDataTypeHelper.java:199
+            // - see MySQLDataTypeHelper.isBinary()
             "BLOB,       false",
             "BIT,        false",
             "Blob,       false",

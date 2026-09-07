@@ -129,7 +129,7 @@ class CUBRIDDataTypeHelperTest {
 
             // DEFECT: "list_of" is a registered synonym of the sequence type, but isCollection()
             // does not list it, so the element type is never parsed and the parse fails - see
-            // CUBRIDDataTypeHelper.java:777
+            // CUBRIDDataTypeHelper.isCollection()
             assertThatThrownBy(() -> helper.setColumnDataType("list_of(int)", column))
                     .isInstanceOf(IllegalArgumentException.class)
                     .hasMessage("Invalid data type:list_of(int)");
@@ -237,7 +237,7 @@ class CUBRIDDataTypeHelperTest {
         void charWithoutPrecision_rendersZeroPrecision() {
             // DEFECT: Column.getPrecision() substitutes 0 for a missing precision, so a bare char
             // renders as char(0), which CUBRID rejects as DDL - see
-            // CUBRIDDataTypeHelper.java:689
+            // CUBRIDDataTypeHelper.innerGetShownDataTypeType()
             assertThat(helper.getShownDataType(columnOf("char"))).isEqualTo("char(0)");
         }
 
@@ -355,7 +355,7 @@ class CUBRIDDataTypeHelperTest {
         void bitType_returnsBitCountAsByteCount() {
             // DEFECT: bit(n) declares n bits, so the size is ceil(n / 8) bytes, but the
             // precision is returned unchanged and overstates the row width eightfold
-            // - see CUBRIDDataTypeHelper.java:426
+            // - see CUBRIDDataTypeHelper.getDataTypeByteSize()
             assertThat(helper.getDataTypeByteSize(columnOf("bit(1024)"))).isEqualTo(1024L);
         }
 
@@ -517,7 +517,7 @@ class CUBRIDDataTypeHelperTest {
         void listOfCollection_returnsFalse() {
             // DEFECT: "list_of" is a registered synonym of the sequence type, but isCollection()
             // does not list it, so the whole instance is validated as a scalar - see
-            // CUBRIDDataTypeHelper.java:777
+            // CUBRIDDataTypeHelper.isCollection()
             assertThat(helper.isValidDatatype("list_of(int)")).isFalse();
         }
     }
@@ -633,7 +633,7 @@ class CUBRIDDataTypeHelperTest {
         void stringSpelling_returnsNull() {
             // DEFECT: "string" is expanded to varchar(1073741823), but the substring is still
             // bounded by the original argument's length, so it overflows and the exception is
-            // swallowed - see CUBRIDDataTypeHelper.java:556
+            // swallowed - see CUBRIDDataTypeHelper.getRemain()
             assertThat(helper.getRemain("STRING")).isNull();
         }
 
@@ -651,7 +651,7 @@ class CUBRIDDataTypeHelperTest {
         void unbalancedParenthesis_returnsTruncatedRemain(String dataType, String expected) {
             // DEFECT: the closing parenthesis is assumed to be the last character, so an
             // unbalanced instance yields a silently truncated string instead of null - see
-            // CUBRIDDataTypeHelper.java:556
+            // CUBRIDDataTypeHelper.getRemain()
             assertThat(helper.getRemain(dataType)).isEqualTo(expected);
         }
     }
@@ -900,7 +900,7 @@ class CUBRIDDataTypeHelperTest {
         void stringSpelling_throwsUnSupportCUBRIDDataTypeException() {
             // DEFECT: getDataTypeSymbol() expands "string" to varchar(1073741823) first, but
             // getCUBRIDDataTypeID() does not, so the two disagree on the same spelling - see
-            // CUBRIDDataTypeHelper.java:391
+            // CUBRIDDataTypeHelper.getCUBRIDDataTypeID()
             assertThatThrownBy(() -> helper.getCUBRIDDataTypeID("string"))
                     .isInstanceOf(UnSupportCUBRIDDataTypeException.class)
                     .hasMessage("Unsupported CUBRID data type:string");
@@ -1023,7 +1023,7 @@ class CUBRIDDataTypeHelperTest {
             // DEFECT: when no BIT_VALUE_PATTERN matches, the bit branch falls through to the
             // final "return true", so any garbage is accepted for a bit column. The legacy test
             // pinned this with the double negative assertFalse(!isValidValue(...)) - see
-            // CUBRIDDataTypeHelper.java:947
+            // CUBRIDDataTypeHelper.isValidValue()
             assertThat(helper.isValidValue("bit(8)", value)).isTrue();
         }
 
@@ -1042,7 +1042,7 @@ class CUBRIDDataTypeHelperTest {
                 String dataType, String value, boolean expected) {
             // DEFECT: StringUtils.isNumeric() rejects a decimal point and a sign, so legal
             // defaults such as 12.5 or -5 are reported invalid - see
-            // CUBRIDDataTypeHelper.java:917
+            // CUBRIDDataTypeHelper.isValidValue()
             assertThat(helper.isValidValue(dataType, value)).isEqualTo(expected);
         }
 
@@ -1069,8 +1069,9 @@ class CUBRIDDataTypeHelperTest {
         @Test
         @DisplayName("character type without a precision -> NumberFormatException")
         void characterTypeWithoutPrecision_throwsNumberFormatException() {
-            // DEFECT: the precision is read with a blind substring, so a precision-less character
-            // type parses the type name itself as a number - see CUBRIDDataTypeHelper.java:894
+            // DEFECT: the precision is read with a blind substring, so a precision-less
+            // character type parses the type name itself as a number
+            // - see CUBRIDDataTypeHelper.isValidValue()
             assertThatThrownBy(() -> helper.isValidValue("varchar", "x"))
                     .isInstanceOf(NumberFormatException.class)
                     .hasMessageContaining("\"varcha\"");
@@ -1104,7 +1105,7 @@ class CUBRIDDataTypeHelperTest {
         @DisplayName("binary and varbinary -> true although CUBRID has no such type")
         @ValueSource(strings = {"binary", "varbinary"})
         void typesCubridDoesNotDefine_returnTrue(String dataType) {
-            // BINARY_TYPES is shared with every other dialect - see DBDataTypeHelper.java:67
+            // DBDataTypeHelper.BINARY_TYPES is shared with every other dialect
             assertThat(helper.isBinary(dataType)).isTrue();
         }
 
@@ -1191,7 +1192,7 @@ class CUBRIDDataTypeHelperTest {
         @DisplayName("integer types CUBRID does not define -> true")
         @ValueSource(strings = {"mediumint", "tinyint"})
         void typesCubridDoesNotDefine_returnTrue(String dataType) {
-            // AUTOINC_TYPES is shared with every other dialect - see DBDataTypeHelper.java:54
+            // DBDataTypeHelper.AUTOINC_TYPES is shared with every other dialect
             assertThat(helper.isSupportAutoIncr(dataType, null, null)).isTrue();
         }
 
