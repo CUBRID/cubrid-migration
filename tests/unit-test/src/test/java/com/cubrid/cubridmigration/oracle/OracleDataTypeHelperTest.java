@@ -29,13 +29,14 @@
  */
 package com.cubrid.cubridmigration.oracle;
 
+import static com.cubrid.cubridmigration.testutil.TestCatalogFactory.createCatalog;
+import static com.cubrid.cubridmigration.testutil.TestCatalogFactory.createDataType;
 import static com.cubrid.cubridmigration.testutil.TestColumnFactory.createCharColumn;
 import static com.cubrid.cubridmigration.testutil.TestColumnFactory.createColumn;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.cubrid.cubridmigration.core.datatype.DataType;
 import com.cubrid.cubridmigration.core.dbobject.Catalog;
 import com.cubrid.cubridmigration.core.dbtype.DatabaseType;
 
@@ -44,33 +45,15 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import java.sql.Types;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 @DisplayName("OracleDataTypeHelper")
 class OracleDataTypeHelperTest {
 
     private static final OracleDataTypeHelper HELPER = OracleDataTypeHelper.getInstance(null);
-
-    private static Catalog catalogWithSupportedType(String key, int jdbcTypeId) {
-        DataType dataType = new DataType();
-        dataType.setTypeName(key);
-        dataType.setJdbcDataTypeID(jdbcTypeId);
-        return catalogWithSupportedTypes(key, Arrays.asList(dataType));
-    }
-
-    private static Catalog catalogWithSupportedTypes(String key, List<DataType> dataTypes) {
-        Catalog catalog = new Catalog();
-        Map<String, List<DataType>> supported = new HashMap<String, List<DataType>>();
-        supported.put(key, dataTypes);
-        catalog.setSupportedDataType(supported);
-        return catalog;
-    }
 
     @Nested
     @DisplayName("getInstance()")
@@ -124,13 +107,13 @@ class OracleDataTypeHelperTest {
             "TIMESTAMP( 6 ),                      TIMESTAMP( 6 )",
             "timestamp(6),                        timestamp(6)",
         })
-        void variousTypes_returnLookupKey(String input, String expected) {
+        void variousTypes_returnsLookupKey(String input, String expected) {
             assertThat(OracleDataTypeHelper.getOracleDataTypeKey(input)).isEqualTo(expected);
         }
 
         @Test
         @DisplayName("empty string -> empty string")
-        void emptyString_returnsEmptyString() {
+        void emptyDataType_returnsEmptyString() {
             assertThat(OracleDataTypeHelper.getOracleDataTypeKey("")).isEmpty();
         }
 
@@ -198,7 +181,7 @@ class OracleDataTypeHelperTest {
 
         @ParameterizedTest(name = "[{index}] \"{0}\" -> Types.CHAR without a catalog")
         @ValueSource(strings = {"NCHAR", "NVARCHAR2"})
-        void nationalCharTypes_returnChar(String dataType) {
+        void nationalCharTypes_returnsChar(String dataType) {
             // DEFECT: NVARCHAR2 is variable length but is mapped to the fixed-length Types.CHAR,
             // exactly like NCHAR - see OracleDataTypeHelper.getJdbcDataTypeID()
             assertThat(HELPER.getJdbcDataTypeID(null, dataType, 100, null)).isEqualTo(Types.CHAR);
@@ -206,7 +189,7 @@ class OracleDataTypeHelperTest {
 
         @ParameterizedTest(name = "[{index}] \"{0}\" -> Types.CLOB without a catalog")
         @ValueSource(strings = {"NCLOB", "LONG"})
-        void characterLobTypes_returnClob(String dataType) {
+        void characterLobTypes_returnsClob(String dataType) {
             assertThat(HELPER.getJdbcDataTypeID(null, dataType, null, null)).isEqualTo(Types.CLOB);
         }
 
@@ -233,14 +216,14 @@ class OracleDataTypeHelperTest {
 
         @ParameterizedTest(name = "[{index}] \"{0}\" -> null (unmigratable type)")
         @ValueSource(strings = {"BFILE", "ROWID", "UROWID"})
-        void unmigratableTypes_returnNull(String dataType) {
+        void unmigratableTypes_returnsNull(String dataType) {
             assertThat(HELPER.getJdbcDataTypeID(null, dataType, null, null)).isNull();
         }
 
         @Test
         @DisplayName("VARCHAR2 -> jdbc type from the catalog's supported data types")
         void catalogBackedType_returnsJdbcTypeIdFromCatalog() {
-            Catalog catalog = catalogWithSupportedType("VARCHAR2", Types.VARCHAR);
+            Catalog catalog = createCatalog("VARCHAR2", Types.VARCHAR);
 
             assertThat(HELPER.getJdbcDataTypeID(catalog, "VARCHAR2", 4000, null))
                     .isEqualTo(Types.VARCHAR);
@@ -249,7 +232,7 @@ class OracleDataTypeHelperTest {
         @Test
         @DisplayName("TIMESTAMP(6) -> resolved under the normalized TIMESTAMP key")
         void normalizedType_usesNormalizedLookupKey() {
-            Catalog catalog = catalogWithSupportedType("TIMESTAMP", Types.TIMESTAMP);
+            Catalog catalog = createCatalog("TIMESTAMP", Types.TIMESTAMP);
 
             assertThat(HELPER.getJdbcDataTypeID(catalog, "TIMESTAMP(6)", null, 6))
                     .isEqualTo(Types.TIMESTAMP);
@@ -258,7 +241,7 @@ class OracleDataTypeHelperTest {
         @Test
         @DisplayName("INTERVAL DAY(2) TO SECOND(6) -> resolved under the INTERVALDS key")
         void intervalType_usesNormalizedLookupKey() {
-            Catalog catalog = catalogWithSupportedType("INTERVALDS", Types.OTHER);
+            Catalog catalog = createCatalog("INTERVALDS", Types.OTHER);
 
             assertThat(HELPER.getJdbcDataTypeID(catalog, "INTERVAL DAY(2) TO SECOND(6)", 2, 6))
                     .isEqualTo(Types.OTHER);
@@ -278,7 +261,7 @@ class OracleDataTypeHelperTest {
         void emptySupportedTypeList_throwsIllegalArgumentException() {
             // DEFECT: only a missing key is treated as unsupported, an empty candidate list falls
             // through to the ambiguous message - see OracleDataTypeHelper.getJdbcDataTypeID()
-            Catalog catalog = catalogWithSupportedTypes("VARCHAR2", Arrays.<DataType>asList());
+            Catalog catalog = createCatalog("VARCHAR2");
 
             assertThatThrownBy(() -> HELPER.getJdbcDataTypeID(catalog, "VARCHAR2", 10, null))
                     .isInstanceOf(IllegalArgumentException.class)
@@ -288,13 +271,11 @@ class OracleDataTypeHelperTest {
         @Test
         @DisplayName("ambiguous catalog entry -> IllegalArgumentException naming precision/scale")
         void ambiguousSupportedType_throwsIllegalArgumentException() {
-            DataType first = new DataType();
-            first.setTypeName("CHAR");
-            first.setJdbcDataTypeID(Types.CHAR);
-            DataType second = new DataType();
-            second.setTypeName("CHAR");
-            second.setJdbcDataTypeID(Types.VARCHAR);
-            Catalog catalog = catalogWithSupportedTypes("CHAR", Arrays.asList(first, second));
+            Catalog catalog =
+                    createCatalog(
+                            "CHAR",
+                            createDataType("CHAR", Types.CHAR),
+                            createDataType("CHAR", Types.VARCHAR));
 
             assertThatThrownBy(() -> HELPER.getJdbcDataTypeID(catalog, "CHAR", 10, null))
                     .isInstanceOf(IllegalArgumentException.class)
@@ -441,14 +422,14 @@ class OracleDataTypeHelperTest {
 
         @ParameterizedTest(name = "[{index}] \"{0}\" -> false")
         @ValueSource(strings = {"CLOB", "RAW", "LONG RAW"})
-        void nonBlobTypes_returnFalse(String dataType) {
+        void nonBlobTypes_returnsFalse(String dataType) {
             assertThat(HELPER.isBinary(dataType)).isFalse();
         }
 
-        @Test
-        @DisplayName("null -> false")
-        void nullDataType_returnsFalse() {
-            assertThat(HELPER.isBinary(null)).isFalse();
+        @ParameterizedTest(name = "[{index}] null or empty -> false")
+        @NullAndEmptySource
+        void nullOrEmptyDataType_returnsFalse(String dataType) {
+            assertThat(HELPER.isBinary(dataType)).isFalse();
         }
     }
 

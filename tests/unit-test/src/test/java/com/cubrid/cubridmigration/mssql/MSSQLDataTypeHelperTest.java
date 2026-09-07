@@ -29,12 +29,13 @@
  */
 package com.cubrid.cubridmigration.mssql;
 
+import static com.cubrid.cubridmigration.testutil.TestCatalogFactory.createCatalog;
+import static com.cubrid.cubridmigration.testutil.TestCatalogFactory.createDataType;
 import static com.cubrid.cubridmigration.testutil.TestColumnFactory.createColumn;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.cubrid.cubridmigration.core.datatype.DataType;
 import com.cubrid.cubridmigration.core.dbobject.Catalog;
 import com.cubrid.cubridmigration.core.dbtype.DatabaseType;
 
@@ -45,11 +46,6 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
 import java.sql.Types;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 @DisplayName("MSSQLDataTypeHelper")
 class MSSQLDataTypeHelperTest {
@@ -104,7 +100,7 @@ class MSSQLDataTypeHelperTest {
         @Test
         @DisplayName("supported type -> the id of the single catalog entry")
         void supportedDataType_returnsIdOfTheSingleCatalogEntry() {
-            Catalog catalog = createCatalogWithSupportedType("varchar", Types.VARCHAR);
+            Catalog catalog = createCatalog("varchar", Types.VARCHAR);
 
             assertThat(HELPER.getJdbcDataTypeID(catalog, "varchar", null, null))
                     .isEqualTo(Types.VARCHAR);
@@ -116,8 +112,7 @@ class MSSQLDataTypeHelperTest {
             // The catalog entry is handed back as it is, so a negative mssql-jdbc specific id
             // survives; nothing here validates it against java.sql.Types.
             Catalog catalog =
-                    createCatalogWithSupportedType(
-                            "datetimeoffset", MSSQLDataTypeHelper.MSSQL_DT_DATETIMEOFFSET);
+                    createCatalog("datetimeoffset", MSSQLDataTypeHelper.MSSQL_DT_DATETIMEOFFSET);
 
             assertThat(HELPER.getJdbcDataTypeID(catalog, "datetimeoffset", null, null))
                     .isEqualTo(-155);
@@ -126,7 +121,7 @@ class MSSQLDataTypeHelperTest {
         @Test
         @DisplayName("precision and scale are ignored")
         void precisionAndScale_areIgnored() {
-            Catalog catalog = createCatalogWithSupportedType("decimal", Types.DECIMAL);
+            Catalog catalog = createCatalog("decimal", Types.DECIMAL);
 
             assertThat(HELPER.getJdbcDataTypeID(catalog, "decimal", 10, 2))
                     .isEqualTo(Types.DECIMAL);
@@ -139,7 +134,7 @@ class MSSQLDataTypeHelperTest {
         void upperCaseDataType_throwsIllegalArgumentException() {
             // The raw data type is the map key, with no case normalization, so a catalog built
             // with lower case keys rejects "VARCHAR" - see MSSQLDataTypeHelper.getJdbcDataTypeID()
-            Catalog catalog = createCatalogWithSupportedType("varchar", Types.VARCHAR);
+            Catalog catalog = createCatalog("varchar", Types.VARCHAR);
 
             assertThatThrownBy(() -> HELPER.getJdbcDataTypeID(catalog, "VARCHAR", 10, null))
                     .isInstanceOf(IllegalArgumentException.class)
@@ -151,7 +146,7 @@ class MSSQLDataTypeHelperTest {
         void dataTypeWithPrecisionSuffix_throwsIllegalArgumentException() {
             // The raw string is the map key; the arguments are not stripped off first, so a
             // caller that needs that does it itself - see MSSQLSchemaFetcher.buildTableColumns()
-            Catalog catalog = createCatalogWithSupportedType("varchar", Types.VARCHAR);
+            Catalog catalog = createCatalog("varchar", Types.VARCHAR);
 
             assertThatThrownBy(() -> HELPER.getJdbcDataTypeID(catalog, "varchar(10)", 10, null))
                     .isInstanceOf(IllegalArgumentException.class)
@@ -185,14 +180,11 @@ class MSSQLDataTypeHelperTest {
         @Test
         @DisplayName("ambiguous type name -> IllegalArgumentException naming precision and scale")
         void multipleSupportedTypes_throwsIllegalArgumentException() {
-            Catalog catalog = new Catalog();
-            Map<String, List<DataType>> supported = new HashMap<String, List<DataType>>();
-            supported.put(
-                    "numeric",
-                    Arrays.asList(
+            Catalog catalog =
+                    createCatalog(
+                            "numeric",
                             createDataType("numeric", Types.NUMERIC),
-                            createDataType("numeric", Types.DECIMAL)));
-            catalog.setSupportedDataType(supported);
+                            createDataType("numeric", Types.DECIMAL));
 
             assertThatThrownBy(() -> HELPER.getJdbcDataTypeID(catalog, "numeric", 10, 2))
                     .isInstanceOf(IllegalArgumentException.class)
@@ -207,29 +199,11 @@ class MSSQLDataTypeHelperTest {
             // falls through to the "ambiguous data type" message instead. The inline copy of
             // this lookup in MSSQLSchemaFetcher.buildTableColumns() guards with
             // CollectionUtils.isEmpty() - see MSSQLDataTypeHelper.getJdbcDataTypeID()
-            Catalog catalog = new Catalog();
-            Map<String, List<DataType>> supported = new HashMap<String, List<DataType>>();
-            supported.put("varchar", new ArrayList<DataType>());
-            catalog.setSupportedDataType(supported);
+            Catalog catalog = createCatalog("varchar");
 
             assertThatThrownBy(() -> HELPER.getJdbcDataTypeID(catalog, "varchar", 10, null))
                     .isInstanceOf(IllegalArgumentException.class)
                     .hasMessage("Not supported  SQL Server data type(varchar: p=10, s=null)");
-        }
-
-        private DataType createDataType(String typeName, int jdbcTypeId) {
-            DataType dataType = new DataType();
-            dataType.setTypeName(typeName);
-            dataType.setJdbcDataTypeID(jdbcTypeId);
-            return dataType;
-        }
-
-        private Catalog createCatalogWithSupportedType(String key, int jdbcTypeId) {
-            Catalog catalog = new Catalog();
-            Map<String, List<DataType>> supported = new HashMap<String, List<DataType>>();
-            supported.put(key, Arrays.asList(createDataType(key, jdbcTypeId)));
-            catalog.setSupportedDataType(supported);
-            return catalog;
         }
     }
 

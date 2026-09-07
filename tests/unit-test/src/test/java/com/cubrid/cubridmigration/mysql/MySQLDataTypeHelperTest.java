@@ -29,12 +29,13 @@
  */
 package com.cubrid.cubridmigration.mysql;
 
+import static com.cubrid.cubridmigration.testutil.TestCatalogFactory.createCatalog;
+import static com.cubrid.cubridmigration.testutil.TestCatalogFactory.createDataType;
 import static com.cubrid.cubridmigration.testutil.TestColumnFactory.createColumn;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.cubrid.cubridmigration.core.datatype.DataType;
 import com.cubrid.cubridmigration.core.dbobject.Catalog;
 import com.cubrid.cubridmigration.core.dbtype.DatabaseType;
 
@@ -43,18 +44,14 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.NullAndEmptySource;
 
 import java.sql.Types;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 @DisplayName("MySQLDataTypeHelper")
 class MySQLDataTypeHelperTest {
 
-    private final MySQLDataTypeHelper helper = MySQLDataTypeHelper.getInstance(null);
+    private static final MySQLDataTypeHelper HELPER = MySQLDataTypeHelper.getInstance(null);
 
     @Nested
     @DisplayName("getInstance()")
@@ -62,7 +59,7 @@ class MySQLDataTypeHelperTest {
 
         @Test
         @DisplayName("singleton returns same instance regardless of version")
-        void singleton_returnSameInstance() {
+        void singleton_returnsSameInstance() {
             assertThat(MySQLDataTypeHelper.getInstance(null))
                     .isSameAs(MySQLDataTypeHelper.getInstance("5.7"))
                     .isSameAs(MySQLDataTypeHelper.getInstance("8.0"));
@@ -75,9 +72,9 @@ class MySQLDataTypeHelperTest {
 
         @Test
         @DisplayName("MySQL helper -> DatabaseType.MYSQL")
-        void mySqlHelper_returnMySqlDatabaseType() {
-            assertThat(helper.getDBType()).isSameAs(DatabaseType.MYSQL);
-            assertThat(helper.getDBType().getName()).isEqualTo("MYSQL");
+        void mySqlHelper_returnsMySqlDatabaseType() {
+            assertThat(HELPER.getDBType()).isSameAs(DatabaseType.MYSQL);
+            assertThat(HELPER.getDBType().getName()).isEqualTo("MYSQL");
         }
     }
 
@@ -135,36 +132,36 @@ class MySQLDataTypeHelperTest {
             "INT,                     10, 2,  INT",
             "BLOB,                    10, 2,  BLOB",
         })
-        void variousTypes_returnShownDataType(
+        void variousTypes_returnsShownDataType(
                 String dataType, Integer precision, Integer scale, String expected) {
-            assertThat(helper.getShownDataType(createColumn(dataType, precision, scale)))
+            assertThat(HELPER.getShownDataType(createColumn(dataType, precision, scale)))
                     .isEqualTo(expected);
         }
 
         @Test
         @DisplayName("null precision -> rendered as 0 because Column coalesces null")
         void nullPrecision_rendersZero() {
-            assertThat(helper.getShownDataType(createColumn("int", null, null)))
+            assertThat(HELPER.getShownDataType(createColumn("int", null, null)))
                     .isEqualTo("int(0)");
         }
 
         @Test
         @DisplayName("null precision and scale -> both rendered as 0")
         void nullPrecisionAndScale_renderBothAsZero() {
-            assertThat(helper.getShownDataType(createColumn("decimal", null, null)))
+            assertThat(HELPER.getShownDataType(createColumn("decimal", null, null)))
                     .isEqualTo("decimal(0,0)");
         }
 
         @Test
         @DisplayName("empty data type -> empty string")
-        void emptyDataType_returnEmptyString() {
-            assertThat(helper.getShownDataType(createColumn("", 10, 2))).isEmpty();
+        void emptyDataType_returnsEmptyString() {
+            assertThat(HELPER.getShownDataType(createColumn("", 10, 2))).isEmpty();
         }
 
         @Test
         @DisplayName("null data type -> NullPointerException")
         void nullDataType_throwsNullPointerException() {
-            assertThatThrownBy(() -> helper.getShownDataType(createColumn(null, 10, 2)))
+            assertThatThrownBy(() -> HELPER.getShownDataType(createColumn(null, 10, 2)))
                     .isInstanceOf(NullPointerException.class);
         }
     }
@@ -186,20 +183,20 @@ class MySQLDataTypeHelperTest {
             "int(10) unsigned,         int unsigned",
             "'decimal(10,2) unsigned', decimal unsigned",
         })
-        void typeWithArguments_returnMainType(String type, String expected) {
-            assertThat(helper.parseMainType(type)).isEqualTo(expected);
+        void typeWithArguments_returnsMainType(String type, String expected) {
+            assertThat(HELPER.parseMainType(type)).isEqualTo(expected);
         }
 
         @Test
         @DisplayName("empty string -> empty string")
-        void emptyString_returnEmptyString() {
-            assertThat(helper.parseMainType("")).isEmpty();
+        void emptyDataType_returnsEmptyString() {
+            assertThat(HELPER.parseMainType("")).isEmpty();
         }
 
         @Test
         @DisplayName("null -> NullPointerException")
-        void null_throwsNullPointerException() {
-            assertThatThrownBy(() -> helper.parseMainType(null))
+        void nullDataType_throwsNullPointerException() {
+            assertThatThrownBy(() -> HELPER.parseMainType(null))
                     .isInstanceOf(NullPointerException.class);
         }
     }
@@ -224,26 +221,26 @@ class MySQLDataTypeHelperTest {
                     "int(10) unsigned,          '10) unsigne'",
                     "'decimal(10,2) unsigned',  '10,2) unsigne'",
                 })
-        void typeWithArguments_returnArgumentPart(String type, String expected) {
-            assertThat(helper.parseTypeRemain(type)).isEqualTo(expected);
+        void typeWithArguments_returnsArgumentPart(String type, String expected) {
+            assertThat(HELPER.parseTypeRemain(type)).isEqualTo(expected);
         }
 
         @Test
         @DisplayName("enum value list -> the quoted values")
-        void enumValueList_returnValueList() {
-            assertThat(helper.parseTypeRemain("enum('a','b')")).isEqualTo("'a','b'");
+        void enumValueList_returnsValueList() {
+            assertThat(HELPER.parseTypeRemain("enum('a','b')")).isEqualTo("'a','b'");
         }
 
         @Test
         @DisplayName("empty argument list -> empty string")
-        void emptyArgumentList_returnEmptyString() {
-            assertThat(helper.parseTypeRemain("()")).isEmpty();
+        void emptyArgumentList_returnsEmptyString() {
+            assertThat(HELPER.parseTypeRemain("()")).isEmpty();
         }
 
         @Test
         @DisplayName("empty string -> null")
-        void emptyString_returnNull() {
-            assertThat(helper.parseTypeRemain("")).isNull();
+        void emptyDataType_returnsNull() {
+            assertThat(HELPER.parseTypeRemain("")).isNull();
         }
 
         @Test
@@ -251,14 +248,14 @@ class MySQLDataTypeHelperTest {
         void unclosedParenthesis_throwsStringIndexOutOfBoundsException() {
             // DEFECT: an unbalanced argument list is not rejected, it overflows the
             // substring range - see MySQLDataTypeHelper.parseTypeRemain()
-            assertThatThrownBy(() -> helper.parseTypeRemain("char("))
+            assertThatThrownBy(() -> HELPER.parseTypeRemain("char("))
                     .isInstanceOf(StringIndexOutOfBoundsException.class);
         }
 
         @Test
         @DisplayName("null -> NullPointerException")
-        void null_throwsNullPointerException() {
-            assertThatThrownBy(() -> helper.parseTypeRemain(null))
+        void nullDataType_throwsNullPointerException() {
+            assertThatThrownBy(() -> HELPER.parseTypeRemain(null))
                     .isInstanceOf(NullPointerException.class);
         }
     }
@@ -286,21 +283,21 @@ class MySQLDataTypeHelperTest {
             "int(10) unsigned,         10",
             "'decimal(10,2) unsigned', 10",
         })
-        void typeWithArguments_returnPrecision(String type, int expected) {
-            assertThat(helper.parsePrecision(type)).isEqualTo(expected);
+        void typeWithArguments_returnsPrecision(String type, int expected) {
+            assertThat(HELPER.parsePrecision(type)).isEqualTo(expected);
         }
 
         @Test
         @DisplayName("empty argument list -> NumberFormatException")
         void emptyArgumentList_throwsNumberFormatException() {
-            assertThatThrownBy(() -> helper.parsePrecision("()"))
+            assertThatThrownBy(() -> HELPER.parsePrecision("()"))
                     .isInstanceOf(NumberFormatException.class);
         }
 
         @Test
         @DisplayName("non numeric argument -> NumberFormatException")
         void nonNumericArgument_throwsNumberFormatException() {
-            assertThatThrownBy(() -> helper.parsePrecision("varchar(a)"))
+            assertThatThrownBy(() -> HELPER.parsePrecision("varchar(a)"))
                     .isInstanceOf(NumberFormatException.class);
         }
 
@@ -310,14 +307,14 @@ class MySQLDataTypeHelperTest {
             // DEFECT: the enum/set guard compares against the lower-case names only, so an
             // upper-case ENUM/SET reaches Integer.parseInt() instead of returning -1
             // - see MySQLDataTypeHelper.parsePrecision()
-            assertThatThrownBy(() -> helper.parsePrecision("ENUM(a)"))
+            assertThatThrownBy(() -> HELPER.parsePrecision("ENUM(a)"))
                     .isInstanceOf(NumberFormatException.class);
         }
 
         @Test
         @DisplayName("null -> NullPointerException")
-        void null_throwsNullPointerException() {
-            assertThatThrownBy(() -> helper.parsePrecision(null))
+        void nullDataType_throwsNullPointerException() {
+            assertThatThrownBy(() -> HELPER.parsePrecision(null))
                     .isInstanceOf(NullPointerException.class);
         }
     }
@@ -348,14 +345,14 @@ class MySQLDataTypeHelperTest {
                     // "10) unsigne" loses its residue and holds no comma -> null.
                     "int(10) unsigned,          null",
                 })
-        void typeWithArguments_returnScale(String type, Integer expected) {
-            assertThat(helper.parseScale(type)).isEqualTo(expected);
+        void typeWithArguments_returnsScale(String type, Integer expected) {
+            assertThat(HELPER.parseScale(type)).isEqualTo(expected);
         }
 
         @Test
         @DisplayName("empty argument list -> null")
-        void emptyArgumentList_returnNull() {
-            assertThat(helper.parseScale("()")).isNull();
+        void emptyArgumentList_returnsNull() {
+            assertThat(HELPER.parseScale("()")).isNull();
         }
 
         @Test
@@ -364,14 +361,14 @@ class MySQLDataTypeHelperTest {
             // DEFECT: the enum/set guard compares against the lower-case names only, so an
             // upper-case ENUM/SET reaches Integer.parseInt() instead of returning null
             // - see MySQLDataTypeHelper.parseScale()
-            assertThatThrownBy(() -> helper.parseScale("ENUM(a,b)"))
+            assertThatThrownBy(() -> HELPER.parseScale("ENUM(a,b)"))
                     .isInstanceOf(NumberFormatException.class);
         }
 
         @Test
         @DisplayName("null -> NullPointerException")
-        void null_throwsNullPointerException() {
-            assertThatThrownBy(() -> helper.parseScale(null))
+        void nullDataType_throwsNullPointerException() {
+            assertThatThrownBy(() -> HELPER.parseScale(null))
                     .isInstanceOf(NullPointerException.class);
         }
     }
@@ -382,19 +379,19 @@ class MySQLDataTypeHelperTest {
 
         @Test
         @DisplayName("exactly one supported data type -> its jdbc type id")
-        void singleSupportedType_returnJdbcDataTypeID() {
-            Catalog catalog = createCatalog("INTEGER", dataType(Types.INTEGER));
+        void singleSupportedType_returnsJdbcDataTypeID() {
+            Catalog catalog = createCatalog("INTEGER", Types.INTEGER);
 
-            assertThat(helper.getJdbcDataTypeID(catalog, "INTEGER", null, null))
+            assertThat(HELPER.getJdbcDataTypeID(catalog, "INTEGER", null, null))
                     .isEqualTo(Types.INTEGER);
         }
 
         @Test
         @DisplayName("unknown data type -> IllegalArgumentException")
         void unknownDataType_throwsIllegalArgumentException() {
-            Catalog catalog = createCatalog("INTEGER", dataType(Types.INTEGER));
+            Catalog catalog = createCatalog("INTEGER", Types.INTEGER);
 
-            assertThatThrownBy(() -> helper.getJdbcDataTypeID(catalog, "testnotype", null, null))
+            assertThatThrownBy(() -> HELPER.getJdbcDataTypeID(catalog, "testnotype", null, null))
                     .isInstanceOf(IllegalArgumentException.class)
                     .hasMessage("Not supported MySQL data type(testnotype)");
         }
@@ -402,9 +399,9 @@ class MySQLDataTypeHelperTest {
         @Test
         @DisplayName("lookup key is case sensitive -> IllegalArgumentException")
         void lowercaseDataType_throwsIllegalArgumentException() {
-            Catalog catalog = createCatalog("INTEGER", dataType(Types.INTEGER));
+            Catalog catalog = createCatalog("INTEGER", Types.INTEGER);
 
-            assertThatThrownBy(() -> helper.getJdbcDataTypeID(catalog, "integer", null, null))
+            assertThatThrownBy(() -> HELPER.getJdbcDataTypeID(catalog, "integer", null, null))
                     .isInstanceOf(IllegalArgumentException.class)
                     .hasMessage("Not supported MySQL data type(integer)");
         }
@@ -412,7 +409,7 @@ class MySQLDataTypeHelperTest {
         @Test
         @DisplayName("empty catalog -> IllegalArgumentException")
         void emptyCatalog_throwsIllegalArgumentException() {
-            assertThatThrownBy(() -> helper.getJdbcDataTypeID(new Catalog(), "BLOB", null, null))
+            assertThatThrownBy(() -> HELPER.getJdbcDataTypeID(new Catalog(), "BLOB", null, null))
                     .isInstanceOf(IllegalArgumentException.class)
                     .hasMessage("Not supported MySQL data type(BLOB)");
         }
@@ -421,11 +418,14 @@ class MySQLDataTypeHelperTest {
         @DisplayName("more than one supported data type -> IllegalArgumentException")
         void ambiguousSupportedTypes_throwsIllegalArgumentException() {
             Catalog catalog =
-                    createCatalog("VARCHAR", dataType(Types.VARCHAR), dataType(Types.LONGVARCHAR));
+                    createCatalog(
+                            "VARCHAR",
+                            createDataType("VARCHAR", Types.VARCHAR),
+                            createDataType("VARCHAR", Types.LONGVARCHAR));
 
             // DEFECT: the message has a doubled space after "Not supported"
             // - see MySQLDataTypeHelper.getJdbcDataTypeID()
-            assertThatThrownBy(() -> helper.getJdbcDataTypeID(catalog, "VARCHAR", 200, null))
+            assertThatThrownBy(() -> HELPER.getJdbcDataTypeID(catalog, "VARCHAR", 200, null))
                     .isInstanceOf(IllegalArgumentException.class)
                     .hasMessage("Not supported  MySQL data type(VARCHAR: p=200, s=null)");
         }
@@ -433,28 +433,11 @@ class MySQLDataTypeHelperTest {
         @Test
         @DisplayName("empty supported data type list -> IllegalArgumentException")
         void emptySupportedTypeList_throwsIllegalArgumentException() {
-            Catalog catalog = new Catalog();
-            Map<String, List<DataType>> supported = new HashMap<String, List<DataType>>();
-            supported.put("BLOB", new ArrayList<DataType>());
-            catalog.setSupportedDataType(supported);
+            Catalog catalog = createCatalog("BLOB");
 
-            assertThatThrownBy(() -> helper.getJdbcDataTypeID(catalog, "BLOB", null, null))
+            assertThatThrownBy(() -> HELPER.getJdbcDataTypeID(catalog, "BLOB", null, null))
                     .isInstanceOf(IllegalArgumentException.class)
                     .hasMessage("Not supported  MySQL data type(BLOB: p=null, s=null)");
-        }
-
-        private Catalog createCatalog(String key, DataType... dataTypes) {
-            Catalog catalog = new Catalog();
-            Map<String, List<DataType>> supported = new HashMap<String, List<DataType>>();
-            supported.put(key, Arrays.asList(dataTypes));
-            catalog.setSupportedDataType(supported);
-            return catalog;
-        }
-
-        private DataType dataType(int jdbcDataTypeID) {
-            DataType dataType = new DataType();
-            dataType.setJdbcDataTypeID(jdbcDataTypeID);
-            return dataType;
         }
     }
 
@@ -488,20 +471,14 @@ class MySQLDataTypeHelperTest {
             "BIT,        false",
             "Blob,       false",
         })
-        void dataType_returnWhetherBinary(String dataType, boolean expected) {
-            assertThat(helper.isBinary(dataType)).isEqualTo(expected);
+        void dataType_returnsWhetherBinary(String dataType, boolean expected) {
+            assertThat(HELPER.isBinary(dataType)).isEqualTo(expected);
         }
 
-        @Test
-        @DisplayName("null -> false")
-        void null_returnFalse() {
-            assertThat(helper.isBinary(null)).isFalse();
-        }
-
-        @Test
-        @DisplayName("empty string -> false")
-        void emptyString_returnFalse() {
-            assertThat(helper.isBinary("")).isFalse();
+        @ParameterizedTest(name = "[{index}] null or empty -> false")
+        @NullAndEmptySource
+        void nullOrEmptyDataType_returnsFalse(String dataType) {
+            assertThat(HELPER.isBinary(dataType)).isFalse();
         }
     }
 
@@ -529,20 +506,14 @@ class MySQLDataTypeHelperTest {
             "multiset,   false",
             "sequence,   false",
         })
-        void dataType_returnWhetherCollection(String dataType, boolean expected) {
-            assertThat(helper.isCollection(dataType)).isEqualTo(expected);
+        void dataType_returnsWhetherCollection(String dataType, boolean expected) {
+            assertThat(HELPER.isCollection(dataType)).isEqualTo(expected);
         }
 
-        @Test
-        @DisplayName("null -> false")
-        void null_returnFalse() {
-            assertThat(helper.isCollection(null)).isFalse();
-        }
-
-        @Test
-        @DisplayName("empty string -> false")
-        void emptyString_returnFalse() {
-            assertThat(helper.isCollection("")).isFalse();
+        @ParameterizedTest(name = "[{index}] null or empty -> false")
+        @NullAndEmptySource
+        void nullOrEmptyDataType_returnsFalse(String dataType) {
+            assertThat(HELPER.isCollection(dataType)).isFalse();
         }
     }
 
@@ -562,20 +533,14 @@ class MySQLDataTypeHelperTest {
             "datetime,   false",
             "years,      false",
         })
-        void dataType_returnWhetherYear(String dataType, boolean expected) {
-            assertThat(helper.isYear(dataType)).isEqualTo(expected);
+        void dataType_returnsWhetherYear(String dataType, boolean expected) {
+            assertThat(HELPER.isYear(dataType)).isEqualTo(expected);
         }
 
-        @Test
-        @DisplayName("null -> false")
-        void null_returnFalse() {
-            assertThat(helper.isYear(null)).isFalse();
-        }
-
-        @Test
-        @DisplayName("empty string -> false")
-        void emptyString_returnFalse() {
-            assertThat(helper.isYear("")).isFalse();
+        @ParameterizedTest(name = "[{index}] null or empty -> false")
+        @NullAndEmptySource
+        void nullOrEmptyDataType_returnsFalse(String dataType) {
+            assertThat(HELPER.isYear(dataType)).isFalse();
         }
     }
 }

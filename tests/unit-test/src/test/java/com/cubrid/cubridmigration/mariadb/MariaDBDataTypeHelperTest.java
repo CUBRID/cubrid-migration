@@ -29,12 +29,13 @@
  */
 package com.cubrid.cubridmigration.mariadb;
 
+import static com.cubrid.cubridmigration.testutil.TestCatalogFactory.createCatalog;
+import static com.cubrid.cubridmigration.testutil.TestCatalogFactory.createDataType;
 import static com.cubrid.cubridmigration.testutil.TestColumnFactory.createColumn;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.cubrid.cubridmigration.core.datatype.DataType;
 import com.cubrid.cubridmigration.core.dbobject.Catalog;
 import com.cubrid.cubridmigration.core.dbtype.DatabaseType;
 
@@ -43,19 +44,15 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import java.sql.Types;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 @DisplayName("MariaDBDataTypeHelper")
 class MariaDBDataTypeHelperTest {
 
-    private final MariaDBDataTypeHelper helper = MariaDBDataTypeHelper.getInstance(null);
+    private static final MariaDBDataTypeHelper HELPER = MariaDBDataTypeHelper.getInstance(null);
 
     @Nested
     @DisplayName("getInstance()")
@@ -63,7 +60,7 @@ class MariaDBDataTypeHelperTest {
 
         @Test
         @DisplayName("singleton returns same instance regardless of version")
-        void singleton_returnSameInstance() {
+        void singleton_returnsSameInstance() {
             assertThat(MariaDBDataTypeHelper.getInstance(null))
                     .isSameAs(MariaDBDataTypeHelper.getInstance("10.6"));
         }
@@ -75,9 +72,9 @@ class MariaDBDataTypeHelperTest {
 
         @Test
         @DisplayName("MariaDB helper -> DatabaseType.MARIADB")
-        void mariaDbHelper_returnMariaDbDatabaseType() {
-            assertThat(helper.getDBType()).isSameAs(DatabaseType.MARIADB);
-            assertThat(helper.getDBType().getName()).isEqualTo("MARIADB");
+        void mariaDbHelper_returnsMariaDbDatabaseType() {
+            assertThat(HELPER.getDBType()).isSameAs(DatabaseType.MARIADB);
+            assertThat(HELPER.getDBType().getName()).isEqualTo("MARIADB");
         }
     }
 
@@ -85,7 +82,7 @@ class MariaDBDataTypeHelperTest {
     @DisplayName("getShownDataType()")
     class GetShownDataType {
 
-        @ParameterizedTest(name = "[{index}] {0}(p={1},s={2}) -> \"{3}\"")
+        @ParameterizedTest(name = "[{index}] {0}(p={1}, s={2}) -> \"{3}\"")
         @CsvSource({
             // DATA_TYPE_1: precision and scale are never shown.
             "tinyblob,      0,  2,  tinyblob",
@@ -123,13 +120,13 @@ class MariaDBDataTypeHelperTest {
             "enum,          10, 2,  enum",
             "set,           10, 2,  set",
         })
-        void knownTypes_returnShownDataType(
+        void knownTypes_returnsShownDataType(
                 String dataType, Integer precision, Integer scale, String expected) {
-            assertThat(helper.getShownDataType(createColumn(dataType, precision, scale)))
+            assertThat(HELPER.getShownDataType(createColumn(dataType, precision, scale)))
                     .isEqualTo(expected);
         }
 
-        @ParameterizedTest(name = "[{index}] {0}(p=10,s=2) -> \"{1}\"")
+        @ParameterizedTest(name = "[{index}] {0}(p=10, s=2) -> \"{1}\"")
         @CsvSource({
             "'float unsigned',      'float(10,2) unsigned'",
             "'decimal unsigned',    'decimal(10,2) unsigned'",
@@ -139,22 +136,22 @@ class MariaDBDataTypeHelperTest {
             "'enum unsigned',       'enum unsigned'",
         })
         void unsignedTypes_keepUnsignedSuffixAfterPrecision(String dataType, String expected) {
-            assertThat(helper.getShownDataType(createColumn(dataType, 10, 2))).isEqualTo(expected);
+            assertThat(HELPER.getShownDataType(createColumn(dataType, 10, 2))).isEqualTo(expected);
         }
 
         @Test
         @DisplayName("unknown type -> returned unchanged")
-        void unknownType_returnTypeAsIs() {
-            assertThat(helper.getShownDataType(createColumn("unknowntype", 10, 2)))
+        void unknownType_returnsTypeAsIs() {
+            assertThat(HELPER.getShownDataType(createColumn("unknowntype", 10, 2)))
                     .isEqualTo("unknowntype");
         }
 
         @Test
         @DisplayName("type that already carries precision -> returned unchanged")
-        void typeWithPrecisionInName_returnTypeAsIs() {
-            assertThat(helper.getShownDataType(createColumn("character(10)", 10, 2)))
+        void typeWithPrecisionInName_returnsTypeAsIs() {
+            assertThat(HELPER.getShownDataType(createColumn("character(10)", 10, 2)))
                     .isEqualTo("character(10)");
-            assertThat(helper.getShownDataType(createColumn("int(10)", 10, 2)))
+            assertThat(HELPER.getShownDataType(createColumn("int(10)", 10, 2)))
                     .isEqualTo("int(10)");
         }
 
@@ -164,7 +161,7 @@ class MariaDBDataTypeHelperTest {
             // DEFECT: the type lists are matched case sensitively, so an uppercase data type
             // silently falls through to the "unknown type" branch and loses its precision
             // - see MariaDBDataTypeHelper.getShownDataType()
-            assertThat(helper.getShownDataType(createColumn("CHAR", 10, 2))).isEqualTo("CHAR");
+            assertThat(HELPER.getShownDataType(createColumn("CHAR", 10, 2))).isEqualTo("CHAR");
         }
 
         @Test
@@ -172,22 +169,22 @@ class MariaDBDataTypeHelperTest {
         void nullPrecisionAndScale_renderZero() {
             // Column.getPrecision()/getScale() substitute 0 for null, so the helper never sees null
             // - see Column.getPrecision()
-            assertThat(helper.getShownDataType(createColumn("char", null, null)))
+            assertThat(HELPER.getShownDataType(createColumn("char", null, null)))
                     .isEqualTo("char(0)");
-            assertThat(helper.getShownDataType(createColumn("decimal", null, null)))
+            assertThat(HELPER.getShownDataType(createColumn("decimal", null, null)))
                     .isEqualTo("decimal(0,0)");
         }
 
         @Test
         @DisplayName("empty data type -> empty string")
-        void emptyDataType_returnEmptyString() {
-            assertThat(helper.getShownDataType(createColumn("", 10, 2))).isEmpty();
+        void emptyDataType_returnsEmptyString() {
+            assertThat(HELPER.getShownDataType(createColumn("", 10, 2))).isEmpty();
         }
 
         @Test
         @DisplayName("null data type -> NullPointerException")
-        void nullDataType_throwNullPointerException() {
-            assertThatThrownBy(() -> helper.getShownDataType(createColumn(null, 10, 2)))
+        void nullDataType_throwsNullPointerException() {
+            assertThatThrownBy(() -> HELPER.getShownDataType(createColumn(null, 10, 2)))
                     .isInstanceOf(NullPointerException.class);
         }
     }
@@ -210,26 +207,26 @@ class MariaDBDataTypeHelperTest {
             "'int(10) unsigned',        'int unsigned'",
             "'decimal(10,2) unsigned',  'decimal unsigned'",
         })
-        void variousTypes_returnMainType(String type, String expected) {
-            assertThat(helper.parseMainType(type)).isEqualTo(expected);
+        void variousTypes_returnsMainType(String type, String expected) {
+            assertThat(HELPER.parseMainType(type)).isEqualTo(expected);
         }
 
         @Test
         @DisplayName("empty string -> empty string")
-        void emptyString_returnEmptyString() {
-            assertThat(helper.parseMainType("")).isEmpty();
+        void emptyDataType_returnsEmptyString() {
+            assertThat(HELPER.parseMainType("")).isEmpty();
         }
 
         @Test
         @DisplayName("leading parenthesis -> empty string")
-        void leadingParenthesis_returnEmptyString() {
-            assertThat(helper.parseMainType("(10)")).isEmpty();
+        void leadingParenthesis_returnsEmptyString() {
+            assertThat(HELPER.parseMainType("(10)")).isEmpty();
         }
 
         @Test
         @DisplayName("null -> NullPointerException")
-        void nullType_throwNullPointerException() {
-            assertThatThrownBy(() -> helper.parseMainType(null))
+        void nullDataType_throwsNullPointerException() {
+            assertThatThrownBy(() -> HELPER.parseMainType(null))
                     .isInstanceOf(NullPointerException.class);
         }
     }
@@ -250,52 +247,52 @@ class MariaDBDataTypeHelperTest {
                     "integer,           null",
                     "enum,              null",
                 })
-        void variousTypes_returnRemainPart(String type, String expected) {
-            assertThat(helper.parseTypeRemain(type)).isEqualTo(expected);
+        void variousTypes_returnsRemainPart(String type, String expected) {
+            assertThat(HELPER.parseTypeRemain(type)).isEqualTo(expected);
         }
 
         @Test
         @DisplayName("empty string -> null")
-        void emptyString_returnNull() {
-            assertThat(helper.parseTypeRemain("")).isNull();
+        void emptyDataType_returnsNull() {
+            assertThat(HELPER.parseTypeRemain("")).isNull();
         }
 
         @Test
         @DisplayName("empty parenthesis -> empty string")
-        void emptyParenthesis_returnEmptyString() {
-            assertThat(helper.parseTypeRemain("char()")).isEmpty();
+        void emptyParenthesis_returnsEmptyString() {
+            assertThat(HELPER.parseTypeRemain("char()")).isEmpty();
         }
 
         @Test
         @DisplayName("unsigned type -> truncated remain part")
-        void unsignedType_returnTruncatedRemainPart() {
+        void unsignedType_returnsTruncatedRemainPart() {
             // DEFECT: the remain part is cut at length()-1 assuming ')' is the last character, so
             // everything after the closing parenthesis leaks in minus its last character
             // - see MariaDBDataTypeHelper.parseTypeRemain()
-            assertThat(helper.parseTypeRemain("int(10) unsigned")).isEqualTo("10) unsigne");
-            assertThat(helper.parseTypeRemain("decimal(10,2) unsigned")).isEqualTo("10,2) unsigne");
+            assertThat(HELPER.parseTypeRemain("int(10) unsigned")).isEqualTo("10) unsigne");
+            assertThat(HELPER.parseTypeRemain("decimal(10,2) unsigned")).isEqualTo("10,2) unsigne");
         }
 
         @Test
         @DisplayName("unclosed parenthesis -> StringIndexOutOfBoundsException")
-        void unclosedParenthesis_throwStringIndexOutOfBoundsException() {
+        void unclosedParenthesis_throwsStringIndexOutOfBoundsException() {
             // DEFECT: substring(index + 1, length() - 1) inverts its bounds when '(' is the
             // last character, so an unclosed type crashes instead of returning null
             // - see MariaDBDataTypeHelper.parseTypeRemain()
-            assertThatThrownBy(() -> helper.parseTypeRemain("char("))
+            assertThatThrownBy(() -> HELPER.parseTypeRemain("char("))
                     .isInstanceOf(StringIndexOutOfBoundsException.class);
         }
 
         @Test
         @DisplayName("quoted enum elements -> the element list with the quotes kept")
-        void quotedEnumElements_returnElementListWithQuotes() {
-            assertThat(helper.parseTypeRemain("enum('a','b')")).isEqualTo("'a','b'");
+        void quotedEnumElements_returnsElementListWithQuotes() {
+            assertThat(HELPER.parseTypeRemain("enum('a','b')")).isEqualTo("'a','b'");
         }
 
         @Test
         @DisplayName("null -> NullPointerException")
-        void nullType_throwNullPointerException() {
-            assertThatThrownBy(() -> helper.parseTypeRemain(null))
+        void nullDataType_throwsNullPointerException() {
+            assertThatThrownBy(() -> HELPER.parseTypeRemain(null))
                     .isInstanceOf(NullPointerException.class);
         }
     }
@@ -324,31 +321,31 @@ class MariaDBDataTypeHelperTest {
             "enum(int),                 -1",
             "set(int),                  -1",
         })
-        void variousTypes_returnPrecision(String type, int expected) {
-            assertThat(helper.parsePrecision(type)).isEqualTo(expected);
+        void variousTypes_returnsPrecision(String type, int expected) {
+            assertThat(HELPER.parsePrecision(type)).isEqualTo(expected);
         }
 
         @ParameterizedTest(name = "[{index}] \"{0}\" -> NumberFormatException")
         @ValueSource(strings = {"char()", "char(abc)"})
-        void nonNumericRemainPart_throwNumberFormatException(String type) {
-            assertThatThrownBy(() -> helper.parsePrecision(type))
+        void nonNumericRemainPart_throwsNumberFormatException(String type) {
+            assertThatThrownBy(() -> HELPER.parsePrecision(type))
                     .isInstanceOf(NumberFormatException.class);
         }
 
         @Test
         @DisplayName("uppercase ENUM -> NumberFormatException")
-        void uppercaseEnum_throwNumberFormatException() {
+        void uppercaseEnum_throwsNumberFormatException() {
             // DEFECT: the enum/set guard compares against lowercase literals only, so an uppercase
             // ENUM/SET reaches Integer.parseInt() and blows up instead of returning -1
             // - see MariaDBDataTypeHelper.parsePrecision()
-            assertThatThrownBy(() -> helper.parsePrecision("ENUM(a)"))
+            assertThatThrownBy(() -> HELPER.parsePrecision("ENUM(a)"))
                     .isInstanceOf(NumberFormatException.class);
         }
 
         @Test
         @DisplayName("null -> NullPointerException")
-        void nullType_throwNullPointerException() {
-            assertThatThrownBy(() -> helper.parsePrecision(null))
+        void nullDataType_throwsNullPointerException() {
+            assertThatThrownBy(() -> HELPER.parsePrecision(null))
                     .isInstanceOf(NullPointerException.class);
         }
     }
@@ -378,24 +375,24 @@ class MariaDBDataTypeHelperTest {
                     "enum(int),                 null",
                     "set(int),                  null",
                 })
-        void variousTypes_returnScale(String type, Integer expected) {
-            assertThat(helper.parseScale(type)).isEqualTo(expected);
+        void variousTypes_returnsScale(String type, Integer expected) {
+            assertThat(HELPER.parseScale(type)).isEqualTo(expected);
         }
 
         @Test
         @DisplayName("uppercase ENUM -> NumberFormatException")
-        void uppercaseEnum_throwNumberFormatException() {
+        void uppercaseEnum_throwsNumberFormatException() {
             // DEFECT: the enum/set guard compares against lowercase literals only, so an uppercase
             // ENUM/SET reaches Integer.parseInt() and blows up instead of returning null
             // - see MariaDBDataTypeHelper.parseScale()
-            assertThatThrownBy(() -> helper.parseScale("ENUM(a,b)"))
+            assertThatThrownBy(() -> HELPER.parseScale("ENUM(a,b)"))
                     .isInstanceOf(NumberFormatException.class);
         }
 
         @Test
         @DisplayName("null -> NullPointerException")
-        void nullType_throwNullPointerException() {
-            assertThatThrownBy(() -> helper.parseScale(null))
+        void nullDataType_throwsNullPointerException() {
+            assertThatThrownBy(() -> HELPER.parseScale(null))
                     .isInstanceOf(NullPointerException.class);
         }
     }
@@ -406,44 +403,38 @@ class MariaDBDataTypeHelperTest {
 
         @ParameterizedTest(name = "[{index}] \"{0}\" -> true")
         @ValueSource(strings = {"blob", "tinyblob", "mediumblob", "longblob", "bit"})
-        void blobAndBitTypes_returnTrue(String dataType) {
-            assertThat(helper.isBinary(dataType)).isTrue();
+        void blobAndBitTypes_returnsTrue(String dataType) {
+            assertThat(HELPER.isBinary(dataType)).isTrue();
         }
 
         @ParameterizedTest(name = "[{index}] \"{0}\" -> false")
         @ValueSource(strings = {"int", "text", "tinytext", "varchar"})
-        void nonBinaryTypes_returnFalse(String dataType) {
-            assertThat(helper.isBinary(dataType)).isFalse();
+        void nonBinaryTypes_returnsFalse(String dataType) {
+            assertThat(HELPER.isBinary(dataType)).isFalse();
         }
 
         @ParameterizedTest(name = "[{index}] \"{0}\" -> false")
         @ValueSource(strings = {"binary", "varbinary"})
-        void byteStringTypes_returnFalse(String dataType) {
+        void byteStringTypes_returnsFalse(String dataType) {
             // DEFECT: binary/varbinary hold raw bytes and the base class lists them in
             // BINARY_TYPES, but DATA_TYPE_5 omits them so isBinary() reports false
             // - see MariaDBDataTypeHelper.DATA_TYPE_5
-            assertThat(helper.isBinary(dataType)).isFalse();
+            assertThat(HELPER.isBinary(dataType)).isFalse();
         }
 
         @ParameterizedTest(name = "[{index}] \"{0}\" -> false")
         @ValueSource(strings = {"BLOB", "Blob", "blob(10)", "bit(1)", " blob"})
-        void unnormalizedBinaryTypes_returnFalse(String dataType) {
+        void unnormalizedBinaryTypes_returnsFalse(String dataType) {
             // DEFECT: isBinary() does an exact list lookup instead of the checkType()
             // normalization used by isCollection()/isYear(), so case and precision defeat it
             // - see MariaDBDataTypeHelper.isBinary()
-            assertThat(helper.isBinary(dataType)).isFalse();
+            assertThat(HELPER.isBinary(dataType)).isFalse();
         }
 
-        @Test
-        @DisplayName("empty string -> false")
-        void emptyString_returnFalse() {
-            assertThat(helper.isBinary("")).isFalse();
-        }
-
-        @Test
-        @DisplayName("null -> false")
-        void nullDataType_returnFalse() {
-            assertThat(helper.isBinary(null)).isFalse();
+        @ParameterizedTest(name = "[{index}] null or empty -> false")
+        @NullAndEmptySource
+        void nullOrEmptyDataType_returnsFalse(String dataType) {
+            assertThat(HELPER.isBinary(dataType)).isFalse();
         }
     }
 
@@ -453,20 +444,20 @@ class MariaDBDataTypeHelperTest {
 
         @ParameterizedTest(name = "[{index}] \"{0}\" -> true")
         @ValueSource(strings = {"set", "SET", "Set", "set(int)", "SET('a','b')"})
-        void setTypes_returnTrue(String dataType) {
-            assertThat(helper.isCollection(dataType)).isTrue();
+        void setTypes_returnsTrue(String dataType) {
+            assertThat(HELPER.isCollection(dataType)).isTrue();
         }
 
         @ParameterizedTest(name = "[{index}] \"{0}\" -> false")
-        @ValueSource(strings = {"enum", "int", "setof", ""})
-        void nonSetTypes_returnFalse(String dataType) {
-            assertThat(helper.isCollection(dataType)).isFalse();
+        @ValueSource(strings = {"enum", "int", "setof"})
+        void nonSetTypes_returnsFalse(String dataType) {
+            assertThat(HELPER.isCollection(dataType)).isFalse();
         }
 
-        @Test
-        @DisplayName("null -> false")
-        void nullDataType_returnFalse() {
-            assertThat(helper.isCollection(null)).isFalse();
+        @ParameterizedTest(name = "[{index}] null or empty -> false")
+        @NullAndEmptySource
+        void nullOrEmptyDataType_returnsFalse(String dataType) {
+            assertThat(HELPER.isCollection(dataType)).isFalse();
         }
     }
 
@@ -476,20 +467,20 @@ class MariaDBDataTypeHelperTest {
 
         @ParameterizedTest(name = "[{index}] \"{0}\" -> true")
         @ValueSource(strings = {"year", "YEAR", "year(4)"})
-        void yearTypes_returnTrue(String dataType) {
-            assertThat(helper.isYear(dataType)).isTrue();
+        void yearTypes_returnsTrue(String dataType) {
+            assertThat(HELPER.isYear(dataType)).isTrue();
         }
 
         @ParameterizedTest(name = "[{index}] \"{0}\" -> false")
-        @ValueSource(strings = {"int", "date", "datetime", ""})
-        void nonYearTypes_returnFalse(String dataType) {
-            assertThat(helper.isYear(dataType)).isFalse();
+        @ValueSource(strings = {"int", "date", "datetime"})
+        void nonYearTypes_returnsFalse(String dataType) {
+            assertThat(HELPER.isYear(dataType)).isFalse();
         }
 
-        @Test
-        @DisplayName("null -> false")
-        void nullDataType_returnFalse() {
-            assertThat(helper.isYear(null)).isFalse();
+        @ParameterizedTest(name = "[{index}] null or empty -> false")
+        @NullAndEmptySource
+        void nullOrEmptyDataType_returnsFalse(String dataType) {
+            assertThat(HELPER.isYear(dataType)).isFalse();
         }
     }
 
@@ -499,96 +490,76 @@ class MariaDBDataTypeHelperTest {
 
         @Test
         @DisplayName("single supported type -> its jdbc type id")
-        void singleSupportedType_returnJdbcTypeId() {
-            Catalog catalog = createCatalogWith("INTEGER", Types.INTEGER);
+        void singleSupportedType_returnsJdbcTypeId() {
+            Catalog catalog = createCatalog("INTEGER", Types.INTEGER);
 
-            assertThat(helper.getJdbcDataTypeID(catalog, "INTEGER", null, null))
+            assertThat(HELPER.getJdbcDataTypeID(catalog, "INTEGER", null, null))
                     .isEqualTo(Types.INTEGER);
         }
 
         @Test
         @DisplayName("precision and scale are ignored when the type is unambiguous")
         void unambiguousType_ignorePrecisionAndScale() {
-            Catalog catalog = createCatalogWith("VARCHAR", Types.VARCHAR);
+            Catalog catalog = createCatalog("VARCHAR", Types.VARCHAR);
 
-            assertThat(helper.getJdbcDataTypeID(catalog, "VARCHAR", 200, null))
+            assertThat(HELPER.getJdbcDataTypeID(catalog, "VARCHAR", 200, null))
                     .isEqualTo(Types.VARCHAR);
         }
 
         @Test
         @DisplayName("lookup key is case sensitive -> IllegalArgumentException")
-        void differentCaseKey_throwIllegalArgumentException() {
-            Catalog catalog = createCatalogWith("INTEGER", Types.INTEGER);
+        void differentCaseKey_throwsIllegalArgumentException() {
+            Catalog catalog = createCatalog("INTEGER", Types.INTEGER);
 
-            assertThatThrownBy(() -> helper.getJdbcDataTypeID(catalog, "integer", null, null))
+            assertThatThrownBy(() -> HELPER.getJdbcDataTypeID(catalog, "integer", null, null))
                     .isInstanceOf(IllegalArgumentException.class)
                     .hasMessage("Not supported MariaDB data type(integer)");
         }
 
         @Test
         @DisplayName("unknown type -> IllegalArgumentException")
-        void unknownType_throwIllegalArgumentException() {
+        void unknownType_throwsIllegalArgumentException() {
             assertThatThrownBy(
-                            () -> helper.getJdbcDataTypeID(new Catalog(), "testnotype", null, null))
+                            () -> HELPER.getJdbcDataTypeID(new Catalog(), "testnotype", null, null))
                     .isInstanceOf(IllegalArgumentException.class)
                     .hasMessage("Not supported MariaDB data type(testnotype)");
         }
 
         @Test
         @DisplayName("null type -> IllegalArgumentException")
-        void nullType_throwIllegalArgumentException() {
-            assertThatThrownBy(() -> helper.getJdbcDataTypeID(new Catalog(), null, null, null))
+        void nullDataType_throwsIllegalArgumentException() {
+            assertThatThrownBy(() -> HELPER.getJdbcDataTypeID(new Catalog(), null, null, null))
                     .isInstanceOf(IllegalArgumentException.class)
                     .hasMessage("Not supported MariaDB data type(null)");
         }
 
         @Test
         @DisplayName("several candidate types -> IllegalArgumentException with precision and scale")
-        void ambiguousType_throwIllegalArgumentException() {
+        void ambiguousType_throwsIllegalArgumentException() {
             Catalog catalog =
-                    createCatalogWith(
+                    createCatalog(
                             "INT",
-                            Arrays.asList(
-                                    createDataType("INT", Types.INTEGER),
-                                    createDataType("INT", Types.BIGINT)));
+                            createDataType("INT", Types.INTEGER),
+                            createDataType("INT", Types.BIGINT));
 
             // DEFECT: the message contains a double space after "Not supported"
             // - see MariaDBDataTypeHelper.getJdbcDataTypeID()
-            assertThatThrownBy(() -> helper.getJdbcDataTypeID(catalog, "INT", 10, 0))
+            assertThatThrownBy(() -> HELPER.getJdbcDataTypeID(catalog, "INT", 10, 0))
                     .isInstanceOf(IllegalArgumentException.class)
                     .hasMessage("Not supported  MariaDB data type(INT: p=10, s=0)");
         }
 
         @Test
         @DisplayName("empty candidate list -> IllegalArgumentException of the ambiguous branch")
-        void emptyCandidateList_throwIllegalArgumentException() {
-            Catalog catalog = createCatalogWith("VARCHAR", new ArrayList<DataType>());
+        void emptyCandidateList_throwsIllegalArgumentException() {
+            Catalog catalog = createCatalog("VARCHAR");
 
             // DEFECT: an empty candidate list is not the ambiguous case, but the size == 1 check
             // sends it to the ambiguous message anyway
             // - see MariaDBDataTypeHelper.getJdbcDataTypeID()
-            assertThatThrownBy(() -> helper.getJdbcDataTypeID(catalog, "VARCHAR", 200, null))
+            assertThatThrownBy(() -> HELPER.getJdbcDataTypeID(catalog, "VARCHAR", 200, null))
                     .isInstanceOf(IllegalArgumentException.class)
                     .hasMessage("Not supported  MariaDB data type(VARCHAR: p=200, s=null)");
-        }
-
-        private Catalog createCatalogWith(String key, int jdbcTypeId) {
-            return createCatalogWith(key, Arrays.asList(createDataType(key, jdbcTypeId)));
-        }
-
-        private Catalog createCatalogWith(String key, List<DataType> dataTypes) {
-            Catalog catalog = new Catalog();
-            Map<String, List<DataType>> supported = new HashMap<String, List<DataType>>();
-            supported.put(key, dataTypes);
-            catalog.setSupportedDataType(supported);
-            return catalog;
-        }
-
-        private DataType createDataType(String typeName, int jdbcTypeId) {
-            DataType dataType = new DataType();
-            dataType.setTypeName(typeName);
-            dataType.setJdbcDataTypeID(jdbcTypeId);
-            return dataType;
         }
     }
 }

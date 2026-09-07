@@ -51,12 +51,12 @@ import org.junit.jupiter.params.provider.ValueSource;
 @DisplayName("CUBRIDDataTypeHelper")
 class CUBRIDDataTypeHelperTest {
 
-    private final CUBRIDDataTypeHelper helper = CUBRIDDataTypeHelper.getInstance(null);
+    private static final CUBRIDDataTypeHelper HELPER = CUBRIDDataTypeHelper.getInstance(null);
 
     /** Fills in the JDBC type ids that the shown and DDL rendering read off the column. */
     private Column columnOf(String spelling) {
         Column column = createColumn(spelling);
-        helper.setColumnDataType(spelling, column);
+        HELPER.setColumnDataType(spelling, column);
         return column;
     }
 
@@ -79,8 +79,8 @@ class CUBRIDDataTypeHelperTest {
         @Test
         @DisplayName("CUBRID helper -> DatabaseType.CUBRID")
         void cubridHelper_returnsCubridDatabaseType() {
-            assertThat(helper.getDBType()).isSameAs(DatabaseType.CUBRID);
-            assertThat(helper.getDBType().getName()).isEqualTo("CUBRID");
+            assertThat(HELPER.getDBType()).isSameAs(DatabaseType.CUBRID);
+            assertThat(HELPER.getDBType().getName()).isEqualTo("CUBRID");
         }
     }
 
@@ -130,7 +130,7 @@ class CUBRIDDataTypeHelperTest {
             // DEFECT: "list_of" is a registered synonym of the sequence type, but isCollection()
             // does not list it, so the element type is never parsed and the parse fails - see
             // CUBRIDDataTypeHelper.isCollection()
-            assertThatThrownBy(() -> helper.setColumnDataType("list_of(int)", column))
+            assertThatThrownBy(() -> HELPER.setColumnDataType("list_of(int)", column))
                     .isInstanceOf(IllegalArgumentException.class)
                     .hasMessage("Invalid data type:list_of(int)");
         }
@@ -140,7 +140,7 @@ class CUBRIDDataTypeHelperTest {
         void unsupportedSpelling_throwsUnSupportCUBRIDDataTypeException() {
             Column column = createColumn("unknowntype");
 
-            assertThatThrownBy(() -> helper.setColumnDataType("unknowntype", column))
+            assertThatThrownBy(() -> HELPER.setColumnDataType("unknowntype", column))
                     .isInstanceOf(UnSupportCUBRIDDataTypeException.class)
                     .hasMessage("Unsupported CUBRID data type:unknowntype");
         }
@@ -151,7 +151,6 @@ class CUBRIDDataTypeHelperTest {
     class GetShownDataType {
 
         @ParameterizedTest(name = "[{index}] \"{0}\" -> \"{1}\"")
-        @DisplayName("every accepted spelling -> standard shown data type")
         @CsvSource({
             // LOB types carry no precision.
             "CLOB,                          clob",
@@ -210,26 +209,26 @@ class CUBRIDDataTypeHelperTest {
             "json,                          json",
         })
         void spelling_returnsStandardShownDataType(String spelling, String expected) {
-            assertThat(helper.getShownDataType(columnOf(spelling))).isEqualTo(expected);
+            assertThat(HELPER.getShownDataType(columnOf(spelling))).isEqualTo(expected);
         }
 
         @Test
         @DisplayName("enum -> elements are kept verbatim, including their case")
         void enumSpelling_keepsElementsVerbatim() {
-            assertThat(helper.getShownDataType(columnOf("ENUM('1','2','a','A')")))
+            assertThat(HELPER.getShownDataType(columnOf("ENUM('1','2','a','A')")))
                     .isEqualTo("enum('1','2','a','A')");
         }
 
         @Test
         @DisplayName("numeric without precision -> maximum precision and zero scale")
         void numericWithoutPrecision_usesMaximumPrecisionAndZeroScale() {
-            assertThat(helper.getShownDataType(columnOf("numeric"))).isEqualTo("numeric(38,0)");
+            assertThat(HELPER.getShownDataType(columnOf("numeric"))).isEqualTo("numeric(38,0)");
         }
 
         @Test
         @DisplayName("numeric(38) -> scale defaults to 0")
         void numericWithoutScale_defaultsScaleToZero() {
-            assertThat(helper.getShownDataType(columnOf("numeric(38)"))).isEqualTo("numeric(38,0)");
+            assertThat(HELPER.getShownDataType(columnOf("numeric(38)"))).isEqualTo("numeric(38,0)");
         }
 
         @Test
@@ -238,13 +237,13 @@ class CUBRIDDataTypeHelperTest {
             // DEFECT: Column.getPrecision() substitutes 0 for a missing precision, so a bare char
             // renders as char(0), which CUBRID rejects as DDL - see
             // CUBRIDDataTypeHelper.innerGetShownDataTypeType()
-            assertThat(helper.getShownDataType(columnOf("char"))).isEqualTo("char(0)");
+            assertThat(HELPER.getShownDataType(columnOf("char"))).isEqualTo("char(0)");
         }
 
         @Test
         @DisplayName("column whose JDBC type id was never set -> empty string")
         void columnWithoutJdbcTypeId_returnsEmptyString() {
-            assertThat(helper.getShownDataType(createColumn("varchar", 10, null))).isEmpty();
+            assertThat(HELPER.getShownDataType(createColumn("varchar", 10, null))).isEmpty();
         }
     }
 
@@ -253,7 +252,6 @@ class CUBRIDDataTypeHelperTest {
     class GetDDLDataType {
 
         @ParameterizedTest(name = "[{index}] \"{0}\" -> \"{1}\"")
-        @DisplayName("every accepted spelling -> standard DDL data type")
         @CsvSource({
             "char(1),                       char(1)",
             "STRING,                        varchar(1073741823)",
@@ -268,11 +266,10 @@ class CUBRIDDataTypeHelperTest {
             "json,                          json",
         })
         void spelling_returnsStandardDdlDataType(String spelling, String expected) {
-            assertThat(helper.getDDLDataType(columnOf(spelling))).isEqualTo(expected);
+            assertThat(HELPER.getDDLDataType(columnOf(spelling))).isEqualTo(expected);
         }
 
         @ParameterizedTest(name = "[{index}] \"{0}\" -> same as getShownDataType()")
-        @DisplayName("DDL and shown data type never differ")
         @ValueSource(
                 strings = {
                     "char(1)",
@@ -291,13 +288,13 @@ class CUBRIDDataTypeHelperTest {
             // inner name, so the flag that separates the two renderings has no effect
             Column column = columnOf(spelling);
 
-            assertThat(helper.getDDLDataType(column)).isEqualTo(helper.getShownDataType(column));
+            assertThat(HELPER.getDDLDataType(column)).isEqualTo(HELPER.getShownDataType(column));
         }
 
         @Test
         @DisplayName("column whose JDBC type id was never set -> empty string")
         void columnWithoutJdbcTypeId_returnsEmptyString() {
-            assertThat(helper.getDDLDataType(createColumn("varchar", 10, null))).isEmpty();
+            assertThat(HELPER.getDDLDataType(createColumn("varchar", 10, null))).isEmpty();
         }
     }
 
@@ -306,7 +303,6 @@ class CUBRIDDataTypeHelperTest {
     class GetDataTypeByteSize {
 
         @ParameterizedTest(name = "[{index}] \"{0}\" -> {1} bytes")
-        @DisplayName("fixed width type -> the width registered for its type id")
         @CsvSource({
             "smallint,          2",
             "integer,           4",
@@ -335,11 +331,10 @@ class CUBRIDDataTypeHelperTest {
             "json,              0",
         })
         void fixedWidthType_returnsRegisteredWidth(String spelling, long expected) {
-            assertThat(helper.getDataTypeByteSize(columnOf(spelling))).isEqualTo(expected);
+            assertThat(HELPER.getDataTypeByteSize(columnOf(spelling))).isEqualTo(expected);
         }
 
         @ParameterizedTest(name = "[{index}] \"{0}\" -> {1} bytes")
-        @DisplayName("variable width type -> its precision")
         @CsvSource({
             "char(10),          10",
             "varchar(255),      255",
@@ -347,7 +342,7 @@ class CUBRIDDataTypeHelperTest {
             "bit varying(64),   64",
         })
         void variableWidthType_returnsItsPrecision(String spelling, long expected) {
-            assertThat(helper.getDataTypeByteSize(columnOf(spelling))).isEqualTo(expected);
+            assertThat(HELPER.getDataTypeByteSize(columnOf(spelling))).isEqualTo(expected);
         }
 
         @Test
@@ -356,13 +351,13 @@ class CUBRIDDataTypeHelperTest {
             // DEFECT: bit(n) declares n bits, so the size is ceil(n / 8) bytes, but the
             // precision is returned unchanged and overstates the row width eightfold
             // - see CUBRIDDataTypeHelper.getDataTypeByteSize()
-            assertThat(helper.getDataTypeByteSize(columnOf("bit(1024)"))).isEqualTo(1024L);
+            assertThat(HELPER.getDataTypeByteSize(columnOf("bit(1024)"))).isEqualTo(1024L);
         }
 
         @Test
         @DisplayName("column whose JDBC type id was never set -> 0")
         void columnWithoutJdbcTypeId_returnsZero() {
-            assertThat(helper.getDataTypeByteSize(createColumn("varchar", 10, null))).isZero();
+            assertThat(HELPER.getDataTypeByteSize(createColumn("varchar", 10, null))).isZero();
         }
     }
 
@@ -371,7 +366,6 @@ class CUBRIDDataTypeHelperTest {
     class GetStdMainDataType {
 
         @ParameterizedTest(name = "[{index}] \"{0}\" -> \"{1}\"")
-        @DisplayName("synonym -> standard main data type name")
         @CsvSource({
             // Case folding only.
             "CLOB,                          clob",
@@ -412,19 +406,19 @@ class CUBRIDDataTypeHelperTest {
             "list_of(int),                  list",
         })
         void synonym_returnsStandardMainDataType(String spelling, String expected) {
-            assertThat(helper.getStdMainDataType(spelling)).isEqualTo(expected);
+            assertThat(HELPER.getStdMainDataType(spelling)).isEqualTo(expected);
         }
 
         @Test
         @DisplayName("enum with elements -> enum")
         void enumSpelling_returnsEnum() {
-            assertThat(helper.getStdMainDataType("ENUM('1','2','a','A')")).isEqualTo("enum");
+            assertThat(HELPER.getStdMainDataType("ENUM('1','2','a','A')")).isEqualTo("enum");
         }
 
         @Test
         @DisplayName("unsupported type -> UnSupportCUBRIDDataTypeException")
         void unsupportedType_throwsUnSupportCUBRIDDataTypeException() {
-            assertThatThrownBy(() -> helper.getStdMainDataType("unknowntype"))
+            assertThatThrownBy(() -> HELPER.getStdMainDataType("unknowntype"))
                     .isInstanceOf(UnSupportCUBRIDDataTypeException.class)
                     .hasMessage("Unsupported CUBRID data type:unknowntype");
         }
@@ -435,7 +429,6 @@ class CUBRIDDataTypeHelperTest {
     class IsValidDatatype {
 
         @ParameterizedTest(name = "[{index}] \"{0}\" -> true")
-        @DisplayName("accepted data type instances")
         @ValueSource(
                 strings = {
                     "smallint",
@@ -465,11 +458,10 @@ class CUBRIDDataTypeHelperTest {
                     "timestamptz"
                 })
         void supportedDataTypeInstance_returnsTrue(String dataType) {
-            assertThat(helper.isValidDatatype(dataType)).isTrue();
+            assertThat(HELPER.isValidDatatype(dataType)).isTrue();
         }
 
         @ParameterizedTest(name = "[{index}] \"{0}\" -> false")
-        @DisplayName("rejected data type instances")
         @ValueSource(
                 strings = {
                     // Unbalanced parentheses.
@@ -501,15 +493,14 @@ class CUBRIDDataTypeHelperTest {
                     "set(numeric(39,2))"
                 })
         void unsupportedDataTypeInstance_returnsFalse(String dataType) {
-            assertThat(helper.isValidDatatype(dataType)).isFalse();
+            assertThat(HELPER.isValidDatatype(dataType)).isFalse();
         }
 
         @ParameterizedTest(name = "[{index}] \"{0}\" -> false")
-        @DisplayName("null, empty or blank -> false")
         @NullAndEmptySource
         @ValueSource(strings = {"   "})
         void nullEmptyOrBlank_returnsFalse(String dataType) {
-            assertThat(helper.isValidDatatype(dataType)).isFalse();
+            assertThat(HELPER.isValidDatatype(dataType)).isFalse();
         }
 
         @Test
@@ -518,7 +509,7 @@ class CUBRIDDataTypeHelperTest {
             // DEFECT: "list_of" is a registered synonym of the sequence type, but isCollection()
             // does not list it, so the whole instance is validated as a scalar - see
             // CUBRIDDataTypeHelper.isCollection()
-            assertThat(helper.isValidDatatype("list_of(int)")).isFalse();
+            assertThat(HELPER.isValidDatatype("list_of(int)")).isFalse();
         }
     }
 
@@ -527,7 +518,6 @@ class CUBRIDDataTypeHelperTest {
     class GetScale {
 
         @ParameterizedTest(name = "[{index}] \"{0}\" -> {1}")
-        @DisplayName("scale of a data type instance, null when there is none")
         @CsvSource(
                 nullValues = "null",
                 value = {
@@ -546,13 +536,13 @@ class CUBRIDDataTypeHelperTest {
                     "null,                      null",
                 })
         void dataTypeInstance_returnsScaleOrNull(String dataType, Integer expected) {
-            assertThat(helper.getScale(dataType)).isEqualTo(expected);
+            assertThat(HELPER.getScale(dataType)).isEqualTo(expected);
         }
 
         @Test
         @DisplayName("non numeric scale -> NumberFormatException")
         void nonNumericScale_throwsNumberFormatException() {
-            assertThatThrownBy(() -> helper.getScale("numeric(10,a)"))
+            assertThatThrownBy(() -> HELPER.getScale("numeric(10,a)"))
                     .isInstanceOf(NumberFormatException.class)
                     .hasMessageContaining("\"a\"");
         }
@@ -563,7 +553,6 @@ class CUBRIDDataTypeHelperTest {
     class GetPrecision {
 
         @ParameterizedTest(name = "[{index}] \"{0}\" -> {1}")
-        @DisplayName("precision of a data type instance, null when there is none")
         @CsvSource(
                 nullValues = "null",
                 value = {
@@ -582,13 +571,13 @@ class CUBRIDDataTypeHelperTest {
                     "null,                      null",
                 })
         void dataTypeInstance_returnsPrecisionOrNull(String dataType, Integer expected) {
-            assertThat(helper.getPrecision(dataType)).isEqualTo(expected);
+            assertThat(HELPER.getPrecision(dataType)).isEqualTo(expected);
         }
 
         @Test
         @DisplayName("non numeric precision -> NumberFormatException")
         void nonNumericPrecision_throwsNumberFormatException() {
-            assertThatThrownBy(() -> helper.getPrecision("varchar(a)"))
+            assertThatThrownBy(() -> HELPER.getPrecision("varchar(a)"))
                     .isInstanceOf(NumberFormatException.class)
                     .hasMessageContaining("\"a\"");
         }
@@ -599,7 +588,6 @@ class CUBRIDDataTypeHelperTest {
     class GetRemain {
 
         @ParameterizedTest(name = "[{index}] \"{0}\" -> {1}")
-        @DisplayName("part inside the parentheses, lower cased")
         @CsvSource(
                 nullValues = "null",
                 value = {
@@ -616,8 +604,8 @@ class CUBRIDDataTypeHelperTest {
                     "int,                       null",
                     "null,                      null",
                 })
-        void dataTypeInstance_returnsInnerPart(String dataType, String expected) {
-            assertThat(helper.getRemain(dataType)).isEqualTo(expected);
+        void dataTypeInstance_returnsLowerCasedInnerPart(String dataType, String expected) {
+            assertThat(HELPER.getRemain(dataType)).isEqualTo(expected);
         }
 
         @Test
@@ -625,7 +613,7 @@ class CUBRIDDataTypeHelperTest {
         void enumElements_areLowerCased() {
             // The private overload has a keepCase flag for ENUM; the public one does not, so the
             // element case is lost.
-            assertThat(helper.getRemain("ENUM('a','A')")).isEqualTo("'a','a'");
+            assertThat(HELPER.getRemain("ENUM('a','A')")).isEqualTo("'a','a'");
         }
 
         @Test
@@ -634,11 +622,10 @@ class CUBRIDDataTypeHelperTest {
             // DEFECT: "string" is expanded to varchar(1073741823), but the substring is still
             // bounded by the original argument's length, so it overflows and the exception is
             // swallowed - see CUBRIDDataTypeHelper.getRemain()
-            assertThat(helper.getRemain("STRING")).isNull();
+            assertThat(HELPER.getRemain("STRING")).isNull();
         }
 
         @ParameterizedTest(name = "[{index}] \"{0}\" -> \"{1}\"")
-        @DisplayName("unbalanced parenthesis -> silently truncated remain")
         @CsvSource({
             "'char(10',                 1",
             "'char(10,',                10",
@@ -652,7 +639,7 @@ class CUBRIDDataTypeHelperTest {
             // DEFECT: the closing parenthesis is assumed to be the last character, so an
             // unbalanced instance yields a silently truncated string instead of null - see
             // CUBRIDDataTypeHelper.getRemain()
-            assertThat(helper.getRemain(dataType)).isEqualTo(expected);
+            assertThat(HELPER.getRemain(dataType)).isEqualTo(expected);
         }
     }
 
@@ -663,7 +650,7 @@ class CUBRIDDataTypeHelperTest {
         @Test
         @DisplayName("int -> name only")
         void scalarWithoutPrecision_setsNameOnly() {
-            DataTypeInstance dti = helper.parseDTInstance("int");
+            DataTypeInstance dti = HELPER.parseDTInstance("int");
 
             assertThat(dti.getName()).isEqualTo("int");
             assertThat(dti.getPrecision()).isNull();
@@ -675,7 +662,7 @@ class CUBRIDDataTypeHelperTest {
         @Test
         @DisplayName("varchar(100) -> precision only")
         void scalarWithPrecision_setsPrecision() {
-            DataTypeInstance dti = helper.parseDTInstance("varchar(100)");
+            DataTypeInstance dti = HELPER.parseDTInstance("varchar(100)");
 
             assertThat(dti.getName()).isEqualTo("varchar");
             assertThat(dti.getPrecision()).isEqualTo(100);
@@ -686,7 +673,7 @@ class CUBRIDDataTypeHelperTest {
         @Test
         @DisplayName("numeric(38,2) -> precision and scale")
         void scalarWithPrecisionAndScale_setsBoth() {
-            DataTypeInstance dti = helper.parseDTInstance("numeric(38,2)");
+            DataTypeInstance dti = HELPER.parseDTInstance("numeric(38,2)");
 
             assertThat(dti.getName()).isEqualTo("numeric");
             assertThat(dti.getPrecision()).isEqualTo(38);
@@ -697,7 +684,7 @@ class CUBRIDDataTypeHelperTest {
         @Test
         @DisplayName("numeric(38) -> precision only, no scale")
         void numericWithoutScale_leavesScaleNull() {
-            DataTypeInstance dti = helper.parseDTInstance("numeric(38)");
+            DataTypeInstance dti = HELPER.parseDTInstance("numeric(38)");
 
             assertThat(dti.getName()).isEqualTo("numeric");
             assertThat(dti.getPrecision()).isEqualTo(38);
@@ -707,7 +694,7 @@ class CUBRIDDataTypeHelperTest {
         @Test
         @DisplayName("enum -> elements verbatim, no precision")
         void enumInstance_setsElements() {
-            DataTypeInstance dti = helper.parseDTInstance("enum('1','2','4','3','A')");
+            DataTypeInstance dti = HELPER.parseDTInstance("enum('1','2','4','3','A')");
 
             assertThat(dti.getName()).isEqualTo("enum");
             assertThat(dti.getElments()).isEqualTo("'1','2','4','3','A'");
@@ -719,7 +706,7 @@ class CUBRIDDataTypeHelperTest {
         @Test
         @DisplayName("set(int) -> element type in the sub type")
         void collectionOfScalar_setsSubType() {
-            DataTypeInstance dti = helper.parseDTInstance("set(int)");
+            DataTypeInstance dti = HELPER.parseDTInstance("set(int)");
 
             assertThat(dti.getName()).isEqualTo("set");
             assertThat(dti.getPrecision()).isNull();
@@ -734,7 +721,7 @@ class CUBRIDDataTypeHelperTest {
         @Test
         @DisplayName("set(varchar(100)) -> element precision stays on the sub type")
         void collectionOfSizedScalar_keepsPrecisionOnSubType() {
-            DataTypeInstance dti = helper.parseDTInstance("set(varchar(100))");
+            DataTypeInstance dti = HELPER.parseDTInstance("set(varchar(100))");
 
             assertThat(dti.getName()).isEqualTo("set");
             assertThat(dti.getPrecision()).isNull();
@@ -746,7 +733,7 @@ class CUBRIDDataTypeHelperTest {
         @Test
         @DisplayName("set(numeric(38,2)) -> element precision and scale on the sub type")
         void collectionOfNumeric_keepsPrecisionAndScaleOnSubType() {
-            DataTypeInstance dti = helper.parseDTInstance("set(numeric(38,2))");
+            DataTypeInstance dti = HELPER.parseDTInstance("set(numeric(38,2))");
 
             assertThat(dti.getName()).isEqualTo("set");
             assertThat(dti.getSubType().getName()).isEqualTo("numeric");
@@ -757,7 +744,7 @@ class CUBRIDDataTypeHelperTest {
         @Test
         @DisplayName("SET(NUMERIC(38,2)) -> names keep their original case")
         void upperCaseInstance_keepsNameCase() {
-            DataTypeInstance dti = helper.parseDTInstance("SET(NUMERIC(38,2))");
+            DataTypeInstance dti = HELPER.parseDTInstance("SET(NUMERIC(38,2))");
 
             assertThat(dti.getName()).isEqualTo("SET");
             assertThat(dti.getSubType().getName()).isEqualTo("NUMERIC");
@@ -768,7 +755,7 @@ class CUBRIDDataTypeHelperTest {
         @Test
         @DisplayName("SET(STRING) -> element expanded to varchar with the maximum precision")
         void collectionOfString_expandsElementToMaximumVarchar() {
-            DataTypeInstance dti = helper.parseDTInstance("SET(STRING)");
+            DataTypeInstance dti = HELPER.parseDTInstance("SET(STRING)");
 
             assertThat(dti.getName()).isEqualTo("SET");
             assertThat(dti.getSubType().getName()).isEqualTo("varchar");
@@ -780,7 +767,7 @@ class CUBRIDDataTypeHelperTest {
         @Test
         @DisplayName("STRING -> varchar with the maximum precision")
         void stringInstance_expandedToMaximumVarchar() {
-            DataTypeInstance dti = helper.parseDTInstance("STRING");
+            DataTypeInstance dti = HELPER.parseDTInstance("STRING");
 
             assertThat(dti.getName()).isEqualTo("varchar");
             assertThat(dti.getPrecision()).isEqualTo(1073741823);
@@ -790,16 +777,15 @@ class CUBRIDDataTypeHelperTest {
         @Test
         @DisplayName("non numeric precision -> IllegalArgumentException")
         void nonNumericPrecision_throwsIllegalArgumentException() {
-            assertThatThrownBy(() -> helper.parseDTInstance("varchar(abc)"))
+            assertThatThrownBy(() -> HELPER.parseDTInstance("varchar(abc)"))
                     .isInstanceOf(IllegalArgumentException.class)
                     .hasMessage("Invalid data type:varchar(abc)");
         }
 
         @ParameterizedTest(name = "[{index}] null or empty -> IllegalArgumentException")
-        @DisplayName("null or empty -> IllegalArgumentException")
         @NullAndEmptySource
         void nullOrEmpty_throwsIllegalArgumentException(String fullDataType) {
-            assertThatThrownBy(() -> helper.parseDTInstance(fullDataType))
+            assertThatThrownBy(() -> HELPER.parseDTInstance(fullDataType))
                     .isInstanceOf(IllegalArgumentException.class)
                     .hasMessage("Data type can't be empty.");
         }
@@ -810,7 +796,6 @@ class CUBRIDDataTypeHelperTest {
     class GetCUBRIDDataTypeID {
 
         @ParameterizedTest(name = "[{index}] \"{0}\" -> {1}")
-        @DisplayName("standard type name -> CUBRID data type id")
         @CsvSource({
             "smallint,      5",
             "int,           4",
@@ -846,11 +831,10 @@ class CUBRIDDataTypeHelperTest {
             "datetimeltz,   39",
         })
         void standardName_returnsDataTypeId(String dataType, int expected) {
-            assertThat(helper.getCUBRIDDataTypeID(dataType)).isEqualTo(expected);
+            assertThat(HELPER.getCUBRIDDataTypeID(dataType)).isEqualTo(expected);
         }
 
         @ParameterizedTest(name = "[{index}] \"{0}\" -> {1}")
-        @DisplayName("synonym, mixed case and precision are all ignored")
         @CsvSource({
             "SMALLINT,                  5",
             "short,                     5",
@@ -886,13 +870,13 @@ class CUBRIDDataTypeHelperTest {
             "JSON,                      71111",
         })
         void synonymOrDecoratedName_returnsDataTypeId(String dataType, int expected) {
-            assertThat(helper.getCUBRIDDataTypeID(dataType)).isEqualTo(expected);
+            assertThat(HELPER.getCUBRIDDataTypeID(dataType)).isEqualTo(expected);
         }
 
         @Test
         @DisplayName("enum with elements -> enum id")
         void enumWithElements_returnsEnumId() {
-            assertThat(helper.getCUBRIDDataTypeID("ENUM('a','A','b')")).isEqualTo(61111);
+            assertThat(HELPER.getCUBRIDDataTypeID("ENUM('a','A','b')")).isEqualTo(61111);
         }
 
         @Test
@@ -901,17 +885,16 @@ class CUBRIDDataTypeHelperTest {
             // DEFECT: getDataTypeSymbol() expands "string" to varchar(1073741823) first, but
             // getCUBRIDDataTypeID() does not, so the two disagree on the same spelling - see
             // CUBRIDDataTypeHelper.getCUBRIDDataTypeID()
-            assertThatThrownBy(() -> helper.getCUBRIDDataTypeID("string"))
+            assertThatThrownBy(() -> HELPER.getCUBRIDDataTypeID("string"))
                     .isInstanceOf(UnSupportCUBRIDDataTypeException.class)
                     .hasMessage("Unsupported CUBRID data type:string");
         }
 
         @ParameterizedTest(name = "[{index}] \"{0}\" -> UnSupportCUBRIDDataTypeException")
-        @DisplayName("unknown, null or empty -> UnSupportCUBRIDDataTypeException")
         @NullAndEmptySource
         @ValueSource(strings = {"unknowntype"})
         void unknownNullOrEmpty_throwsUnSupportCUBRIDDataTypeException(String dataType) {
-            assertThatThrownBy(() -> helper.getCUBRIDDataTypeID(dataType))
+            assertThatThrownBy(() -> HELPER.getCUBRIDDataTypeID(dataType))
                     .isInstanceOf(UnSupportCUBRIDDataTypeException.class);
         }
     }
@@ -921,23 +904,22 @@ class CUBRIDDataTypeHelperTest {
     class GetJdbcDataTypeID {
 
         @ParameterizedTest(name = "[{index}] \"{0}\" -> {1}")
-        @DisplayName("catalog, precision and scale are all ignored")
         @CsvSource({
             "integer,           4",
             "'numeric(38,2)',   2",
             "varchar(10),       12",
             "set_of(int),       31111",
         })
-        void dataType_returnsCubridDataTypeId(String dataType, int expected) {
-            assertThat(helper.getJdbcDataTypeID(null, dataType, null, null)).isEqualTo(expected);
-            assertThat(helper.getJdbcDataTypeID(new Catalog(), dataType, 99, 9))
+        void dataType_returnsIdIgnoringCatalogPrecisionAndScale(String dataType, int expected) {
+            assertThat(HELPER.getJdbcDataTypeID(null, dataType, null, null)).isEqualTo(expected);
+            assertThat(HELPER.getJdbcDataTypeID(new Catalog(), dataType, 99, 9))
                     .isEqualTo(expected);
         }
 
         @Test
         @DisplayName("unknown data type -> UnSupportCUBRIDDataTypeException")
         void unknownDataType_throwsUnSupportCubridDataTypeException() {
-            assertThatThrownBy(() -> helper.getJdbcDataTypeID(null, "geometry", 10, 0))
+            assertThatThrownBy(() -> HELPER.getJdbcDataTypeID(null, "geometry", 10, 0))
                     .isInstanceOf(UnSupportCUBRIDDataTypeException.class)
                     .hasMessage("Unsupported CUBRID data type:geometry");
         }
@@ -948,7 +930,6 @@ class CUBRIDDataTypeHelperTest {
     class IsValidValue {
 
         @ParameterizedTest(name = "[{index}] {0} default \"{1}\" -> {2}")
-        @DisplayName("default value checked against its data type")
         @CsvSource({
             // Character types are length checked against their precision.
             "char(1),       a,                       true",
@@ -990,11 +971,10 @@ class CUBRIDDataTypeHelperTest {
         })
         void defaultValue_validatedAgainstDataType(
                 String dataType, String value, boolean expected) {
-            assertThat(helper.isValidValue(dataType, value)).isEqualTo(expected);
+            assertThat(HELPER.isValidValue(dataType, value)).isEqualTo(expected);
         }
 
         @ParameterizedTest(name = "[{index}] bit(8) default \"{0}\" -> true")
-        @DisplayName("well formed bit literal -> true")
         @ValueSource(
                 strings = {
                     "b'00000001'",
@@ -1007,28 +987,26 @@ class CUBRIDDataTypeHelperTest {
                     "0B00000001"
                 })
         void wellFormedBitLiteral_returnsTrue(String value) {
-            assertThat(helper.isValidValue("bit(8)", value)).isTrue();
+            assertThat(HELPER.isValidValue("bit(8)", value)).isTrue();
         }
 
         @Test
         @DisplayName("bit varying accepts the same literals as bit")
         void bitVaryingLiteral_returnsTrue() {
-            assertThat(helper.isValidValue("bit varying(16)", "b'00000001'")).isTrue();
+            assertThat(HELPER.isValidValue("bit varying(16)", "b'00000001'")).isTrue();
         }
 
         @ParameterizedTest(name = "[{index}] bit(8) default \"{0}\" -> true")
-        @DisplayName("malformed bit literal -> true")
         @ValueSource(strings = {"b'0a000001'", "0b00000002", "zzz"})
         void malformedBitLiteral_returnsTrue(String value) {
             // DEFECT: when no BIT_VALUE_PATTERN matches, the bit branch falls through to the
             // final "return true", so any garbage is accepted for a bit column. The legacy test
             // pinned this with the double negative assertFalse(!isValidValue(...)) - see
             // CUBRIDDataTypeHelper.isValidValue()
-            assertThat(helper.isValidValue("bit(8)", value)).isTrue();
+            assertThat(HELPER.isValidValue("bit(8)", value)).isTrue();
         }
 
         @ParameterizedTest(name = "[{index}] {0} default \"{1}\" -> {2}")
-        @DisplayName("numeric default value must consist of digits only")
         @CsvSource({
             "'numeric(10,2)', 123,  true",
             "'numeric(10,2)', 12.5, false",
@@ -1043,27 +1021,25 @@ class CUBRIDDataTypeHelperTest {
             // DEFECT: StringUtils.isNumeric() rejects a decimal point and a sign, so legal
             // defaults such as 12.5 or -5 are reported invalid - see
             // CUBRIDDataTypeHelper.isValidValue()
-            assertThat(helper.isValidValue(dataType, value)).isEqualTo(expected);
+            assertThat(HELPER.isValidValue(dataType, value)).isEqualTo(expected);
         }
 
         @ParameterizedTest(name = "[{index}] datetime default \"{0}\" -> true")
-        @DisplayName("known date function -> true")
         @ValueSource(strings = {"SYS_DATETIME", "sys_datetime", "CURRENT_TIMESTAMP", "now()"})
         void knownDateFunction_returnsTrue(String value) {
-            assertThat(helper.isValidValue("datetime", value)).isTrue();
+            assertThat(HELPER.isValidValue("datetime", value)).isTrue();
         }
 
         @Test
         @DisplayName("unknown function -> false")
         void unknownDateFunction_returnsFalse() {
-            assertThat(helper.isValidValue("datetime", "unknown_func()")).isFalse();
+            assertThat(HELPER.isValidValue("datetime", "unknown_func()")).isFalse();
         }
 
         @ParameterizedTest(name = "[{index}] null or empty default -> true")
-        @DisplayName("null or empty default value -> true")
         @NullAndEmptySource
         void nullOrEmptyValue_returnsTrue(String value) {
-            assertThat(helper.isValidValue("char(1)", value)).isTrue();
+            assertThat(HELPER.isValidValue("char(1)", value)).isTrue();
         }
 
         @Test
@@ -1072,7 +1048,7 @@ class CUBRIDDataTypeHelperTest {
             // DEFECT: the precision is read with a blind substring, so a precision-less
             // character type parses the type name itself as a number
             // - see CUBRIDDataTypeHelper.isValidValue()
-            assertThatThrownBy(() -> helper.isValidValue("varchar", "x"))
+            assertThatThrownBy(() -> HELPER.isValidValue("varchar", "x"))
                     .isInstanceOf(NumberFormatException.class)
                     .hasMessageContaining("\"varcha\"");
         }
@@ -1083,7 +1059,6 @@ class CUBRIDDataTypeHelperTest {
     class IsBinary {
 
         @ParameterizedTest(name = "[{index}] \"{0}\" -> {1}")
-        @DisplayName("bit family -> true")
         @CsvSource({
             "bit,                   true",
             "bit varying,           true",
@@ -1098,22 +1073,20 @@ class CUBRIDDataTypeHelperTest {
             "integer,               false",
         })
         void dataType_returnsWhetherBinary(String dataType, boolean expected) {
-            assertThat(helper.isBinary(dataType)).isEqualTo(expected);
+            assertThat(HELPER.isBinary(dataType)).isEqualTo(expected);
         }
 
         @ParameterizedTest(name = "[{index}] \"{0}\" -> true")
-        @DisplayName("binary and varbinary -> true although CUBRID has no such type")
         @ValueSource(strings = {"binary", "varbinary"})
-        void typesCubridDoesNotDefine_returnTrue(String dataType) {
+        void typesCubridDoesNotDefine_returnsTrue(String dataType) {
             // DBDataTypeHelper.BINARY_TYPES is shared with every other dialect
-            assertThat(helper.isBinary(dataType)).isTrue();
+            assertThat(HELPER.isBinary(dataType)).isTrue();
         }
 
         @ParameterizedTest(name = "[{index}] null or empty -> false")
-        @DisplayName("null or empty -> false")
         @NullAndEmptySource
         void nullOrEmptyDataType_returnsFalse(String dataType) {
-            assertThat(helper.isBinary(dataType)).isFalse();
+            assertThat(HELPER.isBinary(dataType)).isFalse();
         }
     }
 
@@ -1122,7 +1095,6 @@ class CUBRIDDataTypeHelperTest {
     class IsStrictNumeric {
 
         @ParameterizedTest(name = "[{index}] \"{0}\" -> {1}")
-        @DisplayName("fixed point types -> true, the other numbers -> false")
         @CsvSource({
             "numeric,           true",
             "decimal,           true",
@@ -1138,14 +1110,13 @@ class CUBRIDDataTypeHelperTest {
             "char(10),          false",
         })
         void dataType_returnsWhetherStrictNumeric(String dataType, boolean expected) {
-            assertThat(helper.isStrictNumeric(dataType)).isEqualTo(expected);
+            assertThat(HELPER.isStrictNumeric(dataType)).isEqualTo(expected);
         }
 
         @ParameterizedTest(name = "[{index}] null or empty -> false")
-        @DisplayName("null or empty -> false")
         @NullAndEmptySource
         void nullOrEmptyDataType_returnsFalse(String dataType) {
-            assertThat(helper.isStrictNumeric(dataType)).isFalse();
+            assertThat(HELPER.isStrictNumeric(dataType)).isFalse();
         }
     }
 
@@ -1154,7 +1125,6 @@ class CUBRIDDataTypeHelperTest {
     class IsObjectType {
 
         @ParameterizedTest(name = "[{index}] \"{0}\" -> {1}")
-        @DisplayName("the name is matched whole, case insensitively")
         @CsvSource({
             "object,        true",
             "OBJECT,        true",
@@ -1166,14 +1136,13 @@ class CUBRIDDataTypeHelperTest {
             "integer,       false",
         })
         void dataType_returnsWhetherObjectType(String dataType, boolean expected) {
-            assertThat(helper.isObjectType(dataType)).isEqualTo(expected);
+            assertThat(HELPER.isObjectType(dataType)).isEqualTo(expected);
         }
 
         @ParameterizedTest(name = "[{index}] null or empty -> false")
-        @DisplayName("null or empty -> false")
         @NullAndEmptySource
         void nullOrEmptyDataType_returnsFalse(String dataType) {
-            assertThat(helper.isObjectType(dataType)).isFalse();
+            assertThat(HELPER.isObjectType(dataType)).isFalse();
         }
     }
 
@@ -1182,53 +1151,49 @@ class CUBRIDDataTypeHelperTest {
     class IsSupportAutoIncr {
 
         @ParameterizedTest(name = "[{index}] \"{0}\" -> true")
-        @DisplayName("integer family -> true")
         @ValueSource(strings = {"int", "integer", "short", "smallint", "bigint", "INT", "BIGINT"})
         void integerFamily_returnsTrue(String dataType) {
-            assertThat(helper.isSupportAutoIncr(dataType, null, null)).isTrue();
+            assertThat(HELPER.isSupportAutoIncr(dataType, null, null)).isTrue();
         }
 
         @ParameterizedTest(name = "[{index}] \"{0}\" -> true")
-        @DisplayName("integer types CUBRID does not define -> true")
         @ValueSource(strings = {"mediumint", "tinyint"})
-        void typesCubridDoesNotDefine_returnTrue(String dataType) {
+        void typesCubridDoesNotDefine_returnsTrue(String dataType) {
             // DBDataTypeHelper.AUTOINC_TYPES is shared with every other dialect
-            assertThat(helper.isSupportAutoIncr(dataType, null, null)).isTrue();
+            assertThat(HELPER.isSupportAutoIncr(dataType, null, null)).isTrue();
         }
 
         @ParameterizedTest(name = "[{index}] \"{0}\" -> false")
-        @DisplayName("everything outside the integer family -> false")
         @ValueSource(strings = {"char", "varchar", "float", "double", "monetary", "date", "blob"})
         void nonIntegerFamily_returnsFalse(String dataType) {
-            assertThat(helper.isSupportAutoIncr(dataType, null, null)).isFalse();
+            assertThat(HELPER.isSupportAutoIncr(dataType, null, null)).isFalse();
         }
 
         @ParameterizedTest(name = "[{index}] numeric with scale {0} -> {1}")
-        @DisplayName("numeric qualifies only with a zero scale")
         @CsvSource(
                 nullValues = "null",
                 value = {"0, true", "1, false", "2, false", "null, false"})
         void numericScale_decidesAutoIncrSupport(Integer scale, boolean expected) {
-            assertThat(helper.isSupportAutoIncr("numeric", null, scale)).isEqualTo(expected);
+            assertThat(HELPER.isSupportAutoIncr("numeric", null, scale)).isEqualTo(expected);
         }
 
         @Test
         @DisplayName("default value present -> false whatever the data type")
         void presentDefaultValue_returnsFalse() {
-            assertThat(helper.isSupportAutoIncr("integer", "0", null)).isFalse();
-            assertThat(helper.isSupportAutoIncr("numeric", "0", 0)).isFalse();
+            assertThat(HELPER.isSupportAutoIncr("integer", "0", null)).isFalse();
+            assertThat(HELPER.isSupportAutoIncr("numeric", "0", 0)).isFalse();
         }
 
         @Test
         @DisplayName("empty default value -> counted as no default at all")
         void emptyDefaultValue_returnsTrue() {
-            assertThat(helper.isSupportAutoIncr("integer", "", null)).isTrue();
+            assertThat(HELPER.isSupportAutoIncr("integer", "", null)).isTrue();
         }
 
         @Test
         @DisplayName("null data type -> NullPointerException")
         void nullDataType_throwsNullPointerException() {
-            assertThatThrownBy(() -> helper.isSupportAutoIncr(null, null, null))
+            assertThatThrownBy(() -> HELPER.isSupportAutoIncr(null, null, null))
                     .isInstanceOf(NullPointerException.class);
         }
     }

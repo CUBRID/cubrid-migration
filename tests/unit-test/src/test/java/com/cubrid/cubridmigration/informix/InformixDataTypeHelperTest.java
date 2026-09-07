@@ -29,12 +29,13 @@
  */
 package com.cubrid.cubridmigration.informix;
 
+import static com.cubrid.cubridmigration.testutil.TestCatalogFactory.createCatalog;
+import static com.cubrid.cubridmigration.testutil.TestCatalogFactory.createDataType;
 import static com.cubrid.cubridmigration.testutil.TestColumnFactory.createColumn;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.cubrid.cubridmigration.core.datatype.DataType;
 import com.cubrid.cubridmigration.core.dbobject.Catalog;
 import com.cubrid.cubridmigration.core.dbtype.DatabaseType;
 
@@ -45,11 +46,6 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
 import java.sql.Types;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 @DisplayName("InformixDataTypeHelper")
 class InformixDataTypeHelperTest {
@@ -92,7 +88,7 @@ class InformixDataTypeHelperTest {
         @Test
         @DisplayName("supported type -> its jdbc type id from the catalog")
         void supportedType_returnsJdbcTypeIdFromCatalog() {
-            Catalog catalog = createCatalogWithSupportedType("varchar", Types.VARCHAR);
+            Catalog catalog = createCatalog("varchar", Types.VARCHAR);
 
             assertThat(HELPER.getJdbcDataTypeID(catalog, "varchar", 255, null))
                     .isEqualTo(Types.VARCHAR);
@@ -102,7 +98,7 @@ class InformixDataTypeHelperTest {
         @DisplayName("precision and scale are ignored when the type has one candidate")
         void unambiguousType_ignoresPrecisionAndScale() {
             // The lookup key is the raw type name, so p/s never influence the result.
-            Catalog catalog = createCatalogWithSupportedType("decimal", Types.DECIMAL);
+            Catalog catalog = createCatalog("decimal", Types.DECIMAL);
 
             assertThat(HELPER.getJdbcDataTypeID(catalog, "decimal", null, null))
                     .isEqualTo(Types.DECIMAL);
@@ -117,7 +113,7 @@ class InformixDataTypeHelperTest {
             // an exact key match resolves. The keys are the driver's TYPE_NAME values, stored
             // verbatim by AbstractJDBCSchemaFetcher.getSupportedSqlTypes()
             // - see InformixDataTypeHelper.getJdbcDataTypeID()
-            Catalog catalog = createCatalogWithSupportedType("varchar", Types.VARCHAR);
+            Catalog catalog = createCatalog("varchar", Types.VARCHAR);
 
             assertThatThrownBy(() -> HELPER.getJdbcDataTypeID(catalog, "VARCHAR", 255, null))
                     .isInstanceOf(IllegalArgumentException.class)
@@ -130,7 +126,7 @@ class InformixDataTypeHelperTest {
             // DEFECT: getMainDataType() is not applied to the key either, so a name that carries
             // its arguments never matches a catalog key
             // - see InformixDataTypeHelper.getJdbcDataTypeID()
-            Catalog catalog = createCatalogWithSupportedType("varchar", Types.VARCHAR);
+            Catalog catalog = createCatalog("varchar", Types.VARCHAR);
 
             assertThatThrownBy(() -> HELPER.getJdbcDataTypeID(catalog, "varchar(255)", 255, null))
                     .isInstanceOf(IllegalArgumentException.class)
@@ -166,14 +162,11 @@ class InformixDataTypeHelperTest {
         void ambiguousType_throwsIllegalArgumentException() {
             // Only a single candidate is resolved, precision and scale are never used to pick
             // one, they are merely echoed in the message (which has a double space).
-            Catalog catalog = new Catalog();
-            Map<String, List<DataType>> supported = new HashMap<String, List<DataType>>();
-            supported.put(
-                    "decimal",
-                    Arrays.asList(
+            Catalog catalog =
+                    createCatalog(
+                            "decimal",
                             createDataType("decimal", Types.DECIMAL),
-                            createDataType("decimal", Types.NUMERIC)));
-            catalog.setSupportedDataType(supported);
+                            createDataType("decimal", Types.NUMERIC));
 
             assertThatThrownBy(() -> HELPER.getJdbcDataTypeID(catalog, "decimal", 10, 2))
                     .isInstanceOf(IllegalArgumentException.class)
@@ -186,29 +179,11 @@ class InformixDataTypeHelperTest {
             // DEFECT: only size() == 1 is resolved, so an empty list is not distinguished from an
             // ambiguous one and the message blames the precision and scale of a type that has no
             // candidate at all - see InformixDataTypeHelper.getJdbcDataTypeID()
-            Catalog catalog = new Catalog();
-            Map<String, List<DataType>> supported = new HashMap<String, List<DataType>>();
-            supported.put("varchar", new ArrayList<DataType>());
-            catalog.setSupportedDataType(supported);
+            Catalog catalog = createCatalog("varchar");
 
             assertThatThrownBy(() -> HELPER.getJdbcDataTypeID(catalog, "varchar", 255, null))
                     .isInstanceOf(IllegalArgumentException.class)
                     .hasMessage("Not supported  Informix data type(varchar: p=255, s=null)");
-        }
-
-        private Catalog createCatalogWithSupportedType(String key, int jdbcTypeId) {
-            Catalog catalog = new Catalog();
-            Map<String, List<DataType>> supported = new HashMap<String, List<DataType>>();
-            supported.put(key, Arrays.asList(createDataType(key, jdbcTypeId)));
-            catalog.setSupportedDataType(supported);
-            return catalog;
-        }
-
-        private DataType createDataType(String typeName, int jdbcTypeId) {
-            DataType dataType = new DataType();
-            dataType.setTypeName(typeName);
-            dataType.setJdbcDataTypeID(jdbcTypeId);
-            return dataType;
         }
     }
 
