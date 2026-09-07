@@ -277,6 +277,18 @@ class OracleDataTypeHelperTest {
         }
 
         @Test
+        @DisplayName("empty catalog entry -> IllegalArgumentException of the ambiguous branch")
+        void emptySupportedTypeList_throwsIllegalArgumentException() {
+            // DEFECT: only a missing key is treated as unsupported, an empty candidate list falls
+            // through to the ambiguous message - see OracleDataTypeHelper.java:193
+            Catalog catalog = catalogWithSupportedTypes("VARCHAR2", Arrays.<DataType>asList());
+
+            assertThatThrownBy(() -> HELPER.getJdbcDataTypeID(catalog, "VARCHAR2", 10, null))
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessage("Not supported Oracle data type(VARCHAR2: p=10, s=null)");
+        }
+
+        @Test
         @DisplayName("ambiguous catalog entry -> IllegalArgumentException naming precision/scale")
         void ambiguousSupportedType_throwsIllegalArgumentException() {
             DataType first = new DataType();
@@ -450,11 +462,12 @@ class OracleDataTypeHelperTest {
     @DisplayName("isCollection()")
     class IsCollection {
 
-        @Test
-        @DisplayName("Oracle has no collection types -> always false")
-        void anyDataType_returnsFalse() {
-            assertThat(HELPER.isCollection("VARCHAR2")).isFalse();
-            assertThat(HELPER.isCollection(null)).isFalse();
+        @ParameterizedTest(name = "[{index}] \"{0}\" -> false")
+        @CsvSource(
+                nullValues = "null",
+                value = {"SET", "set", "set(int)", "multiset", "list", "VARCHAR2", "null", "''"})
+        void everyDataType_returnsFalse(String dataType) {
+            assertThat(HELPER.isCollection(dataType)).isFalse();
         }
     }
 }

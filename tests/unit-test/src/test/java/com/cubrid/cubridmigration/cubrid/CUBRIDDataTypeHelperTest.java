@@ -80,12 +80,12 @@ class CUBRIDDataTypeHelperTest {
         @Test
         @DisplayName("collection spelling -> main type and element type are both stored")
         void collectionSpelling_storesMainAndElementType() {
-            Column column = columnOf("set_of(numeric(15,0))");
+            Column column = columnOf("set_of(numeric(15,3))");
 
             assertThat(column.getDataType()).isEqualTo("set");
             assertThat(column.getSubDataType()).isEqualTo("numeric");
             assertThat(column.getPrecision()).isEqualTo(15);
-            assertThat(column.getScale()).isZero();
+            assertThat(column.getScale()).isEqualTo(3);
             assertThat(column.getJdbcIDOfDataType()).isEqualTo(31111);
             assertThat(column.getJdbcIDOfSubDataType()).isEqualTo(2);
         }
@@ -512,10 +512,13 @@ class CUBRIDDataTypeHelperTest {
         @ParameterizedTest(name = "[{index}] \"{0}\" -> \"{1}\"")
         @DisplayName("unbalanced parenthesis -> silently truncated remain")
         @CsvSource({
-            "char(10,                   1",
-            "varchar(20,                2",
+            "'char(10',                 1",
+            "'char(10,',                10",
+            "'varchar(20',              2",
+            "'varchar(20,',             20",
             "'numeric(10,2',            '10,'",
-            "set(int,                   in",
+            "'set(int',                 in",
+            "'set(int,',                int",
         })
         void unbalancedParenthesis_returnsTruncatedRemain(String dataType, String expected) {
             // DEFECT: the closing parenthesis is assumed to be the last character, so an
@@ -594,7 +597,6 @@ class CUBRIDDataTypeHelperTest {
             assertThat(dti.getPrecision()).isNull();
             assertThat(dti.getScale()).isNull();
             assertThat(dti.getElments()).isNull();
-            assertThat(dti.getSubType()).isNotNull();
             assertThat(dti.getSubType().getName()).isEqualTo("int");
             assertThat(dti.getSubType().getPrecision()).isNull();
             assertThat(dti.getSubType().getScale()).isNull();
