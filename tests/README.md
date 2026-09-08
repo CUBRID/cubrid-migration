@@ -54,7 +54,7 @@ machine, in any order, at any time. So a test must not depend on
 fine, every one of them is hermetic. The question to ask is only ever: could this fail on someone else's
 machine for a reason that is not the production code?
 
-The one hard constraint is a fact rather than a preference. The `unit-test` profile builds four plugins
+One constraint here is a fact rather than a convention. The `unit-test` profile builds four plugins
 — `common.log`, `common.configuration`, `cubridmigration.core`, `cubridmigration.command` (`pom.xml`) —
 so a test importing `cubridmigration.ui`, `app`, `plugin` or `common.update` genuinely does not compile.
 That is a classpath problem, and the normal answer is to add the module to the profile's `<modules>` and
@@ -80,7 +80,7 @@ void condition_expectation(@TempDir Path dir) throws Exception {
 | Class `@DisplayName` | the production class's simple name | `@DisplayName("InformixDataTypeHelper")` |
 | `@Nested` class | one per member under test, member name in PascalCase | `class GetJdbcDataTypeID` |
 | Nested `@DisplayName` | the member name with empty parentheses | `@DisplayName("getJdbcDataTypeID()")` |
-| Method, inside a `@Nested` | `<condition>_<expectation>`, exactly two segments | `upperCaseTypeName_throwsIllegalArgumentException` |
+| Method, inside a `@Nested` | `<condition>_<expectation>`, two segments by default | `upperCaseTypeName_throwsIllegalArgumentException` |
 | Method, in a class with no `@Nested` | `<memberUnderTest>_<expectation>` | `fillColumnMetadata_usesCharLengthForNchar` |
 | Subject field | `private static final <Type> <ROLE>`; a second one takes a qualifier | `HELPER`, `HANDLER`, `LOADER`, `COLLECTION_HELPER` |
 
@@ -127,6 +127,10 @@ by a `@Nested` or by the method name, never by both. Test classes are package-pr
 
 Inside a group, order the tests broad to narrow: the parameterized happy path first, then the special
 cases, then the null / empty / exception cases last.
+
+Two segments keep the condition and the expectation readable at a glance; camelCase a compound
+condition (`firstOctetAbove223_returnsFalse`) rather than splitting it, and add a third segment when
+that genuinely reads better.
 
 The expectation verb is third person singular: `returnsNull`, `throwsIllegalArgumentException`,
 `keepsElementsVerbatim`, `rendersZeroPrecision`.
@@ -230,8 +234,9 @@ void nullEmptyOrBlank_returnsFalse(String dataType) {
 
 ### Assertions
 
-AssertJ only — `assertThat`, `assertThatThrownBy`, `assertThatCode`, `tuple`, and `assertSoftly` when
-one test has to report every failing fact instead of stopping at the first.
+Assert through AssertJ: `assertThat`, `assertThatThrownBy`, `assertThatCode` and their companions
+(`tuple`, `entry`, `catchThrowable`, `assertThatExceptionOfType`). Only the assertion vocabulary is
+AssertJ's; grouping stays JUnit's.
 
 ```java
 assertThatThrownBy(() -> HELPER.getJdbcDataTypeID(catalog, "VARCHAR", 255, null))
@@ -247,20 +252,21 @@ How deep an exception assertion goes depends on who throws:
 | CMT code wrapping a cause | the type plus `.hasMessageContaining(...)` for the identifying fragments (source type name, column name) |
 | The JDK (`NullPointerException`, `NumberFormatException`, `StringIndexOutOfBoundsException`) | the type only — the message is not ours to pin |
 
-`assertSoftly` earns its place when one setup produces several independent facts and stopping at the
-first failure would hide the others (`TiberoPartitionMetadataLoaderTest`):
+When one setup produces several independent facts and stopping at the first failure would hide the
+others, group them so every one is reported (`TiberoPartitionMetadataLoaderTest`):
 
 ```java
-assertSoftly(
-        softly -> {
-            softly.assertThat(rangePartitionDesc).isEqualTo("DATE '2025-01-01'");
-            softly.assertThat(rangePreviewDDL).contains("DATE '2025-01-01'");
-            softly.assertThat(listPartitionDesc).isEqualTo("'EAST','WEST'");
-            softly.assertThat(listPreviewDDL)
-                    .contains("PARTITION BY LIST(REGION)")
-                    .contains("VALUES ('EAST','WEST')");
-        });
+assertAll(
+        () -> assertThat(rangePartitionDesc).isEqualTo("DATE '2025-01-01'"),
+        () -> assertThat(rangePreviewDDL).contains("DATE '2025-01-01'"),
+        () -> assertThat(listPartitionDesc).isEqualTo("'EAST','WEST'"),
+        () ->
+                assertThat(listPreviewDDL)
+                        .contains("PARTITION BY LIST(REGION)")
+                        .contains("VALUES ('EAST','WEST')"));
 ```
+
+AssertJ's `assertSoftly` does the same job; either is fine, but keep one style per class.
 
 An assertion must be able to fail. Pin the actual value instead of asserting `isNotNull()` /
 `isZero()` / `isNotEmpty()` on a value the fixture already makes null, zero or empty:
@@ -272,7 +278,9 @@ assertThat(columnOf("set_of(numeric(15,0))").getScale()).isZero();
 assertThat(columnOf("set_of(numeric(15,3))").getScale()).isEqualTo(3);
 ```
 
-Before trusting a new test, break the production code on purpose and confirm it fails.
+Before trusting a new test, break the production code on purpose and confirm it fails. The plugin
+sources are tracked, so revert with `git checkout -- <file>` when you are done, and check
+`git status` before you commit.
 
 ### Mocks
 
@@ -283,15 +291,22 @@ Choose by construction cost, not by object size.
   their production defaults, which is what the caller would really have handed you.
 - **Repeated or awkward** — a valid object graph, several constructor arguments: add a factory to
   `testutil`, as `TestColumnFactory` and `TestCatalogFactory` already do.
-- **Impossible** — a live JDBC `ResultSet`, `Connection`, `PreparedStatement`, the filesystem, a
-  spawned process: mock it. That is what every `mock()` in the suite stands in for today.
+- **Impossible, or behaviour-driven** — a live JDBC `ResultSet`, `Connection`, `PreparedStatement`,
+  the filesystem, a spawned process; and any collaborator whose *behaviour* is the thing under test:
+  one that has to throw on the third call, a listener that has to be notified, an interface the code
+  delegates to. Mock those. Every `mock()` in the suite happens to be a JDBC object today because the
+  JDBC loaders are what has been covered so far, not because other seams are off limits.
 
 Do not mock a value carrier you could construct. `MigrationCfgUtils.checkAll(config)` reads two getters
 in its own body, then hands the same config to five private methods; twenty-one distinct getters are
 read across the file. A mock stubbed for the two visible ones answers `false` for `sourceIsCSV()` and
 silently sends the code down the other branch — the stub, not the test, decides what runs.
 
-Use the static `mock()` / `when()` API. A JDBC read is stubbed as the chain the production code walks —
+Stub with the static `mock()` / `when()` API: it keeps the stubs next to the data they stand for, and
+it is what every existing test reads like. Use `doThrow` / `doAnswer` when the method is `void` or the
+answer has to be computed, and `@Mock` with `MockitoExtension` in a class where every test needs the
+same mock — just don't mix the two styles in one file. A JDBC read is stubbed as the chain the
+production code walks —
 `Connection` hands out the statement, the statement hands out the `ResultSet` — and the rows are the
 consecutive-return form of `when()`: `next()` returns `true` once per row then `false`, and each getter
 returns its column's value for row 1, row 2, and so on (`TiberoConstraintIndexMetadataLoaderTest`):
@@ -371,7 +386,8 @@ that. Add a factory method when a shape starts being reused; keep one-offs local
 Several suites — the data type helpers in particular — are characterization tests. They pin *current*
 behaviour, including behaviour that is wrong, so a refactor cannot change it silently. A row marked
 `DEFECT` is not a broken test; it is a deliberately recorded bug. Wrong behaviour gets pinned and
-annotated, never switched off — a `@Disabled` test verifies nothing, and there is none in either suite.
+annotated, never switched off: a `@Disabled` test verifies nothing. `@Tag` is fine when a group of
+tests needs to be selectable from the command line.
 
 Mark a pinned defect with a `// DEFECT:` comment giving a short explanation and a citation. Cite the
 member, `<ProductionClass>.<member>()`, never `File.java:LINE` — line numbers rot:
@@ -392,15 +408,27 @@ what the code plainly does — the project prefers self-documenting code.
 Prerequisites, the `test.sh` dispatcher, snapshot regeneration, the Tibero bring-your-own assets and
 the scenario-id table are in [tests/e2e/README.md](e2e/README.md). Only the authoring contract is here.
 
-The naming rules above do not carry over: E2E uses its own dialect. Method names are `snake_case` and
-run to three or four segments (`row_counts_match_snapshot`), and `@DisplayName` is a capitalised
-sentence, free to use `→`, stating the fact from the migration's point of view
-(`@DisplayName("All target tables match snapshot")`). Match the neighbouring scenario class.
+E2E has two class shapes, and the cheap one comes first.
 
-`AbstractMigrationE2E` is `@TestInstance(PER_CLASS)`: it starts source and target and runs **one**
-migration in a non-static `@BeforeAll`, then caches the outcome; each `@Test` asserts exactly one fact
-about it via `run()`. Consequence: a failure in `@BeforeAll` fails the whole class at once, so keep
-setup in the framework and keep each test to a single assertion.
+A **functional test** needs no database: it drives the console directly through
+`@RegisterExtension final CmtTestContext ctx = new CmtTestContext()`, as `CliTest` does for
+`migration.sh` dispatch and the first-run filesystem contracts. Its own javadoc says why it is shaped
+that way: "No DB required, runs in seconds and gates the rest of the E2E suite." Whenever a fact can be
+checked without starting a container, this is the shape to reach for.
+
+A **migration scenario** extends `AbstractMigrationE2E`, which is `@TestInstance(PER_CLASS)`: it starts
+source and target and runs **one** migration in a non-static `@BeforeAll`, then caches the outcome, and
+each `@Test` asserts against that one result via `run()`. A failure in `@BeforeAll` fails the whole
+class at once, so keep the setup in the framework and keep each test to the facts that fail together:
+one snapshot comparison, or a couple of chained expectations about the same outcome as
+`migration_succeeds()` does with `run().expectSuccess().expectNoFatalStderr()`. What does not belong in
+a `@Test` is setup.
+
+The unit-test naming rules do not carry over: E2E uses its own dialect, and it differs between the two
+shapes. Method names are `snake_case`; match the neighbouring class in the same package, which reads
+`row_counts_match_snapshot` for a migration scenario and
+`should_listAllSubcommands_when_calledWithoutArgs` in `CliTest`. `@DisplayName` states the fact in
+plain words and may use `→`.
 
 A scenario class extends `AbstractMigrationE2E`, implements the two abstract methods `source()` and
 `target()` from a `Sources.<engine>E2eSeed()` and a `Targets.cubridOnline()` / `Targets.unload(prefix)`
