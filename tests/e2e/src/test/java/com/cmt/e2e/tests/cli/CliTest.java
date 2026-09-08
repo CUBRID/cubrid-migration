@@ -48,7 +48,7 @@ import java.nio.file.Path;
  * No DB required — runs in seconds and gates the rest of the E2E suite.
  */
 @DisplayName("migration.sh dispatch + first-run filesystem contracts")
-public class CliTest {
+class CliTest {
 
     @RegisterExtension final CmtTestContext ctx = new CmtTestContext();
 

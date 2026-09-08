@@ -47,7 +47,9 @@ import java.nio.file.Path;
  * objects live in the {@code dbo} schema, which CMT maps to CUBRID owner {@code DBO}. Sequences are
  * not part of this dataset, so that catalog check (present for Oracle) is intentionally absent.
  */
-@MigrationE2E(name = "mssql_to_cubrid")
+@MigrationE2E(
+        name = "mssql_to_cubrid",
+        options = {"add_schema=true"})
 @DisplayName("MSSQL e2e dataset → CUBRID online migration")
 class MsSqlToCubridTest extends AbstractMigrationE2E {
 

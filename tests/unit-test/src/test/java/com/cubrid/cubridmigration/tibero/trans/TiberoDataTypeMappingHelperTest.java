@@ -46,7 +46,7 @@ import org.junit.jupiter.params.provider.CsvSource;
 import java.util.Map;
 
 @DisplayName("TiberoDataTypeMappingHelper")
-public class TiberoDataTypeMappingHelperTest {
+class TiberoDataTypeMappingHelperTest {
 
     private static final TiberoDataTypeMappingHelper HELPER = new TiberoDataTypeMappingHelper();
 
@@ -75,6 +75,7 @@ public class TiberoDataTypeMappingHelperTest {
         }
 
         @ParameterizedTest(name = "[{index}] \"{0}\" key exists in xmlConfigMap")
+        @DisplayName("every expected Tibero data type key is present")
         @CsvSource({
             "BINARY_FLOAT",
             "BINARY_DOUBLE",
@@ -132,7 +133,7 @@ public class TiberoDataTypeMappingHelperTest {
 
             @Test
             @DisplayName("NUMBER, precision=\"10\" -> \"NUMBER_p_s\"")
-            void numericPrecision_returnNumberPs() {
+            void numericPrecision_returnsNumberPs() {
                 assertThat(HELPER.getMapKey("NUMBER", "10", "2"))
                         .isEqualTo(
                                 "NUMBER"
@@ -165,7 +166,8 @@ public class TiberoDataTypeMappingHelperTest {
         @DisplayName("non-NUMBER types")
         class NonNumberTypes {
 
-            @ParameterizedTest(name = "[{index}] getMapKey(\"{0}\", ...) → \"{1}\"")
+            @ParameterizedTest(name = "[{index}] getMapKey(\"{0}\", ...) -> \"{1}\"")
+            @DisplayName("type with or without precision -> normalized key")
             @CsvSource({
                 "VARCHAR2,                      VARCHAR2",
                 "VARCHAR,                       VARCHAR",

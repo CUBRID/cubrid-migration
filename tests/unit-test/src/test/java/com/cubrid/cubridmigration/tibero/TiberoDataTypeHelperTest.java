@@ -48,7 +48,7 @@ import java.util.List;
 import java.util.Map;
 
 @DisplayName("TiberoDataTypeHelper")
-public class TiberoDataTypeHelperTest {
+class TiberoDataTypeHelperTest {
 
     @Nested
     @DisplayName("getTiberoDataTypeKey()")
@@ -56,17 +56,18 @@ public class TiberoDataTypeHelperTest {
 
         @Test
         @DisplayName("null -> emply String")
-        void null_returnEmptyString() {
+        void null_returnsEmptyString() {
             assertThat(TiberoDataTypeHelper.getTiberoDataTypeKey(null)).isEmpty();
         }
 
         @Test
         @DisplayName("empty string -> empty string")
-        void emptyString_returnEmptyString() {
+        void emptyString_returnsEmptyString() {
             assertThat(TiberoDataTypeHelper.getTiberoDataTypeKey("")).isEmpty();
         }
 
-        @ParameterizedTest(name = "[{index}] \"{0}\" → \"{1}\"")
+        @ParameterizedTest(name = "[{index}] \"{0}\" -> \"{1}\"")
+        @DisplayName("plain types kept as-is, precision stripped from parameterized ones")
         @CsvSource({
             // No pattern: keep as is with uppercase normalization.
             "VARCHAR2,             VARCHAR2",
@@ -129,7 +130,7 @@ public class TiberoDataTypeHelperTest {
 
         @Test
         @DisplayName("lowercase input -> uppercase")
-        void lowercaseInput_returnUppercase() {
+        void lowercaseInput_returnsUppercase() {
             assertThat(TiberoDataTypeHelper.getTiberoDataTypeKey("varchar2")).isEqualTo("VARCHAR2");
         }
 
@@ -143,7 +144,7 @@ public class TiberoDataTypeHelperTest {
 
     @Nested
     @DisplayName("isBinary()")
-    class IsBianry {
+    class IsBinary {
 
         @Test
         @DisplayName("blob lowercase -> true")
@@ -153,13 +154,13 @@ public class TiberoDataTypeHelperTest {
 
         @Test
         @DisplayName("BLOB uppercase -> true")
-        void blob_uppercase_returnTrue() {
+        void blob_uppercase_returnsTrue() {
             assertThat(TiberoDataTypeHelper.getInstance(null).isBinary("BLOB")).isTrue();
         }
 
         @Test
         @DisplayName("CLOB -> false for text type")
-        void clob_returnFalse() {
+        void clob_returnsFalse() {
             assertThat(TiberoDataTypeHelper.getInstance(null).isBinary("CLOB")).isFalse();
         }
 
@@ -176,7 +177,7 @@ public class TiberoDataTypeHelperTest {
 
         @Test
         @DisplayName("singleton returns same instance")
-        void singleton_returnSameInstance() {
+        void singleton_returnsSameInstance() {
             assertThat(TiberoDataTypeHelper.getInstance(null))
                     .isSameAs(TiberoDataTypeHelper.getInstance("1.0"));
         }

@@ -54,6 +54,7 @@ class DBDataTypeHelperTest {
     class GetMainDataType {
 
         @ParameterizedTest(name = "[{index}] \"{0}\" -> \"{1}\"")
+        @DisplayName("name before the first parenthesis, case kept")
         @CsvSource({
             "int,                 int",
             "varchar(200),        varchar",
@@ -102,6 +103,7 @@ class DBDataTypeHelperTest {
     class IsChar {
 
         @ParameterizedTest(name = "[{index}] \"{0}\" -> {1}")
+        @DisplayName("char and character are true, varchar/nchar/null are not")
         @CsvSource(
                 nullValues = "null",
                 value = {
@@ -118,7 +120,7 @@ class DBDataTypeHelperTest {
                     "null,            false",
                     "'',              false",
                 })
-        void variousDataTypes_classifyCharFamily(String dataType, boolean expected) {
+        void variousDataTypes_classifiesCharFamily(String dataType, boolean expected) {
             assertThat(HELPER.isChar(dataType)).isEqualTo(expected);
         }
 
@@ -134,6 +136,7 @@ class DBDataTypeHelperTest {
     class IsVarchar {
 
         @ParameterizedTest(name = "[{index}] \"{0}\" -> {1}")
+        @DisplayName("varchar/varchar2/string/varying true, char and nvarchar not")
         @CsvSource(
                 nullValues = "null",
                 value = {
@@ -150,7 +153,7 @@ class DBDataTypeHelperTest {
                     "null,                  false",
                     "'',                    false",
                 })
-        void variousDataTypes_classifyVarcharFamily(String dataType, boolean expected) {
+        void variousDataTypes_classifiesVarcharFamily(String dataType, boolean expected) {
             assertThat(HELPER.isVarchar(dataType)).isEqualTo(expected);
         }
     }
@@ -160,6 +163,7 @@ class DBDataTypeHelperTest {
     class IsString {
 
         @ParameterizedTest(name = "[{index}] \"{0}\" -> {1}")
+        @DisplayName("char and varchar are true, nchar/nvarchar/blob/int are not")
         @CsvSource(
                 nullValues = "null",
                 value = {
@@ -174,7 +178,7 @@ class DBDataTypeHelperTest {
                     "null,           false",
                     "'',             false",
                 })
-        void variousDataTypes_classifyCharAndVarcharOnly(String dataType, boolean expected) {
+        void variousDataTypes_classifiesCharAndVarcharOnly(String dataType, boolean expected) {
             assertThat(HELPER.isString(dataType)).isEqualTo(expected);
         }
     }
@@ -184,6 +188,7 @@ class DBDataTypeHelperTest {
     class IsNChar {
 
         @ParameterizedTest(name = "[{index}] \"{0}\" -> {1}")
+        @DisplayName("nchar and national character true, nvarchar and char not")
         @CsvSource(
                 nullValues = "null",
                 value = {
@@ -195,7 +200,7 @@ class DBDataTypeHelperTest {
                     "char,                   false",
                     "null,                   false",
                 })
-        void variousDataTypes_classifyNcharFamily(String dataType, boolean expected) {
+        void variousDataTypes_classifiesNcharFamily(String dataType, boolean expected) {
             assertThat(HELPER.isNChar(dataType)).isEqualTo(expected);
         }
     }
@@ -205,6 +210,7 @@ class DBDataTypeHelperTest {
     class IsNVarchar {
 
         @ParameterizedTest(name = "[{index}] \"{0}\" -> {1}")
+        @DisplayName("national varying spellings true, nchar and varchar not")
         @CsvSource(
                 nullValues = "null",
                 value = {
@@ -216,7 +222,7 @@ class DBDataTypeHelperTest {
                     "varchar,                         false",
                     "null,                            false",
                 })
-        void variousDataTypes_classifyNvarcharFamily(String dataType, boolean expected) {
+        void variousDataTypes_classifiesNvarcharFamily(String dataType, boolean expected) {
             assertThat(HELPER.isNVarchar(dataType)).isEqualTo(expected);
         }
     }
@@ -226,6 +232,7 @@ class DBDataTypeHelperTest {
     class IsNString {
 
         @ParameterizedTest(name = "[{index}] \"{0}\" -> {1}")
+        @DisplayName("nchar and nvarchar are true, non-national strings are not")
         @CsvSource(
                 nullValues = "null",
                 value = {
@@ -235,7 +242,7 @@ class DBDataTypeHelperTest {
                     "varchar,         false",
                     "null,            false",
                 })
-        void variousDataTypes_classifyNationalStrings(String dataType, boolean expected) {
+        void variousDataTypes_classifiesNationalStrings(String dataType, boolean expected) {
             assertThat(HELPER.isNString(dataType)).isEqualTo(expected);
         }
     }
@@ -245,6 +252,7 @@ class DBDataTypeHelperTest {
     class IsGenericString {
 
         @ParameterizedTest(name = "[{index}] \"{0}\" -> {1}")
+        @DisplayName("char/varchar/national spellings true, int and blob not")
         @CsvSource(
                 nullValues = "null",
                 value = {
@@ -256,7 +264,7 @@ class DBDataTypeHelperTest {
                     "blob,           false",
                     "null,           false",
                 })
-        void variousDataTypes_classifyAllStringFamilies(String dataType, boolean expected) {
+        void variousDataTypes_classifiesAllStringFamilies(String dataType, boolean expected) {
             assertThat(HELPER.isGenericString(dataType)).isEqualTo(expected);
         }
     }
@@ -266,6 +274,7 @@ class DBDataTypeHelperTest {
     class IsNumeric {
 
         @ParameterizedTest(name = "[{index}] \"{0}\" -> {1}")
+        @DisplayName("numeric/number/dec/decimal true, int/float and bare unsigned not")
         @CsvSource({
             "numeric,                    true",
             "'numeric(38,2)',            true",
@@ -285,7 +294,7 @@ class DBDataTypeHelperTest {
             // "unsigned" at index 0 is not stripped, so the whole word is looked up.
             "unsigned,                   false",
         })
-        void variousDataTypes_classifyExactNumericTypes(String dataType, boolean expected) {
+        void variousDataTypes_classifiesExactNumericTypes(String dataType, boolean expected) {
             assertThat(HELPER.isNumeric(dataType.trim())).isEqualTo(expected);
         }
 
@@ -320,6 +329,7 @@ class DBDataTypeHelperTest {
     class IsGeneralizedNumeric {
 
         @ParameterizedTest(name = "[{index}] \"{0}\" -> {1}")
+        @DisplayName("numeric/integer/float/money true, bare unsigned and varchar not")
         @CsvSource({
             "numeric,               true",
             "'numeric(38,2)',       true",
@@ -339,7 +349,7 @@ class DBDataTypeHelperTest {
             "varchar,               false",
             "bit,                   false",
         })
-        void variousDataTypes_classifyAllNumericFamilies(String dataType, boolean expected) {
+        void variousDataTypes_classifiesAllNumericFamilies(String dataType, boolean expected) {
             assertThat(HELPER.isGeneralizedNumeric(dataType.trim())).isEqualTo(expected);
         }
 
@@ -365,6 +375,7 @@ class DBDataTypeHelperTest {
     class IsInteger {
 
         @ParameterizedTest(name = "[{index}] \"{0}\" -> {1}")
+        @DisplayName("int spellings true, bigint and int unsigned excluded")
         @CsvSource(
                 nullValues = "null",
                 value = {
@@ -385,7 +396,7 @@ class DBDataTypeHelperTest {
                     "null,            false",
                     "'',              false",
                 })
-        void variousDataTypes_classifyIntegerFamily(String dataType, boolean expected) {
+        void variousDataTypes_classifiesIntegerFamily(String dataType, boolean expected) {
             assertThat(HELPER.isInteger(dataType)).isEqualTo(expected);
         }
     }
@@ -395,6 +406,7 @@ class DBDataTypeHelperTest {
     class IsEnum {
 
         @ParameterizedTest(name = "[{index}] \"{0}\" -> {1}")
+        @DisplayName("enum with or without elements true, enumeration and set not")
         @CsvSource(
                 nullValues = "null",
                 value = {
@@ -406,7 +418,7 @@ class DBDataTypeHelperTest {
                     "null,            false",
                     "'',              false",
                 })
-        void variousDataTypes_classifyEnumType(String dataType, boolean expected) {
+        void variousDataTypes_classifiesEnumType(String dataType, boolean expected) {
             assertThat(HELPER.isEnum(dataType)).isEqualTo(expected);
         }
     }
@@ -416,6 +428,7 @@ class DBDataTypeHelperTest {
     class IsSupportAutoIncr {
 
         @ParameterizedTest(name = "[{index}] \"{0}\" -> {1}")
+        @DisplayName("integer types including bigint true, numeric/float/int unsigned not")
         @CsvSource(
                 nullValues = "null",
                 value = {
@@ -435,7 +448,8 @@ class DBDataTypeHelperTest {
                     "null,              false",
                     "'',                false",
                 })
-        void variousDataTypes_classifyAutoIncrementCapableTypes(String dataType, boolean expected) {
+        void variousDataTypes_classifiesAutoIncrementCapableTypes(
+                String dataType, boolean expected) {
             assertThat(HELPER.isSupportAutoIncr(dataType, "", null)).isEqualTo(expected);
         }
 
@@ -451,6 +465,7 @@ class DBDataTypeHelperTest {
     class IsValidDatatype {
 
         @ParameterizedTest(name = "[{index}] \"{0}\" -> true")
+        @DisplayName("valid, garbage and null instances are all accepted")
         @CsvSource(
                 nullValues = "null",
                 value = {
@@ -469,6 +484,7 @@ class DBDataTypeHelperTest {
     class IsValidValue {
 
         @ParameterizedTest(name = "[{index}] (\"{0}\", \"{1}\") -> true")
+        @DisplayName("matching, mismatched and null pairs are all accepted")
         @CsvSource(
                 nullValues = "null",
                 value = {
@@ -594,7 +610,7 @@ class DBDataTypeHelperTest {
         @DisplayName("blank string -> instance with an empty name")
         void blankDataType_returnsInstanceWithEmptyName() {
             // DEFECT: a blank data type passes the isEmpty() guard, so a nameless instance is
-            // returned instead of being rejected - see DBDataTypeHelper.java:320
+            // returned instead of being rejected - see DBDataTypeHelper.parseDTInstance()
             assertThat(HELPER.parseDTInstance("   ").getName()).isEmpty();
         }
 
@@ -619,7 +635,7 @@ class DBDataTypeHelperTest {
         void emptyArguments_returnsWholeStringAsName() {
             // DEFECT: empty parentheses do not match the pattern, so the parentheses end up in
             // the type name instead of raising "Invalid data type"
-            // - see DBDataTypeHelper.java:328
+            // - see DBDataTypeHelper.parseDTInstance()
             assertThat(HELPER.parseDTInstance("varchar()").getName()).isEqualTo("varchar()");
         }
 
@@ -628,7 +644,7 @@ class DBDataTypeHelperTest {
         void trailingGarbage_returnsWholeStringAsName() {
             // DEFECT: text after the closing parenthesis does not match the pattern, so the
             // garbage ends up in the type name instead of raising "Invalid data type"
-            // - see DBDataTypeHelper.java:328
+            // - see DBDataTypeHelper.parseDTInstance()
             DataTypeInstance dti = HELPER.parseDTInstance("varchar(2000) x");
 
             assertThat(dti.getName()).isEqualTo("varchar(2000) x");

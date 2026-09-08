@@ -44,9 +44,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 @DisplayName("TiberoIntervalYMTypeHandler")
-public class TiberoIntervalYMTypeHandlerTest {
+class TiberoIntervalYMTypeHandlerTest {
 
-    private TiberoIntervalYMTypeHandler HANDLER = new TiberoIntervalYMTypeHandler();
+    private static final TiberoIntervalYMTypeHandler HANDLER = new TiberoIntervalYMTypeHandler();
 
     private ResultSet rs;
     private Column column;

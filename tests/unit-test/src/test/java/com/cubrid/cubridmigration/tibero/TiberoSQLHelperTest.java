@@ -36,7 +36,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 @DisplayName("TiberoSQLHelper")
-public class TiberoSQLHelperTest {
+class TiberoSQLHelperTest {
 
     private static final TiberoSQLHelper HELPER = TiberoSQLHelper.getInstance(null);
 

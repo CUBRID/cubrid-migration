@@ -43,7 +43,9 @@ import org.junit.jupiter.api.Test;
 import java.nio.file.Path;
 
 /** CUBRID → CUBRID online migration. Snapshots: {@code snapshots/cubrid_to_cubrid/}. */
-@MigrationE2E(name = "cubrid_to_cubrid")
+@MigrationE2E(
+        name = "cubrid_to_cubrid",
+        options = {"add_schema=true"})
 @DisplayName("CUBRID e2e dataset → CUBRID online migration")
 class CubridToCubridTest extends AbstractMigrationE2E {
 

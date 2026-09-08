@@ -40,7 +40,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
 @DisplayName("TiberoTypeFormatter")
-public class TiberoTypeFormatterTest {
+class TiberoTypeFormatterTest {
 
     private static final TiberoDataTypeHelper HELPER = TiberoDataTypeHelper.getInstance(null);
 
@@ -57,7 +57,7 @@ public class TiberoTypeFormatterTest {
 
         @Test
         @DisplayName("NUMBER (precision=0) -> \"NUMBER\"")
-        void numberPrecision0_returnNumber() {
+        void numberPrecision0_returnsNumber() {
             assertThat(TiberoTypeFormatter.format(createColumn("NUMBER", 0, null), HELPER))
                     .isEqualTo("NUMBER");
         }
@@ -70,7 +70,7 @@ public class TiberoTypeFormatterTest {
         }
 
         @Test
-        @DisplayName("NUMBER(10,2) → \"NUMBER(10,2)\"")
+        @DisplayName("NUMBER(10,2) -> \"NUMBER(10,2)\"")
         void numberPrecisionAndScale_returnsNumberWithBoth() {
             assertThat(TiberoTypeFormatter.format(createColumn("NUMBER", 10, 2), HELPER))
                     .isEqualTo("NUMBER(10,2)");
@@ -89,6 +89,7 @@ public class TiberoTypeFormatterTest {
     class StringTypeFormat {
 
         @ParameterizedTest(name = "[{index}] {0}{1} -> \"{0}({1})\"")
+        @DisplayName("character types with precision -> type(precision)")
         @CsvSource({
             "VARCHAR, 100",
             "VARCHAR, 4000",
@@ -105,7 +106,7 @@ public class TiberoTypeFormatterTest {
 
         @Test
         @DisplayName("VARCHAR with precision=null -> \"VARCHAR\"")
-        void varcharNoPrecision_returnTypeOnly() {
+        void varcharNoPrecision_returnsTypeOnly() {
             assertThat(TiberoTypeFormatter.format(createColumn("VARCHAR"), HELPER))
                     .isEqualTo("VARCHAR");
         }
@@ -138,13 +139,13 @@ public class TiberoTypeFormatterTest {
 
         @Test
         @DisplayName("RAW(100) -> \"RAW(100)\"")
-        void rawWithPrecision_returnWithPrecision() {
+        void rawWithPrecision_returnsWithPrecision() {
             assertThat(TiberoTypeFormatter.format(createColumn("RAW", 100, null), HELPER))
                     .isEqualTo("RAW(100)");
         }
 
         @Test
-        @DisplayName("RAW (precision=null) → \"RAW\"")
+        @DisplayName("RAW (precision=null) -> \"RAW\"")
         void rawNoPrecision_returnsTypeOnly() {
             assertThat(TiberoTypeFormatter.format(createColumn("RAW"), HELPER)).isEqualTo("RAW");
         }
@@ -154,7 +155,8 @@ public class TiberoTypeFormatterTest {
     @DisplayName("pass-through types")
     class PassThroughTypes {
 
-        @ParameterizedTest(name = "[{index}] {0} → {0}")
+        @ParameterizedTest(name = "[{index}] {0} -> {0}")
+        @DisplayName("precision=null -> type name unchanged")
         @CsvSource({
             "TIMESTAMP",
             "DATE",

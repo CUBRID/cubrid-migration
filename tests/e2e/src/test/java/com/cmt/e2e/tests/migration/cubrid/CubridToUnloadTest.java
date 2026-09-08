@@ -50,6 +50,7 @@ class CubridToUnloadTest {
             name = "cubrid_to_unload__split_schema__1t1f",
             options = {
                 "file_prefix=demodb",
+                "add_schema=true",
                 "split_schema=true",
                 "one_table_one_file=true",
             })

@@ -47,7 +47,9 @@ import java.nio.file.Path;
  * has no synonyms or sequences in this dataset, so those catalog checks (present for Oracle) are
  * intentionally absent.
  */
-@MigrationE2E(name = "informix_to_cubrid")
+@MigrationE2E(
+        name = "informix_to_cubrid",
+        options = {"add_schema=true"})
 @DisplayName("Informix e2e dataset → CUBRID online migration")
 class InformixToCubridTest extends AbstractMigrationE2E {
 

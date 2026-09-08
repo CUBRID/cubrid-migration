@@ -57,8 +57,8 @@ import org.junit.jupiter.params.provider.ValueSource;
 import java.util.List;
 import java.util.stream.Stream;
 
-@DisplayName("Tiber2CUBRIDTransformHelper")
-public class Tibero2CUBRIDTransformHelperTest {
+@DisplayName("Tibero2CUBRIDTransformHelper")
+class Tibero2CUBRIDTransformHelperTest {
 
     private static final Tibero2CUBRIDTransformHelper HELPER =
             new Tibero2CUBRIDTransformHelper(
@@ -81,6 +81,7 @@ public class Tibero2CUBRIDTransformHelperTest {
         }
 
         @ParameterizedTest(name = "[{index}] {0} column | {1} -> {3}")
+        @DisplayName("datetime column Tibero date function -> CUBRID function")
         @CsvSource({
             "DATE,      SYSDATE,      DATETIME, SYS_DATETIME",
             "DATE,      SYSTIME,      DATETIME, SYS_TIME",
@@ -95,7 +96,6 @@ public class Tibero2CUBRIDTransformHelperTest {
             "TIMESTAMP WITH LOCAL TIME ZONE, SYSTIMESTAMP, DATETIMELTZ, SYSTIMESTAMP",
             "TIMESTAMP WITH LOCAL TIME ZONE, CURRENT_TIMESTAMP, DATETIMELTZ, CURRENT_TIMESTAMP",
         })
-        @DisplayName("datetime column Tibero date function -> CUBRID function")
         void datetimeColumn_dateTimeFunction_converted(
                 String srcType, String tiberoFn, String cubType, String cubridFn) {
             Column src = createColumn(srcType);
@@ -109,11 +109,11 @@ public class Tibero2CUBRIDTransformHelperTest {
         }
 
         @ParameterizedTest(name = "[{index}] {0} column | {1} -> {3}")
+        @DisplayName("datetime column date function is converted case-insensitively")
         @CsvSource({
             "DATE, sysdate, DATETIME, SYS_DATETIME",
             "TIME, current_time, TIME, CURRENT_TIME",
         })
-        @DisplayName("datetime column date function is converted case-insensitively")
         void datetimeColumn_dateTimeFunctionConvertedCaseInsensitively(
                 String srcType, String tiberoFn, String cubType, String cubridFn) {
             Column src = createColumn(srcType);
@@ -127,11 +127,11 @@ public class Tibero2CUBRIDTransformHelperTest {
         }
 
         @ParameterizedTest(name = "[{index}] {0} column | {1} remains as is")
+        @DisplayName("datetime column recognized date function without mapping remains unchanged")
         @CsvSource({
             "TIME, CURRENT_TIMESTAMP, TIME, CURRENT_TIMESTAMP",
             "TIME, LOCALTIMESTAMP, TIME, LOCALTIMESTAMP",
         })
-        @DisplayName("datetime column recognized date function without mapping remains unchanged")
         void datetimeColumn_recognizedDateFunctionWithoutMapping_remainsUnchanged(
                 String srcType, String tiberoFn, String cubType, String expected) {
             Column src = createColumn(srcType);
@@ -145,12 +145,12 @@ public class Tibero2CUBRIDTransformHelperTest {
         }
 
         @ParameterizedTest(name = "[{index}] {0} column | {1} -> {2}")
+        @DisplayName("date function conversion depends on source column type")
         @CsvSource({
             "DATE,      SYSDATE, true",
             "TIMESTAMP, SYSDATE, true",
             "VARCHAR2,  SYSDATE, false",
         })
-        @DisplayName("date function conversion depends on source column type")
         void dateFunctionConversion_dependsOnSourceColumnType(
                 String srcType, String tiberoFn, boolean converted) {
             Column src = createColumn(srcType);
@@ -168,13 +168,13 @@ public class Tibero2CUBRIDTransformHelperTest {
         }
 
         @ParameterizedTest(name = "[{index}] expression \"{0}\" -> isExpression=true")
+        @DisplayName("expression default -> set isDefaultIsExpression=true")
         @ValueSource(
                 strings = {
                     "(SELECT 1 FROM DUAL)",
                     "TO_CHAR(SYSDATE,'YYYY-MM-DD')",
                     "CAST('2024-01-01' AS DATE)",
                 })
-        @DisplayName("expression default -> set isDefaultIsExpression=true")
         void expressionDefault_markedAsExpression(String expr) {
             Column src = createColumn("VARCHAR2");
             src.setDefaultValue(expr);
@@ -186,9 +186,9 @@ public class Tibero2CUBRIDTransformHelperTest {
         }
 
         @ParameterizedTest(name = "[{index}] DATETIME column | TO_DATE/TO_TIMESTAMP conversion")
+        @DisplayName("DATETIME type converts TO_DATE/TO_TIMESTAMP to TO_DATETIME")
         @MethodSource(
                 "com.cubrid.cubridmigration.tibero.trans.Tibero2CUBRIDTransformHelperTest#toDateConversionCases")
-        @DisplayName("DATETIME type converts TO_DATE/TO_TIMESTAMP to TO_DATETIME")
         void dateTimeColumn_toDateConverted(String input, String expected) {
             Column src = createColumn("DATE");
             src.setDefaultValue(input);
@@ -200,9 +200,9 @@ public class Tibero2CUBRIDTransformHelperTest {
         }
 
         @ParameterizedTest(name = "[{index}] DATETIMETZ column | {0}")
+        @DisplayName("DATETIMETZ type wraps TO_DATE/TO_TIMESTAMP with FROM_TZ")
         @MethodSource(
                 "com.cubrid.cubridmigration.tibero.trans.Tibero2CUBRIDTransformHelperTest#toDateTimeTzConversionCases")
-        @DisplayName("DATETIMETZ type wraps TO_DATE/TO_TIMESTAMP with FROM_TZ")
         void dateTimeTzColumn_toDateConverted(String input, String expected) {
             Column src = createColumn("TIMESTAMP WITH TIME ZONE");
             src.setDefaultValue(input);
@@ -530,7 +530,7 @@ public class Tibero2CUBRIDTransformHelperTest {
 
     @Nested
     @DisplayName("getColumnView()")
-    class GetColunView {
+    class GetColumnView {
 
         private final MigrationConfiguration config = new MigrationConfiguration();
 
@@ -612,13 +612,13 @@ public class Tibero2CUBRIDTransformHelperTest {
 
         @Test
         @DisplayName("table=null -> null")
-        void nullTable_returnNull() {
+        void nullTable_returnsNull() {
             assertThat(HELPER.getToCUBRIDPartitionDDL(null)).isNull();
         }
 
         @Test
         @DisplayName("partitionInfo=null -> null")
-        void nullPartitionInfo_returnNull() {
+        void nullPartitionInfo_returnsNull() {
             assertThat(HELPER.getToCUBRIDPartitionDDL(new Table())).isNull();
         }
 

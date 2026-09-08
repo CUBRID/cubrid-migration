@@ -40,7 +40,7 @@ import org.junit.jupiter.api.Test;
 import java.util.List;
 
 @DisplayName("DBUtils")
-public class DBUtilsTest {
+class DBUtilsTest {
 
     @Test
     @DisplayName("parsePartitionColumns handles bracketed CUBRID column expression")

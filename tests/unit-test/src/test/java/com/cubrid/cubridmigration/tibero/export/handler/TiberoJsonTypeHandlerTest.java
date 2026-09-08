@@ -48,7 +48,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 @DisplayName("TiberoJsonTypeHandler")
-public class TiberoJsonTypeHandlerTest {
+class TiberoJsonTypeHandlerTest {
 
     private static final TiberoJsonTypeHandler HANDLER = new TiberoJsonTypeHandler();
 
@@ -63,7 +63,7 @@ public class TiberoJsonTypeHandlerTest {
     }
 
     @Test
-    @DisplayName("getTypeNameForError() → \"JSON\"")
+    @DisplayName("getTypeNameForError() -> \"JSON\"")
     void getTypeNameForError_returnsJson() {
         assertThat(HANDLER.getTypeNameForError()).isEqualTo("JSON");
     }

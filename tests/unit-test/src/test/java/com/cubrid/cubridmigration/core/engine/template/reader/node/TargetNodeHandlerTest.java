@@ -43,7 +43,8 @@ import org.xml.sax.helpers.AttributesImpl;
 @DisplayName("TargetNodeHandler")
 class TargetNodeHandlerTest {
 
-    @ParameterizedTest(name = "type=\"dir\" keeps destType {0}")
+    @ParameterizedTest(name = "[{index}] type=\"dir\" keeps destType {0}")
+    @DisplayName("file target does not overwrite the format set by file_repository")
     @ValueSource(
             ints = {
                 MigrationConfiguration.DEST_CSV,
@@ -51,7 +52,6 @@ class TargetNodeHandlerTest {
                 MigrationConfiguration.DEST_XLS,
                 MigrationConfiguration.DEST_DB_UNLOAD
             })
-    @DisplayName("file target does not overwrite the format set by file_repository")
     void dirTarget_keepsFileRepositoryDestType(int destType) {
         MigrationConfiguration config = new MigrationConfiguration();
         config.setDestType(destType);

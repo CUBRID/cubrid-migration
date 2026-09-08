@@ -44,7 +44,9 @@ import org.junit.jupiter.api.condition.EnabledIf;
 import java.nio.file.Path;
 
 /** Tibero 6 → CUBRID online migration. Snapshots: {@code snapshots/tibero_to_cubrid/}. */
-@MigrationE2E(name = "tibero_to_cubrid")
+@MigrationE2E(
+        name = "tibero_to_cubrid",
+        options = {"add_schema=true"})
 @DisplayName("Tibero e2e dataset → CUBRID online migration")
 @EnabledIf("com.cmt.e2e.framework.db.containers.TiberoEnvironment#isAvailable")
 class TiberoToCubridTest extends AbstractMigrationE2E {

@@ -54,6 +54,7 @@ class OracleToUnloadTest {
             name = "oracle_to_unload__split_schema__1t1f",
             options = {
                 "file_prefix=XE",
+                "add_schema=true",
                 "split_schema=true",
                 "one_table_one_file=true",
             })

@@ -44,7 +44,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 @DisplayName("TiberoXmlTypeHandler")
-public class TiberoXmlTypeHandlerTest {
+class TiberoXmlTypeHandlerTest {
 
     private static final TiberoXmlTypeHandler HANDLER = new TiberoXmlTypeHandler();
 
@@ -59,7 +59,7 @@ public class TiberoXmlTypeHandlerTest {
     }
 
     @Test
-    @DisplayName("getTypeNameForError() → \"XMLTYPE\"")
+    @DisplayName("getTypeNameForError() -> \"XMLTYPE\"")
     void getTypeNameForError_returnsXmlType() {
         assertThat(HANDLER.getTypeNameForError()).isEqualTo("XMLTYPE");
     }

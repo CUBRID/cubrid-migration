@@ -44,7 +44,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 @DisplayName("TiberoIntervalDSTypeHandler")
-public class TiberoIntervalDSTypeHandlerTest {
+class TiberoIntervalDSTypeHandlerTest {
 
     private static final TiberoIntervalDSTypeHandler HANDLER = new TiberoIntervalDSTypeHandler();
 
