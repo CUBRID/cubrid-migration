@@ -11,7 +11,7 @@
  *   this list of conditions and the following disclaimer in the documentation
  *   and/or other materials provided with the distribution.
  *
- * - Neither the name of the <ORGANIZATION> nor the names of its contributors
+ * - Neither the name of the copyright holder nor the names of its contributors
  *   may be used to endorse or promote products derived from this software without
  *   specific prior written permission.
  *
@@ -43,7 +43,7 @@ import java.sql.Types;
 import java.util.stream.Stream;
 
 @DisplayName("TiberoJdbcTypeMapper")
-public class TiberoJdbcTypeMapperTest {
+class TiberoJdbcTypeMapperTest {
 
     @Nested
     @DisplayName("getFixedJdbcTypeId()")
@@ -51,59 +51,60 @@ public class TiberoJdbcTypeMapperTest {
 
         @Test
         @DisplayName("BINARY_FLOAT -> Types.FLOAT")
-        void binaryFloat_returnFloat() {
+        void binaryFloat_returnsFloat() {
             assertThat(TiberoJdbcTypeMapper.getFixedJdbcTypeId("BINARY_FLOAT"))
                     .isEqualTo(Types.FLOAT);
         }
 
         @Test
         @DisplayName("BINARY_DOUBLE -> Types.DOUBLE")
-        void binaryDouble_returnDouble() {
+        void binaryDouble_returnsDouble() {
             assertThat(TiberoJdbcTypeMapper.getFixedJdbcTypeId("BINARY_DOUBLE"))
                     .isEqualTo(Types.DOUBLE);
         }
 
         @Test
         @DisplayName("ROWID -> Types.VARCHAR")
-        void rowid_returnVarchar() {
+        void rowid_returnsVarchar() {
             assertThat(TiberoJdbcTypeMapper.getFixedJdbcTypeId("ROWID")).isEqualTo(Types.VARCHAR);
         }
 
         @Test
         @DisplayName("TIMESTAMP WITH TIME ZONE -> Types.TIMESTAMP_WITH_TIMEZONE")
-        void timestampWithTimeZone_returnTimestamp() {
+        void timestampWithTimeZone_returnsTimestamp() {
             assertThat(TiberoJdbcTypeMapper.getFixedJdbcTypeId("TIMESTAMP WITH TIME ZONE"))
                     .isEqualTo(Types.TIMESTAMP_WITH_TIMEZONE);
         }
 
         @Test
         @DisplayName("TIMESTAMP WITH LOCAL TIME ZONE -> Types.TIMESTAMP")
-        void timestampWithLocalTimeZone_returnTimestamp() {
+        void timestampWithLocalTimeZone_returnsTimestamp() {
             assertThat(TiberoJdbcTypeMapper.getFixedJdbcTypeId("TIMESTAMP WITH LOCAL TIME ZONE"))
                     .isEqualTo(Types.TIMESTAMP);
         }
 
         @Test
         @DisplayName("INTERVAL DAY TO SECOND -> Types.OTHER")
-        void intervalDayToSecond_returnOther() {
+        void intervalDayToSecond_returnsOther() {
             assertThat(TiberoJdbcTypeMapper.getFixedJdbcTypeId("INTERVAL DAY TO SECOND"))
                     .isEqualTo(Types.OTHER);
         }
 
         @Test
         @DisplayName("INTERVAL YEAR TO MONTH -> Types.OTHER")
-        void intervalYearToMonth_returnOther() {
+        void intervalYearToMonth_returnsOther() {
             assertThat(TiberoJdbcTypeMapper.getFixedJdbcTypeId("INTERVAL YEAR TO MONTH"))
                     .isEqualTo(Types.OTHER);
         }
 
         @Test
         @DisplayName("XMLTYPE -> Types.SQLXML")
-        void xmlType_returnSqlXml() {
+        void xmlType_returnsSqlXml() {
             assertThat(TiberoJdbcTypeMapper.getFixedJdbcTypeId("XMLTYPE")).isEqualTo(Types.SQLXML);
         }
 
         @ParameterizedTest(name = "[{index}] \"{0}\" -> null for non-fixed type")
+        @DisplayName("no fixed mapping for VARCHAR2/NUMBER/CLOB/BLOB/DATE/TIMESTAMP")
         @ValueSource(strings = {"VARCHAR2", "NUMBER", "CLOB", "BLOB", "DATE", "TIMESTAMP"})
         void nonFixedTypes_returnsNull(String dataType) {
             assertThat(TiberoJdbcTypeMapper.getFixedJdbcTypeId(dataType)).isNull();
@@ -122,11 +123,12 @@ public class TiberoJdbcTypeMapperTest {
 
         @Test
         @DisplayName("precision=null, scale=0 -> BIGINT")
-        void nullPrecisionScale0_returnBigint() {
+        void nullPrecisionScale0_returnsBigint() {
             assertThat(TiberoJdbcTypeMapper.getNumberType(null, 0)).isEqualTo(Types.BIGINT);
         }
 
-        @ParameterizedTest(name = "[{index}] NUMBER({0},{1}) → JDBC {2}")
+        @ParameterizedTest(name = "[{index}] NUMBER({0},{1}) -> JDBC {2}")
+        @DisplayName("precision -> integer width; scale or precision > 38 -> NUMERIC")
         @MethodSource(
                 "com.cubrid.cubridmigration.tibero.TiberoJdbcTypeMapperTest#precisionScaleToJdbcType")
         void precisionScale_mapsToCorrectJdbcType(
@@ -142,11 +144,11 @@ public class TiberoJdbcTypeMapperTest {
                 Arguments.of(1, 0, Types.BIT),
                 Arguments.of(1, null, Types.BIT),
 
-                // precision=3 → TINYINT
+                // precision=3 -> TINYINT
                 Arguments.of(3, 0, Types.TINYINT),
                 Arguments.of(3, null, Types.TINYINT),
 
-                // precision=5 → SMALLINT
+                // precision=5 -> SMALLINT
                 Arguments.of(5, 0, Types.SMALLINT),
                 Arguments.of(5, null, Types.SMALLINT),
 
@@ -157,7 +159,7 @@ public class TiberoJdbcTypeMapperTest {
                 Arguments.of(9, 0, Types.INTEGER),
                 Arguments.of(10, 0, Types.INTEGER),
 
-                // precision 11~38 → BIGINT
+                // precision 11~38 -> BIGINT
                 Arguments.of(11, 0, Types.BIGINT),
                 Arguments.of(18, 0, Types.BIGINT),
                 Arguments.of(38, 0, Types.BIGINT),

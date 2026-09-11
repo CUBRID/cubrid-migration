@@ -12,7 +12,7 @@
  *   this list of conditions and the following disclaimer in the documentation
  *   and/or other materials provided with the distribution.
  *
- * - Neither the name of the <ORGANIZATION> nor the names of its contributors
+ * - Neither the name of the copyright holder nor the names of its contributors
  *   may be used to endorse or promote products derived from this software without
  *   specific prior written permission.
  *
@@ -151,6 +151,8 @@ public class PerformanceSettingsDialog extends Dialog {
             int maxValue = Integer.MAX_VALUE;
             if (config.getDestType() == MigrationConfiguration.DEST_XLS) {
                 maxValue = MigrationConfiguration.XLS_MAX_COUNT;
+            } else if (config.getDestType() == MigrationConfiguration.DEST_XLSX) {
+                maxValue = MigrationConfiguration.XLSX_MAX_COUNT;
             }
             txtFileMaxSize.setValues(config.getMaxCountPerFile(), 0, maxValue, 0, 1, 1000);
         }
