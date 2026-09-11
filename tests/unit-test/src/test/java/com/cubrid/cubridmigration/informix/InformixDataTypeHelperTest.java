@@ -142,22 +142,6 @@ class InformixDataTypeHelperTest {
         }
 
         @Test
-        @DisplayName("null type -> IllegalArgumentException")
-        void nullDataType_throwsIllegalArgumentException() {
-            assertThatThrownBy(() -> HELPER.getJdbcDataTypeID(new Catalog(), null, null, null))
-                    .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessage("Not supported Informix data type(null)");
-        }
-
-        @Test
-        @DisplayName("empty type -> IllegalArgumentException")
-        void emptyDataType_throwsIllegalArgumentException() {
-            assertThatThrownBy(() -> HELPER.getJdbcDataTypeID(new Catalog(), "", null, null))
-                    .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessage("Not supported Informix data type()");
-        }
-
-        @Test
         @DisplayName("two candidates for one type -> IllegalArgumentException")
         void ambiguousType_throwsIllegalArgumentException() {
             // Only a single candidate is resolved, precision and scale are never used to pick
@@ -185,6 +169,22 @@ class InformixDataTypeHelperTest {
                     .isInstanceOf(IllegalArgumentException.class)
                     .hasMessage("Not supported  Informix data type(varchar: p=255, s=null)");
         }
+
+        @Test
+        @DisplayName("null type -> IllegalArgumentException")
+        void nullDataType_throwsIllegalArgumentException() {
+            assertThatThrownBy(() -> HELPER.getJdbcDataTypeID(new Catalog(), null, null, null))
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessage("Not supported Informix data type(null)");
+        }
+
+        @Test
+        @DisplayName("empty type -> IllegalArgumentException")
+        void emptyDataType_throwsIllegalArgumentException() {
+            assertThatThrownBy(() -> HELPER.getJdbcDataTypeID(new Catalog(), "", null, null))
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessage("Not supported Informix data type()");
+        }
     }
 
     @Nested
@@ -192,6 +192,7 @@ class InformixDataTypeHelperTest {
     class GetShownDataType {
 
         @ParameterizedTest(name = "[{index}] {0}(p={1}, s={2}) -> \"{3}\"")
+        @DisplayName("strings get a precision, exact numerics a scale too, the rest render bare")
         @CsvSource(
                 nullValues = "null",
                 value = {
@@ -241,7 +242,7 @@ class InformixDataTypeHelperTest {
                     "list,          null,   null,   list",
                     "multiset,      null,   null,   multiset",
                 })
-        void informixDataTypes_renderShownDataType(
+        void informixDataTypes_rendersShownDataType(
                 String dataType, Integer precision, Integer scale, String expected) {
             assertThat(HELPER.getShownDataType(createColumn(dataType, precision, scale)))
                     .isEqualTo(expected);
@@ -270,27 +271,6 @@ class InformixDataTypeHelperTest {
             // arguments - see AbstractJDBCSchemaFetcher.buildSQLTable()
             assertThat(HELPER.getShownDataType(createColumn("lvarchar(2048)", 2048, null)))
                     .isEqualTo("lvarchar(2048)");
-        }
-
-        @Test
-        @DisplayName("null data type -> empty string")
-        void nullDataType_returnsEmptyString() {
-            // The method codes for a null data type explicitly, but the state cannot survive in
-            // production: the only caller dereferences column.getDataType() one line after
-            // storing the result - see InformixSchemaFetcher.buildSQLTable()
-            assertThat(HELPER.getShownDataType(createColumn(null, 255, null))).isEmpty();
-        }
-
-        @Test
-        @DisplayName("empty data type -> empty string")
-        void emptyDataType_returnsEmptyString() {
-            assertThat(HELPER.getShownDataType(createColumn("", 255, null))).isEmpty();
-        }
-
-        @Test
-        @DisplayName("blank data type -> empty string")
-        void blankDataType_returnsEmptyString() {
-            assertThat(HELPER.getShownDataType(createColumn("   ", 255, null))).isEmpty();
         }
 
         @Test
@@ -353,6 +333,27 @@ class InformixDataTypeHelperTest {
             assertThat(HELPER.getShownDataType(createColumn("datetime year to fraction", 5, 5)))
                     .isEqualTo("datetime year to fraction");
         }
+
+        @Test
+        @DisplayName("null data type -> empty string")
+        void nullDataType_returnsEmptyString() {
+            // The method codes for a null data type explicitly, but the state cannot survive in
+            // production: the only caller dereferences column.getDataType() one line after
+            // storing the result - see InformixSchemaFetcher.buildSQLTable()
+            assertThat(HELPER.getShownDataType(createColumn(null, 255, null))).isEmpty();
+        }
+
+        @Test
+        @DisplayName("empty data type -> empty string")
+        void emptyDataType_returnsEmptyString() {
+            assertThat(HELPER.getShownDataType(createColumn("", 255, null))).isEmpty();
+        }
+
+        @Test
+        @DisplayName("blank data type -> empty string")
+        void blankDataType_returnsEmptyString() {
+            assertThat(HELPER.getShownDataType(createColumn("   ", 255, null))).isEmpty();
+        }
     }
 
     @Nested
@@ -360,6 +361,7 @@ class InformixDataTypeHelperTest {
     class IsBinary {
 
         @ParameterizedTest(name = "[{index}] \"{0}\" -> {1}")
+        @DisplayName("byte, bson and blob only, not clob/text/json or the inherited bit names")
         @CsvSource(
                 nullValues = "null",
                 value = {
@@ -389,7 +391,7 @@ class InformixDataTypeHelperTest {
                     "null,           false",
                     "'',             false",
                 })
-        void variousDataTypes_classifyInformixBinaryTypes(String dataType, boolean expected) {
+        void variousDataTypes_classifiesInformixBinaryTypes(String dataType, boolean expected) {
             assertThat(HELPER.isBinary(dataType)).isEqualTo(expected);
         }
 
@@ -405,6 +407,7 @@ class InformixDataTypeHelperTest {
     class IsCollection {
 
         @ParameterizedTest(name = "[{index}] \"{0}\" -> false")
+        @DisplayName("every input is false, the real set/list/multiset types included")
         @CsvSource(
                 nullValues = "null",
                 value = {
@@ -433,6 +436,7 @@ class InformixDataTypeHelperTest {
     class IsEnum {
 
         @ParameterizedTest(name = "[{index}] \"{0}\" -> {1}")
+        @DisplayName("enum with or without an element list is true, enumeration is not")
         @CsvSource(
                 nullValues = "null",
                 value = {
@@ -444,7 +448,7 @@ class InformixDataTypeHelperTest {
                     "null,            false",
                     "'',              false",
                 })
-        void variousDataTypes_classifyEnumType(String dataType, boolean expected) {
+        void variousDataTypes_classifiesEnumType(String dataType, boolean expected) {
             // InformixDataTypeHelper.isEnum() repeats the body of DBDataTypeHelper.isEnum(), so
             // the override changes nothing. No production code calls isEnum() on an Informix
             // helper either, so the rows below pin the public contract, not a migration path.

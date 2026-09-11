@@ -68,21 +68,11 @@ class OracleDataTypeHelperTest {
     }
 
     @Nested
-    @DisplayName("getDBType()")
-    class GetDBType {
-
-        @Test
-        @DisplayName("returns DatabaseType.ORACLE")
-        void returnsOracle() {
-            assertThat(HELPER.getDBType()).isEqualTo(DatabaseType.ORACLE);
-        }
-    }
-
-    @Nested
     @DisplayName("getOracleDataTypeKey()")
     class GetOracleDataTypeKey {
 
         @ParameterizedTest(name = "[{index}] \"{0}\" -> \"{1}\"")
+        @DisplayName("precision is stripped and INTERVAL collapses onto its catalog key")
         @CsvSource({
             // Precision is stripped from the TIMESTAMP family.
             "TIMESTAMP(38),                       TIMESTAMP",
@@ -129,10 +119,22 @@ class OracleDataTypeHelperTest {
     }
 
     @Nested
+    @DisplayName("getDBType()")
+    class GetDBType {
+
+        @Test
+        @DisplayName("returns DatabaseType.ORACLE")
+        void returnsOracle() {
+            assertThat(HELPER.getDBType()).isEqualTo(DatabaseType.ORACLE);
+        }
+    }
+
+    @Nested
     @DisplayName("getJdbcDataTypeID()")
     class GetJdbcDataTypeID {
 
         @ParameterizedTest(name = "[{index}] NUMBER(p={0}, s={1}) -> jdbc type {2}")
+        @DisplayName("NUMBER precision and scale pick the java.sql.Types id")
         @CsvSource(
                 nullValues = "null",
                 value = {
@@ -180,6 +182,7 @@ class OracleDataTypeHelperTest {
         }
 
         @ParameterizedTest(name = "[{index}] \"{0}\" -> Types.CHAR without a catalog")
+        @DisplayName("NCHAR and NVARCHAR2 both map to the fixed-length Types.CHAR")
         @ValueSource(strings = {"NCHAR", "NVARCHAR2"})
         void nationalCharTypes_returnsChar(String dataType) {
             // DEFECT: NVARCHAR2 is variable length but is mapped to the fixed-length Types.CHAR,
@@ -188,6 +191,7 @@ class OracleDataTypeHelperTest {
         }
 
         @ParameterizedTest(name = "[{index}] \"{0}\" -> Types.CLOB without a catalog")
+        @DisplayName("NCLOB and LONG map to Types.CLOB")
         @ValueSource(strings = {"NCLOB", "LONG"})
         void characterLobTypes_returnsClob(String dataType) {
             assertThat(HELPER.getJdbcDataTypeID(null, dataType, null, null)).isEqualTo(Types.CLOB);
@@ -215,6 +219,7 @@ class OracleDataTypeHelperTest {
         }
 
         @ParameterizedTest(name = "[{index}] \"{0}\" -> null (unmigratable type)")
+        @DisplayName("BFILE, ROWID and UROWID have no CUBRID counterpart")
         @ValueSource(strings = {"BFILE", "ROWID", "UROWID"})
         void unmigratableTypes_returnsNull(String dataType) {
             assertThat(HELPER.getJdbcDataTypeID(null, dataType, null, null)).isNull();
@@ -310,6 +315,7 @@ class OracleDataTypeHelperTest {
     class GetShownDataType {
 
         @ParameterizedTest(name = "[{index}] {0}(p={1}, s={2}) -> \"{3}\"")
+        @DisplayName("default FLOAT and unspecified NUMBER hide their precision, others show it")
         @CsvSource(
                 nullValues = "null",
                 value = {
@@ -374,6 +380,7 @@ class OracleDataTypeHelperTest {
         }
 
         @ParameterizedTest(name = "[{index}] {0} without precision -> \"{1}\"")
+        @DisplayName("an unset precision renders as a literal 0, which is invalid DDL")
         @CsvSource({
             // DEFECT: Column.getPrecision()/getScale() coerce an unset value to 0, so an
             // unspecified length is rendered as a literal 0 and produces invalid Oracle DDL
@@ -415,18 +422,21 @@ class OracleDataTypeHelperTest {
     class IsBinary {
 
         @ParameterizedTest(name = "[{index}] \"{0}\" -> true")
+        @DisplayName("blob is binary in either case")
         @ValueSource(strings = {"blob", "BLOB"})
         void blob_returnsTrue(String dataType) {
             assertThat(HELPER.isBinary(dataType)).isTrue();
         }
 
         @ParameterizedTest(name = "[{index}] \"{0}\" -> false")
+        @DisplayName("CLOB, RAW and LONG RAW are not binary")
         @ValueSource(strings = {"CLOB", "RAW", "LONG RAW"})
         void nonBlobTypes_returnsFalse(String dataType) {
             assertThat(HELPER.isBinary(dataType)).isFalse();
         }
 
         @ParameterizedTest(name = "[{index}] null or empty -> false")
+        @DisplayName("null and empty are not binary")
         @NullAndEmptySource
         void nullOrEmptyDataType_returnsFalse(String dataType) {
             assertThat(HELPER.isBinary(dataType)).isFalse();
@@ -438,6 +448,7 @@ class OracleDataTypeHelperTest {
     class IsCollection {
 
         @ParameterizedTest(name = "[{index}] \"{0}\" -> false")
+        @DisplayName("Oracle has no collection types, so every input is false")
         @CsvSource(
                 nullValues = "null",
                 value = {"SET", "set", "set(int)", "multiset", "list", "VARCHAR2", "null", "''"})

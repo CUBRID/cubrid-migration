@@ -79,10 +79,90 @@ class MariaDBDataTypeHelperTest {
     }
 
     @Nested
+    @DisplayName("getJdbcDataTypeID()")
+    class GetJdbcDataTypeID {
+
+        @Test
+        @DisplayName("single supported type -> its jdbc type id")
+        void singleSupportedType_returnsJdbcTypeId() {
+            Catalog catalog = createCatalog("INTEGER", Types.INTEGER);
+
+            assertThat(HELPER.getJdbcDataTypeID(catalog, "INTEGER", null, null))
+                    .isEqualTo(Types.INTEGER);
+        }
+
+        @Test
+        @DisplayName("precision and scale are ignored when the type is unambiguous")
+        void unambiguousType_ignoresPrecisionAndScale() {
+            Catalog catalog = createCatalog("VARCHAR", Types.VARCHAR);
+
+            assertThat(HELPER.getJdbcDataTypeID(catalog, "VARCHAR", 200, null))
+                    .isEqualTo(Types.VARCHAR);
+        }
+
+        @Test
+        @DisplayName("lookup key is case sensitive -> IllegalArgumentException")
+        void differentCaseKey_throwsIllegalArgumentException() {
+            Catalog catalog = createCatalog("INTEGER", Types.INTEGER);
+
+            assertThatThrownBy(() -> HELPER.getJdbcDataTypeID(catalog, "integer", null, null))
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessage("Not supported MariaDB data type(integer)");
+        }
+
+        @Test
+        @DisplayName("unknown type -> IllegalArgumentException")
+        void unknownType_throwsIllegalArgumentException() {
+            assertThatThrownBy(
+                            () -> HELPER.getJdbcDataTypeID(new Catalog(), "testnotype", null, null))
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessage("Not supported MariaDB data type(testnotype)");
+        }
+
+        @Test
+        @DisplayName("several candidate types -> IllegalArgumentException with precision and scale")
+        void ambiguousType_throwsIllegalArgumentException() {
+            Catalog catalog =
+                    createCatalog(
+                            "INT",
+                            createDataType("INT", Types.INTEGER),
+                            createDataType("INT", Types.BIGINT));
+
+            // DEFECT: the message contains a double space after "Not supported"
+            // - see MariaDBDataTypeHelper.getJdbcDataTypeID()
+            assertThatThrownBy(() -> HELPER.getJdbcDataTypeID(catalog, "INT", 10, 0))
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessage("Not supported  MariaDB data type(INT: p=10, s=0)");
+        }
+
+        @Test
+        @DisplayName("empty candidate list -> IllegalArgumentException of the ambiguous branch")
+        void emptyCandidateList_throwsIllegalArgumentException() {
+            Catalog catalog = createCatalog("VARCHAR");
+
+            // DEFECT: an empty candidate list is not the ambiguous case, but the size == 1 check
+            // sends it to the ambiguous message anyway
+            // - see MariaDBDataTypeHelper.getJdbcDataTypeID()
+            assertThatThrownBy(() -> HELPER.getJdbcDataTypeID(catalog, "VARCHAR", 200, null))
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessage("Not supported  MariaDB data type(VARCHAR: p=200, s=null)");
+        }
+
+        @Test
+        @DisplayName("null type -> IllegalArgumentException")
+        void nullDataType_throwsIllegalArgumentException() {
+            assertThatThrownBy(() -> HELPER.getJdbcDataTypeID(new Catalog(), null, null, null))
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessage("Not supported MariaDB data type(null)");
+        }
+    }
+
+    @Nested
     @DisplayName("getShownDataType()")
     class GetShownDataType {
 
         @ParameterizedTest(name = "[{index}] {0}(p={1}, s={2}) -> \"{3}\"")
+        @DisplayName("each DATA_TYPE list decides whether precision and scale are shown")
         @CsvSource({
             // DATA_TYPE_1: precision and scale are never shown.
             "tinyblob,      0,  2,  tinyblob",
@@ -127,6 +207,7 @@ class MariaDBDataTypeHelperTest {
         }
 
         @ParameterizedTest(name = "[{index}] {0}(p=10, s=2) -> \"{1}\"")
+        @DisplayName("the unsigned keyword moves behind the argument list")
         @CsvSource({
             "'float unsigned',      'float(10,2) unsigned'",
             "'decimal unsigned',    'decimal(10,2) unsigned'",
@@ -135,7 +216,7 @@ class MariaDBDataTypeHelperTest {
             "'blob unsigned',       'blob unsigned'",
             "'enum unsigned',       'enum unsigned'",
         })
-        void unsignedTypes_keepUnsignedSuffixAfterPrecision(String dataType, String expected) {
+        void unsignedTypes_keepsUnsignedSuffixAfterPrecision(String dataType, String expected) {
             assertThat(HELPER.getShownDataType(createColumn(dataType, 10, 2))).isEqualTo(expected);
         }
 
@@ -157,7 +238,7 @@ class MariaDBDataTypeHelperTest {
 
         @Test
         @DisplayName("uppercase CHAR -> precision dropped")
-        void uppercaseType_losePrecision() {
+        void uppercaseType_losesPrecision() {
             // DEFECT: the type lists are matched case sensitively, so an uppercase data type
             // silently falls through to the "unknown type" branch and loses its precision
             // - see MariaDBDataTypeHelper.getShownDataType()
@@ -166,7 +247,7 @@ class MariaDBDataTypeHelperTest {
 
         @Test
         @DisplayName("null precision and scale -> rendered as 0")
-        void nullPrecisionAndScale_renderZero() {
+        void nullPrecisionAndScale_rendersZero() {
             // Column.getPrecision()/getScale() substitute 0 for null, so the helper never sees null
             // - see Column.getPrecision()
             assertThat(HELPER.getShownDataType(createColumn("char", null, null)))
@@ -190,10 +271,83 @@ class MariaDBDataTypeHelperTest {
     }
 
     @Nested
+    @DisplayName("isBinary()")
+    class IsBinary {
+
+        @ParameterizedTest(name = "[{index}] \"{0}\" -> true")
+        @DisplayName("the blob family and bit are binary")
+        @ValueSource(strings = {"blob", "tinyblob", "mediumblob", "longblob", "bit"})
+        void blobAndBitTypes_returnsTrue(String dataType) {
+            assertThat(HELPER.isBinary(dataType)).isTrue();
+        }
+
+        @ParameterizedTest(name = "[{index}] \"{0}\" -> false")
+        @DisplayName("int and the text family are not binary")
+        @ValueSource(strings = {"int", "text", "tinytext", "varchar"})
+        void nonBinaryTypes_returnsFalse(String dataType) {
+            assertThat(HELPER.isBinary(dataType)).isFalse();
+        }
+
+        @ParameterizedTest(name = "[{index}] \"{0}\" -> false")
+        @DisplayName("binary and varbinary are absent from DATA_TYPE_5")
+        @ValueSource(strings = {"binary", "varbinary"})
+        void byteStringTypes_returnsFalse(String dataType) {
+            // DEFECT: binary/varbinary hold raw bytes and the base class lists them in
+            // BINARY_TYPES, but DATA_TYPE_5 omits them so isBinary() reports false
+            // - see MariaDBDataTypeHelper.DATA_TYPE_5
+            assertThat(HELPER.isBinary(dataType)).isFalse();
+        }
+
+        @ParameterizedTest(name = "[{index}] \"{0}\" -> false")
+        @DisplayName("case, an argument list or a leading space all defeat the lookup")
+        @ValueSource(strings = {"BLOB", "Blob", "blob(10)", "bit(1)", " blob"})
+        void unnormalizedBinaryTypes_returnsFalse(String dataType) {
+            // DEFECT: isBinary() does an exact list lookup instead of the checkType()
+            // normalization used by isCollection()/isYear(), so case and precision defeat it
+            // - see MariaDBDataTypeHelper.isBinary()
+            assertThat(HELPER.isBinary(dataType)).isFalse();
+        }
+
+        @ParameterizedTest(name = "[{index}] null or empty -> false")
+        @DisplayName("null and empty are not binary")
+        @NullAndEmptySource
+        void nullOrEmptyDataType_returnsFalse(String dataType) {
+            assertThat(HELPER.isBinary(dataType)).isFalse();
+        }
+    }
+
+    @Nested
+    @DisplayName("isCollection()")
+    class IsCollection {
+
+        @ParameterizedTest(name = "[{index}] \"{0}\" -> true")
+        @DisplayName("set is a collection in any case and with any argument list")
+        @ValueSource(strings = {"set", "SET", "Set", "set(int)", "SET('a','b')"})
+        void setTypes_returnsTrue(String dataType) {
+            assertThat(HELPER.isCollection(dataType)).isTrue();
+        }
+
+        @ParameterizedTest(name = "[{index}] \"{0}\" -> false")
+        @DisplayName("enum is a sibling type but not a collection")
+        @ValueSource(strings = {"enum", "int", "setof"})
+        void nonSetTypes_returnsFalse(String dataType) {
+            assertThat(HELPER.isCollection(dataType)).isFalse();
+        }
+
+        @ParameterizedTest(name = "[{index}] null or empty -> false")
+        @DisplayName("null and empty are not a collection")
+        @NullAndEmptySource
+        void nullOrEmptyDataType_returnsFalse(String dataType) {
+            assertThat(HELPER.isCollection(dataType)).isFalse();
+        }
+    }
+
+    @Nested
     @DisplayName("parseMainType()")
     class ParseMainType {
 
         @ParameterizedTest(name = "[{index}] \"{0}\" -> \"{1}\"")
+        @DisplayName("the argument list is dropped but a trailing unsigned survives")
         @CsvSource({
             "'decimal(5,2)',            decimal",
             "char(10),                  char",
@@ -212,15 +366,15 @@ class MariaDBDataTypeHelperTest {
         }
 
         @Test
-        @DisplayName("empty string -> empty string")
-        void emptyDataType_returnsEmptyString() {
-            assertThat(HELPER.parseMainType("")).isEmpty();
-        }
-
-        @Test
         @DisplayName("leading parenthesis -> empty string")
         void leadingParenthesis_returnsEmptyString() {
             assertThat(HELPER.parseMainType("(10)")).isEmpty();
+        }
+
+        @Test
+        @DisplayName("empty string -> empty string")
+        void emptyDataType_returnsEmptyString() {
+            assertThat(HELPER.parseMainType("")).isEmpty();
         }
 
         @Test
@@ -232,76 +386,11 @@ class MariaDBDataTypeHelperTest {
     }
 
     @Nested
-    @DisplayName("parseTypeRemain()")
-    class ParseTypeRemain {
-
-        @ParameterizedTest(name = "[{index}] \"{0}\" -> {1}")
-        @CsvSource(
-                nullValues = "null",
-                value = {
-                    "Integer(5),        5",
-                    "char(10),          10",
-                    "'decimal(5,2)',    '5,2'",
-                    "enum(int),         int",
-                    "set(int),          int",
-                    "integer,           null",
-                    "enum,              null",
-                })
-        void variousTypes_returnsRemainPart(String type, String expected) {
-            assertThat(HELPER.parseTypeRemain(type)).isEqualTo(expected);
-        }
-
-        @Test
-        @DisplayName("empty string -> null")
-        void emptyDataType_returnsNull() {
-            assertThat(HELPER.parseTypeRemain("")).isNull();
-        }
-
-        @Test
-        @DisplayName("empty parenthesis -> empty string")
-        void emptyParenthesis_returnsEmptyString() {
-            assertThat(HELPER.parseTypeRemain("char()")).isEmpty();
-        }
-
-        @Test
-        @DisplayName("unsigned type -> truncated remain part")
-        void unsignedType_returnsTruncatedRemainPart() {
-            // DEFECT: the remain part is cut at length()-1 assuming ')' is the last character, so
-            // everything after the closing parenthesis leaks in minus its last character
-            // - see MariaDBDataTypeHelper.parseTypeRemain()
-            assertThat(HELPER.parseTypeRemain("int(10) unsigned")).isEqualTo("10) unsigne");
-            assertThat(HELPER.parseTypeRemain("decimal(10,2) unsigned")).isEqualTo("10,2) unsigne");
-        }
-
-        @Test
-        @DisplayName("unclosed parenthesis -> StringIndexOutOfBoundsException")
-        void unclosedParenthesis_throwsStringIndexOutOfBoundsException() {
-            // DEFECT: substring(index + 1, length() - 1) inverts its bounds when '(' is the
-            // last character, so an unclosed type crashes instead of returning null
-            // - see MariaDBDataTypeHelper.parseTypeRemain()
-            assertThatThrownBy(() -> HELPER.parseTypeRemain("char("))
-                    .isInstanceOf(StringIndexOutOfBoundsException.class);
-        }
-
-        @Test
-        @DisplayName("quoted enum elements -> the element list with the quotes kept")
-        void quotedEnumElements_returnsElementListWithQuotes() {
-            assertThat(HELPER.parseTypeRemain("enum('a','b')")).isEqualTo("'a','b'");
-        }
-
-        @Test
-        @DisplayName("null -> NullPointerException")
-        void nullDataType_throwsNullPointerException() {
-            assertThatThrownBy(() -> HELPER.parseTypeRemain(null))
-                    .isInstanceOf(NullPointerException.class);
-        }
-    }
-
-    @Nested
     @DisplayName("parsePrecision()")
     class ParsePrecision {
 
         @ParameterizedTest(name = "[{index}] \"{0}\" -> {1}")
+        @DisplayName("the first argument, -1 for enum/set and for a bare type")
         @CsvSource({
             "'decimal(5,2)',            5",
             "char(10),                  10",
@@ -326,6 +415,7 @@ class MariaDBDataTypeHelperTest {
         }
 
         @ParameterizedTest(name = "[{index}] \"{0}\" -> NumberFormatException")
+        @DisplayName("an empty or non numeric argument is not rejected, it is parsed")
         @ValueSource(strings = {"char()", "char(abc)"})
         void nonNumericRemainPart_throwsNumberFormatException(String type) {
             assertThatThrownBy(() -> HELPER.parsePrecision(type))
@@ -355,6 +445,7 @@ class MariaDBDataTypeHelperTest {
     class ParseScale {
 
         @ParameterizedTest(name = "[{index}] \"{0}\" -> {1}")
+        @DisplayName("the second argument, null when there is only one")
         @CsvSource(
                 nullValues = "null",
                 value = {
@@ -398,66 +489,69 @@ class MariaDBDataTypeHelperTest {
     }
 
     @Nested
-    @DisplayName("isBinary()")
-    class IsBinary {
+    @DisplayName("parseTypeRemain()")
+    class ParseTypeRemain {
 
-        @ParameterizedTest(name = "[{index}] \"{0}\" -> true")
-        @ValueSource(strings = {"blob", "tinyblob", "mediumblob", "longblob", "bit"})
-        void blobAndBitTypes_returnsTrue(String dataType) {
-            assertThat(HELPER.isBinary(dataType)).isTrue();
+        @ParameterizedTest(name = "[{index}] \"{0}\" -> {1}")
+        @DisplayName("the text between the parentheses, null when there is none")
+        @CsvSource(
+                nullValues = "null",
+                value = {
+                    "Integer(5),        5",
+                    "char(10),          10",
+                    "'decimal(5,2)',    '5,2'",
+                    "enum(int),         int",
+                    "set(int),          int",
+                    "integer,           null",
+                    "enum,              null",
+                })
+        void variousTypes_returnsRemainPart(String type, String expected) {
+            assertThat(HELPER.parseTypeRemain(type)).isEqualTo(expected);
         }
 
-        @ParameterizedTest(name = "[{index}] \"{0}\" -> false")
-        @ValueSource(strings = {"int", "text", "tinytext", "varchar"})
-        void nonBinaryTypes_returnsFalse(String dataType) {
-            assertThat(HELPER.isBinary(dataType)).isFalse();
+        @Test
+        @DisplayName("empty parenthesis -> empty string")
+        void emptyParenthesis_returnsEmptyString() {
+            assertThat(HELPER.parseTypeRemain("char()")).isEmpty();
         }
 
-        @ParameterizedTest(name = "[{index}] \"{0}\" -> false")
-        @ValueSource(strings = {"binary", "varbinary"})
-        void byteStringTypes_returnsFalse(String dataType) {
-            // DEFECT: binary/varbinary hold raw bytes and the base class lists them in
-            // BINARY_TYPES, but DATA_TYPE_5 omits them so isBinary() reports false
-            // - see MariaDBDataTypeHelper.DATA_TYPE_5
-            assertThat(HELPER.isBinary(dataType)).isFalse();
+        @Test
+        @DisplayName("unsigned type -> truncated remain part")
+        void unsignedType_returnsTruncatedRemainPart() {
+            // DEFECT: the remain part is cut at length()-1 assuming ')' is the last character, so
+            // everything after the closing parenthesis leaks in minus its last character
+            // - see MariaDBDataTypeHelper.parseTypeRemain()
+            assertThat(HELPER.parseTypeRemain("int(10) unsigned")).isEqualTo("10) unsigne");
+            assertThat(HELPER.parseTypeRemain("decimal(10,2) unsigned")).isEqualTo("10,2) unsigne");
         }
 
-        @ParameterizedTest(name = "[{index}] \"{0}\" -> false")
-        @ValueSource(strings = {"BLOB", "Blob", "blob(10)", "bit(1)", " blob"})
-        void unnormalizedBinaryTypes_returnsFalse(String dataType) {
-            // DEFECT: isBinary() does an exact list lookup instead of the checkType()
-            // normalization used by isCollection()/isYear(), so case and precision defeat it
-            // - see MariaDBDataTypeHelper.isBinary()
-            assertThat(HELPER.isBinary(dataType)).isFalse();
+        @Test
+        @DisplayName("unclosed parenthesis -> StringIndexOutOfBoundsException")
+        void unclosedParenthesis_throwsStringIndexOutOfBoundsException() {
+            // DEFECT: substring(index + 1, length() - 1) inverts its bounds when '(' is the
+            // last character, so an unclosed type crashes instead of returning null
+            // - see MariaDBDataTypeHelper.parseTypeRemain()
+            assertThatThrownBy(() -> HELPER.parseTypeRemain("char("))
+                    .isInstanceOf(StringIndexOutOfBoundsException.class);
         }
 
-        @ParameterizedTest(name = "[{index}] null or empty -> false")
-        @NullAndEmptySource
-        void nullOrEmptyDataType_returnsFalse(String dataType) {
-            assertThat(HELPER.isBinary(dataType)).isFalse();
-        }
-    }
-
-    @Nested
-    @DisplayName("isCollection()")
-    class IsCollection {
-
-        @ParameterizedTest(name = "[{index}] \"{0}\" -> true")
-        @ValueSource(strings = {"set", "SET", "Set", "set(int)", "SET('a','b')"})
-        void setTypes_returnsTrue(String dataType) {
-            assertThat(HELPER.isCollection(dataType)).isTrue();
+        @Test
+        @DisplayName("quoted enum elements -> the element list with the quotes kept")
+        void quotedEnumElements_returnsElementListWithQuotes() {
+            assertThat(HELPER.parseTypeRemain("enum('a','b')")).isEqualTo("'a','b'");
         }
 
-        @ParameterizedTest(name = "[{index}] \"{0}\" -> false")
-        @ValueSource(strings = {"enum", "int", "setof"})
-        void nonSetTypes_returnsFalse(String dataType) {
-            assertThat(HELPER.isCollection(dataType)).isFalse();
+        @Test
+        @DisplayName("empty string -> null")
+        void emptyDataType_returnsNull() {
+            assertThat(HELPER.parseTypeRemain("")).isNull();
         }
 
-        @ParameterizedTest(name = "[{index}] null or empty -> false")
-        @NullAndEmptySource
-        void nullOrEmptyDataType_returnsFalse(String dataType) {
-            assertThat(HELPER.isCollection(dataType)).isFalse();
+        @Test
+        @DisplayName("null -> NullPointerException")
+        void nullDataType_throwsNullPointerException() {
+            assertThatThrownBy(() -> HELPER.parseTypeRemain(null))
+                    .isInstanceOf(NullPointerException.class);
         }
     }
 
@@ -466,100 +560,24 @@ class MariaDBDataTypeHelperTest {
     class IsYear {
 
         @ParameterizedTest(name = "[{index}] \"{0}\" -> true")
+        @DisplayName("year is matched in any case and with a precision")
         @ValueSource(strings = {"year", "YEAR", "year(4)"})
         void yearTypes_returnsTrue(String dataType) {
             assertThat(HELPER.isYear(dataType)).isTrue();
         }
 
         @ParameterizedTest(name = "[{index}] \"{0}\" -> false")
+        @DisplayName("the other date and time types are not year")
         @ValueSource(strings = {"int", "date", "datetime"})
         void nonYearTypes_returnsFalse(String dataType) {
             assertThat(HELPER.isYear(dataType)).isFalse();
         }
 
         @ParameterizedTest(name = "[{index}] null or empty -> false")
+        @DisplayName("null and empty are not year")
         @NullAndEmptySource
         void nullOrEmptyDataType_returnsFalse(String dataType) {
             assertThat(HELPER.isYear(dataType)).isFalse();
-        }
-    }
-
-    @Nested
-    @DisplayName("getJdbcDataTypeID()")
-    class GetJdbcDataTypeID {
-
-        @Test
-        @DisplayName("single supported type -> its jdbc type id")
-        void singleSupportedType_returnsJdbcTypeId() {
-            Catalog catalog = createCatalog("INTEGER", Types.INTEGER);
-
-            assertThat(HELPER.getJdbcDataTypeID(catalog, "INTEGER", null, null))
-                    .isEqualTo(Types.INTEGER);
-        }
-
-        @Test
-        @DisplayName("precision and scale are ignored when the type is unambiguous")
-        void unambiguousType_ignorePrecisionAndScale() {
-            Catalog catalog = createCatalog("VARCHAR", Types.VARCHAR);
-
-            assertThat(HELPER.getJdbcDataTypeID(catalog, "VARCHAR", 200, null))
-                    .isEqualTo(Types.VARCHAR);
-        }
-
-        @Test
-        @DisplayName("lookup key is case sensitive -> IllegalArgumentException")
-        void differentCaseKey_throwsIllegalArgumentException() {
-            Catalog catalog = createCatalog("INTEGER", Types.INTEGER);
-
-            assertThatThrownBy(() -> HELPER.getJdbcDataTypeID(catalog, "integer", null, null))
-                    .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessage("Not supported MariaDB data type(integer)");
-        }
-
-        @Test
-        @DisplayName("unknown type -> IllegalArgumentException")
-        void unknownType_throwsIllegalArgumentException() {
-            assertThatThrownBy(
-                            () -> HELPER.getJdbcDataTypeID(new Catalog(), "testnotype", null, null))
-                    .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessage("Not supported MariaDB data type(testnotype)");
-        }
-
-        @Test
-        @DisplayName("null type -> IllegalArgumentException")
-        void nullDataType_throwsIllegalArgumentException() {
-            assertThatThrownBy(() -> HELPER.getJdbcDataTypeID(new Catalog(), null, null, null))
-                    .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessage("Not supported MariaDB data type(null)");
-        }
-
-        @Test
-        @DisplayName("several candidate types -> IllegalArgumentException with precision and scale")
-        void ambiguousType_throwsIllegalArgumentException() {
-            Catalog catalog =
-                    createCatalog(
-                            "INT",
-                            createDataType("INT", Types.INTEGER),
-                            createDataType("INT", Types.BIGINT));
-
-            // DEFECT: the message contains a double space after "Not supported"
-            // - see MariaDBDataTypeHelper.getJdbcDataTypeID()
-            assertThatThrownBy(() -> HELPER.getJdbcDataTypeID(catalog, "INT", 10, 0))
-                    .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessage("Not supported  MariaDB data type(INT: p=10, s=0)");
-        }
-
-        @Test
-        @DisplayName("empty candidate list -> IllegalArgumentException of the ambiguous branch")
-        void emptyCandidateList_throwsIllegalArgumentException() {
-            Catalog catalog = createCatalog("VARCHAR");
-
-            // DEFECT: an empty candidate list is not the ambiguous case, but the size == 1 check
-            // sends it to the ambiguous message anyway
-            // - see MariaDBDataTypeHelper.getJdbcDataTypeID()
-            assertThatThrownBy(() -> HELPER.getJdbcDataTypeID(catalog, "VARCHAR", 200, null))
-                    .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessage("Not supported  MariaDB data type(VARCHAR: p=200, s=null)");
         }
     }
 }

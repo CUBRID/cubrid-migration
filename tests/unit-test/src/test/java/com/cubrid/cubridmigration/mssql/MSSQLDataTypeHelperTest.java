@@ -162,22 +162,6 @@ class MSSQLDataTypeHelperTest {
         }
 
         @Test
-        @DisplayName("null type name -> IllegalArgumentException")
-        void nullDataType_throwsIllegalArgumentException() {
-            assertThatThrownBy(() -> HELPER.getJdbcDataTypeID(new Catalog(), null, null, null))
-                    .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessage("Not supported SQL Server data type(null)");
-        }
-
-        @Test
-        @DisplayName("empty type name -> IllegalArgumentException")
-        void emptyDataType_throwsIllegalArgumentException() {
-            assertThatThrownBy(() -> HELPER.getJdbcDataTypeID(new Catalog(), "", null, null))
-                    .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessage("Not supported SQL Server data type()");
-        }
-
-        @Test
         @DisplayName("ambiguous type name -> IllegalArgumentException naming precision and scale")
         void multipleSupportedTypes_throwsIllegalArgumentException() {
             Catalog catalog =
@@ -205,6 +189,22 @@ class MSSQLDataTypeHelperTest {
                     .isInstanceOf(IllegalArgumentException.class)
                     .hasMessage("Not supported  SQL Server data type(varchar: p=10, s=null)");
         }
+
+        @Test
+        @DisplayName("null type name -> IllegalArgumentException")
+        void nullDataType_throwsIllegalArgumentException() {
+            assertThatThrownBy(() -> HELPER.getJdbcDataTypeID(new Catalog(), null, null, null))
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessage("Not supported SQL Server data type(null)");
+        }
+
+        @Test
+        @DisplayName("empty type name -> IllegalArgumentException")
+        void emptyDataType_throwsIllegalArgumentException() {
+            assertThatThrownBy(() -> HELPER.getJdbcDataTypeID(new Catalog(), "", null, null))
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessage("Not supported SQL Server data type()");
+        }
     }
 
     @Nested
@@ -215,6 +215,7 @@ class MSSQLDataTypeHelperTest {
         // buildTableColumns() and buildViewColumns(). It is the user visible mapping label.
 
         @ParameterizedTest(name = "[{index}] {0}(p={1}, s={2}) -> \"{3}\"")
+        @DisplayName("text and xml render bare, every other string family takes a precision")
         @CsvSource({
             // text and xml match the "/text/xml/" branch before the string branch is reached,
             // so no precision is appended.
@@ -260,13 +261,14 @@ class MSSQLDataTypeHelperTest {
             "image,              10,   2,   image",
             "timestamp,          10,   2,   timestamp",
         })
-        void variousDataTypes_renderTheDialectSpecificShownType(
+        void variousDataTypes_rendersTheDialectSpecificShownType(
                 String dataType, Integer precision, Integer scale, String expected) {
             assertThat(HELPER.getShownDataType(createColumn(dataType, precision, scale)))
                     .isEqualTo(expected);
         }
 
         @ParameterizedTest(name = "[{index}] \"{0}\" -> \"{1}\"")
+        @DisplayName("classification is case insensitive but the name is echoed verbatim")
         @CsvSource({
             "VARCHAR,     VARCHAR(10)",
             "NUMERIC,     'NUMERIC(10,2)'",
@@ -319,31 +321,6 @@ class MSSQLDataTypeHelperTest {
         }
 
         @Test
-        @DisplayName("null data type -> empty string")
-        void nullDataType_returnsEmptyString() {
-            assertThat(HELPER.getShownDataType(createColumn(null, 10, 2))).isEmpty();
-        }
-
-        @Test
-        @DisplayName("empty data type -> empty string")
-        void emptyDataType_returnsEmptyString() {
-            assertThat(HELPER.getShownDataType(createColumn("", 10, 2))).isEmpty();
-        }
-
-        @Test
-        @DisplayName("blank data type -> empty string")
-        void blankDataType_returnsEmptyString() {
-            assertThat(HELPER.getShownDataType(createColumn("   ", 10, 2))).isEmpty();
-        }
-
-        @Test
-        @DisplayName("null column -> NullPointerException")
-        void nullColumn_throwsNullPointerException() {
-            assertThatThrownBy(() -> HELPER.getShownDataType(null))
-                    .isInstanceOf(NullPointerException.class);
-        }
-
-        @Test
         @DisplayName("missing precision -> zero length string type")
         void missingPrecision_returnsZeroLength() {
             // The helper cannot tell "no precision" from "precision 0", because
@@ -369,6 +346,31 @@ class MSSQLDataTypeHelperTest {
             assertThat(HELPER.getShownDataType(createColumn("varchar(10)", 10, null)))
                     .isEqualTo("varchar(10)(10)");
         }
+
+        @Test
+        @DisplayName("null data type -> empty string")
+        void nullDataType_returnsEmptyString() {
+            assertThat(HELPER.getShownDataType(createColumn(null, 10, 2))).isEmpty();
+        }
+
+        @Test
+        @DisplayName("empty data type -> empty string")
+        void emptyDataType_returnsEmptyString() {
+            assertThat(HELPER.getShownDataType(createColumn("", 10, 2))).isEmpty();
+        }
+
+        @Test
+        @DisplayName("blank data type -> empty string")
+        void blankDataType_returnsEmptyString() {
+            assertThat(HELPER.getShownDataType(createColumn("   ", 10, 2))).isEmpty();
+        }
+
+        @Test
+        @DisplayName("null column -> NullPointerException")
+        void nullColumn_throwsNullPointerException() {
+            assertThatThrownBy(() -> HELPER.getShownDataType(null))
+                    .isInstanceOf(NullPointerException.class);
+        }
     }
 
     @Nested
@@ -376,6 +378,7 @@ class MSSQLDataTypeHelperTest {
     class IsBinary {
 
         @ParameterizedTest(name = "[{index}] \"{0}\" -> {1}")
+        @DisplayName("MSSQL_BIN_TYPES replaces the inherited list rather than extending it")
         @CsvSource(
                 nullValues = "null",
                 value = {
@@ -404,7 +407,7 @@ class MSSQLDataTypeHelperTest {
                     "null,                false",
                     "'',                  false",
                 })
-        void variousDataTypes_classifyBinaryFamily(String dataType, boolean expected) {
+        void variousDataTypes_classifiesBinaryFamily(String dataType, boolean expected) {
             assertThat(HELPER.isBinary(dataType)).isEqualTo(expected);
         }
 
@@ -420,6 +423,7 @@ class MSSQLDataTypeHelperTest {
     class IsCollection {
 
         @ParameterizedTest(name = "[{index}] \"{0}\" -> false")
+        @DisplayName("SQL Server has no collection types, so every input is false")
         @CsvSource({
             "set",
             "set(int)",
@@ -436,6 +440,7 @@ class MSSQLDataTypeHelperTest {
     class IsNVarchar {
 
         @ParameterizedTest(name = "[{index}] \"{0}\" -> {1}")
+        @DisplayName("ntext, xml and sysname join the inherited national varchar names")
         @CsvSource(
                 nullValues = "null",
                 value = {
@@ -461,7 +466,7 @@ class MSSQLDataTypeHelperTest {
                     "null,                         false",
                     "'',                           false",
                 })
-        void variousDataTypes_classifyNvarcharFamily(String dataType, boolean expected) {
+        void variousDataTypes_classifiesNvarcharFamily(String dataType, boolean expected) {
             assertThat(HELPER.isNVarchar(dataType)).isEqualTo(expected);
         }
     }
@@ -471,6 +476,7 @@ class MSSQLDataTypeHelperTest {
     class IsVarchar {
 
         @ParameterizedTest(name = "[{index}] \"{0}\" -> {1}")
+        @DisplayName("text and uniqueidentifier join the inherited varchar names")
         @CsvSource(
                 nullValues = "null",
                 value = {
@@ -497,7 +503,7 @@ class MSSQLDataTypeHelperTest {
                     "null,                  false",
                     "'',                    false",
                 })
-        void variousDataTypes_classifyVarcharFamily(String dataType, boolean expected) {
+        void variousDataTypes_classifiesVarcharFamily(String dataType, boolean expected) {
             assertThat(HELPER.isVarchar(dataType)).isEqualTo(expected);
         }
     }
@@ -507,6 +513,7 @@ class MSSQLDataTypeHelperTest {
     class IsString {
 
         @ParameterizedTest(name = "[{index}] \"{0}\" -> {1}")
+        @DisplayName("char plus whatever the isVarchar() override accepts")
         @CsvSource(
                 nullValues = "null",
                 value = {
@@ -523,7 +530,7 @@ class MSSQLDataTypeHelperTest {
                     "image,                 false",
                     "null,                  false",
                 })
-        void variousDataTypes_classifyNonNationalStrings(String dataType, boolean expected) {
+        void variousDataTypes_classifiesNonNationalStrings(String dataType, boolean expected) {
             assertThat(HELPER.isString(dataType)).isEqualTo(expected);
         }
     }
@@ -533,6 +540,7 @@ class MSSQLDataTypeHelperTest {
     class IsNString {
 
         @ParameterizedTest(name = "[{index}] \"{0}\" -> {1}")
+        @DisplayName("nchar plus whatever the isNVarchar() override accepts")
         @CsvSource(
                 nullValues = "null",
                 value = {
@@ -549,7 +557,7 @@ class MSSQLDataTypeHelperTest {
                     "image,                 false",
                     "null,                  false",
                 })
-        void variousDataTypes_classifyNationalStrings(String dataType, boolean expected) {
+        void variousDataTypes_classifiesNationalStrings(String dataType, boolean expected) {
             assertThat(HELPER.isNString(dataType)).isEqualTo(expected);
         }
     }
@@ -559,6 +567,7 @@ class MSSQLDataTypeHelperTest {
     class IsGenericString {
 
         @ParameterizedTest(name = "[{index}] \"{0}\" -> {1}")
+        @DisplayName("both families together, so all five extensions are strings")
         @CsvSource(
                 nullValues = "null",
                 value = {
@@ -579,7 +588,7 @@ class MSSQLDataTypeHelperTest {
                     "bit,                   false",
                     "null,                  false",
                 })
-        void variousDataTypes_classifyAllStringFamilies(String dataType, boolean expected) {
+        void variousDataTypes_classifiesAllStringFamilies(String dataType, boolean expected) {
             assertThat(HELPER.isGenericString(dataType)).isEqualTo(expected);
         }
     }
