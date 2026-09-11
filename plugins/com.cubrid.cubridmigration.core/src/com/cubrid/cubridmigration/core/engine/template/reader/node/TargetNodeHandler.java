@@ -384,7 +384,7 @@ public class TargetNodeHandler extends DefaultHandler {
     }
 
     private void handleEndPartitionDdl() {
-        targetTable.getPartitionInfo().setDDL(sqlStatement.toString());
+        targetTable.getPartitionInfo().setDDL(sqlStatement.toString().trim());
         sqlStatement = null;
     }
 }

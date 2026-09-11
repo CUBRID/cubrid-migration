@@ -50,6 +50,7 @@ import com.cubrid.cubridmigration.core.dbobject.PartitionInfo;
 import com.cubrid.cubridmigration.core.dbobject.PartitionTable;
 import com.cubrid.cubridmigration.core.dbobject.Procedure;
 import com.cubrid.cubridmigration.core.dbobject.Schema;
+import com.cubrid.cubridmigration.core.dbobject.SchemaCatalog;
 import com.cubrid.cubridmigration.core.dbobject.Sequence;
 import com.cubrid.cubridmigration.core.dbobject.Synonym;
 import com.cubrid.cubridmigration.core.dbobject.Table;
@@ -141,6 +142,33 @@ public final class CUBRIDSchemaFetcher extends AbstractJDBCSchemaFetcher {
     public Catalog buildCatalog(Connection conn, ConnParameters cp, IBuildSchemaFilter filter)
             throws SQLException {
         Catalog catalog = super.buildCatalog(conn, cp, filter);
+        loadCUBRIDCatalogDetails(conn, catalog);
+        return catalog;
+    }
+
+    @Override
+    public Catalog buildSchemaObjects(
+            final Connection conn, final SchemaCatalog sc, List<String> schemaNames)
+            throws SQLException {
+        return buildSchemaObjects(conn, sc, schemaNames, null);
+    }
+
+    @Override
+    public Catalog buildSchemaObjects(
+            final Connection conn,
+            final SchemaCatalog sc,
+            List<String> schemaNames,
+            IBuildSchemaFilter filter)
+            throws SQLException {
+        Catalog catalog = super.buildSchemaObjects(conn, sc, schemaNames, filter);
+        if (catalog == null) {
+            return null;
+        }
+        loadCUBRIDCatalogDetails(conn, catalog);
+        return catalog;
+    }
+
+    private void loadCUBRIDCatalogDetails(Connection conn, Catalog catalog) throws SQLException {
         catalog.setDatabaseType(DatabaseType.CUBRID);
         catalog.setCreateSql(null);
         List<Schema> schemaList = catalog.getSchemas();
@@ -162,12 +190,7 @@ public final class CUBRIDSchemaFetcher extends AbstractJDBCSchemaFetcher {
             }
         }
 
-        // get partitions
-        buildPartitions(conn, catalog, catalog.getSchemas().get(0));
-
         catalog.setDBAGroup(getPrivilege(conn, catalog));
-
-        return catalog;
     }
 
     /**
@@ -1187,21 +1210,37 @@ public final class CUBRIDSchemaFetcher extends AbstractJDBCSchemaFetcher {
      *
      * @param conn Connection
      * @param catalog Catalog
-     * @param schema Schema
      * @throws SQLException e
      */
-    private void buildPartitions(final Connection conn, final Catalog catalog, final Schema schema)
+    @Override
+    protected void buildPartitions(
+            final Connection conn,
+            final Catalog catalog,
+            final Schema schema,
+            IBuildSchemaFilter filter)
             throws SQLException {
         ResultSet rs = null; // NOPMD
-        Statement stmt = null; // NOPMD
+        PreparedStatement stmt = null; // NOPMD
         try {
-            String sql =
-                    "SELECT class_name, partition_name, partition_class_name,"
-                            + " partition_type, partition_expr, partition_values"
-                            + " FROM db_partition";
+            // CUBRID < 11.2 has no user-schema concept: every class belongs to the single
+            // schema regardless of its actual owner, so the query must stay unscoped there.
+            boolean scopeByOwner = getDBVersion(conn) >= USERSCHEMA_VERSION;
 
-            stmt = conn.createStatement();
-            rs = stmt.executeQuery(sql);
+            String sql =
+                    scopeByOwner
+                            ? "SELECT p.class_name, p.partition_name, p.partition_class_name,"
+                                    + " p.partition_type, p.partition_expr, p.partition_values"
+                                    + " FROM db_partition p"
+                                    + " WHERE p.owner_name = ?"
+                            : "SELECT class_name, partition_name, partition_class_name,"
+                                    + " partition_type, partition_expr, partition_values"
+                                    + " FROM db_partition";
+
+            stmt = conn.prepareStatement(sql);
+            if (scopeByOwner) {
+                stmt.setString(1, schema.getName().toUpperCase(Locale.US));
+            }
+            rs = stmt.executeQuery();
 
             List<Table> partitionTables = new ArrayList<Table>();
             while (rs.next()) {

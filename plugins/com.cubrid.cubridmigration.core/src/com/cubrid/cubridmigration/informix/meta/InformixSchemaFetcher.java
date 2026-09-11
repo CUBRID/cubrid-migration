@@ -528,20 +528,6 @@ public class InformixSchemaFetcher extends AbstractJDBCSchemaFetcher {
         return ddl;
     }
 
-    /**
-     * build Partitions
-     *
-     * @param conn Connection
-     * @param catalog Catalog
-     * @param schema Schema
-     * @throws SQLException e
-     */
-    public void buildPartitions(final Connection conn, final Catalog catalog, final Schema schema)
-            throws SQLException {
-        // do nothing
-        // not yet implement
-    }
-
     public DatabaseType getDBType() {
         return DatabaseType.INFORMIX;
     }

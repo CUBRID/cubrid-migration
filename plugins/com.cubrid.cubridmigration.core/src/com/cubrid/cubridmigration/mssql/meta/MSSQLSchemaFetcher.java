@@ -251,7 +251,6 @@ public final class MSSQLSchemaFetcher extends AbstractJDBCSchemaFetcher {
         for (Schema schema : schemaList) {
             updateTableIdentityInfo(conn, catalogName, schema);
             buildViewDetails(conn, catalogName, sqlHelper, schema);
-            buildPartitions(conn, catalog, schema);
         }
 
         catalog.setTimezone(getTimezone(conn));
@@ -321,7 +320,12 @@ public final class MSSQLSchemaFetcher extends AbstractJDBCSchemaFetcher {
      * @param schema Schema
      * @throws SQLException e
      */
-    private void buildPartitions(final Connection conn, final Catalog catalog, final Schema schema)
+    @Override
+    protected void buildPartitions(
+            final Connection conn,
+            final Catalog catalog,
+            final Schema schema,
+            IBuildSchemaFilter filter)
             throws SQLException {
         String sql =
                 "SELECT a.[name], a.[data_space_id], b.[type_desc], b.[fanout],"

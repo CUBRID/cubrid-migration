@@ -298,6 +298,8 @@ public abstract class AbstractJDBCSchemaFetcher implements IDependOnDatabaseType
                     "buildSequence", false, () -> buildSequence(conn, catalog, schema, filter));
             runSchemaTask("buildSynonym", false, () -> buildSynonym(conn, catalog, schema, filter));
             runSchemaTask("buildGrant", false, () -> buildGrant(conn, catalog, schema, filter));
+            runSchemaTask(
+                    "buildPartitions", false, () -> buildPartitions(conn, catalog, schema, filter));
         }
         return catalog;
     }
@@ -397,6 +399,23 @@ public abstract class AbstractJDBCSchemaFetcher implements IDependOnDatabaseType
         runSchemaTask("buildSequence", false, () -> buildSequence(conn, catalog, schema, filter));
         runSchemaTask("buildSynonym", false, () -> buildSynonym(conn, catalog, schema, filter));
         runSchemaTask("buildGrant", false, () -> buildGrant(conn, catalog, schema, filter));
+        runSchemaTask(
+                "buildPartitions", false, () -> buildPartitions(conn, catalog, schema, filter));
+    }
+
+    /**
+     * Fetch table partition metadata of the given schema.
+     *
+     * @param conn Connection
+     * @param catalog Catalog
+     * @param schema Schema
+     * @param filter IBuildSchemaFilter
+     * @throws SQLException e
+     */
+    protected void buildPartitions(
+            Connection conn, Catalog catalog, Schema schema, IBuildSchemaFilter filter)
+            throws SQLException {
+        // do nothing
     }
 
     protected void buildGrant(

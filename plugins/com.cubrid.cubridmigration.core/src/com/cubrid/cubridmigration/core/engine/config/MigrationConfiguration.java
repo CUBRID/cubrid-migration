@@ -1691,6 +1691,12 @@ public class MigrationConfiguration {
      */
     private void buildTablePartitionCfg(SourceEntryTableConfig setc, Table srcTable, Table tt) {
         if (srcTable.getPartitionInfo() == null) {
+            PartitionInfo targetPartitionInfo = tt.getPartitionInfo();
+            if (setc.isCreatePartition()
+                    && targetPartitionInfo != null
+                    && StringUtils.isNotBlank(targetPartitionInfo.getDDL())) {
+                return;
+            }
             setc.setCreatePartition(false);
             tt.setPartitionInfo(null);
             return;

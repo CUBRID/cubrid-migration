@@ -139,8 +139,12 @@ public final class TiberoSchemaFetcher extends AbstractJDBCSchemaFetcher {
      * @param catalog Catalog
      * @param schema Schema
      */
+    @Override
     protected void buildPartitions(
-            final Connection conn, final Catalog catalog, final Schema schema) {
+            final Connection conn,
+            final Catalog catalog,
+            final Schema schema,
+            IBuildSchemaFilter filter) {
         partitionMetadataLoader.buildPartitions(conn, schema, factory);
     }
 
@@ -393,7 +397,6 @@ public final class TiberoSchemaFetcher extends AbstractJDBCSchemaFetcher {
         for (Table table : schema.getTables()) {
             table.setComment(commentEditor(comments.get(table.getName())));
         }
-        buildPartitions(conn, catalog, schema);
     }
 
     /**

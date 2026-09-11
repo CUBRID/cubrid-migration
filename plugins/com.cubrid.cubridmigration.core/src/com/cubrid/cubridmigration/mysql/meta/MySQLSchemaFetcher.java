@@ -163,7 +163,14 @@ public final class MySQLSchemaFetcher extends AbstractJDBCSchemaFetcher {
     @Override
     public Catalog buildSchemaObjects(Connection conn, SchemaCatalog sc, List<String> schemaNames)
             throws SQLException {
-        Catalog catalog = super.buildSchemaObjects(conn, sc, schemaNames);
+        return buildSchemaObjects(conn, sc, schemaNames, null);
+    }
+
+    @Override
+    public Catalog buildSchemaObjects(
+            Connection conn, SchemaCatalog sc, List<String> schemaNames, IBuildSchemaFilter filter)
+            throws SQLException {
+        Catalog catalog = super.buildSchemaObjects(conn, sc, schemaNames, filter);
         SQLHelper sqlHelper = sc.getDatabaseType().getSQLHelper(null);
         loadMySQLCatalogDetails(conn, catalog, sqlHelper);
         return catalog;
@@ -180,12 +187,6 @@ public final class MySQLSchemaFetcher extends AbstractJDBCSchemaFetcher {
 
         List<Schema> schemaList = catalog.getSchemas();
         for (Schema schema : schemaList) {
-            List<Table> tableList = schema.getTables();
-            for (Table table : tableList) {
-                table.setDDL(getTableDDL(conn, table.getName()));
-                table.setComment(getTableComment(conn, catalog.getName(), table.getName()));
-            }
-
             List<View> viewList = schema.getViews();
             for (View view : viewList) {
                 view.setDDL(getViewDDL(conn, view.getName()));
@@ -193,7 +194,21 @@ public final class MySQLSchemaFetcher extends AbstractJDBCSchemaFetcher {
             }
         }
         catalog.setTimezone(getTimezone(conn));
-        buildPartitions(conn, catalog, catalog.getSchemas().get(0));
+    }
+
+    @Override
+    protected void buildTables(
+            final Connection conn,
+            final Catalog catalog,
+            final Schema schema,
+            IBuildSchemaFilter filter)
+            throws SQLException {
+        super.buildTables(conn, catalog, schema, filter);
+
+        for (Table table : schema.getTables()) {
+            table.setDDL(getTableDDL(conn, table.getName()));
+            table.setComment(getTableComment(conn, catalog.getName(), table.getName()));
+        }
     }
 
     /**
@@ -202,13 +217,19 @@ public final class MySQLSchemaFetcher extends AbstractJDBCSchemaFetcher {
      * @param conn Connection
      * @param catalog Catalog
      * @param schema Schema
+     * @param filter IBuildSchemaFilter
      * @throws SQLException e
      */
+    @Override
     protected void buildPartitions(
-            final Connection conn, final Catalog catalog, final Schema schema) throws SQLException {
+            final Connection conn,
+            final Catalog catalog,
+            final Schema schema,
+            IBuildSchemaFilter filter)
+            throws SQLException {
         Version version = catalog.getVersion();
 
-        if (!isSupportParitionVersion(version)) {
+        if (!isSupportPartitionVersion(version)) {
             return;
         }
 
@@ -221,7 +242,7 @@ public final class MySQLSchemaFetcher extends AbstractJDBCSchemaFetcher {
         PreparedStatement stmt = null; // NOPMD
         try {
             stmt = conn.prepareStatement(sqlStr);
-            stmt.setString(1, schema.getName());
+            stmt.setString(1, catalog.getName());
             rs = stmt.executeQuery();
 
             while (rs.next()) {
@@ -863,6 +884,9 @@ public final class MySQLSchemaFetcher extends AbstractJDBCSchemaFetcher {
      */
     protected String getSourcePartitionDDL(Table sourceTable) {
         String ddl = sourceTable.getDDL();
+        if (ddl == null) {
+            return "";
+        }
         if (ddl.indexOf("PARTITION BY") > -1) {
             return ddl.substring(ddl.indexOf("PARTITION BY"), ddl.length() - 2);
         }
@@ -1026,7 +1050,7 @@ public final class MySQLSchemaFetcher extends AbstractJDBCSchemaFetcher {
      * @param version of Mysql
      * @return true if support.
      */
-    protected boolean isSupportParitionVersion(Version version) {
+    protected boolean isSupportPartitionVersion(Version version) {
         return !(version.getDbMajorVersion() < 5
                 || (version.getDbMajorVersion() == 5 && version.getDbMinorVersion() < 1));
     }
