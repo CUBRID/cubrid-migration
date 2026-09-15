@@ -30,6 +30,8 @@
 package com.cubrid.cubridmigration.testutil;
 
 import com.cubrid.cubridmigration.core.dbobject.Index;
+import com.cubrid.cubridmigration.core.dbobject.PartitionInfo;
+import com.cubrid.cubridmigration.core.dbobject.PartitionTable;
 import com.cubrid.cubridmigration.core.dbobject.Sequence;
 import com.cubrid.cubridmigration.core.dbobject.Table;
 
@@ -68,6 +70,21 @@ public final class TestTableFactory {
         index.setName(name);
         index.addColumn(columnName, ascending);
         return index;
+    }
+
+    /** Partitions are added with {@link #addPartition(PartitionInfo, String, String)}. */
+    public static PartitionInfo createPartitionInfo(String method, String columnName) {
+        PartitionInfo info = new PartitionInfo();
+        info.setPartitionMethod(method);
+        info.addPartitionColumn(TestColumnFactory.createColumn(columnName, "int", null, null));
+        return info;
+    }
+
+    public static void addPartition(PartitionInfo info, String name, String description) {
+        PartitionTable partition = new PartitionTable();
+        partition.setPartitionName(name);
+        partition.setPartitionDesc(description);
+        info.addPartition(partition);
     }
 
     /**

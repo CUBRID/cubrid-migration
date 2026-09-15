@@ -29,21 +29,27 @@
  */
 package com.cubrid.cubridmigration.cubrid;
 
+import static com.cubrid.cubridmigration.testutil.TestTableFactory.addPartition;
 import static com.cubrid.cubridmigration.testutil.TestTableFactory.createIndex;
+import static com.cubrid.cubridmigration.testutil.TestTableFactory.createPartitionInfo;
 import static com.cubrid.cubridmigration.testutil.TestTableFactory.createSequence;
+import static com.cubrid.cubridmigration.testutil.TestTableFactory.createTable;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.cubrid.cubridmigration.core.dbobject.FK;
 import com.cubrid.cubridmigration.core.dbobject.Index;
+import com.cubrid.cubridmigration.core.dbobject.PartitionInfo;
 import com.cubrid.cubridmigration.core.dbobject.Schema;
 import com.cubrid.cubridmigration.core.dbobject.Sequence;
+import com.cubrid.cubridmigration.core.dbobject.Table;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import java.math.BigInteger;
 import java.util.Arrays;
@@ -296,6 +302,95 @@ class CUBRIDSQLHelperTest {
         @DisplayName("null sequence -> empty string")
         void nullSequence_returnsEmptyString() {
             assertThat(HELPER.getSequenceDDL(null, true)).isEmpty();
+        }
+    }
+
+    @Nested
+    @DisplayName("getTablePartitonDDL()")
+    class GetTablePartitonDDL {
+
+        @Test
+        @DisplayName("RANGE lists every bound, MAXVALUE without parentheses")
+        void rangePartition_returnsValuesLessThan() {
+            PartitionInfo info = createPartitionInfo(PartitionInfo.PARTITION_METHOD_RANGE, "c1");
+            addPartition(info, "p1", "100");
+            addPartition(info, "p2", "MAXVALUE");
+
+            assertThat(HELPER.getTablePartitonDDL(tableWith(info)))
+                    .isEqualTo(
+                            "PARTITION BY RANGE (\"c1\")(\n"
+                                    + "PARTITION \"p1\" VALUES LESS THAN (100),\n"
+                                    + "PARTITION \"p2\" VALUES LESS THAN MAXVALUE\n"
+                                    + ")");
+        }
+
+        @Test
+        @DisplayName("LIST splits the description on commas and leaves the name unquoted")
+        void listPartition_returnsValuesIn() {
+            PartitionInfo info = createPartitionInfo(PartitionInfo.PARTITION_METHOD_LIST, "c1");
+            addPartition(info, "p1", "'A','B'");
+
+            assertThat(HELPER.getTablePartitonDDL(tableWith(info)))
+                    .isEqualTo(
+                            "PARTITION BY LIST (\"c1\") ( \n"
+                                    + "PARTITION p1 VALUES IN ('A','B')\n"
+                                    + " ) ");
+        }
+
+        @Test
+        @DisplayName("HASH reports the partition count instead of the bounds")
+        void hashPartition_returnsPartitionCount() {
+            PartitionInfo info = createPartitionInfo(PartitionInfo.PARTITION_METHOD_HASH, "c1");
+            addPartition(info, "p1", "");
+            addPartition(info, "p2", "");
+
+            assertThat(HELPER.getTablePartitonDDL(tableWith(info)))
+                    .isEqualTo("PARTITION BY HASH (\"c1\") \nPARTITIONS 2");
+        }
+
+        @Test
+        @DisplayName("LINEAR HASH is emitted as plain HASH")
+        void linearHashPartition_returnsHash() {
+            PartitionInfo info =
+                    createPartitionInfo(PartitionInfo.PARTITION_METHOD_LINEARHASH, "c1");
+            addPartition(info, "p1", "");
+
+            assertThat(HELPER.getTablePartitonDDL(tableWith(info)))
+                    .startsWith("PARTITION BY HASH ");
+        }
+
+        @Test
+        @DisplayName("a partition function replaces the quoted column with an expression")
+        void partitionFunction_returnsExpression() {
+            PartitionInfo info = createPartitionInfo(PartitionInfo.PARTITION_METHOD_RANGE, "c1");
+            info.setPartitionFunc("ABS");
+            addPartition(info, "p1", "100");
+
+            assertThat(HELPER.getTablePartitonDDL(tableWith(info)))
+                    .startsWith("PARTITION BY RANGE (ABS(c1))(");
+        }
+
+        @ParameterizedTest(name = "[{index}] {0} -> the source DDL verbatim")
+        @DisplayName("KEY and LINEAR KEY are handed back as the source wrote them")
+        @ValueSource(strings = {"KEY", "LINEAR KEY"})
+        void keyPartition_returnsSourceDDL(String method) {
+            PartitionInfo info = createPartitionInfo(method, "c1");
+            info.setDDL("PARTITION BY KEY(c1) PARTITIONS 4");
+
+            assertThat(HELPER.getTablePartitonDDL(tableWith(info)))
+                    .isEqualTo("PARTITION BY KEY(c1) PARTITIONS 4");
+        }
+
+        @Test
+        @DisplayName("a table without partition info -> null")
+        void tableWithoutPartitionInfo_returnsNull() {
+            assertThat(HELPER.getTablePartitonDDL(createTable("t1", "c1"))).isNull();
+        }
+
+        private Table tableWith(PartitionInfo info) {
+            Table table = createTable("t1", "c1");
+            table.setPartitionInfo(info);
+            return table;
         }
     }
 
