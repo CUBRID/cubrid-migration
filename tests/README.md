@@ -147,7 +147,7 @@ jobs; none substitutes for another.
 | Carrier | Job |
 |---------|-----|
 | method name | the code identifier: what you grep, what appears in stack traces, what `-Dtest=` takes |
-| `@DisplayName` | the definition's human name: its title in the TC catalog and on the test-status page |
+| `@DisplayName` | the definition's human name: its title in the published Allure report |
 | `@ParameterizedTest(name = ...)` | the per-invocation label: shows the actual argument values |
 
 `@ParameterizedTest(name = "...")` names each *invocation*. The *definition* — the test-template
@@ -482,10 +482,10 @@ not distributable. A Tibero test will not be verified by CI: run it locally and 
 
 ## Why these rules exist
 
-The TC catalog and the test-status page publish these names verbatim. A teammate browsing the catalog
-sees the `@DisplayName` text and the `@Nested` chain — not the code, not the method name. A display
-name that merely restates the method name therefore wastes the only human-readable field there is, and
-a missing one publishes a raw Java signature to a page people read instead of the source. That page
-requirement is the context a previous cleanup was missing: it deleted display names because they
-duplicated the method name, which is locally sensible and globally wrong. Rewrite such a name to state
-the rule being verified; do not delete it.
+The published Allure report uses these names verbatim, for every test case the catalog knows — the
+ones CI never runs included. A teammate browsing it sees the `@DisplayName` text and the `@Nested`
+chain, not the code and not the method name. A display name that merely restates the method name
+therefore wastes the only human-readable field there is, and a missing one publishes a raw Java
+signature to a report people read instead of the source. That is the context a previous cleanup was
+missing: it deleted display names because they duplicated the method name, which is locally sensible
+and globally wrong. Rewrite such a name to state the rule being verified; do not delete it.
