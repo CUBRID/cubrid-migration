@@ -1,0 +1,119 @@
+name: Pages
+
+# Publishes the site CI already assembled; nothing here rebuilds anything. workflow_run always
+# takes this file from the default branch, so the one privileged step stays out of reach of any
+# branch under review.
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  collect:
+    outputs:
+      publish: ${{ steps.order.outputs.publish }}
+    # A fork PR can trigger CI but must never reach this job.
+    if: >-
+      github.event.workflow_run.head_repository.full_name == github.repository &&
+      github.event.workflow_run.head_branch == 'develop' &&
+      (github.event.workflow_run.event == 'push' ||
+       github.event.workflow_run.event == 'workflow_dispatch')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    env:
+      GH_TOKEN: ${{ github.token }}
+      RUN_ID: ${{ github.event.workflow_run.id }}
+    steps:
+      - name: Re-assert the trigger against the fetched run
+        run: |
+          set -euo pipefail
+          run=$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$RUN_ID")
+          test "$(jq -r .head_repository.full_name <<<"$run")" = "$GITHUB_REPOSITORY"
+          test "$(jq -r .head_branch <<<"$run")" = develop
+
+      - name: Download the site that run built
+        run: |
+          set -euo pipefail
+          # A re-run leaves several artifacts under one name and none carries an attempt, so
+          # take the newest: allure-report runs once per attempt and its site describes that one.
+          id=$(gh api --paginate "repos/$GITHUB_REPOSITORY/actions/runs/$RUN_ID/artifacts" \
+            -q '.artifacts[] | select(.name == "site" and (.expired | not))
+                | "\(.created_at) \(.id)"' | sort | tail -1 | cut -d' ' -f2)
+          if [ -z "$id" ]; then
+            echo "::error::run $RUN_ID built no site — its allure-report job did not finish"
+            exit 1
+          fi
+          gh api "repos/$GITHUB_REPOSITORY/actions/artifacts/$id/zip" > site.zip
+          unzip -q -o site.zip -d site
+          find site -type f | sort | sed 's/^/  /'
+
+      - name: Refuse to publish local-only files
+        run: |
+          set -euo pipefail
+          # Checked again here because this file is the one no branch under review can change.
+          leaked=$(find site -type f \
+            \( -name '*.properties' -o -name '*.jar' -o -name '*.key' -o -name '*.pem' \))
+          if [ -n "$leaked" ]; then
+            echo "::error::these must stay local, but the site would publish them: $leaked"
+            exit 1
+          fi
+
+      # A slow suite can make an older commit's CI finish after a newer one's, so a run that
+      # has already been overtaken stands down rather than publishing stale results. Only a run
+      # that built a site overtakes: one that died before allure-report verified nothing, and
+      # standing down for it would leave the pair of pushes with nothing published at all.
+      - name: Check no newer verification exists
+        id: order
+        run: |
+          set -euo pipefail
+          newest=0
+          for id in $(gh api \
+            "repos/$GITHUB_REPOSITORY/actions/workflows/ci.yml/runs?branch=develop&status=completed&per_page=30" \
+            -q '[.workflow_runs[]
+                 | select((.event == "push" or .event == "workflow_dispatch")
+                          and .id > (env.RUN_ID | tonumber))
+                 | .id] | sort | reverse | .[]'); do
+            if gh api --paginate "repos/$GITHUB_REPOSITORY/actions/runs/$id/artifacts" \
+                 -q '.artifacts[] | select(.name == "site" and (.expired | not)) | .id' | grep -q .
+            then
+              newest=$id
+              break
+            fi
+          done
+          echo "  this run $RUN_ID, newest completed CI run with a site $newest"
+          if [ "$newest" -gt "$RUN_ID" ]; then
+            echo "::notice::run $newest has verified a newer commit — not publishing $RUN_ID"
+            echo "publish=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "publish=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Upload the site for publishing
+        if: steps.order.outputs.publish == 'true'
+        uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9  # v5.0.0
+        with:
+          path: site
+
+  publish:
+    needs: collect
+    if: needs.collect.outputs.publish == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346  # v5.0.1

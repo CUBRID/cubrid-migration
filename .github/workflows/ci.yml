@@ -14,28 +14,25 @@ permissions:
   contents: read
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  # A develop push gets its own group so a later merge cannot cancel an earlier commit's
+  # verification before it reports.
+  group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.ref || github.run_id }}
   cancel-in-progress: true
 
+# Every job below feeds one graph, and the run page draws it in this shape:
+#
+#   catalog-unit                which unit test cases exist            ─┐
+#   catalog-e2e                 which e2e test cases exist              │
+#   unit-test                   which unit test cases ran               ├─→ allure-report
+#   build-console ─→ e2e-<db>   which e2e test cases ran, per database ─┘
+#
+#   build-desktop               built here, nothing downstream
+#
+# What exists and what ran are collected separately because a test case CI never runs — Tibero —
+# has to appear in the report too, and no result will ever mention it.
+
 jobs:
-  build-desktop:
-    name: build-desktop
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-    steps:
-      - name: Checkout
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
-
-      - name: Set up Java 21
-        uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6  # v6.0.1
-        with:
-          distribution: temurin
-          java-version: '21'
-          cache: maven
-
-      - name: Build Desktop
-        run: chmod +x build.sh && ./build.sh -p d
-
+  # ------------------------------------------------------------ the artefacts
   build-console:
     name: build-console
     runs-on: ubuntu-latest
@@ -45,11 +42,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
 
       - name: Set up Java 21
-        uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6  # v6.0.1
-        with:
-          distribution: temurin
-          java-version: '21'
-          cache: maven
+        uses: ./.github/actions/java
 
       - name: Build Console
         run: chmod +x build.sh && ./build.sh -p c
@@ -61,6 +54,146 @@ jobs:
           path: target/CUBRID-Migration-Toolkit-console-*.tar.gz
           retention-days: 7
           if-no-files-found: error
+
+  build-desktop:
+    name: build-desktop
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+
+      - name: Set up Java 21
+        uses: ./.github/actions/java
+
+      - name: Build Desktop
+        run: chmod +x build.sh && ./build.sh -p d
+
+  # -------------------------------------------------- which test cases exist
+  # A dry run executes nothing and enumerates everything, so the catalog is there even when the
+  # run is red, and it names test cases no job will ever report.
+  catalog-unit:
+    name: catalog-unit
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+
+      - name: Set up Java 21
+        uses: ./.github/actions/java
+
+      - name: List the unit test cases
+        run: |
+          set -euo pipefail
+          mvn -B -q -Punit-test test \
+            -Djunit.platform.execution.dryRun.enabled=true \
+            -Djunit.platform.reporting.output.dir=target/catalog-otr
+          python3 .github/scripts/build_catalog.py \
+            --type unit --repo "$GITHUB_REPOSITORY" --commit "$GITHUB_SHA" \
+            --all tests/unit-test/target/catalog-otr/open-test-report.xml \
+            --ci-job unit-test \
+            -o catalog-unit.json
+
+      - name: Upload the unit catalog
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+        with:
+          name: catalog-unit
+          path: catalog-unit.json
+          if-no-files-found: error
+
+  catalog-e2e:
+    name: catalog-e2e
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+
+      - name: Set up Java 21
+        uses: ./.github/actions/java
+
+      - name: List the e2e test cases
+        run: |
+          set -euo pipefail
+          dry() {
+            local out="$1"; shift
+            mvn -B -q -f tests/e2e/pom.xml test \
+              -Djunit.platform.execution.dryRun.enabled=true \
+              -Djunit.platform.reporting.output.dir="target/$out" \
+              -Dsurefire.failIfNoSpecifiedTests=false "$@"
+          }
+          dry otr-all
+
+          # Replaying each e2e-test leg's own -Dtest pattern is what keeps the matrix and the
+          # catalog from drifting apart: surefire decides, not a second list. The greps are
+          # anchored so this step does not match itself, and while-read rather than mapfile so
+          # a developer can rehearse the block on the bash they already have.
+          names=(); while IFS= read -r x; do names+=("$x"); done \
+            < <(grep -oE "^ {10}- name: [a-z0-9]+$" .github/workflows/ci.yml | sed 's/.*: //')
+          patterns=(); while IFS= read -r x; do patterns+=("$x"); done \
+            < <(grep -oE "^ +tests: '[^']+'" .github/workflows/ci.yml | sed "s/^ *tests: '//;s/'$//")
+          if [ "${#names[@]}" -eq 0 ] || [ "${#names[@]}" -ne "${#patterns[@]}" ]; then
+            echo "::error::e2e matrix parsed as ${#names[@]} names and ${#patterns[@]} patterns"
+            exit 1
+          fi
+
+          selected=()
+          for i in "${!names[@]}"; do
+            dry "otr-${names[i]}" -Dtest="${patterns[i]}"
+            selected+=(--selected "e2e-${names[i]}=tests/e2e/target/otr-${names[i]}/open-test-report.xml")
+          done
+
+          python3 .github/scripts/build_catalog.py \
+            --type e2e --repo "$GITHUB_REPOSITORY" --commit "$GITHUB_SHA" \
+            --all tests/e2e/target/otr-all/open-test-report.xml \
+            "${selected[@]}" -o catalog-e2e.json
+
+      - name: Upload the e2e catalog
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+        with:
+          name: catalog-e2e
+          path: catalog-e2e.json
+          if-no-files-found: error
+
+  # ----------------------------------------------------- which test cases ran
+  unit-test:
+    name: unit-test
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+
+      - name: Set up Java 21
+        uses: ./.github/actions/java
+
+      - name: Run unit tests
+        run: mvn -B -Punit-test test
+
+      - name: Upload Surefire Reports
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+        with:
+          name: surefire-reports-unit
+          path: tests/unit-test/target/surefire-reports/**
+          if-no-files-found: ignore
+
+      - name: Upload unit Allure results
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+        with:
+          name: allure-unit-test
+          path: tests/unit-test/target/allure-results/**
+          if-no-files-found: ignore
+
+      - name: Upload unit test report
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+        with:
+          name: otr-unit-test
+          path: tests/unit-test/target/open-test-report/**
+          if-no-files-found: ignore
 
   e2e-test:
     name: e2e-${{ matrix.name }}
@@ -94,11 +227,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
 
       - name: Set up Java 21
-        uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6  # v6.0.1
-        with:
-          distribution: temurin
-          java-version: '21'
-          cache: maven
+        uses: ./.github/actions/java
 
       - name: Download Console tarball
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c  # v8.0.1
@@ -151,10 +280,226 @@ jobs:
           path: tests/e2e/target/surefire-reports/**
           if-no-files-found: ignore
 
+      - name: Upload e2e test report
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+        with:
+          name: otr-e2e-${{ matrix.name }}
+          path: tests/e2e/target/open-test-report/**
+          if-no-files-found: ignore
+
+      - name: Upload e2e Allure results
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+        with:
+          name: allure-e2e-${{ matrix.name }}
+          path: tests/e2e/target/allure-results/**
+          if-no-files-found: ignore
+
       - name: Upload E2E Failure Artifacts
         if: failure()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
         with:
           name: e2e-failure-artifacts-${{ matrix.name }}
           path: tests/e2e/target/e2e/**
+          if-no-files-found: ignore
+
+  # ------------------------------------------------------------- the two joined
+  # .github/scripts carries its own tests, which CI does not run: after changing one of those
+  # scripts, run `python3 .github/scripts/test_<name>.py`.
+  # Runs even when a suite failed, because a report that only appeared after a green run could
+  # never show a red one. Without both catalogs it does not run at all: one alone would drop the
+  # other module's test cases and show a smaller test set as if it were the whole.
+  allure-report:
+    name: allure-report
+    needs: [catalog-unit, catalog-e2e, unit-test, e2e-test]
+    if: >-
+      always() &&
+      needs.catalog-unit.result == 'success' &&
+      needs.catalog-e2e.result == 'success'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      actions: read
+      # Only to ask where the site is published, so the last report's history can be read back.
+      pages: read
+    env:
+      RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+
+      - name: Set up Java 21
+        uses: ./.github/actions/java
+        with:
+          cache: ''
+
+      - name: Download this run's artifacts
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts
+          # A re-run leaves several artifacts under one name, and they carry no attempt field,
+          # so resolve by the newest upload per name rather than by a name pattern.
+          gh api --paginate "repos/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID/artifacts" \
+            -q '.artifacts[]
+                | select((.expired | not) and (.name | test("^(catalog|otr|allure)-")))
+                | {name, id, created_at}' \
+            | jq -s 'group_by(.name) | map(max_by(.created_at)) | .[] | "\(.name) \(.id) \(.created_at)"' -r \
+            > wanted.txt
+          while read -r name id created; do
+            gh api "repos/$GITHUB_REPOSITORY/actions/artifacts/$id/zip" > "$name.zip"
+            unzip -q -o "$name.zip" -d "artifacts/$name"
+            echo "$created" > "artifacts/$name.created"
+          done < wanted.txt
+          sed 's/ [0-9]* / /;s/^/  resolved: /' wanted.txt
+
+      - name: Build status
+        env:
+          GH_TOKEN: ${{ github.token }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          suites_of() { jq -r '.jobs[]' "artifacts/catalog-$1/catalog-$1.json"; }
+          runs="repos/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+          gh api --paginate "$runs/attempts/$GITHUB_RUN_ATTEMPT/jobs" \
+            -q '.jobs[] | {name, conclusion, started_at}' | jq -s . > jobs.json
+          run_started=$(gh api "$runs" -q .run_started_at)
+          attempt_started=$(gh api "$runs/attempts/$GITHUB_RUN_ATTEMPT" -q .run_started_at)
+
+          # A job that ran again but uploaded nothing would otherwise be paired with the
+          # attempt before it, since an artifact carries no attempt of its own.
+          from_this_attempt() {
+            local job created
+            job=$(jq -r --arg n "$1" '.[] | select(.name == $n) | .started_at' jobs.json)
+            created=$(cat "artifacts/$2.created" 2>/dev/null || true)
+            if [ -n "$job" ] && [ ! "$job" \< "$attempt_started" ] \
+               && [ -n "$created" ] && [ "$created" \< "$attempt_started" ]; then
+              echo "::warning::$1 ran again in attempt $GITHUB_RUN_ATTEMPT and uploaded nothing;" \
+                   "its earlier results are not used"
+              return 1
+            fi
+          }
+
+          # The catalogs name the suites CI owes a report for, so a job that never reported is
+          # still counted. Every artifact is named after its suite, so nothing is mapped here.
+          catalogs=() expect=() results=()
+          for c in unit e2e; do
+            catalogs+=(--catalog "artifacts/catalog-$c/catalog-$c.json")
+            while read -r suite; do
+              expect+=(--expect "$suite")
+              otr="artifacts/otr-$suite/open-test-report.xml"
+              if [ -f "$otr" ] && from_this_attempt "$suite" "otr-$suite"; then
+                results+=(--result "$suite=$otr")
+              fi
+            done < <(suites_of "$c")
+          done
+
+          python3 .github/scripts/build_status.py \
+            "${catalogs[@]}" "${results[@]+"${results[@]}"}" "${expect[@]}" \
+            --jobs jobs.json \
+            --commit "$HEAD_SHA" \
+            --run-id "$GITHUB_RUN_ID" \
+            --run-attempt "$GITHUB_RUN_ATTEMPT" \
+            --run-url "$RUN_URL" \
+            --run-started-at "$run_started" \
+            --summary "$GITHUB_STEP_SUMMARY" \
+            -o status.json
+
+      - name: Build the Allure report
+        env:
+          ALLURE_VERSION: 2.46.1
+          ALLURE_SHA256: d25c519bbde940dc953cff8901130ce18b73013dc19a8f8b90b8b4b1c5eb252f
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          zip="allure-commandline-$ALLURE_VERSION.zip"
+          curl -sSfL -o "$zip" \
+            "https://repo1.maven.org/maven2/io/qameta/allure/allure-commandline/$ALLURE_VERSION/$zip"
+          echo "$ALLURE_SHA256  $zip" | sha256sum -c -
+          unzip -q "$zip"
+
+          # A trend exists only if the previous report's history is handed back in, and the
+          # published site already serves it. Only a run that will publish carries it: a pull
+          # request taking develop's trend would read as that branch's own.
+          if [ "$GITHUB_REF" = refs/heads/develop ] && [ "$GITHUB_EVENT_NAME" != pull_request ]; then
+            site=$(gh api "repos/$GITHUB_REPOSITORY/pages" -q .html_url 2>/dev/null || true)
+          fi
+          mkdir -p history
+          # -L because a site served over http redirects, and curl would otherwise save the
+          # redirect page as the history. A file that is not JSON is dropped: starting the trend
+          # again is a smaller loss than not publishing at all.
+          for f in history history-trend duration-trend retry-trend categories-trend; do
+            if [ -z "${site:-}" ] \
+               || ! curl -sSfL -o "history/$f.json" "${site%/}/history/$f.json" \
+               || ! jq -e . "history/$f.json" >/dev/null 2>&1; then
+              rm -f "history/$f.json"
+            fi
+          done
+          echo "  history: $(find history -name '*.json' | wc -l) files carried forward"
+
+          # Every test case the catalog knows, not only what ran: allure generate turns an
+          # empty input into a valid all-green report.
+          suites=(); while IFS= read -r s; do suites+=("--suite=$s"); done \
+            < <(jq -r '.jobs[]' artifacts/catalog-unit/catalog-unit.json \
+                       artifacts/catalog-e2e/catalog-e2e.json)
+          python3 .github/scripts/allure_results.py \
+            --artifacts artifacts "${suites[@]}" \
+            --catalog artifacts/catalog-unit/catalog-unit.json \
+            --catalog artifacts/catalog-e2e/catalog-e2e.json \
+            --status status.json \
+            --categories tests/e2e/allure-categories.json \
+            --not-run-note "Tibero needs a licensed server, which a github-hosted runner cannot provide" \
+            --env "run=$RUN_URL" \
+            --env "generated=$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+            --history history \
+            --out results
+
+          "allure-$ALLURE_VERSION/bin/allure" generate results -o report --clean
+          # Allure never drops a history entry, and only the report just built knows which
+          # test cases still exist.
+          python3 .github/scripts/allure_results.py --prune report
+
+      - name: Assemble the site
+        env:
+          SITE: ${{ runner.temp }}/site
+        run: |
+          set -euo pipefail
+          # Assembled outside the checkout. The repository already owns a top-level site/ —
+          # the Eclipse update-site modules — and building into the checkout at all would put
+          # whatever happens to share the directory's name on a public URL.
+          rm -rf "$SITE"
+          cp -r report "$SITE"
+          # status.json decided everything the report says, so it is served next to it.
+          cp status.json "$SITE/status.json"
+          echo "  site: $(find "$SITE" -type f | wc -l) files, $(du -sh "$SITE" | cut -f1)"
+
+          # The site is public and the repository holds assets that must never be served.
+          leaked=$(find "$SITE" -type f \
+            \( -name '*.properties' -o -name '*.jar' -o -name '*.key' -o -name '*.pem' \))
+          if [ -n "$leaked" ]; then
+            echo "::error::these must stay local, but the site would publish them: $leaked"
+            exit 1
+          fi
+
+      # Only a run that can publish keeps the report. A pull request still builds one, because
+      # that is what checks the report can be built at all, and reads the summary instead.
+      - name: Upload the site
+        if: github.event_name != 'pull_request'
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+        with:
+          name: site
+          path: ${{ runner.temp }}/site
+          if-no-files-found: error
+
+      - name: Upload status
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+        with:
+          name: status
+          path: |
+            status.json
+            jobs.json
           if-no-files-found: ignore
