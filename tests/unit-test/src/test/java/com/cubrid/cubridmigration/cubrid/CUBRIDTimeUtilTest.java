@@ -36,9 +36,9 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.ResourceLock;
 import org.junit.jupiter.api.parallel.Resources;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -147,10 +147,15 @@ class CUBRIDTimeUtilTest {
         }
 
         @Test
-        @DisplayName("formatTimestampLong takes milliseconds, so a seconds value lands in 1970")
+        @DisplayName("formatTimestampLong reads milliseconds, which is what every caller hands it")
         void formatTimestampLong_readsMilliseconds() {
-            // DEFECT: the name and the CUBRID TIMESTAMP domain both say seconds; the code divides
-            // nothing and hands the value straight to Date(long). Pinned as it behaves today.
+            assertThat(
+                            CUBRIDTimeUtil.formatTimestampLong(
+                                    FIXED.getTime(), "yyyy-MM-dd HH:mm:ss", UTC))
+                    .isEqualTo("2009-11-05 06:44:15");
+            // The same number read as seconds would land in 1970, which is what pins the unit.
+            // Callers pass parseDate2Long/parseTime2Long/parseTimestamp results, all milliseconds
+            // - see CUBRIDFormator.formatDate(), formatTime() and formatTimeStamp().
             assertThat(
                             CUBRIDTimeUtil.formatTimestampLong(
                                     1_257_403_455L, "yyyy-MM-dd HH:mm:ss", UTC))

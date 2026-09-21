@@ -59,7 +59,8 @@ class ClobConverterTest {
     @Test
     @DisplayName("a reader is rendered by its own toString, so its characters are lost")
     void readerValue_losesItsCharacters() {
-        // DEFECT: convert() is `return obj.toString()`, with nothing CLOB-specific in it. A JDBC
+        // DEFECT: ClobConverter.convert() is `return obj.toString()`, with nothing CLOB-specific in
+        // it. A JDBC
         // CLOB arrives as a Reader, so the target receives the object identity instead of the
         // text. Pinned as it behaves today.
         assertThat(convert(new StringReader("test")))
