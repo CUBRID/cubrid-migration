@@ -79,24 +79,37 @@ class NeverGreen(unittest.TestCase):
 
 
 class Synthesized(TempDir):
-    def synth(self, catalog, states, reported=(), note=None):
+    def synth(self, catalog, states, reported=(), notes=None):
         out = self.tmp()
-        made = synthesize(catalog, states, set(reported), out, note)
+        made = synthesize(catalog, states, set(reported), out, notes)
         return made, results_of(out)
 
     def test_the_reason_ci_runs_none_of_them_is_carried_through(self):
         """Without it a reader is left with "no job selects it" and no way to find out why."""
         uid = f"{UID}/[method:tibero()]"
-        _, written = self.synth({uid: entry(uid, job=None)}, {uid: "not-in-ci"},
-                                note="Tibero needs a licensed server")
+        _, written = self.synth({uid: entry(uid, job=None, database="Tibero")},
+                                {uid: "not-in-ci"},
+                                notes={"Tibero": "Tibero needs a licensed server"})
         self.assertIn("Tibero needs a licensed server",
                       written[uid]["statusDetails"]["message"])
 
     def test_the_reason_is_not_put_on_a_suite_that_simply_failed_to_report(self):
         """That one did not run because something broke, not because of any policy."""
         uid = f"{UID}/[method:m()]"
-        _, written = self.synth({uid: entry(uid)}, {uid: "no-report"}, note="a policy note")
+        _, written = self.synth({uid: entry(uid)}, {uid: "no-report"},
+                                notes={"CUBRID": "a policy note"})
         self.assertNotIn("a policy note", written[uid]["statusDetails"]["message"])
+
+    def test_the_reason_goes_only_to_the_database_it_is_about(self):
+        """A test case that dropped out of CI by accident must not borrow Tibero's excuse."""
+        meant, dropped = f"{UID}/[method:tibero()]", f"{UID}/[method:oops()]"
+        _, written = self.synth(
+            {meant: entry(meant, job=None, database="Tibero"),
+             dropped: entry(dropped, job=None, database="MySQL")},
+            {meant: "not-in-ci", dropped: "not-in-ci"},
+            notes={"Tibero": "Tibero needs a licensed server"})
+        self.assertIn("licensed server", written[meant]["statusDetails"]["message"])
+        self.assertNotIn("licensed server", written[dropped]["statusDetails"]["message"])
 
     def test_a_test_case_ci_never_runs_is_written_out(self):
         uid = f"{UID}/[method:tibero()]"

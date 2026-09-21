@@ -76,7 +76,7 @@ def stamp(artifacts, suites, catalog, out):
     return reported
 
 
-def synthesize(catalog, states, reported, out, note=None):
+def synthesize(catalog, states, reported, out, notes=None):
     """Write a result for every test case that did not report, so the report can still show it."""
     made = Counter()
     for unique_id, entry in sorted(catalog.items()):
@@ -84,7 +84,9 @@ def synthesize(catalog, states, reported, out, note=None):
             continue
         state = states.get(unique_id)
         status, message = SYNTHETIC.get(state, UNACCOUNTED)
-        if note and state == "not-in-ci":
+        # Keyed by database, because a test case that fell out of CI by accident would otherwise
+        # borrow the excuse of one that is meant to be out.
+        if state == "not-in-ci" and (note := (notes or {}).get(entry["database"])):
             message = f"{message}. {note}"
         made[status] += 1
         group = entry.get("group") or []
@@ -176,7 +178,8 @@ def main():
     ap.add_argument("--out")
     ap.add_argument("--env", action="append", default=[], metavar="KEY=VALUE")
     ap.add_argument("--categories", help="allure categories file to copy in")
-    ap.add_argument("--not-run-note", help="why CI runs no test case that no job selects")
+    ap.add_argument("--not-run-note", action="append", default=[], metavar="DATABASE=WHY",
+                    help="why CI runs none of this database's test cases; repeat per database")
     ap.add_argument("--history", help="the previous report's history directory, to build a trend")
     ap.add_argument("--prune", metavar="REPORT",
                     help="instead: drop dead history from a report allure has just generated")
@@ -200,7 +203,8 @@ def main():
     adopted = {s["name"] for s in status["suites"] if s["reported"]}
     reported = stamp(pathlib.Path(args.artifacts),
                      [s for s in args.suite if s in adopted], catalog, out)
-    made = synthesize(catalog, status["byTest"], reported, out, args.not_run_note)
+    made = synthesize(catalog, status["byTest"], reported, out,
+                      dict(pair.partition("=")[::2] for pair in args.not_run_note))
     if args.history:
         print(f"  history carried: {carry_history(pathlib.Path(args.history), out)} files")
     extra = dict(pair.partition("=")[::2] for pair in args.env)

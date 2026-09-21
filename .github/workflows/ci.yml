@@ -451,7 +451,7 @@ jobs:
             --catalog artifacts/catalog-e2e/catalog-e2e.json \
             --status status.json \
             --categories tests/e2e/allure-categories.json \
-            --not-run-note "Tibero needs a licensed server, which a github-hosted runner cannot provide" \
+            --not-run-note "Tibero=Tibero needs a licensed server, which a github-hosted runner cannot provide" \
             --env "run=$RUN_URL" \
             --env "generated=$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
             --history history \
