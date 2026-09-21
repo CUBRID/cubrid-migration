@@ -38,6 +38,8 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.ResourceLock;
+import org.junit.jupiter.api.parallel.Resources;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -46,6 +48,7 @@ import java.text.ParseException;
 import java.util.TimeZone;
 
 @DisplayName("CUBRIDFormator")
+@ResourceLock(Resources.TIME_ZONE)
 class CUBRIDFormatorTest {
 
     // format() renders an epoch-millis default through the default zone, so the zone is part of
