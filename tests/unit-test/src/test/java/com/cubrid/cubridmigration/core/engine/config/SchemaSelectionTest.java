@@ -51,14 +51,6 @@ class SchemaSelectionTest {
     @DisplayName("of()")
     class Of {
 
-        @ParameterizedTest(name = "[{index}] {0}")
-        @DisplayName("a selection with nothing usable in it is the shared empty one")
-        @MethodSource(
-                "com.cubrid.cubridmigration.core.engine.config.SchemaSelectionTest#nothingUsable")
-        void nothingUsable_returnsTheSharedEmptySelection(String label, Collection<String> raw) {
-            assertThat(SchemaSelection.of(raw)).isSameAs(SchemaSelection.empty());
-        }
-
         @Test
         @DisplayName("names are trimmed and deduplicated, in the order they arrived")
         void names_areTrimmedAndDeduplicated() {
@@ -83,6 +75,14 @@ class SchemaSelectionTest {
             assertThat(SchemaSelection.of(Arrays.asList("a", "b")))
                     .isEqualTo(SchemaSelection.of(Arrays.asList("a", "b")))
                     .hasSameHashCodeAs(SchemaSelection.of(Arrays.asList("a", "b")));
+        }
+
+        @ParameterizedTest(name = "[{index}] {0}")
+        @DisplayName("a selection with nothing usable in it is the shared empty one")
+        @MethodSource(
+                "com.cubrid.cubridmigration.core.engine.config.SchemaSelectionTest#nothingUsable")
+        void nothingUsable_returnsTheSharedEmptySelection(String label, Collection<String> raw) {
+            assertThat(SchemaSelection.of(raw)).isSameAs(SchemaSelection.empty());
         }
     }
 

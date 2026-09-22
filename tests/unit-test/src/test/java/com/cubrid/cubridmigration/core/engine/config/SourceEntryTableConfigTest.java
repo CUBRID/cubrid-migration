@@ -44,7 +44,7 @@ class SourceEntryTableConfigTest {
 
         @Test
         @DisplayName("partition follows create table when enabled")
-        void setCreateNewTable_enablesPartition() {
+        void turningItOn_enablesThePartition() {
             SourceEntryTableConfig config = new SourceEntryTableConfig();
             config.setCreatePartition(false);
             config.setCreateNewTable(false);
@@ -57,7 +57,7 @@ class SourceEntryTableConfigTest {
 
         @Test
         @DisplayName("partition is cleared when create table is disabled")
-        void setCreateNewTable_disablesPartition() {
+        void turningItOff_disablesThePartition() {
             SourceEntryTableConfig config = new SourceEntryTableConfig();
             config.setCreatePartition(true);
             config.setCreateNewTable(true);
@@ -108,9 +108,28 @@ class SourceEntryTableConfigTest {
             assertThat(config.isCreatePartition()).isFalse();
         }
 
+        /**
+         * createNewTable and migrateData both start out on, so a config has to be switched off
+         * before switching it on does anything at all.
+         */
+        private SourceEntryTableConfig configWithNothingSelected() {
+            SourceEntryTableConfig config = new SourceEntryTableConfig();
+            config.setCreateNewTable(false);
+            config.setMigrateData(false);
+            config.addColumnConfig("f1", "f1", false);
+            config.addFKConfig("fk1", "fk1", false);
+            config.addIndexConfig("ix1", "ix1", false);
+            return config;
+        }
+    }
+
+    @Nested
+    @DisplayName("setMigrateData()")
+    class SetMigrateData {
+
         @Test
-        @DisplayName("setMigrateData() selects the columns but not the keys and indexes")
-        void migrateData_selectsColumnsOnly() {
+        @DisplayName("the columns are selected but the keys and indexes are not")
+        void nothingSelectedYet_selectsTheColumnsOnly() {
             SourceEntryTableConfig config = configWithNothingSelected();
 
             config.setMigrateData(true);
@@ -120,10 +139,7 @@ class SourceEntryTableConfigTest {
             assertThat(config.getIndexConfig("ix1").isCreate()).isFalse();
         }
 
-        /**
-         * createNewTable and migrateData both start out on, so a config has to be switched off
-         * before switching it on does anything at all.
-         */
+        /** Same shape as the sibling group: nothing is selected until the flag is switched off. */
         private SourceEntryTableConfig configWithNothingSelected() {
             SourceEntryTableConfig config = new SourceEntryTableConfig();
             config.setCreateNewTable(false);

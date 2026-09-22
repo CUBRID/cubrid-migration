@@ -75,6 +75,18 @@ class SourceColumnConfigTest {
             assertThat(config.getReplaceExp()).isEqualTo(expected);
         }
 
+        @Test
+        @DisplayName("a value with no replacement of its own is migrated as it stands")
+        void unnamedValue_isKeptAsItIs() {
+            SourceColumnConfig config = new SourceColumnConfig();
+            config.setReplaceExpression("a;b:c;d:a:;d:;");
+
+            assertThat(config.getReplaceValue("b")).isEqualTo("c");
+            assertThat(config.getReplaceValue("d")).isEmpty();
+            assertThat(config.getReplaceValue("a")).isEqualTo("a");
+            assertThat(config.getReplaceValue("z")).isEqualTo("z");
+        }
+
         @ParameterizedTest(name = "[{index}] {0}")
         @DisplayName("no expression clears whatever was there")
         @CsvSource(
@@ -87,18 +99,6 @@ class SourceColumnConfigTest {
             config.setReplaceExpression(expression);
 
             assertThat(config.getReplaceExp()).isEmpty();
-        }
-
-        @Test
-        @DisplayName("a value with no replacement of its own is migrated as it stands")
-        void unnamedValue_isKeptAsItIs() {
-            SourceColumnConfig config = new SourceColumnConfig();
-            config.setReplaceExpression("a;b:c;d:a:;d:;");
-
-            assertThat(config.getReplaceValue("b")).isEqualTo("c");
-            assertThat(config.getReplaceValue("d")).isEmpty();
-            assertThat(config.getReplaceValue("a")).isEqualTo("a");
-            assertThat(config.getReplaceValue("z")).isEqualTo("z");
         }
     }
 }

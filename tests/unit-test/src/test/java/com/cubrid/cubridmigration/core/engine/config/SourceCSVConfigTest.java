@@ -53,7 +53,7 @@ class SourceCSVConfigTest {
     class SetPreviewData {
 
         @Test
-        @DisplayName("the first row is data by default, so the columns are named col1, col2, ...")
+        @DisplayName("the first row is data by default, so the columns are named by position")
         void firstRowIsData_namesTheColumnsByPosition() {
             SourceCSVConfig config = new SourceCSVConfig();
 
