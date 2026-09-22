@@ -37,6 +37,7 @@ import com.cubrid.cubridmigration.core.dbobject.Column;
 import com.cubrid.cubridmigration.core.dbobject.Grant;
 import com.cubrid.cubridmigration.core.dbobject.PlcsqlFunction;
 import com.cubrid.cubridmigration.core.dbobject.PlcsqlProcedure;
+import com.cubrid.cubridmigration.core.dbobject.Schema;
 import com.cubrid.cubridmigration.core.dbobject.Sequence;
 import com.cubrid.cubridmigration.core.dbobject.Synonym;
 import com.cubrid.cubridmigration.core.dbobject.Table;
@@ -47,11 +48,15 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.api.parallel.ResourceLock;
 import org.junit.jupiter.api.parallel.Resources;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.sql.Types;
 import java.util.Locale;
 import java.util.TimeZone;
@@ -966,6 +971,431 @@ class MigrationConfigurationTest {
             config.setSourceFileTimeZone("GMT+05:00");
 
             assertThat(config.getSourceDatabaseTimeZone().getID()).isEqualTo("GMT+05:00");
+        }
+    }
+
+    @Nested
+    @DisplayName("cleanNoUsedConfigForStart()")
+    class CleanNoUsedConfigForStart {
+
+        @Test
+        @DisplayName("a table migrating neither its schema nor its data is dropped before the run")
+        void unselectedTable_isDropped() {
+            MigrationConfiguration config = configReadyToClean();
+
+            config.cleanNoUsedConfigForStart();
+
+            assertThat(config.getExpEntryTableCfg())
+                    .extracting(SourceTableConfig::getName)
+                    .containsExactly("KEEP");
+        }
+
+        @Test
+        @DisplayName("and inside the tables that stay, whatever was not selected goes too")
+        void unselectedPartsOfAKeptTable_areDropped() {
+            MigrationConfiguration config = configReadyToClean();
+            SourceEntryTableConfig kept = config.getExpEntryTableCfg("hr", "KEEP");
+
+            config.cleanNoUsedConfigForStart();
+
+            assertThat(kept.getColumnConfigList())
+                    .extracting(SourceColumnConfig::getName)
+                    .containsExactly("keep");
+            assertThat(kept.getFKConfigList())
+                    .extracting(SourceFKConfig::getName)
+                    .containsExactly("fkKeep");
+            assertThat(kept.getIndexConfigList())
+                    .extracting(SourceIndexConfig::getName)
+                    .containsExactly("ixKeep");
+        }
+
+        @Test
+        @DisplayName("an unselected view or sequence is dropped from the target schema as well")
+        void unselectedObject_isDroppedFromTheTargetSchema() {
+            MigrationConfiguration config = configReadyToClean();
+
+            config.cleanNoUsedConfigForStart();
+
+            assertThat(config.getExpViewCfg()).hasSize(1);
+            assertThat(config.getTargetViewSchema()).hasSize(1);
+            assertThat(config.getExpSerialCfg()).hasSize(1);
+            assertThat(config.getTargetSerialSchema()).hasSize(1);
+        }
+
+        @Test
+        @DisplayName("a file source is left alone, so an unselected table survives into the run")
+        void fileSource_isLeftAlone() {
+            // DEFECT: the whole body sits behind a check for an online or XML dump source, so a
+            // CSV or SQL migration starts with the configuration it was given
+            // - see MigrationConfiguration.cleanNoUsedConfigForStart()
+            MigrationConfiguration config = new MigrationConfiguration();
+            config.setSourceType("CSV");
+            config.addExpEntryTableCfg(selectedTable("DROP", false, false));
+
+            config.cleanNoUsedConfigForStart();
+
+            assertThat(config.getExpEntryTableCfg()).hasSize(1);
+        }
+
+        /** One table to keep and one to drop, plus a view and a sequence of each kind. */
+        private MigrationConfiguration configReadyToClean() {
+            MigrationConfiguration config = new MigrationConfiguration();
+            config.addExpEntryTableCfg(tableWithParts("KEEP", true));
+            config.addExpEntryTableCfg(tableWithParts("DROP", false));
+
+            config.addExpViewCfg("hr", "V1", "v1", "hr", "c");
+            config.addExpViewCfg("hr", "V2", "v2", "hr", "c");
+            config.getExpViewCfg("hr", "V2").setCreate(false);
+            config.addTargetViewSchema(targetView("v1"));
+            config.addTargetViewSchema(targetView("v2"));
+
+            config.addExpSerialCfg("hr", "S1", "s1");
+            config.addExpSerialCfg("hr", "S2", "s2");
+            config.getExpSerialCfg("hr", "S2").setCreate(false);
+            config.addTargetSerialSchema(targetSequence("s1"));
+            config.addTargetSerialSchema(targetSequence("s2"));
+            return config;
+        }
+
+        /**
+         * Built without the shared helper: setCreateNewTable selects every column when none is
+         * selected yet, so the parts have to be added after the flag is set.
+         */
+        private SourceEntryTableConfig tableWithParts(String name, boolean selected) {
+            SourceEntryTableConfig table = new SourceEntryTableConfig();
+            table.setCreateNewTable(false);
+            table.setMigrateData(false);
+            table.setName(name);
+            table.setOwner("hr");
+            table.setTarget(name.toLowerCase(Locale.ENGLISH));
+            table.setCreateNewTable(selected);
+            table.addColumnConfig("keep", "keep", true);
+            table.addColumnConfig("drop", "drop", false);
+            table.addFKConfig("fkKeep", "fkKeep", true);
+            table.addFKConfig("fkDrop", "fkDrop", false);
+            table.addIndexConfig("ixKeep", "ixKeep", true);
+            table.addIndexConfig("ixDrop", "ixDrop", false);
+            return table;
+        }
+
+        private View targetView(String name) {
+            View view = new View();
+            view.setName(name);
+            view.setOwner("hr");
+            return view;
+        }
+
+        private Sequence targetSequence(String name) {
+            Sequence sequence = new Sequence();
+            sequence.setName(name);
+            sequence.setOwner("hr");
+            return sequence;
+        }
+    }
+
+    @Nested
+    @DisplayName("schema selection")
+    class SchemaSelectionGroup {
+
+        @Test
+        @DisplayName("the schemas being migrated are the owners of the tables, views and sequences")
+        void migratedSchemas_areTheOwnersOfTheSelectedObjects() {
+            assertThat(configWithTwoSchemas().getExpSchemaNames()).containsExactly("hr", "sales");
+        }
+
+        @Test
+        @DisplayName("removing a schema removes its tables, views and sequences together")
+        void removingASchema_removesEverythingUnderIt() {
+            MigrationConfiguration config = configWithTwoSchemas();
+
+            config.removeExpSchema("sales");
+
+            assertThat(config.getExpSchemaNames()).containsExactly("hr");
+            assertThat(config.getExpEntryTableCfg()).hasSize(1);
+        }
+
+        @Test
+        @DisplayName("no schema named -> nothing is removed")
+        void noSchemaNamed_removesNothing() {
+            MigrationConfiguration config = configWithTwoSchemas();
+
+            config.removeExpSchema(null);
+
+            assertThat(config.getExpEntryTableCfg()).hasSize(2);
+        }
+
+        @Test
+        @DisplayName("renaming a schema moves its tables but leaves its views and sequences behind")
+        void renamingASchema_movesItsTablesOnly() {
+            MigrationConfiguration config = configWithTwoSchemas();
+
+            config.renameExpSchema("hr", "HR2");
+
+            // DEFECT: only the tables are walked, so the views and sequences keep the old owner and
+            // the migration then reports both schema names
+            // - see MigrationConfiguration.renameExpSchema()
+            assertThat(config.getExpSchemaNames()).containsExactly("HR2", "sales", "hr");
+        }
+
+        @Test
+        @DisplayName("the schema being renamed is matched by its exact name")
+        void renamedSchema_isMatchedExactly() {
+            MigrationConfiguration config = configWithTwoSchemas();
+
+            config.renameExpSchema("HR", "HR2");
+
+            assertThat(config.getExpSchemaNames()).containsExactly("hr", "sales");
+        }
+
+        @Test
+        @DisplayName("a selected source schema is trimmed and kept once")
+        void selectedSourceSchema_isTrimmedAndKeptOnce() {
+            MigrationConfiguration config = new MigrationConfiguration();
+
+            config.addSelectedSrcSchema(" hr ");
+            config.addSelectedSrcSchema("hr");
+            config.addSelectedSrcSchema("  ");
+            config.addSelectedSrcSchema(null);
+
+            assertThat(config.getSelectedSrcSchemas()).containsExactly("hr");
+        }
+
+        @Test
+        @DisplayName("removing one trims too, but matches the name exactly")
+        void removingASelectedSchema_trimsButMatchesExactly() {
+            MigrationConfiguration config = new MigrationConfiguration();
+            config.addSelectedSrcSchema("hr");
+
+            config.removeSelectedSrcSchema("HR");
+
+            assertThat(config.getSelectedSrcSchemas()).containsExactly("hr");
+
+            config.removeSelectedSrcSchema(" hr ");
+
+            assertThat(config.getSelectedSrcSchemas()).isEmpty();
+        }
+
+        private MigrationConfiguration configWithTwoSchemas() {
+            MigrationConfiguration config = new MigrationConfiguration();
+            config.addExpEntryTableCfg(selectedTable("EMP", true, false));
+            SourceEntryTableConfig sales = selectedTable("ORDER", true, false);
+            sales.setOwner("sales");
+            config.addExpEntryTableCfg(sales);
+            config.addExpViewCfg("hr", "V", "v", "hr", "c");
+            return config;
+        }
+    }
+
+    @Nested
+    @DisplayName("renaming a target")
+    class RenamingATarget {
+
+        @Test
+        @DisplayName("a table and the target schema it built are renamed together")
+        void tableAndItsTargetSchema_areRenamedTogether() {
+            MigrationConfiguration config = configWithOneTable();
+            SourceEntryTableConfig table = config.getExpEntryTableCfg("hr", "EMP");
+
+            config.changeTarget(table, "emp2");
+
+            assertThat(table.getTarget()).isEqualTo("emp2");
+            assertThat(config.getTargetTableSchema("emp2")).isNotNull();
+        }
+
+        @Test
+        @DisplayName("with no schema built yet only the setting moves")
+        void withoutATargetSchema_onlyTheSettingMoves() {
+            MigrationConfiguration config = new MigrationConfiguration();
+            SourceEntryTableConfig table = selectedTable("DEPT", true, false);
+            config.addExpEntryTableCfg(table);
+
+            config.changeTarget(table, "dept2");
+
+            assertThat(table.getTarget()).isEqualTo("dept2");
+        }
+
+        @Test
+        @DisplayName("a column and its target column are renamed together")
+        void columnAndItsTargetColumn_areRenamedTogether() {
+            MigrationConfiguration config = configWithOneTable();
+            SourceColumnConfig column =
+                    config.getExpEntryTableCfg("hr", "EMP").getColumnConfig("C1");
+
+            config.changeTarget(column, "c2");
+
+            assertThat(column.getTarget()).isEqualTo("c2");
+            assertThat(config.getTargetColumnSchema("emp", "c2")).isNotNull();
+        }
+
+        @Test
+        @DisplayName("renaming a column of a table that was never built is refused")
+        void columnOfAnUnbuiltTable_isRefused() {
+            MigrationConfiguration config = new MigrationConfiguration();
+            SourceEntryTableConfig table = selectedTable("EMP", true, false);
+            config.addExpEntryTableCfg(table);
+
+            assertThatThrownBy(() -> config.changeTarget(table.getColumnConfig("c1"), "x"))
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessageContaining("emp");
+        }
+
+        /**
+         * A table selected for migration, its target schema, and the source catalog it came from.
+         */
+        private MigrationConfiguration configWithOneTable() {
+            MigrationConfiguration config = new MigrationConfiguration();
+            SourceEntryTableConfig table = new SourceEntryTableConfig();
+            table.setCreateNewTable(false);
+            table.setMigrateData(false);
+            table.setName("EMP");
+            table.setOwner("hr");
+            table.setTarget("emp");
+            table.addColumnConfig("C1", "c1", true);
+            table.setCreateNewTable(true);
+            config.addExpEntryTableCfg(table);
+
+            Table targetTable = new Table();
+            targetTable.setName("emp");
+            targetTable.setOwner("hr");
+            targetTable.addColumn(varchar(targetTable, "c1"));
+            config.addTargetTableSchema(targetTable);
+
+            // The guard refuses more targets once the catalog is attached, so it goes on last.
+            Catalog catalog = new Catalog();
+            catalog.setName("db");
+            Schema schema = new Schema();
+            schema.setName("hr");
+            Table sourceTable = new Table();
+            sourceTable.setName("EMP");
+            sourceTable.setOwner("hr");
+            sourceTable.addColumn(varchar(sourceTable, "C1"));
+            schema.addTable(sourceTable);
+            catalog.addSchema(schema);
+            config.setSrcCatalog(catalog, false);
+            return config;
+        }
+
+        private Column varchar(Table table, String name) {
+            Column column = new Column(table);
+            column.setName(name);
+            column.setDataType("varchar");
+            column.setPrecision(10);
+            column.setJdbcIDOfDataType(Types.VARCHAR);
+            return column;
+        }
+    }
+
+    @Nested
+    @DisplayName("output file paths")
+    class OutputFilePaths {
+
+        @Test
+        @DisplayName("every kind of output file is named from the directory, prefix and schema")
+        void outputFiles_areNamedFromTheDirectoryPrefixAndSchema() {
+            MigrationConfiguration config = configWritingToFiles();
+
+            assertThat(config.getTargetFilePrefix()).isEqualTo("pre");
+            assertThat(config.getFileRepositroyPath()).isEqualTo("/out");
+            assertThat(config.getTargetSchemaFileName("hr")).isEqualTo("/out/pre/hr_schema");
+            assertThat(config.getTargetDataFileName("hr")).isEqualTo("/out/pre/hr_objects.sql");
+            assertThat(config.getTargetIndexFileName("hr")).isEqualTo("/out/pre/hr_indexes");
+        }
+
+        @Test
+        @DisplayName("moving the output directory rewrites the names, with a separator too many")
+        void movingTheOutputDirectory_rewritesTheNames() {
+            MigrationConfiguration config = configWritingToFiles();
+
+            config.changeTargetFilePath("/out2/");
+
+            // DEFECT: the new directory is padded to end with a separator but the old one is cut
+            // off by its raw length, so the remainder still starts with one
+            // - see MigrationConfiguration.changeTargetFilePath()
+            assertThat(config.getTargetSchemaFileName("hr")).isEqualTo("/out2//pre/hr_schema");
+        }
+
+        @Test
+        @DisplayName("a data file is named after its schema and the object inside it")
+        void dataFile_isNamedAfterItsSchemaAndObject() {
+            MigrationConfiguration config = configWritingToFiles();
+
+            assertThat(config.buildDataFileFullPath("hr", "emp"))
+                    .isEqualTo("/out/hr/pre_hr_emp.sql");
+            assertThat(config.getFullTargetFilePrefix()).isEqualTo("pre_");
+            assertThat(config.getDefaultTargetSchemaFileExtName()).isEqualTo(".sql");
+        }
+
+        private MigrationConfiguration configWritingToFiles() {
+            MigrationConfiguration config = new MigrationConfiguration();
+            config.setDestTypeName("sql");
+            Catalog catalog = new Catalog();
+            catalog.setName("db");
+            Schema schema = new Schema();
+            schema.setName("hr");
+            catalog.addSchema(schema);
+            config.setSrcCatalog(catalog, false);
+            config.setAddUserSchema(true);
+            config.setExp2FileOuput("pre", "/out", "UTF-8");
+            return config;
+        }
+    }
+
+    @Nested
+    @DisplayName("CSV files")
+    class CsvFiles {
+
+        @Test
+        @DisplayName("adding a file reads it, so its columns are ready to map")
+        void addingAFile_readsItsColumns(@TempDir Path directory) throws Exception {
+            MigrationConfiguration config = new MigrationConfiguration();
+            String file = writeCsv(directory);
+
+            config.addCSVFile(file, targetSchema());
+
+            assertThat(config.getCSVConfigs()).hasSize(1);
+            assertThat(config.getCSVConfigByFile(file)).isNotNull();
+            assertThat(config.getCSVConfigs().get(0).getColumnConfigs()).hasSize(2);
+        }
+
+        @Test
+        @DisplayName("the same file twice is still one file")
+        void theSameFileTwice_isStillOneFile(@TempDir Path directory) throws Exception {
+            MigrationConfiguration config = new MigrationConfiguration();
+            String file = writeCsv(directory);
+
+            config.addCSVFile(file, targetSchema());
+            config.addCSVFile(file, targetSchema());
+
+            assertThat(config.getCSVConfigs()).hasSize(1);
+        }
+
+        @Test
+        @DisplayName("removing a file that is not there leaves the rest alone")
+        void removingAFileThatIsNotThere_leavesTheRestAlone(@TempDir Path directory)
+                throws Exception {
+            MigrationConfiguration config = new MigrationConfiguration();
+            String file = writeCsv(directory);
+            config.addCSVFile(file, targetSchema());
+
+            config.removeCSVFile(directory.resolve("other.csv").toString());
+
+            assertThat(config.getCSVConfigs()).hasSize(1);
+
+            config.removeCSVFile(file);
+
+            assertThat(config.getCSVConfigs()).isEmpty();
+        }
+
+        private String writeCsv(Path directory) throws Exception {
+            Path file = directory.resolve("data.csv");
+            Files.write(file, "ID,Name\n1,a\n".getBytes(StandardCharsets.UTF_8));
+            return file.toString();
+        }
+
+        private Schema targetSchema() {
+            Schema schema = new Schema();
+            schema.setName("hr");
+            return schema;
         }
     }
 }
