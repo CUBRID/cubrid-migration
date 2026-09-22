@@ -42,14 +42,19 @@ import com.cubrid.cubridmigration.core.dbobject.Synonym;
 import com.cubrid.cubridmigration.core.dbobject.Table;
 import com.cubrid.cubridmigration.core.dbobject.View;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.ResourceLock;
+import org.junit.jupiter.api.parallel.Resources;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
 import java.sql.Types;
 import java.util.Locale;
+import java.util.TimeZone;
 
 @DisplayName("MigrationConfiguration")
 class MigrationConfigurationTest {
@@ -731,5 +736,236 @@ class MigrationConfigurationTest {
         table.setCreateNewTable(createNewTable);
         table.setMigrateData(migrateData);
         return table;
+    }
+
+    @Nested
+    @DisplayName("source and target kind")
+    class SourceAndTargetKind {
+
+        @ParameterizedTest(name = "[{index}] {0}")
+        @DisplayName("every database CMT connects to counts as an online source")
+        @CsvSource({"CUBRID", "MYSQL", "ORACLE", "MSSQL", "MARIADB", "INFORMIX", "TIBERO"})
+        void everyDatabase_countsAsOnline(String name) {
+            // A source database added without being listed here migrates as if it were a file.
+            MigrationConfiguration config = new MigrationConfiguration();
+            config.setSourceType(name);
+
+            assertThat(config.sourceIsOnline()).isTrue();
+        }
+
+        @ParameterizedTest(name = "[{index}] {0} -> online={1} csv={2} sql={3} xml={4}")
+        @DisplayName("a file source is named by its format, and reports no database")
+        @CsvSource({
+            "SQL, false, false, true,  false",
+            "CSV, false, true,  false, false",
+            "XML, false, false, false, true",
+        })
+        void fileSource_isNamedByItsFormat(
+                String name, boolean online, boolean csv, boolean sql, boolean xml) {
+            MigrationConfiguration config = new MigrationConfiguration();
+            config.setSourceType(name);
+
+            assertThat(config.sourceIsOnline()).isEqualTo(online);
+            assertThat(config.sourceIsCSV()).isEqualTo(csv);
+            assertThat(config.sourceIsSQL()).isEqualTo(sql);
+            assertThat(config.sourceIsXMLDump()).isEqualTo(xml);
+        }
+
+        @ParameterizedTest(name = "[{index}] {0} -> {1}")
+        @DisplayName("a file source still names a database, because the reader needs one")
+        @CsvSource({
+            "SQL, CUBRID",
+            "CSV, CUBRID",
+
+            // A MySQL dump is read with MySQL's own rules.
+            "XML, MYSQL",
+        })
+        void fileSource_stillNamesADatabase(String name, String expected) {
+            MigrationConfiguration config = new MigrationConfiguration();
+            config.setSourceType(name);
+
+            assertThat(config.getSourceDBType().getName()).isEqualTo(expected);
+        }
+
+        @ParameterizedTest(name = "[{index}] {0} -> file={1}")
+        @DisplayName("every format CMT writes counts as a file target")
+        @CsvSource({
+            "csv,    true",
+            "sql,    true",
+            "xls,    true",
+            "xlsx,   true",
+            "unload, true",
+
+            // Only a live database is not.
+            "cubrid, false",
+        })
+        void everyWrittenFormat_countsAsAFileTarget(String name, boolean expected) {
+            MigrationConfiguration config = new MigrationConfiguration();
+            config.setDestTypeName(name);
+
+            assertThat(config.targetIsFile()).isEqualTo(expected);
+            assertThat(config.targetIsOnline()).isEqualTo(!expected);
+        }
+
+        @Test
+        @DisplayName(
+                "the target format is named without regard to case, and an unknown one is"
+                        + " refused")
+        void targetFormatName_isCaseInsensitiveAndChecked() {
+            MigrationConfiguration config = new MigrationConfiguration();
+
+            config.setDestTypeName("CUBRID");
+
+            assertThat(config.getDestType()).isEqualTo(MigrationConfiguration.DEST_ONLINE);
+            assertThatThrownBy(() -> config.setDestTypeName("nosuchformat"))
+                    .isInstanceOf(RuntimeException.class);
+        }
+
+        @Test
+        @DisplayName("an unknown source name is refused as well")
+        void unknownSourceName_isRefused() {
+            MigrationConfiguration config = new MigrationConfiguration();
+
+            assertThatThrownBy(() -> config.setSourceType("nosuchdatabase"))
+                    .isInstanceOf(RuntimeException.class);
+        }
+    }
+
+    @Nested
+    @DisplayName("settings derived from the target")
+    class SettingsDerivedFromTheTarget {
+
+        @ParameterizedTest(name = "[{index}] {0} rows into {1} -> {2}")
+        @DisplayName("a spreadsheet target cuts the commit down to what one sheet holds")
+        @CsvSource({
+            // A sheet holds 65536 rows, a modern one 1048576.
+            "100000,  xls,  65536",
+            "2000000, xlsx, 1048576",
+
+            // A file format with no row limit commits what it was asked to.
+            "100000,  csv,  100000",
+        })
+        void spreadsheetTarget_cutsTheCommitToOneSheet(
+                int commitCount, String target, int expected) {
+            MigrationConfiguration config = new MigrationConfiguration();
+            config.setDestTypeName(target);
+            config.setCommitCount(commitCount);
+
+            assertThat(config.getCommitCount()).isEqualTo(expected);
+        }
+
+        @Test
+        @DisplayName("a smaller file size asked for wins over the sheet limit")
+        void smallerFileSize_winsOverTheSheetLimit() {
+            MigrationConfiguration config = new MigrationConfiguration();
+            config.setDestTypeName("xls");
+            config.setCommitCount(100000);
+
+            config.setMaxCountPerFile(1000);
+
+            assertThat(config.getMaxCountPerFile()).isEqualTo(1000);
+            assertThat(config.getCommitCount()).isEqualTo(1000);
+        }
+
+        @Test
+        @DisplayName("a file size larger than the sheet holds is cut down when it is stored")
+        void tooLargeFileSize_isCutWhenStored() {
+            MigrationConfiguration config = new MigrationConfiguration();
+            config.setDestTypeName("xls");
+
+            config.setMaxCountPerFile(999999999);
+
+            assertThat(config.getMaxCountPerFile()).isEqualTo(65536);
+        }
+
+        @Test
+        @DisplayName(
+                "a CSV target keeps its charset in the CSV settings, where the writer reads"
+                        + " it")
+        void csvTarget_keepsItsCharsetInTheCsvSettings() {
+            MigrationConfiguration config = new MigrationConfiguration();
+            config.setDestTypeName("csv");
+
+            assertThat(config.getTargetCharSet()).isEqualTo("UTF-8");
+
+            config.setTargetCharSet("EUC-KR");
+
+            assertThat(config.getTargetCharSet()).isEqualTo("EUC-KR");
+            assertThat(config.getCsvSettings().getCharset()).isEqualTo("EUC-KR");
+        }
+
+        @ParameterizedTest(name = "[{index}] {0} -> {1}")
+        @DisplayName("the LOB directory is stored ending in a separator, ready to append a name to")
+        @CsvSource(
+                nullValues = "null",
+                value = {
+                    "/a/b,    /a/b/",
+
+                    // Already ends in one, either way round.
+                    "/a/b/,   /a/b/",
+                    "/a/b\\,  /a/b\\",
+
+                    // Nothing to store is an empty path, never null.
+                    "null,    ''",
+                })
+        void lobDirectory_endsInASeparator(String path, String expected) {
+            MigrationConfiguration config = new MigrationConfiguration();
+
+            config.setTargetLOBRootPath(path);
+
+            assertThat(config.getTargetLOBRootPath()).isEqualTo(expected);
+        }
+    }
+
+    @Nested
+    @DisplayName("time zones")
+    @ResourceLock(Resources.TIME_ZONE)
+    class TimeZones {
+
+        private TimeZone defaultZone;
+
+        @BeforeEach
+        void pinTimeZone() {
+            defaultZone = TimeZone.getDefault();
+            TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
+        }
+
+        @AfterEach
+        void restoreTimeZone() {
+            TimeZone.setDefault(defaultZone);
+        }
+
+        @Test
+        @DisplayName("a file target with no zone of its own migrates in the JVM's zone")
+        void fileTargetWithoutAZone_usesTheJvmZone() {
+            MigrationConfiguration config = new MigrationConfiguration();
+            config.setDestTypeName("csv");
+
+            assertThat(config.getTargetDatabaseTimeZone().getID()).isEqualTo("GMT+00:00");
+        }
+
+        @Test
+        @DisplayName("a zone set on the file target is the one used")
+        void fileTargetZone_isUsed() {
+            MigrationConfiguration config = new MigrationConfiguration();
+            config.setDestTypeName("csv");
+
+            config.setTargetFileTimeZone("GMT+09:00");
+
+            assertThat(config.getTargetDatabaseTimeZone().getID()).isEqualTo("GMT+09:00");
+        }
+
+        @Test
+        @DisplayName("a file source reads in its own zone, or the JVM's when it has none")
+        void fileSource_readsInItsOwnZone() {
+            MigrationConfiguration config = new MigrationConfiguration();
+            config.setSourceType("CSV");
+
+            assertThat(config.getSourceDatabaseTimeZone().getID()).isEqualTo("GMT+00:00");
+
+            config.setSourceFileTimeZone("GMT+05:00");
+
+            assertThat(config.getSourceDatabaseTimeZone().getID()).isEqualTo("GMT+05:00");
+        }
     }
 }
