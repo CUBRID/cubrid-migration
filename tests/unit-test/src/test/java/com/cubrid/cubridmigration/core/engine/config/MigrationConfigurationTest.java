@@ -31,7 +31,9 @@ package com.cubrid.cubridmigration.core.engine.config;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.tuple;
 
+import com.cubrid.cubridmigration.core.connection.ConnParameters;
 import com.cubrid.cubridmigration.core.dbobject.Catalog;
 import com.cubrid.cubridmigration.core.dbobject.Column;
 import com.cubrid.cubridmigration.core.dbobject.Grant;
@@ -42,6 +44,7 @@ import com.cubrid.cubridmigration.core.dbobject.Sequence;
 import com.cubrid.cubridmigration.core.dbobject.Synonym;
 import com.cubrid.cubridmigration.core.dbobject.Table;
 import com.cubrid.cubridmigration.core.dbobject.View;
+import com.cubrid.cubridmigration.core.dbtype.DatabaseType;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -1389,6 +1392,482 @@ class MigrationConfigurationTest {
             assertThat(parsed.getBodyDDL()).isNotBlank();
             assertThat(parsed.getBodyDDL()).contains("BEGIN");
             assertThat(parsed.getBodyDDL()).contains("RETURN 1;");
+        }
+    }
+
+    @Nested
+    @DisplayName("names already taken")
+    class NamesAlreadyTaken {
+
+        @ParameterizedTest(name = "[{index}] {0} -> {1}")
+        @DisplayName("a sequence or synonym name already aimed at, compared without regard to case")
+        @CsvSource({
+            "s1,   true",
+            "S1,   true",
+            "none, false",
+        })
+        void sequenceName_isComparedWithoutRegardToCase(String name, boolean expected) {
+            assertThat(configWithSerialAndSynonym().isTargetSerialNameInUse(name))
+                    .isEqualTo(expected);
+        }
+
+        @ParameterizedTest(name = "[{index}] {0} -> {1}")
+        @DisplayName("and the same for a synonym")
+        @CsvSource({
+            "y1,   true",
+            "Y1,   true",
+            "none, false",
+        })
+        void synonymName_isComparedWithoutRegardToCase(String name, boolean expected) {
+            assertThat(configWithSerialAndSynonym().isTargetSynonymNameInUse(name))
+                    .isEqualTo(expected);
+        }
+
+        @ParameterizedTest(name = "[{index}] {0} vs schema hr -> {1}")
+        @DisplayName(
+                "an owner matches a schema without regard to case, and nothing matches nothing")
+        @CsvSource(
+                nullValues = "null",
+                value = {
+                    "hr,    true",
+                    "HR,    true",
+                    "sales, false",
+                    "null,  false",
+                })
+        void ownerAndSchema_areComparedWithoutRegardToCase(String owner, boolean expected) {
+            Schema schema = new Schema();
+            schema.setName("hr");
+
+            assertThat(new MigrationConfiguration().nullCheckEquals(owner, schema))
+                    .isEqualTo(expected);
+        }
+
+        @Test
+        @DisplayName("no schema to compare against -> false")
+        void noSchema_returnsFalse() {
+            assertThat(new MigrationConfiguration().nullCheckEquals("hr", null)).isFalse();
+        }
+
+        private MigrationConfiguration configWithSerialAndSynonym() {
+            MigrationConfiguration config = new MigrationConfiguration();
+            config.addExpSerialCfg("hr", "S1", "s1");
+            config.addExpSynonymCfg("hr", "Y1", "hr", "y1", "hr", "o", "hr", "o");
+            return config;
+        }
+    }
+
+    @Nested
+    @DisplayName("SQL sources")
+    class SqlSources {
+
+        @Test
+        @DisplayName("renaming a SQL table moves the name but leaves the target it already built")
+        void renamingASqlTable_movesTheName() {
+            MigrationConfiguration config = new MigrationConfiguration();
+            SourceSQLTableConfig sql = sqlTable("q1");
+            config.addExpSQLTableCfg(sql);
+            Table target = new Table();
+            target.setName("q1");
+            config.addTargetTableSchema(target);
+
+            config.replaceSQL(sql, "q2", "select 1");
+
+            assertThat(sql.getName()).isEqualTo("q2");
+            assertThat(sql.getTarget()).isEqualTo("q1");
+        }
+
+        @Test
+        @DisplayName("a SQL table that was never registered is left alone")
+        void unregisteredSqlTable_isLeftAlone() {
+            MigrationConfiguration config = new MigrationConfiguration();
+
+            config.replaceSQL(sqlTable("none"), "x", "select 2");
+
+            assertThat(config.getExpSQLCfg()).isEmpty();
+        }
+
+        @Test
+        @DisplayName("changing the owner moves the table to the end of the target list")
+        void changingTheOwner_movesTheTableToTheEnd() {
+            MigrationConfiguration config = new MigrationConfiguration();
+            config.addTargetTableSchema(targetTable("q1", "old"));
+            config.addTargetTableSchema(targetTable("other", "keep"));
+
+            config.changeSQLOwner(sqlTable("q1"), "newOwner");
+
+            assertThat(config.getTargetTableSchema())
+                    .extracting(Table::getName, Table::getOwner)
+                    .containsExactly(tuple("other", "keep"), tuple("q1", "newOwner"));
+        }
+
+        private SourceSQLTableConfig sqlTable(String name) {
+            SourceSQLTableConfig sql = new SourceSQLTableConfig();
+            sql.setName(name);
+            sql.setTarget(name);
+            sql.setSql("select 1");
+            return sql;
+        }
+
+        private Table targetTable(String name, String owner) {
+            Table table = new Table();
+            table.setName(name);
+            table.setOwner(owner);
+            return table;
+        }
+    }
+
+    @Nested
+    @DisplayName("reading CSV files")
+    class ReadingCsvFiles {
+
+        @Test
+        @DisplayName("the file is read when it is added, so its columns come from the first row")
+        void theFile_isReadWhenAdded(@TempDir Path directory) throws Exception {
+            MigrationConfiguration config = new MigrationConfiguration();
+            String file = writeCsv(directory, "ID,Name\n1,a\n");
+
+            config.addCSVFile(file, schema());
+
+            SourceCSVConfig csv = config.getCSVConfigByFile(file);
+            assertThat(csv.isImportFirstRow()).isTrue();
+            assertThat(csv.getColumnConfigs())
+                    .extracting(SourceCSVColumnConfig::getName)
+                    .containsExactly("col1", "col2");
+        }
+
+        @Test
+        @DisplayName("reparsing picks up a file that changed on disk")
+        void reparsing_picksUpAChangedFile(@TempDir Path directory) throws Exception {
+            MigrationConfiguration config = new MigrationConfiguration();
+            String file = writeCsv(directory, "ID,Name\n1,a\n");
+            config.addCSVFile(file, schema());
+
+            writeCsv(directory, "ID,Name,Extra\n1,a,b\n");
+            config.reparseCSVFiles(schema());
+
+            assertThat(config.getCSVConfigByFile(file).getColumnConfigs()).hasSize(3);
+        }
+
+        @Test
+        @DisplayName("a file can be read on its own, and one that is not there is reported")
+        void aFile_canBeReadOnItsOwn(@TempDir Path directory) throws Exception {
+            MigrationConfiguration config = new MigrationConfiguration();
+            SourceCSVConfig csv = new SourceCSVConfig();
+            csv.setName(writeCsv(directory, "A,B\n1,2\n"));
+
+            config.parsingCSVFile(csv);
+
+            assertThat(csv.getColumnConfigs())
+                    .extracting(SourceCSVColumnConfig::getName)
+                    .containsExactly("col1", "col2");
+
+            SourceCSVConfig missing = new SourceCSVConfig();
+            missing.setName(directory.resolve("missing.csv").toString());
+
+            assertThatThrownBy(() -> config.parsingCSVFile(missing))
+                    .isInstanceOf(RuntimeException.class);
+        }
+
+        @Test
+        @DisplayName("pointing a file at a table names it, and a column at a target column too")
+        void pointingAFileAtATable_namesIt(@TempDir Path directory) throws Exception {
+            MigrationConfiguration config = new MigrationConfiguration();
+            String file = writeCsv(directory, "ID,Name\n1,a\n");
+            Schema schema = schemaWithTable();
+            config.addCSVFile(file, schema);
+            SourceCSVConfig csv = config.getCSVConfigByFile(file);
+
+            config.changeCSVTarget(csv, "t1", schema, false);
+
+            assertThat(csv.getTarget()).isEqualTo("t1");
+
+            Column targetColumn = schema.getTables().get(0).getColumns().get(1);
+            config.changeCSVTarget(csv.getColumnConfigs().get(0), "col2", targetColumn);
+
+            assertThat(csv.getColumnConfigs().get(0).getTarget()).isEqualTo("col2");
+        }
+
+        private String writeCsv(Path directory, String content) throws Exception {
+            Path file = directory.resolve("data.csv");
+            Files.write(file, content.getBytes(StandardCharsets.UTF_8));
+            return file.toString();
+        }
+
+        private Schema schema() {
+            Schema schema = new Schema();
+            schema.setName("hr");
+            return schema;
+        }
+
+        private Schema schemaWithTable() {
+            Schema schema = schema();
+            Table table = new Table();
+            table.setName("t1");
+            table.setOwner("hr");
+            for (String name : new String[] {"col1", "col2"}) {
+                Column column = new Column(table);
+                column.setName(name);
+                column.setDataType("varchar");
+                column.setPrecision(10);
+                table.addColumn(column);
+            }
+            schema.addTable(table);
+            return schema;
+        }
+    }
+
+    @Nested
+    @DisplayName("building the source schema")
+    class BuildingTheSourceSchema {
+
+        @Test
+        @DisplayName("the catalog to migrate data from carries the connection's own details")
+        void theCatalog_carriesTheConnectionDetails() {
+            MigrationConfiguration config = onlineConfig("demodb");
+
+            Catalog built = config.buildSourceSchemaForDataMigration();
+
+            assertThat(built.getName()).isEqualTo("demodb");
+            assertThat(built.getHost()).isEqualTo("host");
+            assertThat(built.getCharset()).isEqualTo("UTF-8");
+            // The database keeps one schema, so the owner is cleared first and the schema falls
+            // back to the database name.
+            assertThat(built.getSchemas()).extracting(Schema::getName).containsExactly("demodb");
+        }
+
+        @Test
+        @DisplayName("a schema name is cleared for a database that has only one")
+        void singleSchemaDatabase_clearsTheSchemaName() {
+            MigrationConfiguration config = new MigrationConfiguration();
+            SourceEntryTableConfig table = selectedTable("EMP", true, false);
+            config.addExpEntryTableCfg(table);
+            config.setSrcCatalog(catalogOf(DatabaseType.MYSQL), false);
+
+            config.resetSchemaInfo();
+
+            assertThat(table.getOwner()).isNull();
+        }
+
+        @Test
+        @DisplayName("a database with several schemas keeps them")
+        void multiSchemaDatabase_keepsTheSchemaNames() {
+            MigrationConfiguration config = new MigrationConfiguration();
+            SourceEntryTableConfig table = selectedTable("EMP", true, false);
+            config.addExpEntryTableCfg(table);
+            config.setSrcCatalog(catalogOf(DatabaseType.ORACLE), false);
+
+            config.resetSchemaInfo();
+
+            assertThat(table.getOwner()).isEqualTo("hr");
+        }
+
+        @Test
+        @DisplayName("building from a catalog selects every table and gives each a target schema")
+        void buildingFromACatalog_selectsEveryTable() {
+            MigrationConfiguration config = new MigrationConfiguration();
+            config.setSourceType("cubrid");
+            config.setSrcCatalog(catalogWithOneTable(), false);
+
+            config.buildConfigAndTargetSchema(true);
+
+            assertThat(config.getExpEntryTableCfg())
+                    .extracting(SourceTableConfig::getName, SourceTableConfig::getTarget)
+                    .containsExactly(tuple("EMP", "emp"));
+            assertThat(config.getTargetTableSchema()).hasSize(1);
+        }
+
+        @Test
+        @DisplayName("only the source schemas that named a target are rebuilt")
+        void onlySchemasWithATarget_areRebuilt() {
+            MigrationConfiguration config = new MigrationConfiguration();
+            Catalog source = new Catalog();
+            source.setName("db");
+            source.addSchema(sourceSchema("hr", "hr2"));
+            source.addSchema(sourceSchema("sales", ""));
+
+            config.rebuildTargetSchemaListFromSource(source);
+
+            assertThat(config.getTargetSchemaList())
+                    .extracting(Schema::getName, Schema::getTargetSchemaName)
+                    .containsExactly(tuple("hr", "hr2"));
+        }
+
+        /** A table has to be migrating for the built catalog to hold a schema at all. */
+        private MigrationConfiguration onlineConfig(String dbName) {
+            MigrationConfiguration config = new MigrationConfiguration();
+            config.addExpEntryTableCfg(selectedTable("EMP", false, true));
+            config.setSourceConParams(
+                    ConnParameters.getConParam(
+                            "src",
+                            "host",
+                            33000,
+                            dbName,
+                            DatabaseType.CUBRID,
+                            "UTF-8",
+                            "u",
+                            "p",
+                            "d",
+                            null));
+            config.setSrcCatalog(sourceCatalog(dbName), false);
+            return config;
+        }
+
+        /** The source catalog the fetcher would have built: one schema holding the table. */
+        private Catalog sourceCatalog(String dbName) {
+            Catalog catalog = new Catalog();
+            catalog.setName(dbName);
+            Schema schema = new Schema();
+            schema.setName("hr");
+            Table table = new Table();
+            table.setName("EMP");
+            table.setOwner("hr");
+            Column column = new Column(table);
+            column.setName("C1");
+            column.setDataType("varchar");
+            column.setPrecision(10);
+            column.setJdbcIDOfDataType(Types.VARCHAR);
+            table.addColumn(column);
+            schema.addTable(table);
+            catalog.addSchema(schema);
+            return catalog;
+        }
+
+        private Catalog catalogWithOneTable() {
+            Catalog catalog = catalogOf(DatabaseType.CUBRID);
+            Table table = new Table();
+            table.setName("EMP");
+            table.setOwner("hr");
+            Column column = new Column(table);
+            column.setName("C1");
+            column.setDataType("varchar");
+            column.setPrecision(10);
+            column.setJdbcIDOfDataType(Types.VARCHAR);
+            table.addColumn(column);
+            catalog.getSchemas().get(0).addTable(table);
+            return catalog;
+        }
+
+        private Catalog catalogOf(DatabaseType type) {
+            Catalog catalog = new Catalog();
+            catalog.setName("db");
+            catalog.setDatabaseType(type);
+            Schema schema = new Schema();
+            schema.setName("hr");
+            catalog.addSchema(schema);
+            return catalog;
+        }
+
+        private Schema sourceSchema(String name, String target) {
+            Schema schema = new Schema();
+            schema.setName(name);
+            schema.setTargetSchemaName(target);
+            return schema;
+        }
+    }
+
+    @Nested
+    @DisplayName("more output file paths")
+    class MoreOutputFilePaths {
+
+        @Test
+        @DisplayName("each kind of object writes to a path of its own under the schema directory")
+        void eachKindOfObject_writesToItsOwnPath() {
+            MigrationConfiguration config = configWritingToFiles();
+
+            assertThat(config.buildSQLDataFileFullPath("hr", "sql"))
+                    .isEqualTo("/out/hr/pre___SQLTABLE___sql.sql");
+            assertThat(config.buildLocalFileFullPath("hr", "sql", "owner"))
+                    .isEqualTo("/out/hr/pre_hr_sql.sql");
+            assertThat(config.buildPlcsqlProcedureFileFullPath("hr", "p1", "sql"))
+                    .isEqualTo("/out/hr/FUNCTION/pre_hr_p1_sql.sql");
+        }
+
+        @Test
+        @DisplayName("an unload dump names its files from the schemas the script maps")
+        void unloadDump_namesItsFilesFromTheMappedSchemas() {
+            MigrationConfiguration config = new MigrationConfiguration();
+            config.setDestTypeName("unload");
+            config.setSourceType("cubrid");
+            Catalog catalog = new Catalog();
+            catalog.setName("db");
+            Schema schema = new Schema();
+            schema.setName("hr");
+            catalog.addSchema(schema);
+            config.setSrcCatalog(catalog, false);
+            config.setAddUserSchema(true);
+            config.setExp2FileOuput("pre", "/out", "UTF-8");
+            config.addScriptSchemaMapping("hr", schema);
+
+            config.createDumpfile(false, false);
+
+            assertThat(config.getTargetSchemaFileName("hr")).isEqualTo("/out/pre/hr_schema");
+        }
+
+        private MigrationConfiguration configWritingToFiles() {
+            MigrationConfiguration config = new MigrationConfiguration();
+            config.setDestTypeName("sql");
+            Catalog catalog = new Catalog();
+            catalog.setName("db");
+            Schema schema = new Schema();
+            schema.setName("hr");
+            catalog.addSchema(schema);
+            config.setSrcCatalog(catalog, false);
+            config.setAddUserSchema(true);
+            config.setExp2FileOuput("pre", "/out", "UTF-8");
+            return config;
+        }
+    }
+
+    @Nested
+    @DisplayName("naming the source")
+    class NamingTheSource {
+
+        @ParameterizedTest(name = "[{index}] {0} -> {1}")
+        @DisplayName("a file source is named by its format and a database by its own name")
+        @CsvSource({
+            "SQL,    sql",
+            "XML,    xml",
+            "CSV,    csv",
+            "cubrid, CUBRID",
+        })
+        void source_isNamedByItsFormatOrDatabase(String type, String expected) {
+            MigrationConfiguration config = new MigrationConfiguration();
+            config.setSourceType(type);
+
+            assertThat(config.getSourceTypeName()).isEqualTo(expected);
+        }
+
+        @Test
+        @DisplayName("a file source reads in its own encoding, UTF-8 when it names none")
+        void fileSource_readsInItsOwnEncoding() {
+            MigrationConfiguration config = new MigrationConfiguration();
+            config.setSourceType("CSV");
+
+            assertThat(config.getSourceCharset()).isEqualTo("UTF-8");
+
+            config.setSourceFileEncoding("EUC-KR");
+
+            assertThat(config.getSourceCharset()).isEqualTo("EUC-KR");
+        }
+
+        @Test
+        @DisplayName("an online source reads in the connection's encoding")
+        void onlineSource_readsInTheConnectionEncoding() {
+            MigrationConfiguration config = new MigrationConfiguration();
+            config.setSourceConParams(
+                    ConnParameters.getConParam(
+                            "src",
+                            "h",
+                            1,
+                            "db",
+                            DatabaseType.CUBRID,
+                            "EUC-KR",
+                            "u",
+                            "p",
+                            "d",
+                            null));
+
+            assertThat(config.getSourceCharset()).isEqualTo("EUC-KR");
         }
     }
 
