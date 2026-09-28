@@ -48,6 +48,8 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.ResourceLock;
+import org.junit.jupiter.api.parallel.Resources;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.NullAndEmptySource;
@@ -65,6 +67,7 @@ import java.util.List;
 import java.util.TimeZone;
 
 @DisplayName("DBUtils")
+@ResourceLock(Resources.TIME_ZONE)
 class DBUtilsTest {
 
     private static final TimeZone ORIGINAL_TIME_ZONE = TimeZone.getDefault();

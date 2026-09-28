@@ -44,6 +44,8 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.api.parallel.ResourceLock;
+import org.junit.jupiter.api.parallel.Resources;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -69,6 +71,7 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 
 @DisplayName("PathUtils")
+@ResourceLock(Resources.LOCALE)
 class PathUtilsTest {
 
     private static final String SEP = File.separator;
