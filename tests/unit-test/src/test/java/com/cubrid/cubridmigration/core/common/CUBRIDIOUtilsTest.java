@@ -284,10 +284,12 @@ class CUBRIDIOUtilsTest {
             // again inside itself, one level deeper each time, until the path gets too long
             // - see CUBRIDIOUtils.copyFolder()
             Path source = Files.createDirectories(dir.resolve("src"));
+            // a long name reaches the path length limit within a few dozen levels
+            String name = "copy".repeat(15);
 
-            CUBRIDIOUtils.copyFolder(source.toFile(), source.resolve("copy").toFile());
+            CUBRIDIOUtils.copyFolder(source.toFile(), source.resolve(name).toFile());
 
-            assertThat(source.resolve(String.join("/", Collections.nCopies(10, "copy"))))
+            assertThat(source.resolve(String.join("/", Collections.nCopies(3, name))))
                     .isDirectory();
         }
 
