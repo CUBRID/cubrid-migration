@@ -34,6 +34,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.cubrid.common.configuration.jdbc.IJDBCDriverChangedObserver;
 import com.cubrid.common.configuration.jdbc.IJDBCDriverChangedSubject;
 import com.cubrid.cubridmigration.core.dbtype.DatabaseType;
+import com.cubrid.cubridmigration.testutil.ClassLoaderManagerState;
 import com.cubrid.cubridmigration.testutil.DatabaseTypeDrivers;
 import com.cubrid.cubridmigration.testutil.DriverJars;
 
@@ -70,11 +71,13 @@ class JDBCDriverManagerTest {
             };
 
     private DatabaseTypeDrivers drivers;
+    private ClassLoaderManagerState loaders;
     private JDBCDriverManager manager;
 
     @BeforeEach
     void newManager() throws Exception {
         drivers = DatabaseTypeDrivers.capture();
+        loaders = ClassLoaderManagerState.capture();
         Constructor<JDBCDriverManager> constructor =
                 JDBCDriverManager.class.getDeclaredConstructor();
         constructor.setAccessible(true);
@@ -85,6 +88,7 @@ class JDBCDriverManagerTest {
     @AfterEach
     void restoreDrivers() {
         drivers.restore();
+        loaders.restore();
     }
 
     @Nested

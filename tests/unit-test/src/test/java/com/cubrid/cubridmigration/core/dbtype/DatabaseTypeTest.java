@@ -36,8 +36,11 @@ import static org.assertj.core.api.Assertions.tuple;
 import com.cubrid.cubridmigration.core.connection.JDBCData;
 import com.cubrid.cubridmigration.core.datatype.DBDataTypeHelper;
 import com.cubrid.cubridmigration.core.sql.SQLHelper;
+import com.cubrid.cubridmigration.testutil.ClassLoaderManagerState;
 import com.cubrid.cubridmigration.testutil.DriverJars;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -54,6 +57,18 @@ import java.util.List;
 
 @DisplayName("DatabaseType")
 class DatabaseTypeTest {
+
+    private ClassLoaderManagerState loaders;
+
+    @BeforeEach
+    void captureLoaders() {
+        loaders = ClassLoaderManagerState.capture();
+    }
+
+    @AfterEach
+    void restoreLoaders() {
+        loaders.restore();
+    }
 
     private static DatabaseType stubType(String... jdbcClasses) {
         return new DatabaseType(99, "stub", jdbcClasses, "0", null, null, null, false) {

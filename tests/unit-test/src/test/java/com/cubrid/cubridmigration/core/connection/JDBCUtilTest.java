@@ -32,6 +32,7 @@ package com.cubrid.cubridmigration.core.connection;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import com.cubrid.cubridmigration.testutil.ClassLoaderManagerState;
 import com.cubrid.cubridmigration.testutil.DatabaseTypeDrivers;
 import com.cubrid.cubridmigration.testutil.DriverJars;
 
@@ -56,17 +57,20 @@ import java.util.zip.ZipException;
 class JDBCUtilTest {
 
     private DatabaseTypeDrivers drivers;
+    private ClassLoaderManagerState loaders;
     private List<JDBCData> before;
 
     @BeforeEach
     void captureDrivers() {
         drivers = DatabaseTypeDrivers.capture();
+        loaders = ClassLoaderManagerState.capture();
         before = JDBCUtil.getAllJDBCData();
     }
 
     @AfterEach
     void restoreDrivers() {
         drivers.restore();
+        loaders.restore();
     }
 
     private List<String> added() {
