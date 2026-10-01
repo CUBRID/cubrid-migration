@@ -55,15 +55,19 @@ so a test importing `cubridmigration.ui`, `app`, `plugin` or `common.update` gen
 That is a classpath problem, and the normal answer is to add the module to the profile's `<modules>` and
 write the test. E2E is not the fallback for code the unit suite cannot see yet.
 
-Nothing in the suite needs a temporary file today, so there is no `@TempDir` to copy from. When you do
-need one, this is the shape — JUnit creates the directory per test and deletes it afterwards, which is
-why it stays hermetic (template, not copied from the suite):
+A test that needs files takes a `@TempDir`: JUnit creates the directory per test and deletes it
+afterwards, which is why it stays hermetic (`CUBRIDIOUtilsTest`):
 
 ```java
 @Test
-@DisplayName("the rule being verified")
-void condition_expectation(@TempDir Path dir) throws Exception {
-    // dir exists, is empty, is unique to this test, and is deleted afterwards
+@DisplayName("a directory is removed together with everything inside it")
+void directory_isRemovedWithContents(@TempDir Path dir) throws Exception {
+    Path tree = dir.resolve("tree");
+    write(tree.resolve("a/b.txt"), "b");
+
+    CUBRIDIOUtils.clearFileOrDir(tree.toFile());
+
+    assertThat(tree).doesNotExist();
 }
 ```
 
@@ -116,7 +120,7 @@ Split by member wherever the member split exists. Groups follow the production c
 order, not importance order.
 
 A class that pins only a slice of a large production class skips `@Nested` altogether and carries the
-member name in the method's first segment instead — `TiberoSchemaFetcherTest`, `DBUtilsTest`,
+member name in the method's first segment instead — `TiberoSchemaFetcherTest`,
 `UpdateAutoIncColCurrentValueTaskTest`, `ScriptCommandHandlerTest`. The member name is carried either
 by a `@Nested` or by the method name, never by both. Test classes are package-private.
 
@@ -124,15 +128,16 @@ Inside a group, order the tests broad to narrow: the parameterized happy path fi
 cases, then the null / empty / exception cases last.
 
 Two segments keep the condition and the expectation readable at a glance; camelCase a compound
-condition (`firstOctetAbove223_returnsFalse`) rather than splitting it, and add a third segment when
+condition (`indexPastTheEnd_returnsNull`) rather than splitting it, and add a third segment when
 that genuinely reads better.
 
 The expectation verb is third person singular: `returnsNull`, `throwsIllegalArgumentException`,
 `keepsElementsVerbatim`, `rendersZeroPrecision`.
 
 Trap: surefire's default includes are `Test*.java`, `*Test.java`, `*Tests.java`, `*TestCase.java`, so
-the shared factories `testutil/TestColumnFactory` and `testutil/TestCatalogFactory` are loaded as
-zero-test classes. Harmless, but do not name a new helper `Test*`.
+the shared factories `testutil/TestColumnFactory`, `testutil/TestCatalogFactory` and
+`testutil/TestTableFactory` are loaded as zero-test classes. Harmless, but do not name a new helper
+`Test*`.
 
 ### @DisplayName
 
@@ -289,8 +294,8 @@ Choose by construction cost, not by object size.
 - **Impossible, or behaviour-driven** — a live JDBC `ResultSet`, `Connection`, `PreparedStatement`,
   the filesystem, a spawned process; and any collaborator whose *behaviour* is the thing under test:
   one that has to throw on the third call, a listener that has to be notified, an interface the code
-  delegates to. Mock those. Every `mock()` in the suite happens to be a JDBC object today because the
-  JDBC loaders are what has been covered so far, not because other seams are off limits.
+  delegates to. Mock those. JDBC objects are the commonest case, not the only one: `CloserTest` mocks
+  a plain `Closeable` to check that it is closed and to make `close()` throw.
 
 Do not mock a value carrier you could construct. `MigrationCfgUtils.checkAll(config)` reads two getters
 in its own body, then hands the same config to five private methods; twenty-one distinct getters are
@@ -365,16 +370,25 @@ being fired.
 
 ### Test data
 
-Use the static factories in `tests/unit-test/src/test/java/com/cubrid/cubridmigration/testutil/`
-rather than hand-building domain objects.
+Use the shared helpers in `tests/unit-test/src/test/java/com/cubrid/cubridmigration/testutil/`
+rather than building the same objects by hand in each test class.
 
-| Factory | Methods |
-|---------|---------|
-| `TestColumnFactory` | `createColumn(dataType)`, `createColumn(dataType, precision, scale)`, `createColumnWithDefault(dataType, defaultValue)`, `createCharColumn(dataType, precision, charUsed)` |
+| Helper | Methods |
+|--------|---------|
+| `TestColumnFactory` | `createColumn(dataType)`, `createColumn(dataType, precision, scale)`, `createColumn(name, dataType, precision, scale)`, `createColumnWithDefault(dataType, defaultValue)`, `createCharColumn(dataType, precision, charUsed)` |
 | `TestCatalogFactory` | `createCatalog(key, DataType...)`, `createCatalog(key, jdbcTypeId)`, `createDataType(typeName, jdbcTypeId)` |
+| `TestTableFactory` | `createTable(name, columnNames...)`, `createIndex(name, columnNames...)`, `createIndex(name, columnName, ascending)`, `createPartitionInfo(method, columnName)`, `addPartition(info, name, description)`, `createSequence(name, owner)` |
+| `JdbcMockFactory` | `attachMetaData(conn)`, `resultSetOf(rowCount)`, `attachPreparedQuery(conn, rowCount)`, `attachStatementQuery(conn, rowCount)` |
+| `DriverJars` | `write(jar, classNames...)`, `writeClassFolder(folder, className)` |
 
-`createColumn` names the column `TEST_COL`; assertions on messages that echo the column name depend on
-that. Add a factory method when a shape starts being reused; keep one-offs local to the test class.
+A column factory method that takes no name calls the column `TEST_COL`; assertions on messages that
+echo the column name depend on that. Add a factory method when a shape starts being reused; keep
+one-offs local to the test class.
+
+`PathUtilsState`, `DatabaseTypeDrivers` and `ClassLoaderManagerState` snapshot static state the
+production code keeps: the `PathUtils` paths, the drivers each `DatabaseType` registers, and the
+`ClassLoaderManager` class loaders. A test that changes that state calls `capture()` in `@BeforeEach`
+and `restore()` in `@AfterEach` (`PathUtilsTest`, `JDBCDriverManagerTest`).
 
 ### Characterization tests and `// DEFECT:`
 
