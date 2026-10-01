@@ -7,11 +7,6 @@ both; the E2E suite documents its own setup and tooling in [tests/e2e/README.md]
 |------|------|-------|--------------|
 | `tests/unit-test` | JUnit 6 unit / characterization tests | jar module in the root reactor, `unit-test` profile | the plugin sources directly |
 | `tests/e2e` | migration end-to-end tests | standalone Maven project, **not** in the root reactor | the built CMT console + Testcontainers databases |
-| `test/` (repo root) | legacy Eclipse test fragments | none | nothing |
-
-The root `test/` directory is out of scope: it predates both suites, is not listed in any `<module>`,
-is not compiled, not run in CI, and not maintained. Do not add to it and do not migrate it. Today the
-exclusion holds only because nothing references it — treat it as dead code.
 
 ## Running
 
