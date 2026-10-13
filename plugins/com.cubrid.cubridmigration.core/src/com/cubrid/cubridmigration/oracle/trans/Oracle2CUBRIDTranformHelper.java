@@ -324,6 +324,13 @@ public class Oracle2CUBRIDTranformHelper extends DBTransformHelper {
             return;
         }
 
+        String parsedSourceDefault = parseDefaultValue(defaultValue);
+        if (!defaultValue.equals(parsedSourceDefault)) {
+            cubridColumn.setDefaultValue(parsedSourceDefault);
+            cubridColumn.setDefaultIsExpression(false);
+            return;
+        }
+
         if ((dataType.indexOf("TIMESTAMP") > -1 || "DATE".equalsIgnoreCase(dataType))
                 && isDefaultDateTimeFunction(defaultValue)) {
             defaultValue = convertFunctionInDefaultValue(defaultValue, cubridColumn.getDataType());
@@ -468,6 +475,35 @@ public class Oracle2CUBRIDTranformHelper extends DBTransformHelper {
      */
     private String removeLineComment(String defaultValue) {
         return defaultValue.replaceAll("\\s*--.*$", "");
+    }
+
+    /**
+     * Parse Oracle literal wrappers and functions in default values
+     *
+     * @param defaultValue default value
+     * @return standard string literal for CUBRID
+     */
+    protected String parseDefaultValue(String defaultValue) {
+        if (defaultValue == null) {
+            return null;
+        }
+        String trimmed = defaultValue.trim();
+        while (trimmed.startsWith("(") && trimmed.endsWith(")")) {
+            trimmed = trimmed.substring(1, trimmed.length() - 1).trim();
+        }
+        if (trimmed.length() >= 3
+                && trimmed.regionMatches(true, 0, "U'", 0, 2)
+                && trimmed.endsWith("'")) {
+            return trimmed.substring(1);
+        }
+        if (trimmed.equalsIgnoreCase("EMPTY_BLOB()") || trimmed.equalsIgnoreCase("EMPTY_CLOB()")) {
+            return null;
+        }
+        if (trimmed.regionMatches(true, 0, "HEXTORAW('", 0, 10) && trimmed.endsWith("')")) {
+            String hex = trimmed.substring("HEXTORAW('".length(), trimmed.length() - 2);
+            return "X'" + hex + "'";
+        }
+        return defaultValue;
     }
 
     /**
