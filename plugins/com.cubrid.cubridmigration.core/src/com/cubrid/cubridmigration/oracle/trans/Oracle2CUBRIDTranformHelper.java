@@ -54,6 +54,8 @@ import java.sql.Timestamp;
 import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * a transform class which helps to data transform in migration of Oracle to CUBRID
@@ -73,6 +75,11 @@ public class Oracle2CUBRIDTranformHelper extends DBTransformHelper {
         "SYSDATE",
         "SYSTIMESTAMP"
     };
+
+    private static final Pattern EMPTY_LOB_PATTERN =
+            Pattern.compile("^EMPTY_(?:BLOB|CLOB)\\s*\\(\\s*\\)$", Pattern.CASE_INSENSITIVE);
+    private static final Pattern HEXTORAW_PATTERN =
+            Pattern.compile("^HEXTORAW\\s*\\(\\s*'([^']*)'\\s*\\)$", Pattern.CASE_INSENSITIVE);
 
     public Oracle2CUBRIDTranformHelper(
             AbstractDataTypeMappingHelper dataTypeMapping, ToCUBRIDDataConverterFacade cf) {
@@ -324,6 +331,13 @@ public class Oracle2CUBRIDTranformHelper extends DBTransformHelper {
             return;
         }
 
+        String parsedSourceDefault = parseDefaultValue(defaultValue);
+        if (!defaultValue.equals(parsedSourceDefault)) {
+            cubridColumn.setDefaultValue(parsedSourceDefault);
+            cubridColumn.setDefaultIsExpression(false);
+            return;
+        }
+
         if ((dataType.indexOf("TIMESTAMP") > -1 || "DATE".equalsIgnoreCase(dataType))
                 && isDefaultDateTimeFunction(defaultValue)) {
             defaultValue = convertFunctionInDefaultValue(defaultValue, cubridColumn.getDataType());
@@ -468,6 +482,36 @@ public class Oracle2CUBRIDTranformHelper extends DBTransformHelper {
      */
     private String removeLineComment(String defaultValue) {
         return defaultValue.replaceAll("\\s*--.*$", "");
+    }
+
+    /**
+     * Parse Oracle literal wrappers and functions in default values
+     *
+     * @param defaultValue default value
+     * @return standard string literal for CUBRID
+     */
+    protected String parseDefaultValue(String defaultValue) {
+        if (defaultValue == null) {
+            return null;
+        }
+        String trimmed = defaultValue.trim();
+        while (trimmed.startsWith("(") && trimmed.endsWith(")")) {
+            trimmed = trimmed.substring(1, trimmed.length() - 1).trim();
+        }
+        if (trimmed.length() >= 3
+                && trimmed.regionMatches(true, 0, "U'", 0, 2)
+                && trimmed.endsWith("'")) {
+            return trimmed.substring(1);
+        }
+        if (EMPTY_LOB_PATTERN.matcher(trimmed).matches()) {
+            return null;
+        }
+        Matcher hextorawMatcher = HEXTORAW_PATTERN.matcher(trimmed);
+        if (hextorawMatcher.matches()) {
+            String hex = hextorawMatcher.group(1);
+            return "X'" + hex + "'";
+        }
+        return defaultValue;
     }
 
     /**
