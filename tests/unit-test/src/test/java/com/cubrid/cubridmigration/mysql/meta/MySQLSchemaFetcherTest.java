@@ -54,6 +54,8 @@ import org.junit.jupiter.api.parallel.ResourceLock;
 import org.junit.jupiter.api.parallel.Resources;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.NullSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -160,6 +162,34 @@ class MySQLSchemaFetcherTest {
         String result = FETCHER.getSourcePartitionDDL(table);
 
         assertThat(result).isEmpty();
+    }
+
+    @ParameterizedTest(name = "[{index}] {0}")
+    @DisplayName("isNonLiteralDefault() EXTRA marked DEFAULT_GENERATED -> true")
+    @ValueSource(
+            strings = {
+                "DEFAULT_GENERATED",
+                "default_generated",
+                // A timestamp column can carry both.
+                "DEFAULT_GENERATED on update CURRENT_TIMESTAMP",
+            })
+    void isNonLiteralDefault_defaultGenerated_returnsTrue(String extra) {
+        assertThat(FETCHER.isNonLiteralDefault(extra)).isTrue();
+    }
+
+    @ParameterizedTest(name = "[{index}] \"{0}\"")
+    @DisplayName("isNonLiteralDefault() EXTRA without the mark, or absent -> false")
+    @NullSource
+    @ValueSource(
+            strings = {
+                "",
+                "auto_increment",
+                "on update CURRENT_TIMESTAMP",
+                "STORED GENERATED",
+                "VIRTUAL GENERATED",
+            })
+    void isNonLiteralDefault_noMark_returnsFalse(String extra) {
+        assertThat(FETCHER.isNonLiteralDefault(extra)).isFalse();
     }
 
     @Test

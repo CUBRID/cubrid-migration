@@ -51,6 +51,7 @@ import java.sql.Timestamp;
 import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
+import java.util.regex.Pattern;
 
 /**
  * a transform class which helps to data transform in migration of MySQL to CUBRID
@@ -59,6 +60,9 @@ import java.util.TimeZone;
  */
 public class MySQL2CUBRIDTranformHelper extends DBTransformHelper {
     private static final Logger LOG = LogUtil.getLogger(MySQL2CUBRIDTranformHelper.class);
+
+    private static final Pattern EXTRACT_EXPRESSION =
+            Pattern.compile("\\bextract\\s*\\(", Pattern.CASE_INSENSITIVE);
 
     String[][] mysqlValue2CUBRIDValue = {
         {"CURRENT_DATE", "CURRENT_DATE"},
@@ -167,6 +171,12 @@ public class MySQL2CUBRIDTranformHelper extends DBTransformHelper {
             }
         }
 
+        if (isDefaultValueExpression(srcColumn)) {
+            cubridColumn.setDefaultIsExpression(true);
+            cubridColumn.setDefaultValue(defaultValue);
+            return;
+        }
+
         if ("TIMESTAMP".equalsIgnoreCase(dataType)) {
             try {
                 CUBRIDTimeUtil.parseDatetime2Long(defaultValue, TimeZone.getDefault());
@@ -228,6 +238,20 @@ public class MySQL2CUBRIDTranformHelper extends DBTransformHelper {
                 cubridColumn.setDefaultValue(timeValue);
             }
         }
+    }
+
+    /**
+     * A string default arrives without quotes, so the text alone cannot tell a literal from an
+     * expression: the fetcher marks the column when the server reports an expression. Of those,
+     * only a call to the function is carried over, wherever it sits: the server reprints an
+     * operator expression with brackets around it, so the call is not always first.
+     *
+     * @param srcColumn Column
+     * @return true: the default is an expression with a function call that CUBRID has to receive
+     */
+    private boolean isDefaultValueExpression(Column srcColumn) {
+        return srcColumn.isDefaultIsExpression()
+                && EXTRACT_EXPRESSION.matcher(srcColumn.getDefaultValue()).find();
     }
 
     /**

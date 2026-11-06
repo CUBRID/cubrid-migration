@@ -185,6 +185,25 @@ class Tibero2CUBRIDTransformHelperTest {
             assertThat(cub.isDefaultIsExpression()).isTrue();
         }
 
+        @ParameterizedTest(name = "[{index}] \"{0}\" -> carried over as it stands")
+        @DisplayName("EXTRACT on a numeric column is carried over as an expression, in any casing")
+        @ValueSource(
+                strings = {
+                    "EXTRACT(YEAR FROM SYSTIMESTAMP)",
+                    "EXTRACT(SECOND FROM SYSTIMESTAMP)",
+                    "extract(month from systimestamp)",
+                })
+        void extractIntoNumeric_isCarriedOverAsExpression(String expr) {
+            Column src = createColumn("NUMBER");
+            src.setDefaultValue(expr);
+            Column cub = createColumn("NUMERIC");
+
+            HELPER.adjustDefaultValue(src, cub);
+
+            assertThat(cub.getDefaultValue()).isEqualTo(expr);
+            assertThat(cub.isDefaultIsExpression()).isTrue();
+        }
+
         @ParameterizedTest(name = "[{index}] DATETIME column | TO_DATE/TO_TIMESTAMP conversion")
         @DisplayName("DATETIME type converts TO_DATE/TO_TIMESTAMP to TO_DATETIME")
         @MethodSource(

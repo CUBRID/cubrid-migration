@@ -29,6 +29,7 @@
  */
 package com.cubrid.cubridmigration.cubrid;
 
+import static com.cubrid.cubridmigration.testutil.TestColumnFactory.createColumn;
 import static com.cubrid.cubridmigration.testutil.TestTableFactory.addPartition;
 import static com.cubrid.cubridmigration.testutil.TestTableFactory.createIndex;
 import static com.cubrid.cubridmigration.testutil.TestTableFactory.createPartitionInfo;
@@ -37,6 +38,7 @@ import static com.cubrid.cubridmigration.testutil.TestTableFactory.createTable;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.cubrid.cubridmigration.core.dbobject.Column;
 import com.cubrid.cubridmigration.core.dbobject.FK;
 import com.cubrid.cubridmigration.core.dbobject.Index;
 import com.cubrid.cubridmigration.core.dbobject.PartitionInfo;
@@ -302,6 +304,55 @@ class CUBRIDSQLHelperTest {
         @DisplayName("null sequence -> empty string")
         void nullSequence_returnsEmptyString() {
             assertThat(HELPER.getSequenceDDL(null, true)).isEmpty();
+        }
+    }
+
+    @Nested
+    @DisplayName("getTableDDL()")
+    class GetTableDDL {
+
+        @Test
+        @DisplayName("a numeric default that is a number is emitted as it stands")
+        void numericDefault_isEmitted() {
+            assertThat(HELPER.getTableDDL(tableOf(numericColumn("42")), false))
+                    .contains("[c1] numeric(10,0) DEFAULT 42");
+        }
+
+        @Test
+        @DisplayName("a numeric default marked as an expression is emitted as it stands")
+        void expressionDefault_isEmittedVerbatim() {
+            Column column = numericColumn("EXTRACT(YEAR FROM SYSTIMESTAMP)");
+            column.setDefaultIsExpression(true);
+
+            assertThat(HELPER.getTableDDL(tableOf(column), false))
+                    .contains("[c1] numeric(10,0) DEFAULT EXTRACT(YEAR FROM SYSTIMESTAMP)");
+        }
+
+        @Test
+        @DisplayName("a numeric default that is no number and no expression -> no DEFAULT clause")
+        void unparsableNumericDefault_dropsTheDefaultClause() {
+            // DEFECT: a default the formatter cannot parse comes back as null, and a null is left
+            // out of the DDL without a word, so the clause vanishes with no trace
+            // - see CUBRIDSQLHelper.getColumnDDL()
+            Column column = numericColumn("EXTRACT(YEAR FROM SYSTIMESTAMP)");
+
+            assertThat(HELPER.getTableDDL(tableOf(column), false))
+                    .contains("[c1] numeric(10,0)")
+                    .doesNotContain("DEFAULT");
+        }
+
+        private Column numericColumn(String defaultValue) {
+            Column column = createColumn("c1", "numeric", 10, 0);
+            column.setShownDataType("numeric(10,0)");
+            column.setDefaultValue(defaultValue);
+            return column;
+        }
+
+        private Table tableOf(Column column) {
+            Table table = new Table();
+            table.setName("t1");
+            table.addColumn(column);
+            return table;
         }
     }
 

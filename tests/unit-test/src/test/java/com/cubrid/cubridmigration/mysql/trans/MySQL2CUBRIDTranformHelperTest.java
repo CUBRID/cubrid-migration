@@ -49,6 +49,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -203,6 +204,89 @@ class MySQL2CUBRIDTranformHelperTest {
             assertThat(adjusted(sourceType, sourceDefault)).isEqualTo(expected);
         }
 
+        @ParameterizedTest(name = "[{index}] {0} | {1}")
+        @DisplayName("a call to EXTRACT is carried over as an expression, in any casing")
+        @CsvSource({
+            // One per unit, in the form INFORMATION_SCHEMA reports an expression default.
+            "INT, extract(year from now())",
+            "INT, extract(month from now())",
+            "INT, extract(day from now())",
+            "INT, extract(hour from now())",
+            "INT, extract(minute from now())",
+            "INT, extract(second from now())",
+
+            // The column type does not gate it.
+            "VARCHAR, extract(year from now())",
+
+            // The name is matched without regard to case, and a gap before the bracket is fine.
+            "INT, EXTRACT(YEAR FROM NOW())",
+            "INT, extract (year from now())",
+        })
+        void extractCall_isCarriedOverAsExpression(String sourceType, String sourceDefault) {
+            Column target = adjustedColumn(sourceType, sourceDefault, true);
+
+            assertThat(target.getDefaultValue()).isEqualTo(sourceDefault);
+            assertThat(target.isDefaultIsExpression()).isTrue();
+        }
+
+        @ParameterizedTest(name = "[{index}] {0} | {1}")
+        @DisplayName("an EXTRACT call inside a larger expression marks the whole default")
+        @CsvSource({
+            // As the server reprints an operator expression: bracketed, so the call is not first.
+            "INT, (extract(year from current_timestamp()) + 1)",
+            "INT, (extract(year from now()) * 100 + extract(month from now()))",
+
+            // The call can also sit behind a function name, an operand or a keyword.
+            "INT, abs(extract(year from now()))",
+            "INT, 1 + extract(year from now())",
+            "INT, case when extract(month from now()) > 6 then 2 else 1 end",
+            "VARCHAR, cast(extract(year from now()) as char)",
+        })
+        void extractInsideLargerExpression_isCarriedOverAsExpression(
+                String sourceType, String sourceDefault) {
+            Column target = adjustedColumn(sourceType, sourceDefault, true);
+
+            assertThat(target.getDefaultValue()).isEqualTo(sourceDefault);
+            assertThat(target.isDefaultIsExpression()).isTrue();
+        }
+
+        @ParameterizedTest(name = "[{index}] \"{0}\"")
+        @DisplayName("a string literal shaped like an EXTRACT call stays a string")
+        @ValueSource(
+                strings = {
+                    "extract(status)",
+                    "extract(year from now())",
+                    "(extract(year from now()) + 1)",
+                    "EXTRACT (HOUR FROM NOW())",
+                })
+        void stringLiteralShapedLikeExtractCall_isLeftAlone(String sourceDefault) {
+            // The server did not mark it as an expression, whatever the text looks like.
+            Column target = adjustedColumn("VARCHAR", sourceDefault, false);
+
+            assertThat(target.getDefaultValue()).isNull();
+            assertThat(target.isDefaultIsExpression()).isFalse();
+        }
+
+        @ParameterizedTest(name = "[{index}] \"{0}\"")
+        @DisplayName("text that only contains the name, without calling it, is not an expression")
+        @ValueSource(
+                strings = {
+                    "extractor",
+                    "extract_me",
+                    "extract",
+                    "re-extract me",
+                    // The name is only a part of a longer identifier.
+                    "my_extract(1)",
+                    "extract_year(1)",
+                })
+        void textWithoutAnExtractCall_isLeftAlone(String sourceDefault) {
+            // Even an expression only counts when it calls the function: the bracket tells it.
+            Column target = adjustedColumn("VARCHAR", sourceDefault, true);
+
+            assertThat(target.getDefaultValue()).isNull();
+            assertThat(target.isDefaultIsExpression()).isFalse();
+        }
+
         @ParameterizedTest(name = "[{index}] {0} | {1} -> {2}")
         @DisplayName("a value CUBRID cannot store falls back to the configured replacement")
         @CsvSource({
@@ -234,13 +318,23 @@ class MySQL2CUBRIDTranformHelperTest {
         }
 
         private String adjusted(String sourceType, String sourceDefault) {
+            return adjustedColumn(sourceType, sourceDefault).getDefaultValue();
+        }
+
+        private Column adjustedColumn(String sourceType, String sourceDefault) {
+            return adjustedColumn(sourceType, sourceDefault, false);
+        }
+
+        private Column adjustedColumn(
+                String sourceType, String sourceDefault, boolean isExpression) {
             Column source = createColumn(sourceType, null, null);
             source.setDefaultValue(sourceDefault);
+            source.setDefaultIsExpression(isExpression);
             Column target = createColumn("varchar", 100, null);
 
             HELPER.adjustDefaultValue(source, target);
 
-            return target.getDefaultValue();
+            return target;
         }
     }
 

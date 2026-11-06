@@ -54,6 +54,8 @@ import org.junit.jupiter.api.parallel.ResourceLock;
 import org.junit.jupiter.api.parallel.Resources;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.NullSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -160,6 +162,59 @@ class MariaDBSchemaFetcherTest {
         String result = FETCHER.getSourcePartitionDDL(table);
 
         assertThat(result).isEmpty();
+    }
+
+    @ParameterizedTest(name = "[{index}] {0}")
+    @DisplayName("isNonLiteralDefault() an unquoted default that is not NULL or a number -> true")
+    @ValueSource(
+            strings = {
+                "extract(year from current_timestamp())",
+                "(extract(year from current_timestamp()) + 1)",
+                "current_timestamp()",
+                "uuid()",
+            })
+    void isNonLiteralDefault_unquotedNonLiteral_returnsTrue(String rawDefault) {
+        assertThat(FETCHER.isNonLiteralDefault(rawDefault)).isTrue();
+    }
+
+    @ParameterizedTest(name = "[{index}] {0}")
+    @DisplayName("isNonLiteralDefault() a quoted string, NULL or a number -> false")
+    @NullSource
+    @ValueSource(
+            strings = {
+                // The server quotes a string default, whatever the text inside looks like.
+                "'extract(status)'",
+                "'extract(year from now())'",
+                "'abc'",
+                "''",
+                "NULL",
+                "0",
+                "-1",
+                "1.5",
+                "1e10",
+            })
+    void isNonLiteralDefault_stringNullOrNumber_returnsFalse(String rawDefault) {
+        assertThat(FETCHER.isNonLiteralDefault(rawDefault)).isFalse();
+    }
+
+    @ParameterizedTest(name = "[{index}] {0}.{1} -> {2}")
+    @DisplayName("a server before 10.2 does not mark expression defaults, so it is not trusted")
+    @CsvSource({
+        // Before 10.2 there is no expression default: an unquoted default is a plain string.
+        "5, 5, false",
+        "10, 0, false",
+        "10, 1, false",
+        // From 10.2 on the server quotes a string default.
+        "10, 2, true",
+        "10, 11, true",
+        "11, 0, true",
+    })
+    void isQuotedStringDefaultVersion_startsAtTenTwo(int major, int minor, boolean expected) {
+        Version version = new Version();
+        version.setDbMajorVersion(major);
+        version.setDbMinorVersion(minor);
+
+        assertThat(FETCHER.isQuotedStringDefaultVersion(version)).isEqualTo(expected);
     }
 
     @Test
