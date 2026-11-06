@@ -390,6 +390,78 @@ class Oracle2CUBRIDTranformHelperTest {
             assertThat(adjusted("VARCHAR2", "varchar", null).getDefaultValue()).isNull();
         }
 
+        @ParameterizedTest(name = "[{index}] {0} -> '0'")
+        @DisplayName("Oracle Unicode literal prefixes are removed before expression handling")
+        @ValueSource(strings = {"U'0'", "(u'0')", "((U'0'))"})
+        void unicodeLiteralPrefix_isRemoved(String oracleDefault) {
+            Column target = converted("NCHAR", 10, oracleDefault);
+
+            assertThat(target.getDefaultValue()).isEqualTo("'0'");
+            assertThat(target.isDefaultIsExpression()).isFalse();
+        }
+
+        @ParameterizedTest(name = "[{index}] {0} -> no default")
+        @DisplayName("an empty BLOB default is removed for a BIT VARYING target")
+        @ValueSource(
+                strings = {
+                    "EMPTY_BLOB()",
+                    "EMPTY_BLOB( )",
+                    "EMPTY_BLOB ( )",
+                    "empty_blob ( )",
+                })
+        void emptyBlobDefault_isRemovedForBitVarying(String oracleDefault) {
+            assertThat(converted("BLOB", 0, oracleDefault).getDefaultValue()).isNull();
+        }
+
+        @ParameterizedTest(name = "[{index}] {0} -> no default")
+        @DisplayName("an empty CLOB default is removed")
+        @ValueSource(
+                strings = {
+                    "EMPTY_CLOB()",
+                    "EMPTY_CLOB( )",
+                    "EMPTY_CLOB ( )",
+                    "empty_clob ( )",
+                })
+        void emptyClobDefault_isRemoved(String oracleDefault) {
+            assertThat(converted("CLOB", 0, oracleDefault).getDefaultValue()).isNull();
+        }
+
+        @ParameterizedTest(name = "[{index}] {0} -> X'0A1B'")
+        @DisplayName("HEXTORAW becomes a CUBRID hex literal")
+        @ValueSource(
+                strings = {
+                    "HEXTORAW('0A1B')",
+                    "hextoraw('0A1B')",
+                    "HEXTORAW ( '0A1B' )",
+                    "HEXTORAW( '0A1B' )",
+                    "HEXTORAW('0A1B' )",
+                    "hextoraw ( '0A1B' )",
+                })
+        void hexToRawDefault_becomesHexLiteral(String oracleDefault) {
+            assertThat(adjusted("RAW", "bit varying", oracleDefault).getDefaultValue())
+                    .isEqualTo("X'0A1B'");
+        }
+
+        @ParameterizedTest(name = "[{index}] {0} -> no default")
+        @DisplayName("an empty HEXTORAW default is removed")
+        @ValueSource(
+                strings = {
+                    "HEXTORAW('')",
+                    "HEXTORAW ( '' )",
+                    "HEXTORAW( '' )",
+                    "hextoraw ( '' )",
+                })
+        void emptyHexToRawDefault_isRemoved(String oracleDefault) {
+            assertThat(converted("RAW", 0, oracleDefault).getDefaultValue()).isNull();
+        }
+
+        private Column converted(String sourceType, int precision, String oracleDefault) {
+            Column source = createColumn(sourceType, precision, 0);
+            source.setDefaultValue(oracleDefault);
+
+            return HELPER.getCUBRIDColumn(source, config());
+        }
+
         private Column adjusted(String sourceType, String targetType, String oracleDefault) {
             Column source = createColumn(sourceType, null, null);
             source.setDefaultValue(oracleDefault);
