@@ -241,6 +241,18 @@ class Oracle2CUBRIDTranformHelperTest {
             assertThat(HELPER.getCUBRIDColumn(source, config()).getDefaultValue())
                     .isEqualTo("'abc'");
         }
+
+        @Test
+        @DisplayName("an EXTRACT default on a NUMBER survives the conversion as an expression")
+        void extractDefault_survivesAsExpression() {
+            Column source = createColumn("NUMBER", 10, 0);
+            source.setDefaultValue("EXTRACT(YEAR FROM SYSTIMESTAMP)");
+
+            Column target = HELPER.getCUBRIDColumn(source, config());
+
+            assertThat(target.getDefaultValue()).isEqualTo("EXTRACT(YEAR FROM SYSTIMESTAMP)");
+            assertThat(target.isDefaultIsExpression()).isTrue();
+        }
     }
 
     @Nested
@@ -333,6 +345,28 @@ class Oracle2CUBRIDTranformHelperTest {
             Column target = adjusted("DATE", "date", "TO_DATE('2024-01-01','YYYY-MM-DD')");
 
             assertThat(target.getDefaultValue()).isEqualTo("TO_DATE('2024-01-01','YYYY-MM-DD')");
+            assertThat(target.isDefaultIsExpression()).isTrue();
+        }
+
+        @ParameterizedTest(name = "[{index}] {0}")
+        @DisplayName("EXTRACT on a numeric column is carried over as an expression, in any casing")
+        @ValueSource(
+                strings = {
+                    // One per unit, since the unit decides nothing and none may be treated apart.
+                    "EXTRACT(YEAR FROM SYSTIMESTAMP)",
+                    "EXTRACT(MONTH FROM SYSTIMESTAMP)",
+                    "EXTRACT(DAY FROM SYSTIMESTAMP)",
+                    "EXTRACT(HOUR FROM SYSTIMESTAMP)",
+                    "EXTRACT(MINUTE FROM SYSTIMESTAMP)",
+                    "EXTRACT(SECOND FROM SYSTIMESTAMP)",
+
+                    // The lookup is case insensitive.
+                    "extract(year from systimestamp)",
+                })
+        void extractIntoNumeric_isCarriedOverAsExpression(String oracleDefault) {
+            Column target = adjusted("NUMBER", "numeric", oracleDefault);
+
+            assertThat(target.getDefaultValue()).isEqualTo(oracleDefault);
             assertThat(target.isDefaultIsExpression()).isTrue();
         }
 

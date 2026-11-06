@@ -53,6 +53,7 @@ import com.cubrid.cubridmigration.core.dbobject.Table;
 import com.cubrid.cubridmigration.core.dbobject.Trigger;
 import com.cubrid.cubridmigration.core.dbobject.Version;
 import com.cubrid.cubridmigration.core.dbobject.View;
+import com.cubrid.cubridmigration.core.dbtype.DBConstant;
 import com.cubrid.cubridmigration.core.dbtype.DatabaseType;
 import com.cubrid.cubridmigration.core.export.DBExportHelper;
 import com.cubrid.cubridmigration.core.sql.SQLHelper;
@@ -78,6 +79,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
+import java.util.regex.Pattern;
 
 /**
  * ReverseEngineeringMariaDBJdbc
@@ -87,6 +89,9 @@ import java.util.Properties;
  */
 public final class MariaDBSchemaFetcher extends AbstractJDBCSchemaFetcher {
     private static final Logger LOG = LogUtil.getLogger(MariaDBSchemaFetcher.class);
+
+    private static final Pattern NUMERIC_LITERAL =
+            Pattern.compile("[-+]?\\d+(\\.\\d+)?([eE][-+]?\\d+)?");
 
     private static final String SHOW_AUTOINCREMENT_MAXVAL = "SHOW TABLE STATUS LIKE ?";
     private static final String SHOW_CHARSET = "show VARIABLES LIKE 'character_set_database'";
@@ -441,7 +446,7 @@ public final class MariaDBSchemaFetcher extends AbstractJDBCSchemaFetcher {
 
         if (version.getDbMajorVersion() >= 5) {
             sqlStr =
-                    "SELECT COLUMN_NAME, CHARACTER_SET_NAME, COLUMN_COMMENT "
+                    "SELECT COLUMN_NAME, CHARACTER_SET_NAME, COLUMN_COMMENT, COLUMN_DEFAULT "
                             + "FROM INFORMATION_SCHEMA.COLUMNS "
                             + "WHERE TABLE_SCHEMA=? AND TABLE_NAME=?";
 
@@ -455,12 +460,16 @@ public final class MariaDBSchemaFetcher extends AbstractJDBCSchemaFetcher {
                     final String columnName = rs.getString(1);
                     final String charset = rs.getString(2);
                     final String comment = rs.getString(3);
+                    final String rawDefault = rs.getString(4);
 
                     final Column column = table.getColumnByName(columnName);
 
                     if (column != null) {
                         if (charset != null) column.setCharset(charset);
                         if (comment != null) column.setComment(commentEditor(comment));
+                        column.setDefaultIsExpression(
+                                isQuotedStringDefaultVersion(version)
+                                        && isNonLiteralDefault(rawDefault));
                     }
                 }
             } finally {
@@ -482,6 +491,34 @@ public final class MariaDBSchemaFetcher extends AbstractJDBCSchemaFetcher {
                 }
             }
         }
+    }
+
+    /**
+     * Before 10.2 the server has no expression default, and until 10.2.7 it reports a string
+     * default without quotes, so an unquoted default says nothing about being an expression. The
+     * version carries no revision, so 10.2.1 to 10.2.6 are taken as quoting.
+     *
+     * @param version of MariaDB
+     * @return true: an unquoted COLUMN_DEFAULT can be read as an expression
+     */
+    protected boolean isQuotedStringDefaultVersion(Version version) {
+        return version.getDbMajorVersion() > 10
+                || (version.getDbMajorVersion() == 10 && version.getDbMinorVersion() >= 2);
+    }
+
+    /**
+     * INFORMATION_SCHEMA.COLUMNS reports a string default in quotes and an expression without them.
+     * JDBC strips the quotes, so the two cannot be told apart from the default it returns. A bit
+     * literal such as b'1' is not told apart from an expression here; nothing reads it as one.
+     *
+     * @param rawDefault String COLUMN_DEFAULT as INFORMATION_SCHEMA reports it
+     * @return true: the default is neither a string, NULL nor a number
+     */
+    protected boolean isNonLiteralDefault(String rawDefault) {
+        return rawDefault != null
+                && !rawDefault.startsWith("'")
+                && !DBConstant.DB_NULL_VALUE.equalsIgnoreCase(rawDefault)
+                && !NUMERIC_LITERAL.matcher(rawDefault).matches();
     }
 
     /**

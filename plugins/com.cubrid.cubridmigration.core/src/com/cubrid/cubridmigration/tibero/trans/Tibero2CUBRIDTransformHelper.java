@@ -399,7 +399,9 @@ public class Tibero2CUBRIDTransformHelper extends DBTransformHelper {
         String upperCaseDefaultValue = defaultValue.toUpperCase(Locale.US);
 
         // Function names should be upperCases
-        String[] functions = {"(", "TO_CHAR", "TO_DATE", "TO_TIMESTAMP", "TO_TIMESTAMP_TZ", "CAST"};
+        String[] functions = {
+            "(", "TO_CHAR", "TO_DATE", "TO_TIMESTAMP", "TO_TIMESTAMP_TZ", "CAST", "EXTRACT"
+        };
 
         for (String function : functions) {
             if (upperCaseDefaultValue.startsWith(function)) {
