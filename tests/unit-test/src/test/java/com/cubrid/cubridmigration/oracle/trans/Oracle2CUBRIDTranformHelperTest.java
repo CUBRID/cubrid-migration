@@ -390,6 +390,121 @@ class Oracle2CUBRIDTranformHelperTest {
             assertThat(adjusted("VARCHAR2", "varchar", null).getDefaultValue()).isNull();
         }
 
+        @ParameterizedTest(name = "[{index}] {0} -> '0'")
+        @DisplayName("Oracle Unicode literal prefixes are removed before expression handling")
+        @ValueSource(strings = {"U'0'", "(u'0')", "((U'0'))"})
+        void unicodeLiteralPrefix_isRemoved(String oracleDefault) {
+            Column target = converted("NCHAR", 10, oracleDefault);
+
+            assertThat(target.getDefaultValue()).isEqualTo("'0'");
+            assertThat(target.isDefaultIsExpression()).isFalse();
+        }
+
+        @ParameterizedTest(name = "[{index}] {0}")
+        @DisplayName(
+                "enclosing parentheses around Unicode literals with special content are removed")
+        @ValueSource(strings = {"(U'hello (world)')", "(u'it''s (nested)')"})
+        void unicodeLiteralWithSpecialContent_prefixAndEnclosingParensRemoved(
+                String oracleDefault) {
+            Column target = converted("VARCHAR2", 50, oracleDefault);
+
+            String expected = oracleDefault.substring(1, oracleDefault.length() - 1).substring(1);
+            assertThat(target.getDefaultValue()).isEqualTo(expected);
+            assertThat(target.isDefaultIsExpression()).isFalse();
+        }
+
+        @ParameterizedTest(name = "[{index}] {0}")
+        @DisplayName("compound expressions are not damaged by outer parenthesis removal")
+        @ValueSource(
+                strings = {
+                    "(col_a) || (col_b)",
+                    "(1) + (2)",
+                    "(U'a') || (TRIM('b'))",
+                    "(a > 0) AND (b > 0)",
+                })
+        void compoundExpression_parenthesesNotDamaged(String oracleDefault) {
+            Column target = converted("VARCHAR2", 50, oracleDefault);
+
+            assertThat(target.getDefaultValue()).isEqualTo(oracleDefault);
+            assertThat(target.isDefaultIsExpression()).isTrue();
+        }
+
+        @ParameterizedTest(name = "[{index}] {0} -> {1}")
+        @DisplayName("string literals joined by || become one quoted default")
+        @CsvSource(
+                quoteCharacter = '"',
+                value = {
+                    "(U'a') || (U'b'), 'ab'",
+                    "('a''b') || (U'c'), 'a''bc'",
+                    "'A' || 'B' || 'C', 'ABC'",
+                })
+        void stringLiteralConcatenation_isFolded(String oracleDefault, String expected) {
+            assertThat(converted("VARCHAR2", 20, oracleDefault).getDefaultValue())
+                    .isEqualTo(expected);
+        }
+
+        @ParameterizedTest(name = "[{index}] {0} -> no default")
+        @DisplayName("an empty BLOB default is removed for a BIT VARYING target")
+        @ValueSource(
+                strings = {
+                    "EMPTY_BLOB()",
+                    "EMPTY_BLOB( )",
+                    "EMPTY_BLOB ( )",
+                    "empty_blob ( )",
+                })
+        void emptyBlobDefault_isRemovedForBitVarying(String oracleDefault) {
+            assertThat(converted("BLOB", 0, oracleDefault).getDefaultValue()).isNull();
+        }
+
+        @ParameterizedTest(name = "[{index}] {0} -> no default")
+        @DisplayName("an empty CLOB default is removed")
+        @ValueSource(
+                strings = {
+                    "EMPTY_CLOB()",
+                    "EMPTY_CLOB( )",
+                    "EMPTY_CLOB ( )",
+                    "empty_clob ( )",
+                })
+        void emptyClobDefault_isRemoved(String oracleDefault) {
+            assertThat(converted("CLOB", 0, oracleDefault).getDefaultValue()).isNull();
+        }
+
+        @ParameterizedTest(name = "[{index}] {0} -> X'0A1B'")
+        @DisplayName("HEXTORAW becomes a CUBRID hex literal")
+        @ValueSource(
+                strings = {
+                    "HEXTORAW('0A1B')",
+                    "hextoraw('0A1B')",
+                    "HEXTORAW ( '0A1B' )",
+                    "HEXTORAW( '0A1B' )",
+                    "HEXTORAW('0A1B' )",
+                    "hextoraw ( '0A1B' )",
+                })
+        void hexToRawDefault_becomesHexLiteral(String oracleDefault) {
+            assertThat(adjusted("RAW", "bit varying", oracleDefault).getDefaultValue())
+                    .isEqualTo("X'0A1B'");
+        }
+
+        @ParameterizedTest(name = "[{index}] {0} -> no default")
+        @DisplayName("an empty HEXTORAW default is removed")
+        @ValueSource(
+                strings = {
+                    "HEXTORAW('')",
+                    "HEXTORAW ( '' )",
+                    "HEXTORAW( '' )",
+                    "hextoraw ( '' )",
+                })
+        void emptyHexToRawDefault_isRemoved(String oracleDefault) {
+            assertThat(converted("RAW", 0, oracleDefault).getDefaultValue()).isNull();
+        }
+
+        private Column converted(String sourceType, int precision, String oracleDefault) {
+            Column source = createColumn(sourceType, precision, 0);
+            source.setDefaultValue(oracleDefault);
+
+            return HELPER.getCUBRIDColumn(source, config());
+        }
+
         private Column adjusted(String sourceType, String targetType, String oracleDefault) {
             Column source = createColumn(sourceType, null, null);
             source.setDefaultValue(oracleDefault);
