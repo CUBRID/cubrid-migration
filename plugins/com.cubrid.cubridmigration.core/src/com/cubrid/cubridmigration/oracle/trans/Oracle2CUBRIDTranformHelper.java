@@ -565,34 +565,43 @@ public class Oracle2CUBRIDTranformHelper extends DBTransformHelper {
      * @return true if the string is enclosed by matching outer parentheses
      */
     private static boolean isEnclosedByParentheses(String value) {
-        if (value == null || value.length() < 2 || !value.startsWith("(") || !value.endsWith(")")) {
+        if (!hasEnclosingParentheses(value)) {
             return false;
         }
         int depth = 0;
-        boolean inQuote = false;
-        boolean inDoubleQuote = false;
         for (int i = 0; i < value.length(); i++) {
             char c = value.charAt(i);
-            if (c == '\'' && !inDoubleQuote) {
-                if (inQuote && i + 1 < value.length() && value.charAt(i + 1) == '\'') {
-                    i++;
-                } else {
-                    inQuote = !inQuote;
-                }
-            } else if (c == '"' && !inQuote) {
-                inDoubleQuote = !inDoubleQuote;
-            } else if (!inQuote && !inDoubleQuote) {
-                if (c == '(') {
-                    depth++;
-                } else if (c == ')') {
-                    depth--;
-                    if (depth == 0 && i < value.length() - 1) {
-                        return false;
-                    }
+            if (c == '\'' || c == '"') {
+                i = skipQuoted(value, i, c);
+            } else if (c == '(') {
+                depth++;
+            } else if (c == ')') {
+                depth--;
+                if (depth == 0 && i < value.length() - 1) {
+                    return false;
                 }
             }
         }
-        return depth == 0 && !inQuote && !inDoubleQuote;
+        return depth == 0;
+    }
+
+    private static boolean hasEnclosingParentheses(String value) {
+        return value != null && value.length() >= 2 && value.startsWith("(") && value.endsWith(")");
+    }
+
+    private static int skipQuoted(String value, int start, char quote) {
+        int i = start + 1;
+        while (i < value.length()) {
+            if (value.charAt(i) == quote) {
+                if (i + 1 < value.length() && value.charAt(i + 1) == quote) {
+                    i += 2;
+                    continue;
+                }
+                return i;
+            }
+            i++;
+        }
+        return i;
     }
 
     /**
