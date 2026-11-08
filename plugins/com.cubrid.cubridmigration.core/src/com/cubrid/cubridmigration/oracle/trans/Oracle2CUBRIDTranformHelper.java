@@ -80,6 +80,10 @@ public class Oracle2CUBRIDTranformHelper extends DBTransformHelper {
             Pattern.compile("^EMPTY_(?:BLOB|CLOB)\\s*\\(\\s*\\)$", Pattern.CASE_INSENSITIVE);
     private static final Pattern HEXTORAW_PATTERN =
             Pattern.compile("^HEXTORAW\\s*\\(\\s*'([^']*)'\\s*\\)$", Pattern.CASE_INSENSITIVE);
+    private static final Pattern ORACLE_UNICODE_LITERAL_PATTERN =
+            Pattern.compile("^[uU]'((?:''|[^'])*)'$");
+    private static final Pattern STRING_CONCAT_TOKEN =
+            Pattern.compile("\\s*(\\(|\\)|\\|\\||[uU]?'((?:''|[^'])*)')\\s*");
 
     public Oracle2CUBRIDTranformHelper(
             AbstractDataTypeMappingHelper dataTypeMapping, ToCUBRIDDataConverterFacade cf) {
@@ -494,13 +498,15 @@ public class Oracle2CUBRIDTranformHelper extends DBTransformHelper {
         if (defaultValue == null) {
             return null;
         }
+        String concatenatedLiteral = parseStringLiteralConcatenation(defaultValue);
+        if (concatenatedLiteral != null) {
+            return concatenatedLiteral;
+        }
         String trimmed = defaultValue.trim();
-        while (trimmed.startsWith("(") && trimmed.endsWith(")")) {
+        while (isEnclosedByParentheses(trimmed)) {
             trimmed = trimmed.substring(1, trimmed.length() - 1).trim();
         }
-        if (trimmed.length() >= 3
-                && trimmed.regionMatches(true, 0, "U'", 0, 2)
-                && trimmed.endsWith("'")) {
+        if (ORACLE_UNICODE_LITERAL_PATTERN.matcher(trimmed).matches()) {
             return trimmed.substring(1);
         }
         if (EMPTY_LOB_PATTERN.matcher(trimmed).matches()) {
@@ -515,6 +521,78 @@ public class Oracle2CUBRIDTranformHelper extends DBTransformHelper {
             return "X'" + hex + "'";
         }
         return defaultValue;
+    }
+
+    /** Folds only string-literal concatenations; other SQL expressions are untouched. */
+    private static String parseStringLiteralConcatenation(String input) {
+        Matcher matcher = STRING_CONCAT_TOKEN.matcher(input);
+        StringBuilder value = new StringBuilder();
+        int depth = 0;
+        int position = 0;
+        boolean expectTerm = true;
+        boolean concatenated = false;
+        while (matcher.find()) {
+            if (matcher.start() != position) {
+                return null;
+            }
+            position = matcher.end();
+            String token = matcher.group(1);
+            if ("(".equals(token) && expectTerm) {
+                depth++;
+            } else if (")".equals(token) && !expectTerm && depth > 0) {
+                depth--;
+            } else if ("||".equals(token) && !expectTerm) {
+                expectTerm = true;
+                concatenated = true;
+            } else if (expectTerm && matcher.group(2) != null) {
+                value.append(matcher.group(2).replace("''", "'"));
+                expectTerm = false;
+            } else {
+                return null;
+            }
+        }
+        if (position != input.length() || !concatenated || expectTerm || depth != 0) {
+            return null;
+        }
+        return "'" + value.toString().replace("'", "''") + "'";
+    }
+
+    /**
+     * Checks if the given string is completely enclosed by a matching outer pair of parentheses.
+     * Parentheses inside SQL string literals are ignored.
+     *
+     * @param value default value string
+     * @return true if the string is enclosed by matching outer parentheses
+     */
+    private static boolean isEnclosedByParentheses(String value) {
+        if (value == null || value.length() < 2 || !value.startsWith("(") || !value.endsWith(")")) {
+            return false;
+        }
+        int depth = 0;
+        boolean inQuote = false;
+        boolean inDoubleQuote = false;
+        for (int i = 0; i < value.length(); i++) {
+            char c = value.charAt(i);
+            if (c == '\'' && !inDoubleQuote) {
+                if (inQuote && i + 1 < value.length() && value.charAt(i + 1) == '\'') {
+                    i++;
+                } else {
+                    inQuote = !inQuote;
+                }
+            } else if (c == '"' && !inQuote) {
+                inDoubleQuote = !inDoubleQuote;
+            } else if (!inQuote && !inDoubleQuote) {
+                if (c == '(') {
+                    depth++;
+                } else if (c == ')') {
+                    depth--;
+                    if (depth == 0 && i < value.length() - 1) {
+                        return false;
+                    }
+                }
+            }
+        }
+        return depth == 0 && !inQuote && !inDoubleQuote;
     }
 
     /**

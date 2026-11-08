@@ -400,6 +400,49 @@ class Oracle2CUBRIDTranformHelperTest {
             assertThat(target.isDefaultIsExpression()).isFalse();
         }
 
+        @ParameterizedTest(name = "[{index}] {0}")
+        @DisplayName(
+                "enclosing parentheses around Unicode literals with special content are removed")
+        @ValueSource(strings = {"(U'hello (world)')", "(u'it''s (nested)')"})
+        void unicodeLiteralWithSpecialContent_prefixAndEnclosingParensRemoved(
+                String oracleDefault) {
+            Column target = converted("VARCHAR2", 50, oracleDefault);
+
+            String expected = oracleDefault.substring(1, oracleDefault.length() - 1).substring(1);
+            assertThat(target.getDefaultValue()).isEqualTo(expected);
+            assertThat(target.isDefaultIsExpression()).isFalse();
+        }
+
+        @ParameterizedTest(name = "[{index}] {0}")
+        @DisplayName("compound expressions are not damaged by outer parenthesis removal")
+        @ValueSource(
+                strings = {
+                    "(col_a) || (col_b)",
+                    "(1) + (2)",
+                    "(U'a') || (TRIM('b'))",
+                    "(a > 0) AND (b > 0)",
+                })
+        void compoundExpression_parenthesesNotDamaged(String oracleDefault) {
+            Column target = converted("VARCHAR2", 50, oracleDefault);
+
+            assertThat(target.getDefaultValue()).isEqualTo(oracleDefault);
+            assertThat(target.isDefaultIsExpression()).isTrue();
+        }
+
+        @ParameterizedTest(name = "[{index}] {0} -> {1}")
+        @DisplayName("string literals joined by || become one quoted default")
+        @CsvSource(
+                quoteCharacter = '"',
+                value = {
+                    "(U'a') || (U'b'), 'ab'",
+                    "('a''b') || (U'c'), 'a''bc'",
+                    "'A' || 'B' || 'C', 'ABC'",
+                })
+        void stringLiteralConcatenation_isFolded(String oracleDefault, String expected) {
+            assertThat(converted("VARCHAR2", 20, oracleDefault).getDefaultValue())
+                    .isEqualTo(expected);
+        }
+
         @ParameterizedTest(name = "[{index}] {0} -> no default")
         @DisplayName("an empty BLOB default is removed for a BIT VARYING target")
         @ValueSource(
