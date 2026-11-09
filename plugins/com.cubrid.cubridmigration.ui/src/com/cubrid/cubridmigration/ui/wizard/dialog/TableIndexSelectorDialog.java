@@ -71,6 +71,16 @@ import java.util.Set;
  */
 public class TableIndexSelectorDialog extends Dialog {
 
+    private static final int IDX_CREATE = 3;
+    private static final int IDX_OBJ = IDX_CREATE + 1;
+    private static final int DESELECT_ALL_ID = IDialogConstants.CLIENT_ID + 1;
+    private static final int BACK_TO_DEFAULT_ID = IDialogConstants.CLIENT_ID + 2;
+
+    private TableViewer tvTableIndexes;
+    private final MigrationConfiguration cfg;
+    private final Map<SourceIndexConfig, Boolean> initialCreateStates = new LinkedHashMap<>();
+    private final Map<SourceIndexConfig, Boolean> initialReplaceStates = new LinkedHashMap<>();
+
     /**
      * @author Kevin Cao
      */
@@ -179,16 +189,6 @@ public class TableIndexSelectorDialog extends Dialog {
             // Keep the column header as text only (no checkbox icon)
         }
     }
-
-    private TableViewer tvTableIndexes;
-    private final MigrationConfiguration cfg;
-    private final Map<SourceIndexConfig, Boolean> initialCreateStates = new LinkedHashMap<>();
-    private final Map<SourceIndexConfig, Boolean> initialReplaceStates = new LinkedHashMap<>();
-
-    private static final int IDX_CREATE = 3;
-    private static final int IDX_OBJ = IDX_CREATE + 1;
-    private static final int DESELECT_ALL_ID = IDialogConstants.CLIENT_ID + 1;
-    private static final int BACK_TO_DEFAULT_ID = IDialogConstants.CLIENT_ID + 2;
 
     private static boolean isSameTable(SourceEntryTableConfig t1, SourceEntryTableConfig t2) {
         if (t1 == t2) {
