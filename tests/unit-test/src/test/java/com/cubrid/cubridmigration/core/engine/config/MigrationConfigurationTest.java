@@ -37,6 +37,8 @@ import com.cubrid.cubridmigration.core.connection.ConnParameters;
 import com.cubrid.cubridmigration.core.dbobject.Catalog;
 import com.cubrid.cubridmigration.core.dbobject.Column;
 import com.cubrid.cubridmigration.core.dbobject.Grant;
+import com.cubrid.cubridmigration.core.dbobject.Index;
+import com.cubrid.cubridmigration.core.dbobject.PK;
 import com.cubrid.cubridmigration.core.dbobject.PlcsqlFunction;
 import com.cubrid.cubridmigration.core.dbobject.PlcsqlProcedure;
 import com.cubrid.cubridmigration.core.dbobject.Schema;
@@ -61,6 +63,9 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.Types;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
 
@@ -1868,6 +1873,534 @@ class MigrationConfigurationTest {
                             null));
 
             assertThat(config.getSourceCharset()).isEqualTo("EUC-KR");
+        }
+    }
+
+    @Nested
+    @DisplayName("normalizeIndexColumnList()")
+    class NormalizeIndexColumnList {
+
+        @Test
+        @DisplayName("ordered columns render length-prefixed lower-case tokens")
+        void multipleColumns_returnsLengthPrefixedTokens() {
+            assertThat(
+                            MigrationConfiguration.normalizeIndexColumnList(
+                                    Arrays.asList("ColA", "ColB")))
+                    .isEqualTo("4:cola4:colb");
+        }
+
+        @Test
+        @DisplayName("different column ordering produces different keys")
+        void columnOrder_affectsNormalizedKey() {
+            String key1 =
+                    MigrationConfiguration.normalizeIndexColumnList(Arrays.asList("c1", "c2"));
+            String key2 =
+                    MigrationConfiguration.normalizeIndexColumnList(Arrays.asList("c2", "c1"));
+
+            assertThat(key1).isNotEqualTo(key2);
+        }
+
+        @Test
+        @DisplayName("empty column list produces an empty string")
+        void emptyList_returnsEmptyString() {
+            assertThat(MigrationConfiguration.normalizeIndexColumnList(Collections.emptyList()))
+                    .isEmpty();
+        }
+
+        @Test
+        @DisplayName("null column inside list is normalized to length 0 token")
+        void nullColumn_rendersZeroLengthToken() {
+            assertThat(
+                            MigrationConfiguration.normalizeIndexColumnList(
+                                    Collections.singletonList(null)))
+                    .isEqualTo("0:");
+        }
+    }
+
+    @Nested
+    @DisplayName("getSourceIndexColumns()")
+    class GetSourceIndexColumns {
+
+        @Test
+        @DisplayName("null table config or blank index name returns empty list")
+        void nullConfigOrBlankName_returnsEmptyList() {
+            MigrationConfiguration config = new MigrationConfiguration();
+            SourceEntryTableConfig tableConfig = new SourceEntryTableConfig();
+            tableConfig.setName("t1");
+
+            assertThat(config.getSourceIndexColumns(null, "ix1")).isEmpty();
+            assertThat(config.getSourceIndexColumns(tableConfig, null)).isEmpty();
+            assertThat(config.getSourceIndexColumns(tableConfig, "   ")).isEmpty();
+        }
+
+        @Test
+        @DisplayName("source catalog index resolution returns column names from source table")
+        void sourceCatalogMatch_returnsSourceIndexColumns() {
+            MigrationConfiguration config = new MigrationConfiguration();
+            Catalog srcCatalog = new Catalog();
+            Schema schema = new Schema();
+            schema.setName("hr");
+            Table table = new Table();
+            table.setName("emp");
+            Index index = new Index();
+            index.setName("ix_emp_sal");
+            index.addColumn("salary", true);
+            table.addIndex(index);
+            schema.addTable(table);
+            srcCatalog.addSchema(schema);
+            config.setSrcCatalog(srcCatalog, false);
+
+            SourceEntryTableConfig tableConfig = new SourceEntryTableConfig();
+            tableConfig.setOwner("hr");
+            tableConfig.setName("emp");
+
+            assertThat(config.getSourceIndexColumns(tableConfig, "ix_emp_sal"))
+                    .containsExactly("salary");
+        }
+
+        @Test
+        @DisplayName(
+                "when source catalog is absent, fallback resolves columns from target table schema")
+        void fallbackToTargetTable_returnsTargetIndexColumns() {
+            MigrationConfiguration config = new MigrationConfiguration();
+            Table targetTable = new Table();
+            targetTable.setOwner("hr");
+            targetTable.setName("emp");
+            Index index = new Index();
+            index.setName("ix_tgt_salary");
+            index.addColumn("salary", true);
+            targetTable.addIndex(index);
+            config.addTargetTableSchema(targetTable);
+
+            SourceEntryTableConfig tableConfig = new SourceEntryTableConfig();
+            tableConfig.setOwner("hr");
+            tableConfig.setName("emp");
+            tableConfig.setTargetOwner("hr");
+            tableConfig.setTarget("emp");
+            tableConfig.addIndexConfig("ix_src_salary", "ix_tgt_salary", true);
+
+            assertThat(config.getSourceIndexColumns(tableConfig, "ix_src_salary"))
+                    .containsExactly("salary");
+        }
+
+        @Test
+        @DisplayName("unknown index in both source and target returns empty list")
+        void unknownIndex_returnsEmptyList() {
+            MigrationConfiguration config = new MigrationConfiguration();
+            SourceEntryTableConfig tableConfig = new SourceEntryTableConfig();
+            tableConfig.setOwner("hr");
+            tableConfig.setName("emp");
+
+            assertThat(config.getSourceIndexColumns(tableConfig, "ix_nonexistent")).isEmpty();
+        }
+    }
+
+    @Nested
+    @DisplayName("hasDuplicateIndexes()")
+    class HasDuplicateIndexes {
+
+        @Test
+        @DisplayName("table with two indexes covering identical columns returns true")
+        void identicalColumnLists_returnsTrue() {
+            MigrationConfiguration config = new MigrationConfiguration();
+            Table targetTable = new Table();
+            targetTable.setName("orders");
+            Index idx1 = new Index();
+            idx1.setName("ix_cust_date_1");
+            idx1.addColumn("cust_id", true);
+            idx1.addColumn("order_date", true);
+            targetTable.addIndex(idx1);
+
+            Index idx2 = new Index();
+            idx2.setName("ix_cust_date_2");
+            idx2.addColumn("cust_id", true);
+            idx2.addColumn("order_date", true);
+            targetTable.addIndex(idx2);
+            config.addTargetTableSchema(targetTable);
+
+            SourceEntryTableConfig tableConfig = new SourceEntryTableConfig();
+            tableConfig.setName("orders");
+            tableConfig.setTarget("orders");
+            tableConfig.setCreateNewTable(true);
+            tableConfig.addIndexConfig("ix_cust_date_1", "ix_cust_date_1", true);
+            tableConfig.addIndexConfig("ix_cust_date_2", "ix_cust_date_2", true);
+            config.addExpEntryTableCfg(tableConfig);
+
+            assertThat(config.hasDuplicateIndexes()).isTrue();
+        }
+
+        @Test
+        @DisplayName("case differences in column names are treated as duplicate")
+        void caseInsensitiveColumnMatch_returnsTrue() {
+            MigrationConfiguration config = new MigrationConfiguration();
+            Table targetTable = new Table();
+            targetTable.setName("orders");
+            Index idx1 = new Index();
+            idx1.setName("ix1");
+            idx1.addColumn("cust_id", true);
+            targetTable.addIndex(idx1);
+
+            Index idx2 = new Index();
+            idx2.setName("ix2");
+            idx2.addColumn("CUST_ID", true);
+            targetTable.addIndex(idx2);
+            config.addTargetTableSchema(targetTable);
+
+            SourceEntryTableConfig tableConfig = new SourceEntryTableConfig();
+            tableConfig.setName("orders");
+            tableConfig.setTarget("orders");
+            tableConfig.setCreateNewTable(true);
+            tableConfig.addIndexConfig("ix1", "ix1", true);
+            tableConfig.addIndexConfig("ix2", "ix2", true);
+            config.addExpEntryTableCfg(tableConfig);
+
+            assertThat(config.hasDuplicateIndexes()).isTrue();
+        }
+
+        @Test
+        @DisplayName("indexes covering distinct column lists return false")
+        void distinctColumnLists_returnsFalse() {
+            MigrationConfiguration config = new MigrationConfiguration();
+            Table targetTable = new Table();
+            targetTable.setName("orders");
+            Index idx1 = new Index();
+            idx1.setName("ix1");
+            idx1.addColumn("cust_id", true);
+            targetTable.addIndex(idx1);
+
+            Index idx2 = new Index();
+            idx2.setName("ix2");
+            idx2.addColumn("order_date", true);
+            targetTable.addIndex(idx2);
+            config.addTargetTableSchema(targetTable);
+
+            SourceEntryTableConfig tableConfig = new SourceEntryTableConfig();
+            tableConfig.setName("orders");
+            tableConfig.setTarget("orders");
+            tableConfig.setCreateNewTable(true);
+            tableConfig.addIndexConfig("ix1", "ix1", true);
+            tableConfig.addIndexConfig("ix2", "ix2", true);
+            config.addExpEntryTableCfg(tableConfig);
+
+            assertThat(config.hasDuplicateIndexes()).isFalse();
+        }
+
+        @Test
+        @DisplayName("table skipped from creation is ignored even if duplicate indexes exist")
+        void uncreatedTable_isIgnored() {
+            MigrationConfiguration config = new MigrationConfiguration();
+            Table targetTable = new Table();
+            targetTable.setName("orders");
+            Index idx1 = new Index();
+            idx1.setName("ix1");
+            idx1.addColumn("cust_id", true);
+            targetTable.addIndex(idx1);
+
+            Index idx2 = new Index();
+            idx2.setName("ix2");
+            idx2.addColumn("cust_id", true);
+            targetTable.addIndex(idx2);
+            config.addTargetTableSchema(targetTable);
+
+            SourceEntryTableConfig tableConfig = new SourceEntryTableConfig();
+            tableConfig.setName("orders");
+            tableConfig.setTarget("orders");
+            tableConfig.setCreateNewTable(false);
+            tableConfig.addIndexConfig("ix1", "ix1", true);
+            tableConfig.addIndexConfig("ix2", "ix2", true);
+            config.addExpEntryTableCfg(tableConfig);
+
+            assertThat(config.hasDuplicateIndexes()).isFalse();
+        }
+    }
+
+    @Nested
+    @DisplayName("retainOneIndexPerDuplicateColumnList()")
+    class RetainOneIndexPerDuplicateColumnList {
+
+        @Test
+        @DisplayName("first selected index is kept while subsequent duplicate index is deselected")
+        void duplicateIndexes_keepsFirstSelectedAndDeselectsSubsequent() {
+            MigrationConfiguration config = new MigrationConfiguration();
+            Table targetTable = new Table();
+            targetTable.setName("orders");
+            Column col = new Column();
+            col.setName("col1");
+            targetTable.addColumn(col);
+
+            Index idx1 = new Index();
+            idx1.setName("ix1");
+            idx1.setUnique(false);
+            idx1.addColumn("col1", true);
+            targetTable.addIndex(idx1);
+
+            Index idx2 = new Index();
+            idx2.setName("ix2");
+            idx2.setUnique(true);
+            idx2.addColumn("col1", true);
+            targetTable.addIndex(idx2);
+            config.addTargetTableSchema(targetTable);
+
+            SourceEntryTableConfig tableConfig = new SourceEntryTableConfig();
+            tableConfig.setName("orders");
+            tableConfig.setTarget("orders");
+            tableConfig.setCreateNewTable(true);
+            tableConfig.addIndexConfig("ix1", "ix1", true);
+            tableConfig.addIndexConfig("ix2", "ix2", true);
+            tableConfig.getIndexConfig("ix2").setUnique(true);
+            config.addExpEntryTableCfg(tableConfig);
+
+            config.retainOneIndexPerDuplicateColumnList();
+
+            SourceIndexConfig sic1 = tableConfig.getIndexConfig("ix1");
+            SourceIndexConfig sic2 = tableConfig.getIndexConfig("ix2");
+            assertThat(sic1.isCreate()).isTrue();
+            assertThat(sic2.isCreate()).isFalse();
+            assertThat(sic2.isReplace()).isFalse();
+        }
+
+        @Test
+        @DisplayName("indexes covering different columns both remain selected")
+        void distinctIndexes_bothRemainSelected() {
+            MigrationConfiguration config = new MigrationConfiguration();
+            Table targetTable = new Table();
+            targetTable.setName("orders");
+            Index idx1 = new Index();
+            idx1.setName("ix1");
+            idx1.addColumn("c1", true);
+            targetTable.addIndex(idx1);
+
+            Index idx2 = new Index();
+            idx2.setName("ix2");
+            idx2.addColumn("c2", true);
+            targetTable.addIndex(idx2);
+            config.addTargetTableSchema(targetTable);
+
+            SourceEntryTableConfig tableConfig = new SourceEntryTableConfig();
+            tableConfig.setName("orders");
+            tableConfig.setTarget("orders");
+            tableConfig.setCreateNewTable(true);
+            tableConfig.addIndexConfig("ix1", "ix1", true);
+            tableConfig.addIndexConfig("ix2", "ix2", true);
+            config.addExpEntryTableCfg(tableConfig);
+
+            config.retainOneIndexPerDuplicateColumnList();
+
+            assertThat(tableConfig.getIndexConfig("ix1").isCreate()).isTrue();
+            assertThat(tableConfig.getIndexConfig("ix2").isCreate()).isTrue();
+        }
+    }
+
+    @Nested
+    @DisplayName("syncColumnUniqueFlags()")
+    class SyncColumnUniqueFlags {
+
+        @Test
+        @DisplayName("single-column primary key sets target column unique flag to true")
+        void singleColumnPk_setsColumnUnique() {
+            MigrationConfiguration config = new MigrationConfiguration();
+            Table targetTable = new Table();
+            targetTable.setName("t1");
+            Column col = new Column();
+            col.setName("id");
+            col.setUnique(false);
+            targetTable.addColumn(col);
+
+            PK pk = new PK();
+            pk.addColumn("id");
+            targetTable.setPk(pk);
+            config.addTargetTableSchema(targetTable);
+
+            SourceEntryTableConfig tableConfig = new SourceEntryTableConfig();
+            tableConfig.setName("t1");
+            tableConfig.setTarget("t1");
+            tableConfig.setCreatePK(true);
+            config.addExpEntryTableCfg(tableConfig);
+
+            config.syncColumnUniqueFlags();
+
+            assertThat(col.isUnique()).isTrue();
+        }
+
+        @Test
+        @DisplayName("active single-column unique index sets target column unique flag to true")
+        void activeSingleColumnUniqueIndex_setsColumnUnique() {
+            MigrationConfiguration config = new MigrationConfiguration();
+            Table targetTable = new Table();
+            targetTable.setName("t1");
+            Column col = new Column();
+            col.setName("email");
+            col.setUnique(false);
+            targetTable.addColumn(col);
+
+            Index idx = new Index();
+            idx.setName("ix_email");
+            idx.setUnique(true);
+            idx.addColumn("email", true);
+            targetTable.addIndex(idx);
+            config.addTargetTableSchema(targetTable);
+
+            SourceEntryTableConfig tableConfig = new SourceEntryTableConfig();
+            tableConfig.setName("t1");
+            tableConfig.setTarget("t1");
+            tableConfig.addIndexConfig("ix_email", "ix_email", true);
+            tableConfig.getIndexConfig("ix_email").setUnique(true);
+            config.addExpEntryTableCfg(tableConfig);
+
+            config.syncColumnUniqueFlags();
+
+            assertThat(col.isUnique()).isTrue();
+        }
+
+        @Test
+        @DisplayName(
+                "deselection of unique index leaves only non-unique index active and resets column"
+                        + " unique flag to false")
+        void deselectedUniqueIndexWithActiveNonUniqueIndex_resetsColumnUniqueToFalse() {
+            MigrationConfiguration config = new MigrationConfiguration();
+            Table targetTable = new Table();
+            targetTable.setName("t1");
+            Column col = new Column();
+            col.setName("code");
+            col.setUnique(true);
+            targetTable.addColumn(col);
+
+            Index uniqueIdx = new Index();
+            uniqueIdx.setName("ix_code_uniq");
+            uniqueIdx.setUnique(true);
+            uniqueIdx.addColumn("code", true);
+            targetTable.addIndex(uniqueIdx);
+
+            Index normalIdx = new Index();
+            normalIdx.setName("ix_code_norm");
+            normalIdx.setUnique(false);
+            normalIdx.addColumn("code", true);
+            targetTable.addIndex(normalIdx);
+            config.addTargetTableSchema(targetTable);
+
+            SourceEntryTableConfig tableConfig = new SourceEntryTableConfig();
+            tableConfig.setName("t1");
+            tableConfig.setTarget("t1");
+            tableConfig.addIndexConfig("ix_code_uniq", "ix_code_uniq", false);
+            tableConfig.getIndexConfig("ix_code_uniq").setUnique(true);
+            tableConfig.addIndexConfig("ix_code_norm", "ix_code_norm", true);
+            config.addExpEntryTableCfg(tableConfig);
+
+            config.syncColumnUniqueFlags();
+
+            assertThat(col.isUnique()).isFalse();
+        }
+    }
+
+    @Nested
+    @DisplayName("getSelectedTargetIndexes()")
+    class GetSelectedTargetIndexes {
+
+        @Test
+        @DisplayName("unselected index in source mapping is omitted from selected target indexes")
+        void unselectedIndex_isOmitted() {
+            MigrationConfiguration config = new MigrationConfiguration();
+            Table targetTable = new Table();
+            targetTable.setName("emp");
+            Index idx1 = new Index();
+            idx1.setName("ix1");
+            idx1.addColumn("dept", true);
+            targetTable.addIndex(idx1);
+
+            Index idx2 = new Index();
+            idx2.setName("ix2");
+            idx2.addColumn("salary", true);
+            targetTable.addIndex(idx2);
+
+            SourceEntryTableConfig tableConfig = new SourceEntryTableConfig();
+            tableConfig.setName("emp");
+            tableConfig.setTarget("emp");
+            tableConfig.addIndexConfig("ix1", "ix1", true);
+            tableConfig.addIndexConfig("ix2", "ix2", false);
+            config.addExpEntryTableCfg(tableConfig);
+
+            List<Index> selected = config.getSelectedTargetIndexes(targetTable);
+
+            assertThat(selected).containsExactly(idx1);
+        }
+
+        @Test
+        @DisplayName("duplicate target indexes on same columns retain only one preferred index")
+        void duplicateTargetIndexes_retainsPreferredIndex() {
+            MigrationConfiguration config = new MigrationConfiguration();
+            Table targetTable = new Table();
+            targetTable.setName("emp");
+            Index idx1 = new Index();
+            idx1.setName("ix_col1_a");
+            idx1.addColumn("dept", true);
+            targetTable.addIndex(idx1);
+
+            Index idx2 = new Index();
+            idx2.setName("ix_col1_b");
+            idx2.addColumn("dept", true);
+            targetTable.addIndex(idx2);
+
+            SourceEntryTableConfig tableConfig = new SourceEntryTableConfig();
+            tableConfig.setName("emp");
+            tableConfig.setTarget("emp");
+            tableConfig.addIndexConfig("ix_col1_a", "ix_col1_a", false);
+            tableConfig.addIndexConfig("ix_col1_b", "ix_col1_b", true);
+            config.addExpEntryTableCfg(tableConfig);
+
+            List<Index> selected = config.getSelectedTargetIndexes(targetTable);
+
+            assertThat(selected).containsExactly(idx2);
+        }
+
+        @Test
+        @DisplayName("target table without source index configs keeps target indexes by default")
+        void noSourceIndexConfigs_keepsTargetIndexes() {
+            MigrationConfiguration config = new MigrationConfiguration();
+            Table targetTable = new Table();
+            targetTable.setName("emp");
+            Index idx1 = new Index();
+            idx1.setName("ix1");
+            idx1.addColumn("dept", true);
+            targetTable.addIndex(idx1);
+
+            Index idx2 = new Index();
+            idx2.setName("ix2");
+            idx2.addColumn("salary", true);
+            targetTable.addIndex(idx2);
+
+            SourceEntryTableConfig tableConfig = new SourceEntryTableConfig();
+            tableConfig.setName("emp");
+            tableConfig.setTarget("emp");
+            config.addExpEntryTableCfg(tableConfig);
+
+            List<Index> selected = config.getSelectedTargetIndexes(targetTable);
+
+            assertThat(selected).containsExactly(idx1, idx2);
+        }
+
+        @Test
+        @DisplayName("target owner mismatch ignores the table config and keeps target indexes")
+        void ownerMismatch_ignoresTableConfig() {
+            MigrationConfiguration config = new MigrationConfiguration();
+            Table targetTable = new Table();
+            targetTable.setOwner("hr");
+            targetTable.setName("emp");
+            Index idx1 = new Index();
+            idx1.setName("ix1");
+            idx1.addColumn("dept", true);
+            targetTable.addIndex(idx1);
+
+            SourceEntryTableConfig tableConfig = new SourceEntryTableConfig();
+            tableConfig.setOwner("sales");
+            tableConfig.setName("emp");
+            tableConfig.setTargetOwner("sales");
+            tableConfig.setTarget("emp");
+            tableConfig.addIndexConfig("ix1", "ix1", false);
+            config.addExpEntryTableCfg(tableConfig);
+
+            List<Index> selected = config.getSelectedTargetIndexes(targetTable);
+
+            assertThat(selected).containsExactly(idx1);
         }
     }
 

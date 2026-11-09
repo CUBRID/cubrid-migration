@@ -670,6 +670,22 @@ public class ObjectMappingPage extends MigrationWizardPage implements IRefreshab
         if (!isGotoNextPage(event)) {
             return;
         }
+
+        if (!saveCurrentView()) {
+            event.doit = false;
+            return;
+        }
+
+        final MigrationConfiguration cfg = getMigrationWizard().getMigrationConfig();
+        if (cfg.hasDuplicateIndexes()) {
+            TableIndexSelectorDialog dialog = new TableIndexSelectorDialog(getShell(), cfg);
+            if (dialog.open() != Dialog.OK) {
+                event.doit = false;
+                return;
+            }
+            refreshCurrentView();
+        }
+
         event.doit = validateConfig();
     }
 

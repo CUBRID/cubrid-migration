@@ -35,27 +35,33 @@ import com.cubrid.common.ui.swt.table.CellEditorFactory;
 import com.cubrid.common.ui.swt.table.ObjectArrayRowCellModifier;
 import com.cubrid.common.ui.swt.table.TableViewerBuilder;
 import com.cubrid.common.ui.swt.table.celleditor.CheckboxCellEditorFactory;
-import com.cubrid.common.ui.swt.table.listener.CheckBoxColumnSelectionListener;
 import com.cubrid.cubridmigration.core.engine.config.MigrationConfiguration;
 import com.cubrid.cubridmigration.core.engine.config.SourceEntryTableConfig;
 import com.cubrid.cubridmigration.core.engine.config.SourceIndexConfig;
 import com.cubrid.cubridmigration.ui.common.CompositeUtils;
 import com.cubrid.cubridmigration.ui.message.Messages;
 
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.TableItem;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * TableSelectorDialog Description
@@ -78,18 +84,51 @@ public class TableIndexSelectorDialog extends Dialog {
         @SuppressWarnings("unchecked")
         public Object[] getElements(Object inputElement) {
             List<Object> data = new ArrayList<Object>();
+            Set<SourceEntryTableConfig> tables = new LinkedHashSet<SourceEntryTableConfig>();
             for (SourceIndexConfig sc : (List<SourceIndexConfig>) inputElement) {
-                // Add the SourceConfig to the end of the object array.
-                String schema = sc.getParent().getOwner() == null ? "" : sc.getParent().getOwner();
-                data.add(
-                        new Object[] {
-                            schema,
-                            sc.getParent().getName(),
-                            sc.getName(),
-                            sc.isCreate(),
-                            sc.isReplace(),
-                            sc
-                        });
+                tables.add(sc.getParent());
+            }
+            Set<SourceEntryTableConfig> displayedTables = new HashSet<SourceEntryTableConfig>();
+            for (SourceEntryTableConfig tableConfig : tables) {
+                List<SourceIndexConfig> tableIndexes = tableConfig.getIndexConfigList();
+                if (tableIndexes.size() < 2) {
+                    continue;
+                }
+                Map<String, List<SourceIndexConfig>> groups =
+                        new LinkedHashMap<String, List<SourceIndexConfig>>();
+                for (SourceIndexConfig index : tableIndexes) {
+                    groups.computeIfAbsent(getColumnGroupKey(index), key -> new ArrayList<>())
+                            .add(index);
+                }
+                String schema = tableConfig.getOwner() == null ? "" : tableConfig.getOwner();
+                String tableName =
+                        schema.isEmpty()
+                                ? tableConfig.getName()
+                                : schema + "." + tableConfig.getName();
+                for (List<SourceIndexConfig> group : groups.values()) {
+                    if (group.size() < 2) {
+                        continue;
+                    }
+                    SourceIndexConfig selectedIndex = null;
+                    for (SourceIndexConfig index : group) {
+                        if (index.isCreate() && selectedIndex == null) {
+                            selectedIndex = index;
+                        }
+                    }
+                    for (int i = 0; i < group.size(); i++) {
+                        SourceIndexConfig index = group.get(i);
+                        List<String> columns =
+                                cfg.getSourceIndexColumns(tableConfig, index.getName());
+                        data.add(
+                                new Object[] {
+                                    displayedTables.add(tableConfig) ? tableName : "",
+                                    i == 0 ? String.join(", ", columns) : "",
+                                    index.getName(),
+                                    index == selectedIndex,
+                                    index
+                                });
+                    }
+                }
             }
             return super.getElements(data);
         }
@@ -111,33 +150,81 @@ public class TableIndexSelectorDialog extends Dialog {
         protected void modify(TableItem ti, Object[] element, int columnIdx, Object value) {
             Object[] obj = (Object[]) ti.getData();
             if (value instanceof Boolean) {
-
                 boolean bv = (Boolean) value;
                 if (columnIdx == IDX_CREATE) {
-                    obj[IDX_REPLACE] = bv;
-                    ti.setImage(IDX_REPLACE, CompositeUtils.getCheckImage(bv));
-                    updateColumnImage(value, ti, columnIdx + 1);
-                } else {
-                    obj[IDX_CREATE] = (Boolean) obj[IDX_CREATE] || bv;
-                    ti.setImage(
-                            IDX_CREATE, CompositeUtils.getCheckImage((Boolean) obj[IDX_CREATE]));
-                    updateColumnImage(value, ti, columnIdx - 1);
+                    SourceIndexConfig currentIndex = (SourceIndexConfig) obj[IDX_OBJ];
+                    String currentGroup = getColumnGroupKey(currentIndex);
+                    for (TableItem item : tvTableIndexes.getTable().getItems()) {
+                        Object[] other = (Object[]) item.getData();
+                        if (other == null) {
+                            continue;
+                        }
+                        SourceIndexConfig otherIndex = (SourceIndexConfig) other[IDX_OBJ];
+                        if (isSameTable(otherIndex.getParent(), currentIndex.getParent())
+                                && currentGroup.equals(getColumnGroupKey(otherIndex))) {
+                            boolean isCurrent = bv && (otherIndex == currentIndex);
+                            other[IDX_CREATE] = isCurrent;
+                            otherIndex.setCreate(isCurrent);
+                            otherIndex.setReplace(isCurrent);
+                            item.setImage(IDX_CREATE, CompositeUtils.getCheckImage(isCurrent));
+                        }
+                    }
                 }
             }
             super.modify(ti, element, columnIdx, value);
+        }
+
+        @Override
+        public void updateColumnImage(Object value, TableItem ti, final int idx) {
+            // Keep the column header as text only (no checkbox icon)
         }
     }
 
     private TableViewer tvTableIndexes;
     private final MigrationConfiguration cfg;
+    private final Map<SourceIndexConfig, Boolean> initialCreateStates = new LinkedHashMap<>();
+    private final Map<SourceIndexConfig, Boolean> initialReplaceStates = new LinkedHashMap<>();
 
     private static final int IDX_CREATE = 3;
-    private static final int IDX_REPLACE = IDX_CREATE + 1;
-    private static final int IDX_OBJ = IDX_REPLACE + 1;
+    private static final int IDX_OBJ = IDX_CREATE + 1;
+    private static final int DESELECT_ALL_ID = IDialogConstants.CLIENT_ID + 1;
+    private static final int BACK_TO_DEFAULT_ID = IDialogConstants.CLIENT_ID + 2;
+
+    private static boolean isSameTable(SourceEntryTableConfig t1, SourceEntryTableConfig t2) {
+        if (t1 == t2) {
+            return true;
+        }
+        if (t1 == null || t2 == null) {
+            return false;
+        }
+        return StringUtils.equalsIgnoreCase(t1.getName(), t2.getName())
+                && StringUtils.equalsIgnoreCase(t1.getOwner(), t2.getOwner());
+    }
+
+    private String getColumnGroupKey(SourceIndexConfig index) {
+        if (index == null) {
+            return "";
+        }
+        SourceEntryTableConfig parent = index.getParent();
+        List<String> columns =
+                parent == null
+                        ? Collections.emptyList()
+                        : cfg.getSourceIndexColumns(parent, index.getName());
+        if (columns.isEmpty()) {
+            return "index:" + index.getName().toLowerCase(java.util.Locale.ROOT);
+        }
+        return "columns:" + MigrationConfiguration.normalizeIndexColumnList(columns);
+    }
 
     public TableIndexSelectorDialog(Shell parentShell, MigrationConfiguration cfg) {
         super(parentShell);
         this.cfg = cfg;
+        for (SourceEntryTableConfig tableConfig : cfg.getExpEntryTableCfg()) {
+            for (SourceIndexConfig index : tableConfig.getIndexConfigList()) {
+                initialCreateStates.put(index, index.isCreate());
+                initialReplaceStates.put(index, index.isReplace());
+            }
+        }
     }
 
     /**
@@ -147,46 +234,37 @@ public class TableIndexSelectorDialog extends Dialog {
      * @return control
      */
     protected Control createDialogArea(Composite parent) {
-        final Composite composite = new Composite(parent, SWT.NONE);
-        composite.setLayout(new GridLayout());
-        composite.setLayoutData(new GridData(GridData.FILL_BOTH));
+        final Composite composite = (Composite) super.createDialogArea(parent);
+
+        Label description = new Label(composite, SWT.WRAP);
+        description.setText(Messages.lblSelectIndexesDescription);
+        GridData descData = new GridData(SWT.FILL, SWT.CENTER, true, false);
+        descData.widthHint = 600;
+        description.setLayoutData(descData);
 
         TableViewerBuilder tvBuilder = new TableViewerBuilder();
         tvBuilder.setColumnNames(
                 new String[] {
-                    "Schema",
                     Messages.lblSourceTableName,
+                    Messages.colColumnName,
                     Messages.lblIndexName,
-                    Messages.lblCreate,
-                    Messages.lblReplace
+                    Messages.lblCreate
                 });
         tvBuilder.setTableCursorSupported(true);
-        int wdSchema = cfg.getSourceDBType().isSupportMultiSchema() ? 150 : 0;
-        tvBuilder.setColumnWidths(new int[] {wdSchema, 150, 150, 80, 90});
+        tvBuilder.setColumnWidths(new int[] {140, 150, 240, 70});
         tvBuilder.setCellEditorClasses(
-                new CellEditorFactory[] {
-                    null,
-                    null,
-                    null,
-                    new CheckboxCellEditorFactory(),
-                    new CheckboxCellEditorFactory()
-                });
+                new CellEditorFactory[] {null, null, null, new CheckboxCellEditorFactory()});
         tvBuilder.setCellModifier(new IndexSelectionCellModifier());
         tvBuilder.setContentProvider(new IndexSelectionTableContentProvider());
-        tvTableIndexes = tvBuilder.buildTableViewer(composite, SWT.BORDER | SWT.FULL_SELECTION);
+        tvTableIndexes =
+                tvBuilder.buildTableViewer(
+                        composite, SWT.BORDER | SWT.FULL_SELECTION | SWT.V_SCROLL);
+        ((GridData) tvTableIndexes.getTable().getLayoutData()).heightHint = 300;
+        tvTableIndexes.getTable().getColumn(IDX_CREATE).setImage(null);
 
-        CompositeUtils.setTableColumnSelectionListener(
-                tvTableIndexes,
-                new SelectionListener[] {
-                    null,
-                    null,
-                    null,
-                    new CheckBoxColumnSelectionListener(new int[] {IDX_REPLACE}, true, true),
-                    new CheckBoxColumnSelectionListener(new int[] {IDX_CREATE}, true, false)
-                });
-
+        cfg.retainOneIndexPerDuplicateColumnList();
         fillTable();
-        return parent;
+        return composite;
     }
 
     /** Fill data to table viewer */
@@ -196,10 +274,18 @@ public class TableIndexSelectorDialog extends Dialog {
             if (!setc.isCreateNewTable()) {
                 continue;
             }
+            if (setc.getIndexConfigList().size() < 2) {
+                continue;
+            }
+            for (SourceIndexConfig sic : setc.getIndexConfigList()) {
+                if (sic.getParent() == null) {
+                    sic.setParent(setc);
+                }
+            }
             list.addAll(setc.getIndexConfigList());
         }
         tvTableIndexes.setInput(list);
-        CompositeUtils.initTableViewerCheckColumnImage(tvTableIndexes);
+        tvTableIndexes.getTable().getColumn(IDX_CREATE).setImage(null);
     }
 
     /** constrainShellSize */
@@ -214,7 +300,10 @@ public class TableIndexSelectorDialog extends Dialog {
      * @param parent Composite
      */
     protected void createButtonsForButtonBar(Composite parent) {
-        createButton(parent, IDialogConstants.OK_ID, Messages.btnOK, false);
+        createButton(parent, DESELECT_ALL_ID, Messages.btnDeselectAll, false);
+        createButton(parent, BACK_TO_DEFAULT_ID, Messages.btnBackToDefault, false);
+        createButton(parent, IDialogConstants.OK_ID, Messages.btnOK, true);
+        createButton(parent, IDialogConstants.CANCEL_ID, Messages.btnCancel, false);
         getButton(IDialogConstants.OK_ID).setEnabled(true);
     }
 
@@ -240,12 +329,119 @@ public class TableIndexSelectorDialog extends Dialog {
      * @param buttonId OK or not
      */
     protected void buttonPressed(int buttonId) {
-        if (buttonId == Dialog.OK) {
+        if (buttonId == BACK_TO_DEFAULT_ID) {
+            Set<String> defaultGroups = new HashSet<>();
+            for (SourceIndexConfig index : initialCreateStates.keySet()) {
+                index.setCreate(false);
+                index.setReplace(false);
+            }
+            for (TableItem ti : tvTableIndexes.getTable().getItems()) {
+                Object[] row = (Object[]) ti.getData();
+                if (row == null) {
+                    continue;
+                }
+                SourceIndexConfig index = (SourceIndexConfig) row[IDX_OBJ];
+                SourceEntryTableConfig table = index.getParent();
+                String tableKey =
+                        (table.getOwner() == null
+                                        ? ""
+                                        : table.getOwner().toLowerCase(java.util.Locale.ROOT))
+                                + "."
+                                + table.getName().toLowerCase(java.util.Locale.ROOT);
+                String groupKey = tableKey + "|" + getColumnGroupKey(index);
+                boolean create = defaultGroups.add(groupKey);
+                row[IDX_CREATE] = create;
+                index.setCreate(create);
+                index.setReplace(create);
+                ti.setImage(IDX_CREATE, CompositeUtils.getCheckImage(create));
+            }
+            cfg.syncColumnUniqueFlags();
+            return;
+        }
+        if (buttonId == DESELECT_ALL_ID) {
+            if (!MessageDialog.openConfirm(
+                    getShell(), Messages.msgConfirmation, Messages.msgConfirmDeselectAllIndexes)) {
+                return;
+            }
             for (TableItem ti : tvTableIndexes.getTable().getItems()) {
                 Object[] obj = (Object[]) ti.getData();
+                if (obj == null) {
+                    continue;
+                }
+                SourceIndexConfig index = (SourceIndexConfig) obj[IDX_OBJ];
+                obj[IDX_CREATE] = false;
+                index.setCreate(false);
+                index.setReplace(false);
+                ti.setImage(IDX_CREATE, CompositeUtils.getCheckImage(false));
+            }
+            cfg.syncColumnUniqueFlags();
+            return;
+        }
+        if (buttonId == IDialogConstants.CANCEL_ID) {
+            for (Map.Entry<SourceIndexConfig, Boolean> state : initialCreateStates.entrySet()) {
+                SourceIndexConfig index = state.getKey();
+                index.setCreate(state.getValue());
+                index.setReplace(initialReplaceStates.get(index));
+            }
+            cfg.syncColumnUniqueFlags();
+            super.buttonPressed(buttonId);
+            return;
+        }
+        if (buttonId == Dialog.OK) {
+            List<UnselectedIndexesConfirmDialog.UnselectedIndex> unselectedIndexes =
+                    new ArrayList<UnselectedIndexesConfirmDialog.UnselectedIndex>();
+            Set<String> unselectedColumnGroups = new HashSet<String>();
+            for (TableItem ti : tvTableIndexes.getTable().getItems()) {
+                Object[] obj = (Object[]) ti.getData();
+                if (obj == null) {
+                    continue;
+                }
                 SourceIndexConfig sic = (SourceIndexConfig) obj[IDX_OBJ];
-                sic.setCreate((Boolean) obj[IDX_CREATE]);
-                sic.setReplace((Boolean) obj[IDX_REPLACE]);
+                boolean create = (Boolean) obj[IDX_CREATE];
+                if (!create) {
+                    SourceEntryTableConfig table = sic.getParent();
+                    String columnGroupKey = getColumnGroupKey(sic);
+                    boolean groupHasSelectedIndex = false;
+                    for (TableItem otherItem : tvTableIndexes.getTable().getItems()) {
+                        Object[] other = (Object[]) otherItem.getData();
+                        if (other == null) {
+                            continue;
+                        }
+                        SourceIndexConfig otherIndex = (SourceIndexConfig) other[IDX_OBJ];
+                        if (isSameTable(table, otherIndex.getParent())
+                                && columnGroupKey.equals(getColumnGroupKey(otherIndex))
+                                && (Boolean) other[IDX_CREATE]) {
+                            groupHasSelectedIndex = true;
+                            break;
+                        }
+                    }
+                    if (groupHasSelectedIndex) {
+                        sic.setCreate(create);
+                        sic.setReplace(create);
+                        continue;
+                    }
+                    String schema = table.getOwner() == null ? "" : table.getOwner();
+                    String tableName =
+                            schema.isEmpty() ? table.getName() : schema + "." + table.getName();
+                    String groupIdentity = tableName + "|" + columnGroupKey;
+                    if (unselectedColumnGroups.add(groupIdentity)) {
+                        List<String> columns = cfg.getSourceIndexColumns(table, sic.getName());
+                        unselectedIndexes.add(
+                                new UnselectedIndexesConfirmDialog.UnselectedIndex(
+                                        tableName, String.join(", ", columns)));
+                    }
+                }
+                sic.setCreate(create);
+                sic.setReplace(create);
+            }
+            cfg.syncColumnUniqueFlags();
+            if (!unselectedIndexes.isEmpty()) {
+                UnselectedIndexesConfirmDialog confirmDialog =
+                        new UnselectedIndexesConfirmDialog(getShell(), unselectedIndexes);
+                int confirmResult = confirmDialog.open();
+                if (confirmResult != Dialog.OK) {
+                    return;
+                }
             }
         }
         super.buttonPressed(buttonId);
