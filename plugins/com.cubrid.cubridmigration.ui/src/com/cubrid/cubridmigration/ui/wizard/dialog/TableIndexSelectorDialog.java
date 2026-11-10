@@ -331,9 +331,10 @@ public class TableIndexSelectorDialog extends Dialog {
     protected void buttonPressed(int buttonId) {
         if (buttonId == BACK_TO_DEFAULT_ID) {
             Set<String> defaultGroups = new HashSet<>();
-            for (SourceIndexConfig index : initialCreateStates.keySet()) {
-                index.setCreate(false);
-                index.setReplace(false);
+            for (Map.Entry<SourceIndexConfig, Boolean> state : initialCreateStates.entrySet()) {
+                SourceIndexConfig index = state.getKey();
+                index.setCreate(state.getValue());
+                index.setReplace(initialReplaceStates.get(index));
             }
             for (TableItem ti : tvTableIndexes.getTable().getItems()) {
                 Object[] row = (Object[]) ti.getData();
