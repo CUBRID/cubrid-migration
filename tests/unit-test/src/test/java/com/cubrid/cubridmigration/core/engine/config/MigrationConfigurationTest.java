@@ -2294,7 +2294,7 @@ class MigrationConfigurationTest {
         @Test
         @DisplayName(
                 "deselection of all duplicate unique indexes resets the column unique flag to"
-                    + " false")
+                        + " false")
         void deselectedDuplicateUniqueIndexes_resetsColumnUniqueToFalse() {
             MigrationConfiguration config = new MigrationConfiguration();
             Table targetTable = new Table();
