@@ -2290,6 +2290,41 @@ class MigrationConfigurationTest {
 
             assertThat(col.isUnique()).isFalse();
         }
+
+        @Test
+        @DisplayName(
+                "deselection of all duplicate unique indexes resets the column unique flag to false")
+        void deselectedDuplicateUniqueIndexes_resetsColumnUniqueToFalse() {
+            MigrationConfiguration config = new MigrationConfiguration();
+            Table targetTable = new Table();
+            targetTable.setName("t1");
+            Column col = new Column();
+            col.setName("code");
+            col.setUnique(true);
+            targetTable.addColumn(col);
+
+            for (String indexName : Arrays.asList("ix_code_uniq_a", "ix_code_uniq_b")) {
+                Index index = new Index();
+                index.setName(indexName);
+                index.setUnique(true);
+                index.addColumn("code", true);
+                targetTable.addIndex(index);
+            }
+            config.addTargetTableSchema(targetTable);
+
+            SourceEntryTableConfig tableConfig = new SourceEntryTableConfig();
+            tableConfig.setName("t1");
+            tableConfig.setTarget("t1");
+            tableConfig.addIndexConfig("ix_code_uniq_a", "ix_code_uniq_a", false);
+            tableConfig.getIndexConfig("ix_code_uniq_a").setUnique(true);
+            tableConfig.addIndexConfig("ix_code_uniq_b", "ix_code_uniq_b", false);
+            tableConfig.getIndexConfig("ix_code_uniq_b").setUnique(true);
+            config.addExpEntryTableCfg(tableConfig);
+
+            config.syncColumnUniqueFlags();
+
+            assertThat(col.isUnique()).isFalse();
+        }
     }
 
     @Nested

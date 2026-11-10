@@ -2801,8 +2801,8 @@ public class MigrationConfiguration {
 
     /**
      * Synchronizes target column unique flags with the currently selected indexes and primary keys.
-     * When a unique duplicate index is deselected in favor of a non-unique index, the column must
-     * not retain the unique flag.
+     * The unique flag must reflect the currently selected single-column unique indexes and primary
+     * keys, including clearing stale uniqueness when no such constraint remains.
      */
     public void syncColumnUniqueFlags() {
         for (SourceEntryTableConfig setc : expTables) {
@@ -2838,25 +2838,7 @@ public class MigrationConfiguration {
                 if (hasUnique) {
                     col.setUnique(true);
                 } else {
-                    boolean hasActiveIndex = false;
-                    for (SourceIndexConfig sic : setc.getIndexConfigList()) {
-                        if (!sic.isCreate()) {
-                            continue;
-                        }
-                        List<String> cols = getSourceIndexColumns(setc, sic.getName());
-                        for (String c : cols) {
-                            if (StringUtils.equalsIgnoreCase(c, col.getName())) {
-                                hasActiveIndex = true;
-                                break;
-                            }
-                        }
-                        if (hasActiveIndex) {
-                            break;
-                        }
-                    }
-                    if (hasActiveIndex) {
-                        col.setUnique(false);
-                    }
+                    col.setUnique(false);
                 }
             }
         }
