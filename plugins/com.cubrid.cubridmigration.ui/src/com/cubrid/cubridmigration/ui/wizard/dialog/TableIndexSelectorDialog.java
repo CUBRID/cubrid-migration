@@ -379,12 +379,7 @@ public class TableIndexSelectorDialog extends Dialog {
             return;
         }
         if (buttonId == IDialogConstants.CANCEL_ID) {
-            for (Map.Entry<SourceIndexConfig, Boolean> state : initialCreateStates.entrySet()) {
-                SourceIndexConfig index = state.getKey();
-                index.setCreate(state.getValue());
-                index.setReplace(initialReplaceStates.get(index));
-            }
-            cfg.syncColumnUniqueFlags();
+            restoreInitialIndexSelection();
             super.buttonPressed(buttonId);
             return;
         }
@@ -446,5 +441,22 @@ public class TableIndexSelectorDialog extends Dialog {
             }
         }
         super.buttonPressed(buttonId);
+    }
+
+    /** Restore in-memory index settings when the dialog is cancelled. */
+    private void restoreInitialIndexSelection() {
+        for (Map.Entry<SourceIndexConfig, Boolean> state : initialCreateStates.entrySet()) {
+            SourceIndexConfig index = state.getKey();
+            index.setCreate(state.getValue());
+            index.setReplace(initialReplaceStates.get(index));
+        }
+        cfg.syncColumnUniqueFlags();
+    }
+
+    /** Also restore settings when the user closes the dialog with the window close control. */
+    @Override
+    protected void handleShellCloseEvent() {
+        restoreInitialIndexSelection();
+        super.handleShellCloseEvent();
     }
 }
