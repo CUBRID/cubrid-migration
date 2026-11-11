@@ -71,6 +71,7 @@ import com.cubrid.cubridmigration.ui.common.navigator.node.ViewsNode;
 import com.cubrid.cubridmigration.ui.message.Messages;
 import com.cubrid.cubridmigration.ui.wizard.MigrationWizard;
 import com.cubrid.cubridmigration.ui.wizard.dialog.AdjustCharColumnDialog;
+import com.cubrid.cubridmigration.ui.wizard.dialog.DuplicateIndexSelectorDialog;
 import com.cubrid.cubridmigration.ui.wizard.dialog.TableIndexSelectorDialog;
 import com.cubrid.cubridmigration.ui.wizard.page.view.AbstractMappingView;
 import com.cubrid.cubridmigration.ui.wizard.page.view.ColumnMappingView;
@@ -678,7 +679,7 @@ public class ObjectMappingPage extends MigrationWizardPage implements IRefreshab
 
         final MigrationConfiguration cfg = getMigrationWizard().getMigrationConfig();
         if (cfg.hasDuplicateIndexes()) {
-            TableIndexSelectorDialog dialog = new TableIndexSelectorDialog(getShell(), cfg);
+            DuplicateIndexSelectorDialog dialog = new DuplicateIndexSelectorDialog(getShell(), cfg);
             if (dialog.open() != Dialog.OK) {
                 event.doit = false;
                 return;

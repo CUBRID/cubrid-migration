@@ -476,6 +476,7 @@ public class Messages extends NLS {
     public static String lblReplaceTable;
     public static String lblReplacExp;
     public static String lblReservation;
+    public static String lblResolveDuplicateIndexes;
     public static String lblReuseOID;
     public static String lblSaveConfig;
     public static String lblScriptFileName;
