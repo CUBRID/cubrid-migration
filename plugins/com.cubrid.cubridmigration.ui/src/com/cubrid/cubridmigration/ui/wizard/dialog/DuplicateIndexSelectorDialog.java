@@ -318,52 +318,11 @@ public class DuplicateIndexSelectorDialog extends Dialog {
      */
     protected void buttonPressed(int buttonId) {
         if (buttonId == BACK_TO_DEFAULT_ID) {
-            Set<String> defaultGroups = new HashSet<>();
-            for (Map.Entry<SourceIndexConfig, Boolean> state : initialCreateStates.entrySet()) {
-                SourceIndexConfig index = state.getKey();
-                index.setCreate(state.getValue());
-                index.setReplace(initialReplaceStates.get(index));
-            }
-            for (TableItem ti : tvTableIndexes.getTable().getItems()) {
-                Object[] row = (Object[]) ti.getData();
-                if (row == null) {
-                    continue;
-                }
-                SourceIndexConfig index = (SourceIndexConfig) row[IDX_OBJ];
-                SourceEntryTableConfig table = index.getParent();
-                String tableKey =
-                        (table.getOwner() == null
-                                        ? ""
-                                        : table.getOwner().toLowerCase(java.util.Locale.ROOT))
-                                + "."
-                                + table.getName().toLowerCase(java.util.Locale.ROOT);
-                String groupKey = tableKey + "|" + getColumnGroupKey(index);
-                boolean create = defaultGroups.add(groupKey);
-                row[IDX_CREATE] = create;
-                index.setCreate(create);
-                index.setReplace(create);
-                ti.setImage(IDX_CREATE, CompositeUtils.getCheckImage(create));
-            }
-            cfg.syncColumnUniqueFlags();
+            restoreDefaultSelection();
             return;
         }
         if (buttonId == DESELECT_ALL_ID) {
-            if (!MessageDialog.openConfirm(
-                    getShell(), Messages.msgConfirmation, Messages.msgConfirmDeselectAllIndexes)) {
-                return;
-            }
-            for (TableItem ti : tvTableIndexes.getTable().getItems()) {
-                Object[] obj = (Object[]) ti.getData();
-                if (obj == null) {
-                    continue;
-                }
-                SourceIndexConfig index = (SourceIndexConfig) obj[IDX_OBJ];
-                obj[IDX_CREATE] = false;
-                index.setCreate(false);
-                index.setReplace(false);
-                ti.setImage(IDX_CREATE, CompositeUtils.getCheckImage(false));
-            }
-            cfg.syncColumnUniqueFlags();
+            deselectAllIndexes();
             return;
         }
         if (buttonId == IDialogConstants.CANCEL_ID) {
@@ -371,64 +330,137 @@ public class DuplicateIndexSelectorDialog extends Dialog {
             super.buttonPressed(buttonId);
             return;
         }
-        if (buttonId == Dialog.OK) {
-            List<UnselectedIndexesConfirmDialog.UnselectedIndex> unselectedIndexes =
-                    new ArrayList<UnselectedIndexesConfirmDialog.UnselectedIndex>();
-            Set<String> unselectedColumnGroups = new HashSet<String>();
-            for (TableItem ti : tvTableIndexes.getTable().getItems()) {
-                Object[] obj = (Object[]) ti.getData();
-                if (obj == null) {
-                    continue;
-                }
-                SourceIndexConfig sic = (SourceIndexConfig) obj[IDX_OBJ];
-                boolean create = (Boolean) obj[IDX_CREATE];
-                if (!create) {
-                    SourceEntryTableConfig table = sic.getParent();
-                    String columnGroupKey = getColumnGroupKey(sic);
-                    boolean groupHasSelectedIndex = false;
-                    for (TableItem otherItem : tvTableIndexes.getTable().getItems()) {
-                        Object[] other = (Object[]) otherItem.getData();
-                        if (other == null) {
-                            continue;
-                        }
-                        SourceIndexConfig otherIndex = (SourceIndexConfig) other[IDX_OBJ];
-                        if (isSameTable(table, otherIndex.getParent())
-                                && columnGroupKey.equals(getColumnGroupKey(otherIndex))
-                                && (Boolean) other[IDX_CREATE]) {
-                            groupHasSelectedIndex = true;
-                            break;
-                        }
-                    }
-                    if (groupHasSelectedIndex) {
-                        sic.setCreate(create);
-                        sic.setReplace(create);
-                        continue;
-                    }
-                    String schema = table.getOwner() == null ? "" : table.getOwner();
-                    String tableName =
-                            schema.isEmpty() ? table.getName() : schema + "." + table.getName();
-                    String groupIdentity = tableName + "|" + columnGroupKey;
-                    if (unselectedColumnGroups.add(groupIdentity)) {
-                        List<String> columns = cfg.getSourceIndexColumns(table, sic.getName());
-                        unselectedIndexes.add(
-                                new UnselectedIndexesConfirmDialog.UnselectedIndex(
-                                        tableName, String.join(", ", columns)));
-                    }
-                }
-                sic.setCreate(create);
-                sic.setReplace(create);
-            }
-            cfg.syncColumnUniqueFlags();
-            if (!unselectedIndexes.isEmpty()) {
-                UnselectedIndexesConfirmDialog confirmDialog =
-                        new UnselectedIndexesConfirmDialog(getShell(), unselectedIndexes);
-                int confirmResult = confirmDialog.open();
-                if (confirmResult != Dialog.OK) {
-                    return;
-                }
-            }
+        if (buttonId == Dialog.OK && !confirmIndexSelection()) {
+            return;
         }
         super.buttonPressed(buttonId);
+    }
+
+    private void restoreDefaultSelection() {
+        Set<String> defaultGroups = new HashSet<>();
+        for (Map.Entry<SourceIndexConfig, Boolean> state : initialCreateStates.entrySet()) {
+            SourceIndexConfig index = state.getKey();
+            index.setCreate(state.getValue());
+            index.setReplace(initialReplaceStates.get(index));
+        }
+        for (TableItem item : tvTableIndexes.getTable().getItems()) {
+            Object[] row = (Object[]) item.getData();
+            if (row == null) {
+                continue;
+            }
+            SourceIndexConfig index = (SourceIndexConfig) row[IDX_OBJ];
+            String tableKey = getTableKey(index.getParent());
+            String groupKey = tableKey + "|" + getColumnGroupKey(index);
+            boolean create = defaultGroups.add(groupKey);
+            row[IDX_CREATE] = create;
+            index.setCreate(create);
+            index.setReplace(create);
+            item.setImage(IDX_CREATE, CompositeUtils.getCheckImage(create));
+        }
+        cfg.syncColumnUniqueFlags();
+    }
+
+    private String getTableKey(SourceEntryTableConfig table) {
+        String owner =
+                table.getOwner() == null ? "" : table.getOwner().toLowerCase(java.util.Locale.ROOT);
+        return owner + "." + table.getName().toLowerCase(java.util.Locale.ROOT);
+    }
+
+    private void deselectAllIndexes() {
+        if (!MessageDialog.openConfirm(
+                getShell(), Messages.msgConfirmation, Messages.msgConfirmDeselectAllIndexes)) {
+            return;
+        }
+        for (TableItem item : tvTableIndexes.getTable().getItems()) {
+            Object[] row = (Object[]) item.getData();
+            if (row == null) {
+                continue;
+            }
+            SourceIndexConfig index = (SourceIndexConfig) row[IDX_OBJ];
+            row[IDX_CREATE] = false;
+            index.setCreate(false);
+            index.setReplace(false);
+            item.setImage(IDX_CREATE, CompositeUtils.getCheckImage(false));
+        }
+        cfg.syncColumnUniqueFlags();
+    }
+
+    private boolean confirmIndexSelection() {
+        List<UnselectedIndexesConfirmDialog.UnselectedIndex> unselectedIndexes =
+                collectUnselectedIndexes();
+        cfg.syncColumnUniqueFlags();
+        if (unselectedIndexes.isEmpty()) {
+            return true;
+        }
+        UnselectedIndexesConfirmDialog confirmDialog =
+                new UnselectedIndexesConfirmDialog(getShell(), unselectedIndexes);
+        return confirmDialog.open() == Dialog.OK;
+    }
+
+    private List<UnselectedIndexesConfirmDialog.UnselectedIndex> collectUnselectedIndexes() {
+        List<UnselectedIndexesConfirmDialog.UnselectedIndex> unselectedIndexes = new ArrayList<>();
+        Set<String> unselectedColumnGroups = new HashSet<>();
+        for (TableItem item : tvTableIndexes.getTable().getItems()) {
+            collectUnselectedIndex(item, unselectedIndexes, unselectedColumnGroups);
+        }
+        return unselectedIndexes;
+    }
+
+    private void collectUnselectedIndex(
+            TableItem item,
+            List<UnselectedIndexesConfirmDialog.UnselectedIndex> unselectedIndexes,
+            Set<String> unselectedColumnGroups) {
+        Object[] row = (Object[]) item.getData();
+        if (row == null) {
+            return;
+        }
+        SourceIndexConfig index = (SourceIndexConfig) row[IDX_OBJ];
+        boolean create = (Boolean) row[IDX_CREATE];
+        if (!create) {
+            addUnselectedIndexIfNeeded(index, unselectedIndexes, unselectedColumnGroups);
+        }
+        index.setCreate(create);
+        index.setReplace(create);
+    }
+
+    private void addUnselectedIndexIfNeeded(
+            SourceIndexConfig index,
+            List<UnselectedIndexesConfirmDialog.UnselectedIndex> unselectedIndexes,
+            Set<String> unselectedColumnGroups) {
+        SourceEntryTableConfig table = index.getParent();
+        String columnGroupKey = getColumnGroupKey(index);
+        if (hasSelectedIndex(table, columnGroupKey)) {
+            return;
+        }
+        String tableName = getDisplayTableName(table);
+        String groupIdentity = tableName + "|" + columnGroupKey;
+        if (unselectedColumnGroups.add(groupIdentity)) {
+            List<String> columns = cfg.getSourceIndexColumns(table, index.getName());
+            unselectedIndexes.add(
+                    new UnselectedIndexesConfirmDialog.UnselectedIndex(
+                            tableName, String.join(", ", columns)));
+        }
+    }
+
+    private boolean hasSelectedIndex(SourceEntryTableConfig table, String columnGroupKey) {
+        for (TableItem item : tvTableIndexes.getTable().getItems()) {
+            Object[] row = (Object[]) item.getData();
+            if (row == null) {
+                continue;
+            }
+            SourceIndexConfig index = (SourceIndexConfig) row[IDX_OBJ];
+            if (isSameTable(table, index.getParent())
+                    && columnGroupKey.equals(getColumnGroupKey(index))
+                    && (Boolean) row[IDX_CREATE]) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private String getDisplayTableName(SourceEntryTableConfig table) {
+        String schema = table.getOwner() == null ? "" : table.getOwner();
+        return schema.isEmpty() ? table.getName() : schema + "." + table.getName();
     }
 
     /** Restore in-memory index settings when the dialog is cancelled. */
