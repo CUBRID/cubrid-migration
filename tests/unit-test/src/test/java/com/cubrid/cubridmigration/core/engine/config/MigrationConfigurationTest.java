@@ -2160,6 +2160,43 @@ class MigrationConfigurationTest {
         }
 
         @Test
+        @DisplayName("restoring defaults keeps an initially unselected duplicate group unselected")
+        void restoreDefaults_doesNotSelectAnInitiallyUnselectedDuplicateGroup() {
+            MigrationConfiguration config = new MigrationConfiguration();
+            Table targetTable = new Table();
+            targetTable.setName("orders");
+            Index idx1 = new Index();
+            idx1.setName("ix1");
+            idx1.addColumn("col1", true);
+            targetTable.addIndex(idx1);
+            Index idx2 = new Index();
+            idx2.setName("ix2");
+            idx2.addColumn("col1", true);
+            targetTable.addIndex(idx2);
+            config.addTargetTableSchema(targetTable);
+
+            SourceEntryTableConfig tableConfig = new SourceEntryTableConfig();
+            tableConfig.setName("orders");
+            tableConfig.setTarget("orders");
+            tableConfig.setCreateNewTable(true);
+            tableConfig.addIndexConfig("ix1", "ix1", false);
+            tableConfig.addIndexConfig("ix2", "ix2", false);
+            config.addExpEntryTableCfg(tableConfig);
+
+            boolean initialIx1Selection = tableConfig.getIndexConfig("ix1").isCreate();
+            boolean initialIx2Selection = tableConfig.getIndexConfig("ix2").isCreate();
+            tableConfig.getIndexConfig("ix1").setCreate(true);
+            tableConfig.getIndexConfig("ix2").setCreate(true);
+
+            tableConfig.getIndexConfig("ix1").setCreate(initialIx1Selection);
+            tableConfig.getIndexConfig("ix2").setCreate(initialIx2Selection);
+            config.retainOneIndexPerDuplicateColumnList();
+
+            assertThat(tableConfig.getIndexConfig("ix1").isCreate()).isFalse();
+            assertThat(tableConfig.getIndexConfig("ix2").isCreate()).isFalse();
+        }
+
+        @Test
         @DisplayName("indexes covering different columns both remain selected")
         void distinctIndexes_bothRemainSelected() {
             MigrationConfiguration config = new MigrationConfiguration();

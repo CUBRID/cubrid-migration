@@ -337,33 +337,25 @@ public class DuplicateIndexSelectorDialog extends Dialog {
     }
 
     private void restoreDefaultSelection() {
-        Set<String> defaultGroups = new HashSet<>();
         for (Map.Entry<SourceIndexConfig, Boolean> state : initialCreateStates.entrySet()) {
             SourceIndexConfig index = state.getKey();
             index.setCreate(state.getValue());
             index.setReplace(initialReplaceStates.get(index));
         }
+        cfg.retainOneIndexPerDuplicateColumnList();
         for (TableItem item : tvTableIndexes.getTable().getItems()) {
             Object[] row = (Object[]) item.getData();
             if (row == null) {
                 continue;
             }
             SourceIndexConfig index = (SourceIndexConfig) row[IDX_OBJ];
-            String tableKey = getTableKey(index.getParent());
-            String groupKey = tableKey + "|" + getColumnGroupKey(index);
-            boolean create = defaultGroups.add(groupKey);
+            boolean create = index.isCreate();
             row[IDX_CREATE] = create;
             index.setCreate(create);
             index.setReplace(create);
             item.setImage(IDX_CREATE, CompositeUtils.getCheckImage(create));
         }
         cfg.syncColumnUniqueFlags();
-    }
-
-    private String getTableKey(SourceEntryTableConfig table) {
-        String owner =
-                table.getOwner() == null ? "" : table.getOwner().toLowerCase(java.util.Locale.ROOT);
-        return owner + "." + table.getName().toLowerCase(java.util.Locale.ROOT);
     }
 
     private void deselectAllIndexes() {
