@@ -164,11 +164,14 @@ public class CUBRIDSQLHelper extends SQLHelper {
         if (column.getTableOrView() instanceof Table) {
             boolean flag = false;
             for (Index idx : ((Table) column.getTableOrView()).getIndexes()) {
-                if (!idx.isUnique()) {
-                    continue;
+                for (String idxCol : idx.getColumnNames()) {
+                    if (StringUtils.equalsIgnoreCase(idxCol, column.getName())) {
+                        flag = true;
+                        break;
+                    }
                 }
-                if (idx.getColumnNames().indexOf(column.getName()) >= 0) {
-                    flag = true;
+                if (flag) {
+                    break;
                 }
             }
             if (!flag) {
