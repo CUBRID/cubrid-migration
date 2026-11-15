@@ -353,8 +353,8 @@ public class DuplicateIndexSelectorDialog extends Dialog {
             row[IDX_CREATE] = create;
             index.setCreate(create);
             index.setReplace(create);
-            item.setImage(IDX_CREATE, CompositeUtils.getCheckImage(create));
         }
+        tvTableIndexes.refresh();
         cfg.syncColumnUniqueFlags();
     }
 
