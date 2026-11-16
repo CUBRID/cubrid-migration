@@ -29,11 +29,13 @@
  */
 package com.cubrid.cubridmigration.core.engine.template.writer.node;
 
+import static com.cubrid.cubridmigration.testutil.TestTableFactory.createIndex;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.cubrid.cubridmigration.core.dbobject.PartitionInfo;
 import com.cubrid.cubridmigration.core.dbobject.Table;
 import com.cubrid.cubridmigration.core.engine.config.MigrationConfiguration;
+import com.cubrid.cubridmigration.core.engine.config.SourceEntryTableConfig;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -67,10 +69,40 @@ class TargetNodeWriterTest {
         assertThat(xml).doesNotContain("<partition_ddl");
     }
 
+    @Test
+    @DisplayName("an index deselected in mapping is omitted from the constraints node")
+    void deselectedIndex_isNotWritten() throws Exception {
+        Table table = new Table();
+        table.setOwner("CUBRID");
+        table.setName("t1");
+        table.setSourceOwner("SRC");
+        table.setComment("");
+        table.addIndex(createIndex("ix_keep", "c1"));
+        table.addIndex(createIndex("ix_drop", "c2"));
+
+        SourceEntryTableConfig tableConfig = new SourceEntryTableConfig();
+        tableConfig.setName("t1");
+        tableConfig.setTarget("t1");
+        tableConfig.addIndexConfig("ix_keep", "ix_keep", true);
+        tableConfig.addIndexConfig("ix_drop", "ix_drop", false);
+
+        String xml = writeTargetXml(table, tableConfig);
+
+        assertThat(xml).contains("name=\"ix_keep\"").doesNotContain("name=\"ix_drop\"");
+    }
+
     private String writeTargetXml(Table table) throws Exception {
+        return writeTargetXml(table, null);
+    }
+
+    private String writeTargetXml(Table table, SourceEntryTableConfig tableConfig)
+            throws Exception {
         MigrationConfiguration config = new MigrationConfiguration();
         config.setTargetDBVersion("");
         config.addTargetTableSchema(table);
+        if (tableConfig != null) {
+            config.addExpEntryTableCfg(tableConfig);
+        }
 
         StringWriter out = new StringWriter();
         XMLStreamWriter writer = XMLOutputFactory.newFactory().createXMLStreamWriter(out);
