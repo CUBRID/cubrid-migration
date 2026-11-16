@@ -30,6 +30,7 @@
 package com.cubrid.cubridmigration.core.engine.template.writer.node;
 
 import static com.cubrid.cubridmigration.testutil.TestTableFactory.createIndex;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.cubrid.cubridmigration.core.dbobject.PartitionInfo;
