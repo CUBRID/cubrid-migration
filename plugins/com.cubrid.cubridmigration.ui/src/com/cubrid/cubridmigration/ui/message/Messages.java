@@ -449,6 +449,9 @@ public class Messages extends NLS {
     public static String lblIndexQuickSetting;
     public static String lblKrbConfFile;
     public static String lblLog;
+    public static String lblErrorLog;
+    public static String colErrorTime;
+    public static String colErrorContent;
     public static String lblLogVolPath;
     public static String lblMaxValue;
     public static String lblMigrateColumn;

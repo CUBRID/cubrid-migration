@@ -41,6 +41,7 @@ import com.cubrid.cubridmigration.core.engine.report.RecordMigrationResult;
 import com.cubrid.cubridmigration.cubrid.CUBRIDTimeUtil;
 import com.cubrid.cubridmigration.ui.common.TextAppender;
 import com.cubrid.cubridmigration.ui.history.MigrationReporter;
+import com.cubrid.cubridmigration.ui.history.tableviewer.ErrorLogEntry;
 import com.cubrid.cubridmigration.ui.history.tableviewer.MigrationOverviewTableLabelProvider;
 import com.cubrid.cubridmigration.ui.history.tableviewer.ObjectMigrationResultTableLabelProvider;
 import com.cubrid.cubridmigration.ui.history.tableviewer.RecordMigrationResultTableLabelProvider;
@@ -62,6 +63,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * MigrationReportUIController.
@@ -71,6 +74,8 @@ import java.util.TimeZone;
 public class MigrationReportUIController {
     protected static final String UTF_8 = "utf-8";
     protected static final String EMPTY_CELL_VALUE = "-";
+    private static final Pattern ERROR_LOG_HEAD =
+            Pattern.compile("^(\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}\\.\\d{3}) (.*)$");
     private static final Logger LOG = LogUtil.getLogger(MigrationReportUIController.class);
 
     protected static final String[] TAB_NAME =
@@ -106,6 +111,9 @@ public class MigrationReportUIController {
                 Messages.colTotalElapsed,
                 Messages.colOwnerName
             };
+
+    public static final String[] TABLE_HEADER_ERROR_LOG =
+            new String[] {Messages.colErrorTime, Messages.colErrorContent};
 
     public static final String[] TABLE_HEADER_OBJ_NAME_CHANGE =
             new String[] {Messages.colType, Messages.colSourceObject, Messages.colTargetObject};
@@ -264,6 +272,88 @@ public class MigrationReportUIController {
     }
 
     /**
+     * Load the failures recorded in the history's error file. The list is empty when the history
+     * has no error file (reports of older versions).
+     *
+     * @param reporter MigrationReporter
+     * @return error log entries in the order they were written
+     */
+    public List<ErrorLogEntry> loadErrorLogEntries(MigrationReporter reporter) {
+        final StringBuilder text = new StringBuilder();
+        try {
+            String errFile = MigrationReportFileUtils.extractError(reporter.getFileName());
+            loadTextFromFile(
+                    errFile,
+                    new TextAppender() {
+                        public void append(String part) {
+                            text.append(part);
+                        }
+                    },
+                    UTF_8);
+        } catch (Exception e) {
+            LOG.error("Read report file error.", e);
+        }
+        return parseErrorLog(text.toString());
+    }
+
+    /**
+     * Split the error file into entries. An entry starts at a line that begins with the "yyyy-MM-dd
+     * HH:mm:ss.SSS" time stamp written by the reporter; every following line (stack trace, "Caused
+     * by", blank separator) belongs to that entry until the next time stamp.
+     *
+     * @param text content of the error file
+     * @return entries, never null
+     */
+    static List<ErrorLogEntry> parseErrorLog(String text) {
+        List<ErrorLogEntry> entries = new ArrayList<ErrorLogEntry>();
+        String time = null;
+        String summary = null;
+        StringBuilder detail = null;
+        for (String line : text.split("\\r?\\n", -1)) {
+            Matcher m = ERROR_LOG_HEAD.matcher(line);
+            if (m.matches()) {
+                addErrorLogEntry(entries, time, summary, detail);
+                time = m.group(1);
+                summary = m.group(2).trim();
+                detail = new StringBuilder(line);
+            } else if (detail != null) {
+                detail.append(System.lineSeparator()).append(line);
+            }
+        }
+        addErrorLogEntry(entries, time, summary, detail);
+        return entries;
+    }
+
+    private static void addErrorLogEntry(
+            List<ErrorLogEntry> entries, String time, String summary, StringBuilder detail) {
+        if (detail != null) {
+            entries.add(new ErrorLogEntry(time, summary, detail.toString().trim()));
+        }
+    }
+
+    /**
+     * @param reporter MigrationReporter
+     * @param errorFile String
+     * @return the output file name will be returned if successfully
+     */
+    static String extractErrorLogs(MigrationReporter reporter, String errorFile) {
+        try {
+            String srcErrFile = MigrationReportFileUtils.extractError(reporter.getFileName());
+            if (srcErrFile != null) {
+                CUBRIDIOUtils.copyFile(new File(srcErrFile), new File(errorFile));
+                return ("\r\n") + (errorFile);
+            }
+        } catch (IOException e) {
+            LOG.error(
+                    "Failed to extract error file from {} to {}.",
+                    reporter.getFileName(),
+                    errorFile,
+                    e);
+        }
+        return "";
+    }
+
+    /**
      * loadNonSupportedObjectText
      *
      * @param reporter MigrationReporter
@@ -348,11 +438,13 @@ public class MigrationReportUIController {
         String logFile = filePartName + ".log";
         String noSupportedFile = filePartName + ".txt";
         String renameObjectFile = filePartName + ".rename";
+        String errorFile = filePartName + ".err";
 
         StringBuffer savedFiles = new StringBuffer();
         savedFiles.append(saveReportToXls(report, xlsFile));
         savedFiles.append(extracNonSupportedReport(reporter, noSupportedFile));
         savedFiles.append(extractLogs(reporter, logFile));
+        savedFiles.append(extractErrorLogs(reporter, errorFile));
         savedFiles.append(extractRenameObjectReport(reporter, renameObjectFile));
         return savedFiles.toString();
     }

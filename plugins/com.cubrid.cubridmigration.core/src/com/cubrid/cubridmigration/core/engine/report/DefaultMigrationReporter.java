@@ -132,7 +132,7 @@ public abstract class DefaultMigrationReporter implements IMigrationReporter {
             PathUtils.createFile(logFile);
             pwLog = new PrintWriter(new OutputStreamWriter(new FileOutputStream(logFile), UTF_8));
             // Error file
-            File errorFile = new File(reportDir + "migration_error_" + timeTag + LOG_FILE_EX);
+            File errorFile = new File(reportDir + "migration_error_" + timeTag + ERROR_FILE_EX);
             errorFileName = errorFile.getName();
             PathUtils.createFile(errorFile);
             pwError =
@@ -250,11 +250,11 @@ public abstract class DefaultMigrationReporter implements IMigrationReporter {
     /**
      * Write the error detail of an event into the dedicated error file, if it carries one.
      *
-     * <p>This is intentionally NOT part of the instanceof/else-if dispatch above: several
-     * business events (CreateObjectEvent, ImportRecordsEvent, ImportCSVEvent, ImportSQLsEvent,
-     * ...) implement IMigrationErrorEvent (directly or via IMigrateDataErrorEvent) only to carry
-     * an optional error, but each already has its own dedicated branch there. An else-if chain
-     * would let that branch win and this code would never run for them.
+     * <p>This is intentionally NOT part of the instanceof/else-if dispatch above: several business
+     * events (CreateObjectEvent, ImportRecordsEvent, ImportCSVEvent, ImportSQLsEvent, ...)
+     * implement IMigrationErrorEvent (directly or via IMigrateDataErrorEvent) only to carry an
+     * optional error, but each already has its own dedicated branch there. An else-if chain would
+     * let that branch win and this code would never run for them.
      *
      * @param event MigrationEvent
      */
