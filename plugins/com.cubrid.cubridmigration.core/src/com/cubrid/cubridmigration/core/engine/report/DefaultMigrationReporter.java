@@ -198,7 +198,7 @@ public abstract class DefaultMigrationReporter implements IMigrationReporter {
                 writeErrorEvent(event, error);
             }
         }
-        
+
         long eventTime = event.getEventTime().getTime();
         if (event instanceof MigrationStartEvent) {
             report.setTotalStartTime(eventTime);
