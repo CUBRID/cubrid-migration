@@ -187,7 +187,18 @@ public abstract class DefaultMigrationReporter implements IMigrationReporter {
                 }
             }
         }
-        writeErrorEvent(event);
+        // Deliberately outside the instanceof/else-if dispatch below: several business events
+        // (CreateObjectEvent, ImportRecordsEvent, ImportCSVEvent, ImportSQLsEvent, ...) implement
+        // IMigrationErrorEvent (directly or via IMigrateDataErrorEvent) only to carry an optional
+        // error, but each already has its own dedicated branch there. An else-if chain would let
+        // that branch win and the error would never reach the error file.
+        if (event instanceof IMigrationErrorEvent) {
+            Throwable error = ((IMigrationErrorEvent) event).getError();
+            if (error != null) {
+                writeErrorEvent(event, error);
+            }
+        }
+        
         long eventTime = event.getEventTime().getTime();
         if (event instanceof MigrationStartEvent) {
             report.setTotalStartTime(eventTime);
@@ -248,24 +259,13 @@ public abstract class DefaultMigrationReporter implements IMigrationReporter {
     }
 
     /**
-     * Write the error detail of an event into the dedicated error file, if it carries one.
+     * Write an event's error into the dedicated error file: time stamp, the event's description and
+     * the error's stack trace. The caller decides whether the event carries an error.
      *
-     * <p>This is intentionally NOT part of the instanceof/else-if dispatch above: several business
-     * events (CreateObjectEvent, ImportRecordsEvent, ImportCSVEvent, ImportSQLsEvent, ...)
-     * implement IMigrationErrorEvent (directly or via IMigrateDataErrorEvent) only to carry an
-     * optional error, but each already has its own dedicated branch there. An else-if chain would
-     * let that branch win and this code would never run for them.
-     *
-     * @param event MigrationEvent
+     * @param event the event that carries the error
+     * @param error the error to be written, never null
      */
-    private void writeErrorEvent(MigrationEvent event) {
-        if (!(event instanceof IMigrationErrorEvent)) {
-            return;
-        }
-        Throwable error = ((IMigrationErrorEvent) event).getError();
-        if (error == null) {
-            return;
-        }
+    private void writeErrorEvent(MigrationEvent event, Throwable error) {
         pwError.append(CUBRIDTimeUtil.defaultFormatMilin(event.getEventTime())).append(" ");
         pwError.append(event.toString());
         pwError.append(" \r\n");
