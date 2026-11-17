@@ -2438,6 +2438,86 @@ class MigrationConfigurationTest {
 
             assertThat(col.isUnique()).isFalse();
         }
+
+        @Test
+        @DisplayName("column marked unique without unique index configs preserves the unique flag")
+        void columnWithoutUniqueIndexConfig_preservesUniqueFlag() {
+            MigrationConfiguration config = new MigrationConfiguration();
+            Table targetTable = new Table();
+            targetTable.setName("worker");
+            Column col = new Column();
+            col.setName("email");
+            col.setUnique(true);
+            targetTable.addColumn(col);
+            config.addTargetTableSchema(targetTable);
+
+            SourceEntryTableConfig tableConfig = new SourceEntryTableConfig();
+            tableConfig.setName("worker");
+            tableConfig.setTarget("worker");
+            config.addExpEntryTableCfg(tableConfig);
+
+            config.syncColumnUniqueFlags();
+
+            assertThat(col.isUnique()).isTrue();
+        }
+
+        @Test
+        @DisplayName("column marked unique with only non-unique index preserves the unique flag")
+        void columnWithOnlyNonUniqueIndex_preservesUniqueFlag() {
+            MigrationConfiguration config = new MigrationConfiguration();
+            Table targetTable = new Table();
+            targetTable.setName("worker");
+            Column col = new Column();
+            col.setName("email");
+            col.setUnique(true);
+            targetTable.addColumn(col);
+
+            Index normalIdx = new Index();
+            normalIdx.setName("ix_email");
+            normalIdx.setUnique(false);
+            normalIdx.addColumn("email", true);
+            targetTable.addIndex(normalIdx);
+            config.addTargetTableSchema(targetTable);
+
+            SourceEntryTableConfig tableConfig = new SourceEntryTableConfig();
+            tableConfig.setName("worker");
+            tableConfig.setTarget("worker");
+            tableConfig.addIndexConfig("ix_email", "ix_email", true);
+            tableConfig.getIndexConfig("ix_email").setUnique(false);
+            config.addExpEntryTableCfg(tableConfig);
+
+            config.syncColumnUniqueFlags();
+
+            assertThat(col.isUnique()).isTrue();
+        }
+
+        @Test
+        @DisplayName(
+                "deselection of single-column primary key resets the column unique flag to false")
+        void deselectedSingleColumnPk_resetsColumnUniqueToFalse() {
+            MigrationConfiguration config = new MigrationConfiguration();
+            Table targetTable = new Table();
+            targetTable.setName("worker");
+            Column col = new Column();
+            col.setName("id");
+            col.setUnique(true);
+            targetTable.addColumn(col);
+
+            PK pk = new PK();
+            pk.addColumn("id");
+            targetTable.setPk(pk);
+            config.addTargetTableSchema(targetTable);
+
+            SourceEntryTableConfig tableConfig = new SourceEntryTableConfig();
+            tableConfig.setName("worker");
+            tableConfig.setTarget("worker");
+            tableConfig.setCreatePK(false);
+            config.addExpEntryTableCfg(tableConfig);
+
+            config.syncColumnUniqueFlags();
+
+            assertThat(col.isUnique()).isFalse();
+        }
     }
 
     @Nested

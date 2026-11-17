@@ -2801,8 +2801,8 @@ public class MigrationConfiguration {
 
     /**
      * Synchronizes target column unique flags with the currently selected indexes and primary keys.
-     * The unique flag must reflect the currently selected single-column unique indexes and primary
-     * keys, including clearing stale uniqueness when no such constraint remains.
+     * When single-column unique indexes or primary keys covering a column are deselected and no
+     * such constraint remains active, the column must not retain the unique flag.
      */
     public void syncColumnUniqueFlags() {
         for (SourceEntryTableConfig setc : expTables) {
@@ -2814,30 +2814,32 @@ public class MigrationConfiguration {
                 continue;
             }
             for (Column col : targetTable.getColumns()) {
-                boolean hasUnique = false;
-                if (setc.isCreatePK()
-                        && targetTable.getPk() != null
-                        && targetTable.getPk().getPkColumns().size() == 1
-                        && StringUtils.equalsIgnoreCase(
-                                targetTable.getPk().getPkColumns().get(0), col.getName())) {
-                    hasUnique = true;
-                }
+                boolean hasPkConfig =
+                        targetTable.getPk() != null
+                                && targetTable.getPk().getPkColumns().size() == 1
+                                && StringUtils.equalsIgnoreCase(
+                                        targetTable.getPk().getPkColumns().get(0), col.getName());
+                boolean hasUnique = setc.isCreatePK() && hasPkConfig;
+                boolean hasUniqueIndexConfig = false;
                 if (!hasUnique) {
                     for (SourceIndexConfig sic : setc.getIndexConfigList()) {
-                        if (!sic.isCreate() || !sic.isUnique()) {
+                        if (!sic.isUnique()) {
                             continue;
                         }
                         List<String> cols = getSourceIndexColumns(setc, sic.getName());
                         if (cols.size() == 1
                                 && StringUtils.equalsIgnoreCase(cols.get(0), col.getName())) {
-                            hasUnique = true;
-                            break;
+                            hasUniqueIndexConfig = true;
+                            if (sic.isCreate()) {
+                                hasUnique = true;
+                                break;
+                            }
                         }
                     }
                 }
                 if (hasUnique) {
                     col.setUnique(true);
-                } else {
+                } else if (hasUniqueIndexConfig || hasPkConfig) {
                     col.setUnique(false);
                 }
             }
