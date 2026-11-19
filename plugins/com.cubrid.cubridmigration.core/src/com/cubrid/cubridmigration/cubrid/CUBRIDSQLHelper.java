@@ -167,8 +167,14 @@ public class CUBRIDSQLHelper extends SQLHelper {
                 if (!idx.isUnique()) {
                     continue;
                 }
-                if (idx.getColumnNames().indexOf(column.getName()) >= 0) {
-                    flag = true;
+                for (String idxCol : idx.getColumnNames()) {
+                    if (StringUtils.equalsIgnoreCase(idxCol, column.getName())) {
+                        flag = true;
+                        break;
+                    }
+                }
+                if (flag) {
+                    break;
                 }
             }
             if (!flag) {

@@ -87,17 +87,18 @@ public class TargetNodeWriter {
         }
         writer.writeStartElement(TAG_TABLES);
         for (Table table : targetTables) {
-            writeSingleTargetTable(writer, table);
+            writeSingleTargetTable(writer, table, config);
         }
         writer.writeEndElement(); // </tables>
     }
 
-    private void writeSingleTargetTable(XMLStreamWriter writer, Table table)
+    private void writeSingleTargetTable(
+            XMLStreamWriter writer, Table table, MigrationConfiguration config)
             throws XMLStreamException {
         writer.writeStartElement(TAG_TABLE);
         writeTargetTableAttributes(writer, table);
         writeTargetColumns(writer, table);
-        writeTargetConstraints(writer, table);
+        writeTargetConstraints(writer, table, config);
         writeTargetPartitions(writer, table);
         writer.writeEndElement(); // </table>
     }
@@ -142,11 +143,12 @@ public class TargetNodeWriter {
         writer.writeEndElement(); // </columns>
     }
 
-    private void writeTargetConstraints(XMLStreamWriter writer, Table table)
+    private void writeTargetConstraints(
+            XMLStreamWriter writer, Table table, MigrationConfiguration config)
             throws XMLStreamException {
         PK pk = table.getPk();
         List<FK> fks = table.getFks();
-        List<Index> indexes = table.getIndexes();
+        List<Index> indexes = config.getSelectedTargetIndexes(table);
         if (pk != null || !fks.isEmpty() || !indexes.isEmpty()) {
             writer.writeStartElement(TAG_CONSTRAINTS);
             if (pk != null && CollectionUtils.isNotEmpty(pk.getPkColumns())) {

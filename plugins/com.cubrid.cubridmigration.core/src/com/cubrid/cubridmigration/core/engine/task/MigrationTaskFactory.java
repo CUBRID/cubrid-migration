@@ -511,7 +511,8 @@ public class MigrationTaskFactory {
      * @return IndexImportTask
      */
     public ImportTask createImportIndexTask(Table tb) {
-        IndexImportTask task = new IndexImportTask(tb);
+        IndexImportTask task =
+                new IndexImportTask(tb, context.getConfig().getSelectedTargetIndexes(tb));
         initImportTask(task);
         return task;
     }

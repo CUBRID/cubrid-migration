@@ -119,6 +119,11 @@ public class Messages extends NLS {
     public static String btnNext;
     public static String btnNo;
     public static String btnOK;
+    public static String btnDeselectAll;
+    public static String btnBackToDefault;
+    public static String btnContinue;
+    public static String btnBackToSelection;
+    public static String msgUnselectedIndexesConfirm;
     public static String btnOneTableOneFile;
     public static String btnOneTimeOnly;
     public static String btnOpenHistory;
@@ -471,6 +476,7 @@ public class Messages extends NLS {
     public static String lblReplaceTable;
     public static String lblReplacExp;
     public static String lblReservation;
+    public static String lblResolveDuplicateIndexes;
     public static String lblReuseOID;
     public static String lblSaveConfig;
     public static String lblScriptFileName;
@@ -478,6 +484,8 @@ public class Messages extends NLS {
     public static String lblSeed;
     public static String lblSelectAll;
     public static String lblSelectIndexes;
+    public static String lblSelectIndexesDescription;
+    public static String titleUnselectedIndexesConfirm;
     public static String lblSerialName;
     public static String lblShared;
     public static String lblSource;
@@ -532,6 +540,7 @@ public class Messages extends NLS {
     public static String msgAccomplished;
     public static String msgCanceled;
     public static String msgCfmClearALL;
+    public static String msgConfirmDeselectAllIndexes;
     public static String msgCfmDeleteSQL;
     public static String msgCfmErrorSave;
     public static String msgCheckCharset;

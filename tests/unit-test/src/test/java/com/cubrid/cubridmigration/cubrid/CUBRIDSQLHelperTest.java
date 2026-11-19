@@ -312,6 +312,30 @@ class CUBRIDSQLHelperTest {
     class GetTableDDL {
 
         @Test
+        @DisplayName("a unique index with differently cased column name avoids inline UNIQUE")
+        void uniqueColumnInUniqueIndexOfOtherCase_omitsColumnUnique() {
+            Column column = numericColumn("42");
+            column.setUnique(true);
+            Table table = tableOf(column);
+            Index index = createIndex("u_c1", "C1");
+            index.setUnique(true);
+            table.addIndex(index);
+
+            assertThat(HELPER.getTableDDL(table, false)).doesNotContain("UNIQUE");
+        }
+
+        @Test
+        @DisplayName("a non-unique index does not replace a column UNIQUE constraint")
+        void uniqueColumnInNonUniqueIndex_keepsColumnUnique() {
+            Column column = numericColumn("42");
+            column.setUnique(true);
+            Table table = tableOf(column);
+            table.addIndex(createIndex("ix_c1", "c1"));
+
+            assertThat(HELPER.getTableDDL(table, false)).contains("UNIQUE");
+        }
+
+        @Test
         @DisplayName("a numeric default that is a number is emitted as it stands")
         void numericDefault_isEmitted() {
             assertThat(HELPER.getTableDDL(tableOf(numericColumn("42")), false))
