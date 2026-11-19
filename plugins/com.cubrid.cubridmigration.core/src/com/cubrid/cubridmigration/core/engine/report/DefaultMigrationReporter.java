@@ -52,6 +52,7 @@ import com.cubrid.cubridmigration.core.engine.event.MigrationFinishedEvent;
 import com.cubrid.cubridmigration.core.engine.event.MigrationNoSupportEvent;
 import com.cubrid.cubridmigration.core.engine.event.MigrationStartEvent;
 import com.cubrid.cubridmigration.core.engine.event.MigrationXLSNoSupportEvent;
+import com.cubrid.cubridmigration.core.engine.event.SingleRecordErrorEvent;
 import com.cubrid.cubridmigration.core.engine.event.StartExpTableEvent;
 import com.cubrid.cubridmigration.core.engine.template.writer.MigrationTemplateWriter;
 import com.cubrid.cubridmigration.cubrid.CUBRIDSQLHelper;
@@ -194,6 +195,15 @@ public abstract class DefaultMigrationReporter implements IMigrationReporter {
         // that branch win and the error would never reach the error file.
         if (event instanceof IMigrationErrorEvent) {
             Throwable error = ((IMigrationErrorEvent) event).getError();
+            if (error != null) {
+                writeErrorEvent(event, error);
+            }
+        } else if (event instanceof SingleRecordErrorEvent
+                && config.getReportLevel() == MigrationConfiguration.RPT_LEVEL_DEBUG) {
+            // A single record error is not an IMigrationErrorEvent because its description
+            // carries the record's column values. Only at the debug level, where those values are
+            // already written into the report log, it is also written into the error file.
+            Throwable error = ((SingleRecordErrorEvent) event).getError();
             if (error != null) {
                 writeErrorEvent(event, error);
             }
