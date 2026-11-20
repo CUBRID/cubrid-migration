@@ -79,6 +79,9 @@ import java.util.Map;
 public abstract class DefaultMigrationReporter implements IMigrationReporter {
     protected static final Logger LOG = LogUtil.getLogger(DefaultMigrationReporter.class);
 
+    /** Upper bound of the cause chain written for an error without stack trace. */
+    private static final int MAX_CAUSE_DEPTH = 5;
+
     protected final String fileName; // Only file name , without directory
 
     protected final MigrationConfiguration config;
@@ -196,16 +199,18 @@ public abstract class DefaultMigrationReporter implements IMigrationReporter {
         if (event instanceof IMigrationErrorEvent) {
             Throwable error = ((IMigrationErrorEvent) event).getError();
             if (error != null) {
-                writeErrorEvent(event, error);
+                writeErrorEvent(event, error, true);
             }
         } else if (event instanceof SingleRecordErrorEvent
                 && config.getReportLevel() == MigrationConfiguration.RPT_LEVEL_DEBUG) {
             // A single record error is not an IMigrationErrorEvent because its description
             // carries the record's column values. Only at the debug level, where those values are
             // already written into the report log, it is also written into the error file.
+            // Without the stack trace: one is produced per failed record, and the exception
+            // chain is enough to tell why the record was rejected.
             Throwable error = ((SingleRecordErrorEvent) event).getError();
             if (error != null) {
-                writeErrorEvent(event, error);
+                writeErrorEvent(event, error, false);
             }
         }
 
@@ -270,18 +275,33 @@ public abstract class DefaultMigrationReporter implements IMigrationReporter {
 
     /**
      * Write an event's error into the dedicated error file: time stamp, the event's description and
-     * the error's stack trace. The caller decides whether the event carries an error.
+     * the error. The caller decides whether the event carries an error.
      *
      * @param event the event that carries the error
      * @param error the error to be written, never null
+     * @param withStackTrace true to write the whole stack trace, false to write only the error and
+     *     its causes, one line each
      */
-    private void writeErrorEvent(MigrationEvent event, Throwable error) {
+    private void writeErrorEvent(MigrationEvent event, Throwable error, boolean withStackTrace) {
         pwError.append(CUBRIDTimeUtil.defaultFormatMilin(event.getEventTime())).append(" ");
         pwError.append(event.toString());
         pwError.append(" \r\n");
-        error.printStackTrace(pwError);
+        if (withStackTrace) {
+            error.printStackTrace(pwError);
+        } else {
+            appendCauseChain(error);
+        }
         pwError.append(" \r\n");
         pwError.flush();
+    }
+
+    private void appendCauseChain(Throwable error) {
+        Throwable current = error;
+        for (int depth = 0; current != null && depth < MAX_CAUSE_DEPTH; depth++) {
+            pwError.append(depth == 0 ? "" : "Caused by: ");
+            pwError.append(String.valueOf(current)).append(" \r\n");
+            current = current.getCause();
+        }
     }
 
     private String setDBObjectResultDDL(CreateObjectEvent ev) {
