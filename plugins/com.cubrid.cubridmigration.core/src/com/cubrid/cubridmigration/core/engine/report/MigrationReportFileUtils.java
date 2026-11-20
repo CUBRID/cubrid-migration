@@ -84,6 +84,20 @@ public abstract class MigrationReportFileUtils {
     }
 
     /**
+     * extract *.err file from *.mh file
+     *
+     * @param mhFile *.mh
+     * @return *.err, or null if the history file has no error file (reports of older versions)
+     * @throws IOException ex
+     */
+    public static String extractError(String mhFile) throws IOException {
+        return CUBRIDIOUtils.extractFromZip(
+                PathUtils.getReportDir() + mhFile,
+                IMigrationReporter.ERROR_FILE_EX,
+                getReportTempDir(mhFile));
+    }
+
+    /**
      * extract *.txt file from *.mh file
      *
      * @param mhFile *.mh
