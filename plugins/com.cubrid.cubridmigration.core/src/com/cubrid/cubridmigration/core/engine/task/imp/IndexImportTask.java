@@ -49,15 +49,21 @@ import java.util.List;
 public class IndexImportTask extends ImportTask {
 
     private final Table targetTable;
+    private final List<Index> indexes;
 
     public IndexImportTask(Table targetTable) {
+        this(targetTable, targetTable.getIndexes());
+    }
+
+    public IndexImportTask(Table targetTable, List<Index> indexes) {
         this.targetTable = targetTable;
+        this.indexes = indexes;
     }
 
     /** Execute import operation */
     protected void executeImport() {
 
-        for (Index idx : targetTable.getIndexes()) {
+        for (Index idx : indexes) {
             try {
                 // If PK and index have same columns, the index should not be created.
                 if (isDuplicatedWithPK(idx)) {
