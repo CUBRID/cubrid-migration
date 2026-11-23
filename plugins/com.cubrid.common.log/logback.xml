@@ -51,10 +51,12 @@
 
     <!--
         Migration engine only: errors from this package also go to ASYNC_ERROR_FILE.
-        additivity="true" (default) keeps them flowing up to root's ASYNC_FILE as well,
-        so the general log is unaffected; only the scope of the error file narrows.
+        No level is set on purpose: the logger inherits root's level, so changing root's level
+        also changes the engine's. The error file keeps only ERROR and above through its
+        ThresholdFilter. additivity="true" (default) keeps the events flowing up to root's
+        ASYNC_FILE as well.
     -->
-    <logger name="com.cubrid.cubridmigration.core.engine" level="INFO" additivity="true">
+    <logger name="com.cubrid.cubridmigration.core.engine" additivity="true">
         <appender-ref ref="ASYNC_ERROR_FILE"/>
     </logger>
 
