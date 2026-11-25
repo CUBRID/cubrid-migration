@@ -96,7 +96,7 @@ class TableSplitPlannerTest {
     void determineSplitColumn_singleNonNumericPkWithIndexFallback_returnsIndexColumn() {
         Table table = createTable("orders");
         addColumn(table, "code", "VARCHAR");
-        Column seq = addColumn(table, "seq", "BIGINT");
+        Column seq = addNotNullColumn(table, "seq", "BIGINT");
         setSinglePk(table, "code");
         addIndex(table, "ix_seq", true, "seq");
 
@@ -108,7 +108,7 @@ class TableSplitPlannerTest {
     void determineSplitColumn_compositePkWithIndex_prefersIndexOverCompositePk() {
         Table table = createTable("order_items");
         addColumn(table, "tenant_id", "INT");
-        Column seq = addColumn(table, "seq", "BIGINT");
+        Column seq = addNotNullColumn(table, "seq", "BIGINT");
         setCompositePk(table, "tenant_id", "seq");
         addIndex(table, "ix_seq", true, "seq");
 
@@ -141,7 +141,7 @@ class TableSplitPlannerTest {
     @DisplayName("no PK at all: a unique index is used")
     void determineSplitColumn_noPkWithUniqueIndex_returnsUniqueIndexColumn() {
         Table table = createTable("logs");
-        Column seq = addColumn(table, "seq", "BIGINT");
+        Column seq = addNotNullColumn(table, "seq", "BIGINT");
         addIndex(table, "ix_seq", true, "seq");
 
         assertThat(planner.determineSplitColumn(table, DatabaseType.MYSQL)).isEqualTo(seq);
@@ -151,7 +151,7 @@ class TableSplitPlannerTest {
     @DisplayName("no PK at all: falls back to a non-unique index if no unique one exists")
     void determineSplitColumn_noPkNonUniqueIndexOnly_returnsNonUniqueIndexColumn() {
         Table table = createTable("logs");
-        Column createdAt = addColumn(table, "created_at", "DATE");
+        Column createdAt = addNotNullColumn(table, "created_at", "DATE");
         addIndex(table, "ix_created_at", false, "created_at");
 
         assertThat(planner.determineSplitColumn(table, DatabaseType.MYSQL)).isEqualTo(createdAt);
@@ -170,8 +170,8 @@ class TableSplitPlannerTest {
     @DisplayName("a unique index is preferred over a non-unique one")
     void determineSplitColumn_prefersUniqueIndexOverNonUnique() {
         Table table = createTable("logs");
-        addColumn(table, "created_at", "DATE");
-        Column seq = addColumn(table, "seq", "BIGINT");
+        addNotNullColumn(table, "created_at", "DATE");
+        Column seq = addNotNullColumn(table, "seq", "BIGINT");
         addIndex(table, "ix_created_at", false, "created_at");
         addIndex(table, "ix_seq", true, "seq");
 
@@ -184,11 +184,56 @@ class TableSplitPlannerTest {
         Table table = createTable("logs");
         addColumn(table, "tenant_id", "INT");
         addColumn(table, "seq", "BIGINT");
-        Column createdAt = addColumn(table, "created_at", "DATE");
+        Column createdAt = addNotNullColumn(table, "created_at", "DATE");
         addIndex(table, "ux_tenant_seq", true, "tenant_id", "seq");
         addIndex(table, "ix_created_at", false, "created_at");
 
         assertThat(planner.determineSplitColumn(table, DatabaseType.MYSQL)).isEqualTo(createdAt);
+    }
+
+    @Test
+    @DisplayName("a nullable unique index column is skipped, since BETWEEN would drop its NULL rows")
+    void determineSplitColumn_nullableUniqueIndexColumn_returnsNull() {
+        Table table = createTable("logs");
+        addColumn(table, "seq", "BIGINT"); // nullable by default
+        addIndex(table, "ix_seq", true, "seq");
+
+        assertThat(planner.determineSplitColumn(table, DatabaseType.MYSQL)).isNull();
+    }
+
+    @Test
+    @DisplayName("a nullable non-unique index column is skipped as well")
+    void determineSplitColumn_nullableNonUniqueIndexColumn_returnsNull() {
+        Table table = createTable("logs");
+        addColumn(table, "created_at", "DATE"); // nullable by default
+        addIndex(table, "ix_created_at", false, "created_at");
+
+        assertThat(planner.determineSplitColumn(table, DatabaseType.MYSQL)).isNull();
+    }
+
+    @Test
+    @DisplayName("a nullable index column does not shadow a later NOT NULL one")
+    void determineSplitColumn_nullableIndexBeforeNotNullIndex_returnsNotNullColumn() {
+        Table table = createTable("logs");
+        addColumn(table, "ref_id", "BIGINT"); // nullable by default
+        Column seq = addNotNullColumn(table, "seq", "BIGINT");
+        addIndex(table, "ix_ref_id", true, "ref_id");
+        addIndex(table, "ix_seq", false, "seq");
+
+        assertThat(planner.determineSplitColumn(table, DatabaseType.MYSQL)).isEqualTo(seq);
+    }
+
+    @Test
+    @DisplayName("composite PK with only a nullable index falls back to the leading PK column")
+    void determineSplitColumn_compositePkWithNullableIndexOnly_returnsLeadingPkColumn() {
+        Table table = createTable("order_items");
+        Column tenantId = addNotNullColumn(table, "tenant_id", "INT");
+        addNotNullColumn(table, "seq", "BIGINT");
+        addColumn(table, "ref_id", "BIGINT"); // nullable by default
+        setCompositePk(table, "tenant_id", "seq");
+        addIndex(table, "ix_ref_id", true, "ref_id");
+
+        assertThat(planner.determineSplitColumn(table, DatabaseType.MYSQL)).isEqualTo(tenantId);
     }
 
     @Test
@@ -561,7 +606,7 @@ class TableSplitPlannerTest {
     @DisplayName("plan() reports UNIQUE_INDEX as the basis when that's what was used")
     void plan_unusedPkFallsBackToUniqueIndex_reportsUniqueIndexBasis() throws Exception {
         Table table = createTable("logs");
-        Column seq = addColumn(table, "seq", "BIGINT");
+        Column seq = addNotNullColumn(table, "seq", "BIGINT");
         addIndex(table, "ix_seq", true, "seq");
 
         ResultSet minMaxRs = countResultSet(1L, 100L);
@@ -589,7 +634,7 @@ class TableSplitPlannerTest {
     @DisplayName("plan() reports NON_UNIQUE_INDEX as the basis when that's what was used")
     void plan_noPkNoUniqueIndex_reportsNonUniqueIndexBasis() throws Exception {
         Table table = createTable("logs");
-        Column seq = addColumn(table, "seq", "BIGINT");
+        Column seq = addNotNullColumn(table, "seq", "BIGINT");
         addIndex(table, "ix_seq", false, "seq");
 
         ResultSet minMaxRs = countResultSet(1L, 100L);
@@ -659,6 +704,12 @@ class TableSplitPlannerTest {
         column.setName(name);
         column.setDataType(dataType);
         table.addColumn(column);
+        return column;
+    }
+
+    private static Column addNotNullColumn(Table table, String name, String dataType) {
+        Column column = addColumn(table, name, dataType);
+        column.setNullable(false);
         return column;
     }
 

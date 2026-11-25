@@ -165,6 +165,10 @@ public class TableSplitPlanner {
      * ones. Composite indexes are skipped for the same reason composite PKs are skipped - a
      * multi-column range predicate is out of scope for this planner.
      *
+     * <p>Columns that allow NULL are skipped as well: the range predicate ({@code col BETWEEN lo AND
+     * hi}) never matches a NULL, so splitting on such a column would silently drop every row whose
+     * value is NULL. PK columns are NOT NULL by definition, so only this index path needs the check.
+     *
      * <p>TODO: index cardinality/statistics aren't tracked anywhere in this codebase's metadata, so
      * this can't distinguish a high-cardinality index from a low-cardinality one. {@link
      * #validateSkew} is the actual safety net for that - this method only filters by shape
@@ -186,6 +190,9 @@ public class TableSplitPlanner {
             }
             Column column = table.getColumnByName(columnNames.get(0));
             if (!isSplittableType(column, dtHelper)) {
+                continue;
+            }
+            if (column.isNullable()) {
                 continue;
             }
             if (index.isUnique()) {
