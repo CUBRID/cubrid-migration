@@ -69,7 +69,7 @@ public class SingleQueueExecutor implements IRunnableExecutor {
      */
     private static final long SLOT_RECHECK_MILLIS = 200L;
 
-    protected boolean interrupted;
+    protected volatile boolean interrupted;
 
     public SingleQueueExecutor(int threadSize, boolean limitTaskCount) {
         poolSize = threadSize + Math.max(2, threadSize / 2);
