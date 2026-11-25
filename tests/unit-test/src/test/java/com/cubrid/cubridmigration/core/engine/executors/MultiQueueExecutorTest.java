@@ -36,6 +36,7 @@ import com.cubrid.cubridmigration.core.engine.task.ITableKeyedTask;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -269,6 +270,142 @@ class MultiQueueExecutorTest {
         } finally {
             executor.dispose();
         }
+    }
+
+    @Test
+    @DisplayName(
+            "releaseKey() keeps isBusy() true until the released queue's pending task finishes")
+    void releaseKey_keepsIsBusyTrueUntilPendingTaskFinishes() throws InterruptedException {
+        MultiQueueExecutor executor = new MultiQueueExecutor(1, false);
+        CountDownLatch started = new CountDownLatch(1);
+        CountDownLatch release = new CountDownLatch(1);
+
+        try {
+            executor.execute(
+                    keyedTask(
+                            "OWNER.T",
+                            () -> {
+                                started.countDown();
+                                awaitLatch(release);
+                            }));
+            assertThat(started.await(AWAIT_SECONDS, TimeUnit.SECONDS)).isTrue();
+
+            executor.releaseKey("OWNER.T");
+
+            // The live map is empty, yet the queue still has a running task: the migration must
+            // not be considered finished (PK/index/FK creation would start before import ends).
+            assertThat(executor.queueCount()).isEqualTo(0);
+            assertThat(executor.drainingCount()).isEqualTo(1);
+            assertThat(executor.isBusy()).isTrue();
+
+            release.countDown();
+            assertThat(awaitNotBusy(executor)).isTrue();
+            assertThat(executor.drainingCount()).isEqualTo(0);
+        } finally {
+            release.countDown();
+            executor.dispose();
+        }
+    }
+
+    @Test
+    @DisplayName("interrupt() also stops a released queue that is still draining")
+    void interrupt_stopsReleasedQueueStillDraining() throws InterruptedException {
+        MultiQueueExecutor executor = new MultiQueueExecutor(1, false);
+        CountDownLatch started = new CountDownLatch(1);
+        CountDownLatch release = new CountDownLatch(1);
+        CountDownLatch queuedTaskRan = new CountDownLatch(1);
+
+        try {
+            executor.execute(
+                    keyedTask(
+                            "OWNER.T",
+                            () -> {
+                                started.countDown();
+                                awaitLatch(release);
+                            }));
+            assertThat(started.await(AWAIT_SECONDS, TimeUnit.SECONDS)).isTrue();
+            // Pool of one thread: this task waits behind the blocked one.
+            executor.execute(keyedTask("OWNER.T", queuedTaskRan::countDown));
+
+            executor.releaseKey("OWNER.T");
+            executor.interrupt();
+            release.countDown();
+
+            // Without interrupt reaching the draining queue, the queued task would run as soon as
+            // the first one finishes.
+            assertThat(queuedTaskRan.await(300, TimeUnit.MILLISECONDS)).isFalse();
+        } finally {
+            release.countDown();
+            executor.dispose();
+        }
+    }
+
+    @Test
+    @DisplayName("concurrent execute()/releaseKey() and isBusy() polling never throw")
+    void concurrentReleaseKeyAndIsBusy_neverThrows() throws InterruptedException {
+        final int producers = 4;
+        final int keysPerProducer = 300;
+        MultiQueueExecutor executor = new MultiQueueExecutor(1, false);
+        ConcurrentLinkedQueue<Throwable> failures = new ConcurrentLinkedQueue<>();
+        AtomicBoolean producing = new AtomicBoolean(true);
+
+        Thread poller =
+                new Thread(
+                        () -> {
+                            try {
+                                while (producing.get()) {
+                                    executor.isBusy();
+                                }
+                            } catch (Throwable t) {
+                                failures.add(t);
+                            }
+                        });
+        poller.start();
+
+        Thread[] threads = new Thread[producers];
+        for (int p = 0; p < producers; p++) {
+            final int id = p;
+            threads[p] =
+                    new Thread(
+                            () -> {
+                                try {
+                                    for (int k = 0; k < keysPerProducer; k++) {
+                                        String key = "OWNER.T" + id + "_" + k;
+                                        executor.execute(keyedTask(key, () -> {}));
+                                        executor.releaseKey(key);
+                                    }
+                                } catch (Throwable t) {
+                                    failures.add(t);
+                                }
+                            });
+            threads[p].start();
+        }
+
+        try {
+            for (Thread t : threads) {
+                t.join(AWAIT_SECONDS * 1000);
+            }
+            producing.set(false);
+            poller.join(AWAIT_SECONDS * 1000);
+
+            assertThat(failures).isEmpty();
+            assertThat(awaitNotBusy(executor)).isTrue();
+            assertThat(executor.drainingCount()).isEqualTo(0);
+        } finally {
+            producing.set(false);
+            executor.dispose();
+        }
+    }
+
+    private static boolean awaitNotBusy(MultiQueueExecutor executor) throws InterruptedException {
+        long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(AWAIT_SECONDS);
+        while (System.nanoTime() < deadline) {
+            if (!executor.isBusy()) {
+                return true;
+            }
+            Thread.sleep(10);
+        }
+        return false;
     }
 
     private static void awaitLatch(CountDownLatch latch) {

@@ -30,14 +30,15 @@
  */
 package com.cubrid.cubridmigration.core.engine.executors;
 
-import com.cubrid.common.log.LogUtil;
-import com.cubrid.cubridmigration.core.engine.task.ITableKeyedTask;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import org.slf4j.Logger;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import com.cubrid.common.log.LogUtil;
+import com.cubrid.cubridmigration.core.engine.task.ITableKeyedTask;
 
 /**
  * MultiQueueExecutor will execute the tasks in a thread pool which only has one thread.
@@ -49,16 +50,23 @@ public class MultiQueueExecutor implements IRunnableExecutor {
 
     private static final Logger LOG = LogUtil.getLogger(MultiQueueExecutor.class);
 
-    private final Map<Object, IRunnableExecutor> executors =
-            Collections.synchronizedMap(new HashMap<Object, IRunnableExecutor>());
+    /** Live queues by key. Guarded by {@link #lockObj}. */
+    private final Map<Object, IRunnableExecutor> executors = new HashMap<Object, IRunnableExecutor>();
 
-    private boolean interrupted;
+    /**
+     * Queues already released by {@link #releaseKey} (no more tasks will be submitted) that may
+     * still hold queued or running tasks. They stay here until drained so {@link #isBusy()} keeps
+     * reporting busy and {@link #interrupt()} can still stop them. Guarded by {@link #lockObj}.
+     */
+    private final List<IRunnableExecutor> drainingExecutors = new ArrayList<IRunnableExecutor>();
+
+    private volatile boolean interrupted;
 
     private final boolean limitTaskCount;
 
     private long totalTask = 0;
 
-    private Object lockObj = new Object();
+    private final Object lockObj = new Object();
 
     private int executorPoolSize;
 
@@ -134,13 +142,22 @@ public class MultiQueueExecutor implements IRunnableExecutor {
      * still finishes normally - the caller is only expected to call this once it already knows
      * nothing will ever be submitted under this key again, not that the key is idle right now.
      *
+     * <p>The released queue moves into {@link #drainingExecutors} in the same critical section that
+     * removes it from the live map, so there is never a moment where it is in neither and {@link
+     * #isBusy()} could wrongly report idle while its tasks are still pending.
+     *
      * @param key the same key {@link #getExecutor} would have resolved for that producer
      */
     @Override
     public void releaseKey(Object key) {
         final IRunnableExecutor es;
+        final int stillOpen;
         synchronized (lockObj) {
             es = executors.remove(key);
+            if (es != null) {
+                drainingExecutors.add(es);
+            }
+            stillOpen = executors.size();
         }
         if (es != null) {
             es.dispose();
@@ -148,22 +165,32 @@ public class MultiQueueExecutor implements IRunnableExecutor {
                     "[DEBUG-IMPORTQUEUE] Released import queue for key="
                             + key
                             + " ("
-                            + executors.size()
+                            + stillOpen
                             + " still open)");
         }
     }
 
     /** Release thread pools */
     public void dispose() {
-        for (IRunnableExecutor et : executors.values()) {
+        final List<IRunnableExecutor> live;
+        synchronized (lockObj) {
+            live = new ArrayList<IRunnableExecutor>(executors.values());
+        }
+        // Draining queues were already disposed by releaseKey.
+        for (IRunnableExecutor et : live) {
             et.dispose();
         }
     }
 
-    /** Release thread pools */
+    /** Release thread pools, including queues that were released but are still draining */
     public void interrupt() {
         interrupted = true;
-        for (IRunnableExecutor et : executors.values()) {
+        final List<IRunnableExecutor> all;
+        synchronized (lockObj) {
+            all = new ArrayList<IRunnableExecutor>(executors.values());
+            all.addAll(drainingExecutors);
+        }
+        for (IRunnableExecutor et : all) {
             et.interrupt();
         }
     }
@@ -181,17 +208,34 @@ public class MultiQueueExecutor implements IRunnableExecutor {
     }
 
     /**
-     * @return true if executors are busy.
+     * Test-only: how many released queues are still waiting to drain.
+     *
+     * @return the number of released queues not yet observed idle
+     */
+    int drainingCount() {
+        synchronized (lockObj) {
+            return drainingExecutors.size();
+        }
+    }
+
+    /**
+     * @return true if any live or released-but-still-draining queue has pending work.
      */
     public boolean isBusy() {
         if (interrupted) {
             return false;
         }
-        for (IRunnableExecutor et : executors.values()) {
-            if (et.isBusy()) {
+        synchronized (lockObj) {
+            drainingExecutors.removeIf(executor -> !executor.isBusy());
+            if (!drainingExecutors.isEmpty()) {
                 return true;
             }
+            for (IRunnableExecutor et : executors.values()) {
+                if (et.isBusy()) {
+                    return true;
+                }
+            }
+            return false;
         }
-        return false;
     }
 }
