@@ -49,7 +49,10 @@ import com.cubrid.cubridmigration.core.export.TableSplitPlanner.SplitRange;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -275,14 +278,48 @@ class TableSplitPlannerTest {
     // ---------------------------------------------------------------
 
     @Test
-    @DisplayName("numeric bounds are emitted as unquoted literals")
-    void buildRangeCondition_numericBounds_areUnquoted() {
+    @DisplayName("numeric bounds are emitted as unquoted literals, lower inclusive and upper exclusive")
+    void buildRangeCondition_numericBounds_areUnquotedHalfOpen() {
         Column id = new Column();
         id.setName("id");
 
         String condition = planner.buildRangeCondition(id, new SplitRange(1L, 1000L));
 
-        assertThat(condition).isEqualTo("id BETWEEN 1 AND 1000");
+        assertThat(condition).isEqualTo("id >= 1 AND id < 1000");
+    }
+
+    @Test
+    @DisplayName("an unbounded side is omitted from the predicate")
+    void buildRangeCondition_unboundedSides_areOmitted() {
+        Column id = new Column();
+        id.setName("id");
+
+        assertThat(planner.buildRangeCondition(id, new SplitRange(null, 26L)))
+                .isEqualTo("id < 26");
+        assertThat(planner.buildRangeCondition(id, new SplitRange(76L, null)))
+                .isEqualTo("id >= 76");
+    }
+
+    @Test
+    @DisplayName("a range with no bounds at all matches every row")
+    void buildRangeCondition_unboundedRange_matchesEverything() {
+        Column id = new Column();
+        id.setName("id");
+
+        assertThat(planner.buildRangeCondition(id, SplitRange.unbounded())).isEqualTo("1 = 1");
+    }
+
+    @Test
+    @DisplayName("BigDecimal bounds are written in plain notation, never exponent form")
+    void buildRangeCondition_bigDecimalBounds_arePlainNotation() {
+        Column amount = new Column();
+        amount.setName("amount");
+
+        String condition =
+                planner.buildRangeCondition(
+                        amount, new SplitRange(new BigDecimal("1E+3"), new BigDecimal("2.50")));
+
+        assertThat(condition).isEqualTo("amount >= 1000 AND amount < 2.50");
     }
 
     @Test
@@ -293,7 +330,7 @@ class TableSplitPlannerTest {
 
         String condition = planner.buildRangeCondition(code, new SplitRange("A", "O'Brien"));
 
-        assertThat(condition).isEqualTo("code BETWEEN 'A' AND 'O''Brien'");
+        assertThat(condition).isEqualTo("code >= 'A' AND code < 'O''Brien'");
     }
 
     // ---------------------------------------------------------------
@@ -322,30 +359,134 @@ class TableSplitPlannerTest {
     }
 
     @Test
-    @DisplayName("numeric MIN/MAX is split into the requested number of contiguous ranges")
-    void calculateRanges_numericMinMax_splitsIntoRequestedRanges() throws Exception {
-        Table table = createTable("orders");
-        Column id = addColumn(table, "id", "BIGINT");
-
-        Connection conn = mock(Connection.class);
-        Statement stmt = mock(Statement.class);
-        ResultSet rs = mock(ResultSet.class);
-        when(conn.createStatement()).thenReturn(stmt);
-        when(stmt.executeQuery(anyString())).thenReturn(rs);
-        when(rs.next()).thenReturn(true);
-        when(rs.getObject(1)).thenReturn(1L);
-        when(rs.getObject(2)).thenReturn(1000L);
-
-        List<SplitRange> ranges = planner.calculateRanges(conn, table, id, 4);
+    @DisplayName("integer MIN/MAX is split into contiguous half-open ranges with open outer ends")
+    void calculateRanges_integerMinMax_splitsIntoRequestedRanges() throws Exception {
+        List<SplitRange> ranges = calculateRangesFor("BIGINT", 1L, 1000L, 4);
 
         assertThat(ranges).hasSize(4);
-        assertThat(ranges.get(0).getLowerBound()).isEqualTo(1L);
-        assertThat(ranges.get(ranges.size() - 1).getUpperBound()).isEqualTo(1000L);
+        assertThat(ranges.get(0).getLowerBound()).isNull();
+        assertThat(ranges.get(ranges.size() - 1).getUpperBound()).isNull();
+        // Each range starts exactly where the previous one ends - the shared boundary is what
+        // guarantees neither a gap nor an overlap.
         for (int i = 1; i < ranges.size(); i++) {
-            long previousUpper = (Long) ranges.get(i - 1).getUpperBound();
-            long currentLower = (Long) ranges.get(i).getLowerBound();
-            assertThat(currentLower).isEqualTo(previousUpper + 1);
+            assertThat(ranges.get(i).getLowerBound()).isEqualTo(ranges.get(i - 1).getUpperBound());
         }
+        assertThat(ranges.get(0).getUpperBound()).isEqualTo(251L);
+        assertThat(ranges.get(1).getUpperBound()).isEqualTo(501L);
+        assertThat(ranges.get(2).getUpperBound()).isEqualTo(751L);
+    }
+
+    @Test
+    @DisplayName("[1, 100] in 4 ranges splits at 26, 51 and 76, the same cut points as before")
+    void calculateRanges_oneToHundred_splitsAt26_51_76() throws Exception {
+        List<SplitRange> ranges = calculateRangesFor("INT", 1L, 100L, 4);
+
+        assertThat(ranges)
+                .extracting(range -> planner.buildRangeCondition(idColumn(), range))
+                .containsExactly(
+                        "id < 26", "id >= 26 AND id < 51", "id >= 51 AND id < 76", "id >= 76");
+    }
+
+    @Test
+    @DisplayName("fractional MIN/MAX is split on exact decimal boundaries instead of truncated")
+    void calculateRanges_fractionalMinMax_splitsOnDecimalBoundaries() throws Exception {
+        // Truncating through longValue() gave [0,2] [3,5] [6,8] [9,10] here, so 2.5, 5.5, 8.7
+        // and 10.7 matched no range at all.
+        List<SplitRange> ranges =
+                calculateRangesFor(
+                        "DECIMAL", new BigDecimal("0.5"), new BigDecimal("10.7"), 4);
+
+        assertThat(ranges)
+                .extracting(range -> planner.buildRangeCondition(idColumn(), range))
+                .containsExactly(
+                        "id < 3.05",
+                        "id >= 3.05 AND id < 5.6",
+                        "id >= 5.6 AND id < 8.15",
+                        "id >= 8.15");
+    }
+
+    @Test
+    @DisplayName("every value, boundaries and out-of-MIN/MAX values included, is in exactly one range")
+    void calculateRanges_anyValue_belongsToExactlyOneRange() throws Exception {
+        List<SplitRange> ranges =
+                calculateRangesFor(
+                        "DECIMAL", new BigDecimal("0.5"), new BigDecimal("10.7"), 4);
+
+        String[] samples = {
+            "-1000", "0.5", "2.5", "3.05", "3.0499", "5.6", "5.5", "8.15", "8.7", "10.7", "10.71",
+            "99999"
+        };
+        for (String sample : samples) {
+            BigDecimal value = new BigDecimal(sample);
+            long matches = ranges.stream().filter(range -> contains(range, value)).count();
+            assertThat(matches).as("ranges containing %s", sample).isEqualTo(1);
+        }
+    }
+
+    @Test
+    @DisplayName("a BIGINT range spanning the whole long domain does not overflow")
+    void calculateRanges_fullLongDomain_doesNotOverflow() throws Exception {
+        List<SplitRange> ranges = calculateRangesFor("BIGINT", Long.MIN_VALUE, Long.MAX_VALUE, 4);
+
+        assertThat(ranges).hasSize(4);
+        BigInteger previous = BigInteger.valueOf(Long.MIN_VALUE);
+        for (int i = 0; i < ranges.size() - 1; i++) {
+            BigInteger boundary = new BigInteger(String.valueOf(ranges.get(i).getUpperBound()));
+            assertThat(boundary).isGreaterThan(previous);
+            previous = boundary;
+        }
+        assertThat(previous).isLessThanOrEqualTo(BigInteger.valueOf(Long.MAX_VALUE));
+    }
+
+    @Test
+    @DisplayName("boundaries beyond the long range are BigDecimal (a JDBC standard type), not BigInteger")
+    void calculateRanges_boundsBeyondLong_areBigDecimal() throws Exception {
+        // e.g. an Oracle NUMBER(38) key: MIN/MAX arrive as BigDecimal and the cut points no longer
+        // fit in a long.
+        List<SplitRange> ranges =
+                calculateRangesFor(
+                        "NUMBER",
+                        BigDecimal.ZERO,
+                        new BigDecimal("100000000000000000000000000"),
+                        4);
+
+        assertThat(ranges).hasSize(4);
+        assertThat(ranges.get(0).getUpperBound()).isInstanceOf(BigDecimal.class);
+        assertThat(((BigDecimal) ranges.get(0).getUpperBound()).toPlainString())
+                .isEqualTo("25000000000000000000000000");
+        assertThat(planner.buildRangeCondition(idColumn(), ranges.get(1)))
+                .isEqualTo(
+                        "id >= 25000000000000000000000000 AND id < 50000000000000000000000000");
+    }
+
+    @Test
+    @DisplayName("a span smaller than the degree yields fewer ranges, not empty ones")
+    void calculateRanges_spanSmallerThanDegree_dropsEmptyRanges() throws Exception {
+        List<SplitRange> ranges = calculateRangesFor("INT", 1L, 3L, 4);
+
+        assertThat(ranges)
+                .extracting(range -> planner.buildRangeCondition(idColumn(), range))
+                .containsExactly("id < 2", "id >= 2 AND id < 3", "id >= 3");
+    }
+
+    @Test
+    @DisplayName("MIN equal to MAX (a single distinct value) is not split")
+    void calculateRanges_singleDistinctValue_returnsOneUnboundedRange() throws Exception {
+        List<SplitRange> ranges = calculateRangesFor("INT", 7L, 7L, 4);
+
+        assertThat(ranges).hasSize(1);
+        assertThat(ranges.get(0).getLowerBound()).isNull();
+        assertThat(ranges.get(0).getUpperBound()).isNull();
+    }
+
+    @Test
+    @DisplayName("a NaN MAX cannot be split and comes back as one unbounded range")
+    void calculateRanges_nanBound_returnsOneUnboundedRange() throws Exception {
+        List<SplitRange> ranges = calculateRangesFor("DOUBLE", 1.0d, Double.NaN, 4);
+
+        assertThat(ranges).hasSize(1);
+        assertThat(ranges.get(0).getLowerBound()).isNull();
+        assertThat(ranges.get(0).getUpperBound()).isNull();
     }
 
     @Test
@@ -382,8 +523,8 @@ class TableSplitPlannerTest {
         List<SplitRange> ranges = planner.calculateRanges(conn, table, createdAt, 4);
 
         assertThat(ranges).hasSize(1);
-        assertThat(ranges.get(0).getLowerBound()).isEqualTo("2020-01-01");
-        assertThat(ranges.get(0).getUpperBound()).isEqualTo("2026-01-01");
+        assertThat(ranges.get(0).getLowerBound()).isNull();
+        assertThat(ranges.get(0).getUpperBound()).isNull();
     }
 
     // ---------------------------------------------------------------
@@ -481,6 +622,42 @@ class TableSplitPlannerTest {
         SkewResult result = planner.validateSkew(conn, table, id, ranges, 1.5);
 
         assertThat(result.isAcceptable()).isFalse();
+    }
+
+    @Test
+    @DisplayName("each COUNT(*) uses the same half-open predicate as the export, bound as parameters")
+    void validateSkew_countsWithHalfOpenPredicate_bindingOnlyPresentBounds() throws Exception {
+        Table table = createTable("orders");
+        Column id = addColumn(table, "id", "BIGINT");
+        List<SplitRange> ranges =
+                Arrays.asList(
+                        new SplitRange(null, 26L),
+                        new SplitRange(26L, 51L),
+                        new SplitRange(51L, null));
+
+        ResultSet rs1 = countResultSet(10L);
+        ResultSet rs2 = countResultSet(10L);
+        ResultSet rs3 = countResultSet(10L);
+
+        Connection conn = mock(Connection.class);
+        PreparedStatement ps = mock(PreparedStatement.class);
+        when(conn.prepareStatement(anyString())).thenReturn(ps);
+        when(ps.executeQuery()).thenReturn(rs1, rs2, rs3);
+
+        planner.validateSkew(conn, table, id, ranges, SKEW_RATIO_THRESHOLD);
+
+        ArgumentCaptor<String> sql = ArgumentCaptor.forClass(String.class);
+        verify(conn, org.mockito.Mockito.times(3)).prepareStatement(sql.capture());
+        assertThat(sql.getAllValues())
+                .containsExactly(
+                        "SELECT COUNT(*) FROM owner.orders WHERE id < ?",
+                        "SELECT COUNT(*) FROM owner.orders WHERE id >= ? AND id < ?",
+                        "SELECT COUNT(*) FROM owner.orders WHERE id >= ?");
+        // First range binds only its upper bound, the last only its lower bound.
+        verify(ps, org.mockito.Mockito.times(2)).setObject(1, 26L);
+        verify(ps).setObject(2, 51L);
+        verify(ps).setObject(1, 51L);
+        verify(ps, never()).setObject(2, null);
     }
 
     // ---------------------------------------------------------------
@@ -691,6 +868,43 @@ class TableSplitPlannerTest {
     // ---------------------------------------------------------------
     // fixture helpers
     // ---------------------------------------------------------------
+
+    private static Column idColumn() {
+        Column id = new Column();
+        id.setName("id");
+        return id;
+    }
+
+    /** Runs calculateRanges() against a mocked MIN/MAX row of the given values. */
+    private List<SplitRange> calculateRangesFor(String dataType, Object min, Object max, int degree)
+            throws Exception {
+        Table table = createTable("orders");
+        Column id = addColumn(table, "id", dataType);
+
+        Connection conn = mock(Connection.class);
+        Statement stmt = mock(Statement.class);
+        ResultSet rs = mock(ResultSet.class);
+        when(conn.createStatement()).thenReturn(stmt);
+        when(stmt.executeQuery(anyString())).thenReturn(rs);
+        when(rs.next()).thenReturn(true);
+        when(rs.getObject(1)).thenReturn(min);
+        when(rs.getObject(2)).thenReturn(max);
+
+        return planner.calculateRanges(conn, table, id, degree);
+    }
+
+    /** True if {@code value} satisfies the range's half-open predicate. */
+    private static boolean contains(SplitRange range, BigDecimal value) {
+        boolean aboveLower =
+                range.getLowerBound() == null
+                        || value.compareTo(new BigDecimal(String.valueOf(range.getLowerBound())))
+                                >= 0;
+        boolean belowUpper =
+                range.getUpperBound() == null
+                        || value.compareTo(new BigDecimal(String.valueOf(range.getUpperBound())))
+                                < 0;
+        return aboveLower && belowUpper;
+    }
 
     private static Table createTable(String name) {
         Table table = new Table();

@@ -537,8 +537,9 @@ public class MigrationTasksScheduler {
 
         // CUBRID's "resume from target's max ID" incremental mode (CUBRIDJDBCExporter#
         // isStartFromTargetMax) seeds its single starting bound from the target table, not from
-        // this table's own MIN(splitColumn) - TableSplitPlanner#calculateRanges always starts
-        // from the source's own MIN, so range-splitting it would re-cover already-migrated rows.
+        // this table's own MIN(splitColumn) - TableSplitPlanner#calculateRanges always covers the
+        // source from its first row (the first range has no lower bound), so range-splitting it
+        // would re-cover already-migrated rows.
         // Excluded here rather than in TableSplitPlanner, which stays database/config-agnostic.
         if (config.getSourceDBType().getID() == DatabaseType.CUBRID.getID()
                 && !table.isCreateNewTable()

@@ -40,6 +40,9 @@ import com.cubrid.cubridmigration.core.dbtype.DatabaseType;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.math.RoundingMode;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -52,6 +55,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
+import java.util.function.Function;
 
 /**
  * Decides whether a table's records can be exported by multiple parallel range workers instead of
@@ -242,8 +246,9 @@ public class TableSplitPlanner {
     }
 
     /**
-     * Computes {@code degree} non-overlapping value ranges covering [MIN(splitColumn),
-     * MAX(splitColumn)]. MIN/MAX only - no COUNT(*) - so this stays cheap regardless of table size.
+     * Computes up to {@code degree} non-overlapping, gap-free value ranges that together cover every
+     * value of the split column (see {@link SplitRange} for the half-open convention). MIN/MAX only
+     * - no COUNT(*) - so this stays cheap regardless of table size.
      *
      * <p>TODO: identifier quoting/escaping is not dialect-aware yet - reuse the quoting helpers
      * already in {@link DBExportHelper} and its per-DB subclasses instead of the naive {@code
@@ -290,32 +295,129 @@ public class TableSplitPlanner {
      * Splits [min, max] into up to {@code degree} equal-width ranges by value, not by row count -
      * see the earlier discussion on why MIN/MAX splitting is cheap but can be skewed if the
      * column's values aren't uniformly distributed. {@link #validateSkew} exists to catch that.
+     *
+     * <p>Boundaries are computed with {@link BigInteger}/{@link BigDecimal}, never {@code long}:
+     * truncating through {@code longValue()} dropped every fractional value (DECIMAL/FLOAT/NUMBER
+     * columns), and {@code max - min + 1} overflowed for very wide BIGINT ranges. The resulting
+     * ranges are half-open and the outer two are unbounded (see {@link SplitRange}), so no value -
+     * including one inserted after MIN/MAX was read - can fall between ranges.
      */
     private List<SplitRange> splitIntoRanges(Object min, Object max, int degree) {
         if (!(min instanceof Number) || !(max instanceof Number)) {
             // TODO: DATE/TIMESTAMP range splitting isn't implemented - treat as unsplittable
             // for now rather than risk an incorrect boundary.
-            return Collections.singletonList(new SplitRange(min, max));
+            return Collections.singletonList(SplitRange.unbounded());
         }
 
-        long lo = ((Number) min).longValue();
-        long hi = ((Number) max).longValue();
-        if (hi <= lo) {
-            return Collections.singletonList(new SplitRange(min, max));
+        BigDecimal lo = toBigDecimal((Number) min);
+        BigDecimal hi = toBigDecimal((Number) max);
+        if (lo == null || hi == null || hi.compareTo(lo) <= 0) {
+            // NaN/Infinity, or a single distinct value: nothing to split.
+            return Collections.singletonList(SplitRange.unbounded());
         }
 
-        long span = hi - lo + 1;
-        long chunkSize = Math.max(1, span / degree);
+        List<Object> boundaries =
+                (isIntegral(lo) && isIntegral(hi))
+                        ? integerBoundaries(lo.toBigIntegerExact(), hi.toBigIntegerExact(), degree)
+                        : decimalBoundaries(lo, hi, degree);
+        if (boundaries.isEmpty()) {
+            return Collections.singletonList(SplitRange.unbounded());
+        }
 
         List<SplitRange> ranges = new ArrayList<SplitRange>();
-        long cursor = lo;
-        while (cursor <= hi) {
-            boolean isLastRange = ranges.size() == degree - 1;
-            long rangeHi = isLastRange ? hi : Math.min(hi, cursor + chunkSize - 1);
-            ranges.add(new SplitRange(cursor, rangeHi));
-            cursor = rangeHi + 1;
+        Object lower = null;
+        for (Object boundary : boundaries) {
+            ranges.add(new SplitRange(lower, boundary));
+            lower = boundary;
         }
+        ranges.add(new SplitRange(lower, null));
         return ranges;
+    }
+
+    /**
+     * Boundaries for integer-valued MIN/MAX: {@code lo + i * (hi - lo + 1) / degree}, so e.g.
+     * [1, 100] in 4 ranges splits at 26, 51 and 76. Boundaries that would not advance (a span
+     * smaller than the degree) are dropped rather than producing empty ranges.
+     */
+    private List<Object> integerBoundaries(BigInteger lo, BigInteger hi, int degree) {
+        BigInteger span = hi.subtract(lo).add(BigInteger.ONE);
+        BigInteger degreeValue = BigInteger.valueOf(degree);
+        List<Object> boundaries = new ArrayList<Object>();
+        BigInteger previous = lo;
+        for (int i = 1; i < degree; i++) {
+            BigInteger boundary = lo.add(span.multiply(BigInteger.valueOf(i)).divide(degreeValue));
+            if (boundary.compareTo(previous) > 0 && boundary.compareTo(hi) <= 0) {
+                boundaries.add(narrow(boundary));
+                previous = boundary;
+            }
+        }
+        return boundaries;
+    }
+
+    /**
+     * Boundaries for fractional MIN/MAX: {@code lo + i * (hi - lo) / degree}, rounded to two more
+     * decimal places than the inputs carry. Rounding only moves a boundary slightly; correctness
+     * does not depend on it because every range shares its neighbour's exact boundary value.
+     */
+    private List<Object> decimalBoundaries(BigDecimal lo, BigDecimal hi, int degree) {
+        BigDecimal width = hi.subtract(lo);
+        BigDecimal degreeValue = BigDecimal.valueOf(degree);
+        int scale = Math.max(Math.max(lo.scale(), hi.scale()), 0) + 2;
+        List<Object> boundaries = new ArrayList<Object>();
+        BigDecimal previous = lo;
+        for (int i = 1; i < degree; i++) {
+            BigDecimal boundary =
+                    lo.add(
+                                    width.multiply(BigDecimal.valueOf(i))
+                                            .divide(degreeValue, scale, RoundingMode.HALF_UP))
+                            .stripTrailingZeros();
+            if (boundary.compareTo(previous) > 0 && boundary.compareTo(hi) <= 0) {
+                boundaries.add(boundary);
+                previous = boundary;
+            }
+        }
+        return boundaries;
+    }
+
+    /**
+     * Keeps boundaries that fit in a {@code long} as {@link Long}; wider ones become {@link
+     * BigDecimal}, not {@link BigInteger}: BigDecimal is the standard JDBC mapping for NUMERIC
+     * values, while {@code setObject(BigInteger)} is not supported by every driver.
+     */
+    private static Object narrow(BigInteger value) {
+        return value.bitLength() < Long.SIZE
+                ? (Object) Long.valueOf(value.longValue())
+                : new BigDecimal(value);
+    }
+
+    private static boolean isIntegral(BigDecimal value) {
+        return value.signum() == 0 || value.stripTrailingZeros().scale() <= 0;
+    }
+
+    /**
+     * @return the exact decimal value of {@code number}, or {@code null} for NaN, infinities and
+     *     Number types whose text form is not a plain decimal
+     */
+    private static BigDecimal toBigDecimal(Number number) {
+        if (number instanceof BigDecimal) {
+            return (BigDecimal) number;
+        }
+        if (number instanceof BigInteger) {
+            return new BigDecimal((BigInteger) number);
+        }
+        if (number instanceof Long
+                || number instanceof Integer
+                || number instanceof Short
+                || number instanceof Byte) {
+            return BigDecimal.valueOf(number.longValue());
+        }
+        try {
+            // Double/Float: go through the shortest text form (0.1 -> "0.1"), not the binary
+            // expansion, so the boundaries stay readable. NaN/Infinity fail to parse -> null.
+            return new BigDecimal(number.toString());
+        } catch (NumberFormatException e) {
+            return null;
+        }
     }
 
     /**
@@ -347,19 +449,23 @@ public class TableSplitPlanner {
             return new SkewResult(Collections.<Long>emptyList(), 0d, true);
         }
 
-        String sql =
-                "SELECT COUNT(*) FROM "
-                        + qualifiedTableName(table)
-                        + " WHERE "
-                        + splitColumn.getName()
-                        + " BETWEEN ? AND ?";
+        // The predicate comes from the same builder the export tasks use, so each COUNT(*) is
+        // exactly the set of rows that range's task will read. Bounds are bound as parameters; a
+        // range's unbounded side has no placeholder, so the statement differs per range.
+        String countPrefix = "SELECT COUNT(*) FROM " + qualifiedTableName(table) + " WHERE ";
 
         List<Long> counts = new ArrayList<Long>();
         long total = 0;
-        try (PreparedStatement ps = conn.prepareStatement(sql)) {
-            for (SplitRange range : ranges) {
-                ps.setObject(1, range.getLowerBound());
-                ps.setObject(2, range.getUpperBound());
+        for (SplitRange range : ranges) {
+            String sql = countPrefix + rangePredicate(splitColumn.getName(), range, b -> "?");
+            try (PreparedStatement ps = conn.prepareStatement(sql)) {
+                int index = 1;
+                if (range.getLowerBound() != null) {
+                    ps.setObject(index++, range.getLowerBound());
+                }
+                if (range.getUpperBound() != null) {
+                    ps.setObject(index, range.getUpperBound());
+                }
                 try (ResultSet rs = ps.executeQuery()) {
                     long count = rs.next() ? rs.getLong(1) : 0;
                     counts.add(count);
@@ -438,9 +544,14 @@ public class TableSplitPlanner {
     }
 
     /**
-     * Builds the {@code <column> BETWEEN <lo> AND <hi>} predicate a scheduler should combine with a
-     * table's existing WHERE condition (e.g. via {@code JDBCExporter#exportTableRecords(
-     * SourceTableConfig, String, RecordExportedListener)}) to actually read only this range.
+     * Builds the half-open predicate ({@code <column> >= <lo> AND <column> < <hi>}, with an
+     * unbounded side simply omitted) a scheduler should combine with a table's existing WHERE
+     * condition (e.g. via {@code JDBCExporter#exportTableRecords(SourceTableConfig, String,
+     * RecordExportedListener)}) to actually read only this range.
+     *
+     * <p>Not {@code BETWEEN}: that is inclusive on both ends, so a boundary value would be read by
+     * two neighbouring ranges, and for fractional values the integer-only ranges used to leave
+     * gaps. With one shared boundary per pair of neighbours every value lands in exactly one range.
      *
      * <p>TODO: same identifier-quoting caveat as {@link #qualifiedTableName} - the column name is
      * emitted as-is rather than through a dialect-specific quoting helper.
@@ -451,28 +562,69 @@ public class TableSplitPlanner {
      * @return a standalone boolean SQL predicate, safe to AND onto an existing condition
      */
     public String buildRangeCondition(Column splitColumn, SplitRange range) {
-        return splitColumn.getName()
-                + " BETWEEN "
-                + toSqlLiteral(range.getLowerBound())
-                + " AND "
-                + toSqlLiteral(range.getUpperBound());
+        return rangePredicate(splitColumn.getName(), range, TableSplitPlanner::toSqlLiteral);
     }
 
-    private String toSqlLiteral(Object bound) {
+    /**
+     * The one place the range predicate is spelled out, shared by the export condition (bounds as
+     * SQL literals) and the skew check (bounds as {@code ?} placeholders).
+     */
+    private static String rangePredicate(
+            String columnName, SplitRange range, Function<Object, String> renderBound) {
+        Object lower = range.getLowerBound();
+        Object upper = range.getUpperBound();
+        if (lower == null && upper == null) {
+            return "1 = 1";
+        }
+        StringBuilder predicate = new StringBuilder();
+        if (lower != null) {
+            predicate.append(columnName).append(" >= ").append(renderBound.apply(lower));
+        }
+        if (lower != null && upper != null) {
+            predicate.append(" AND ");
+        }
+        if (upper != null) {
+            predicate.append(columnName).append(" < ").append(renderBound.apply(upper));
+        }
+        return predicate.toString();
+    }
+
+    private static String toSqlLiteral(Object bound) {
+        if (bound instanceof BigDecimal) {
+            // toString() may switch to exponent form (1E+3), which not every database accepts.
+            return ((BigDecimal) bound).toPlainString();
+        }
         if (bound instanceof Number) {
             return bound.toString();
         }
         return "'" + String.valueOf(bound).replace("'", "''") + "'";
     }
 
-    /** A single [lowerBound, upperBound] value range, inclusive on both ends. */
+    /**
+     * One value range of the split column: {@code lowerBound <= value < upperBound}. The lower
+     * bound is inclusive and the upper bound exclusive, so neighbouring ranges share a boundary and
+     * never overlap or leave a gap. A {@code null} bound means unbounded on that side: the first
+     * range has no lower bound and the last has no upper bound, which also catches values outside
+     * the MIN/MAX that were read at planning time (e.g. rows inserted since).
+     */
     public static final class SplitRange {
         private final Object lowerBound;
         private final Object upperBound;
 
+        /**
+         * @param lowerBound inclusive lower bound, or {@code null} for unbounded
+         * @param upperBound exclusive upper bound, or {@code null} for unbounded
+         */
         public SplitRange(Object lowerBound, Object upperBound) {
             this.lowerBound = lowerBound;
             this.upperBound = upperBound;
+        }
+
+        /**
+         * @return a range with no bounds at all, i.e. the whole table as one range
+         */
+        public static SplitRange unbounded() {
+            return new SplitRange(null, null);
         }
 
         public Object getLowerBound() {
@@ -485,7 +637,9 @@ public class TableSplitPlanner {
 
         @Override
         public String toString() {
-            return "[" + lowerBound + ", " + upperBound + "]";
+            return (lowerBound == null ? "(-inf" : "[" + lowerBound)
+                    + ", "
+                    + (upperBound == null ? "+inf)" : upperBound + ")");
         }
     }
 
