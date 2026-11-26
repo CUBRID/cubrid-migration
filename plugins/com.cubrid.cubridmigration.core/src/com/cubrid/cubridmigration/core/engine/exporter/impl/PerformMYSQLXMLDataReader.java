@@ -43,7 +43,9 @@ import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * get column value from MYSQL XML file
@@ -69,11 +71,12 @@ public class PerformMYSQLXMLDataReader extends DefaultHandler {
     private MigrationStatusManager statusManager;
 
     private SourceEntryTableConfig sourceTable;
+    private String sourceSchemaName;
     private List<String[]> recordMap;
     private List<List<String[]>> recordMapCache;
     private String columName;
     private StringBuilder dataStr;
-    private final List<String> finishedTables = new ArrayList<String>();
+    private final Set<SourceEntryTableConfig> finishedTables = new HashSet<>();
     private boolean parsingCompleted = false;
 
     public PerformMYSQLXMLDataReader() {}
@@ -102,9 +105,7 @@ public class PerformMYSQLXMLDataReader extends DefaultHandler {
 
     /** Create a new parsing task. */
     private void createNewTask() {
-        executor.execute(
-                new XMLDataParsingTask(
-                        config, oneNewRecord, sourceTable.getName(), recordMapCache));
+        executor.execute(new XMLDataParsingTask(config, oneNewRecord, sourceTable, recordMapCache));
     }
 
     /**
@@ -123,10 +124,8 @@ public class PerformMYSQLXMLDataReader extends DefaultHandler {
             if (CollectionUtils.isNotEmpty(recordMapCache)) {
                 createNewTask();
             }
-            oneNewRecord.endExportTable(sourceTable.getName());
-            if (sourceTable != null) {
-                finishedTables.add(sourceTable.getName());
-            }
+            oneNewRecord.endExportTable(sourceTable);
+            finishedTables.add(sourceTable);
             recordMapCache = null;
             sourceTable = null;
             if (finishedTables.size() == exportingDataTableCount) {
@@ -176,19 +175,21 @@ public class PerformMYSQLXMLDataReader extends DefaultHandler {
     public void startElement(String uri, String localName, String qName, Attributes attributes)
             throws SAXException {
         String attrName = attributes.getValue(ATTR_NAME);
-        if (TAG_TABLE_DATA.equals(qName)) {
-            SourceEntryTableConfig st = config.getExpEntryTableCfg(null, attrName);
+        if ("database".equals(qName)) {
+            sourceSchemaName = attrName;
+        } else if (TAG_TABLE_DATA.equals(qName)) {
+            SourceEntryTableConfig st = config.getExpEntryTableCfg(sourceSchemaName, attrName);
             if (null == st || !st.isMigrateData()) {
                 return;
             }
             sourceTable = st;
             recordMapCache = new ArrayList<List<String[]>>();
-            oneNewRecord.startExportTable(st.getName());
+            oneNewRecord.startExportTable(st);
         } else if (TAG_ROW.equals(qName) && null != sourceTable) {
             recordMap = new ArrayList<String[]>();
         } else if (TAG_FIELD.equals(qName) && null != sourceTable) {
             String cn = attrName;
-            if (!config.isExportColumn(null, sourceTable.getName(), cn)) {
+            if (sourceTable.getColumnConfig(cn) == null) {
                 columName = null;
                 return;
             }

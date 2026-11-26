@@ -1425,8 +1425,14 @@ public class MigrationConfiguration {
                     setc.setMigrateData(isReset);
                     setc.setReplace(isReset);
                     setc.setEnableExpOpt(srcTable.getPk() != null);
-                } else if (sourceDBSchema.getTargetSchemaName() != null) {
-                    if (!sourceDBSchema.getTargetSchemaName().equals(setc.getTargetOwner())) {
+                } else {
+                    if (setc.getOwner() == null && isMultiDatabaseXMLDump()) {
+                        setc.setOwner(sourceDBSchema.getName());
+                    }
+                    if (sourceDBSchema.getTargetSchemaName() != null
+                            && !sourceDBSchema
+                                    .getTargetSchemaName()
+                                    .equals(setc.getTargetOwner())) {
                         setc.setTargetOwner(sourceDBSchema.getTargetSchemaName());
                     }
                 }
@@ -1910,7 +1916,7 @@ public class MigrationConfiguration {
             return;
         }
         SourceTableConfig setc = scc.getParent();
-        Table tt = getTargetTableSchema(setc.getTarget());
+        Table tt = getTargetTableSchema(setc.getTargetOwner(), setc.getTarget());
         if (tt == null) {
             throw new IllegalArgumentException("Cant't find target table:" + setc.getTarget());
         }
@@ -3072,12 +3078,11 @@ public class MigrationConfiguration {
                 if (schema == null) {
                     return setc;
                 }
-                if (schema.equalsIgnoreCase((setc.getOwner()))) {
+                if (schema.equalsIgnoreCase(setc.getOwner())) {
                     return setc;
                 }
-                if (setc.getOwner() == null) {
+                if (result == null && setc.getOwner() == null) {
                     result = setc;
-                    break;
                 }
             }
         }
@@ -3931,6 +3936,13 @@ public class MigrationConfiguration {
         return result == null ? "UTF-8" : result;
     }
 
+    /** Resolve the target column within the target schema selected for its table. */
+    public Column getTargetColumnSchema(SourceColumnConfig column) {
+        SourceTableConfig parent = column.getParent();
+        Table table = getTargetTableSchema(parent.getTargetOwner(), parent.getTarget());
+        return table == null ? null : table.getColumnByName(column.getTarget());
+    }
+
     /**
      * Get the export column by source table name and column name
      *
@@ -4392,7 +4404,7 @@ public class MigrationConfiguration {
         }
 
         for (Table tt : this.targetTables) {
-            if (tt.getName().equalsIgnoreCase(name) && tt.getOwner().equalsIgnoreCase(owner)) {
+            if (tt.getName().equalsIgnoreCase(name) && owner.equalsIgnoreCase(tt.getOwner())) {
                 return tt;
             }
         }
@@ -4977,12 +4989,16 @@ public class MigrationConfiguration {
     }
 
     /**
-     * If source is CUBRID or MySQL, the owner will be set to NULL.
+     * Clears owners for source types that normally expose a single schema. Multi-database MySQL XML
+     * dumps keep owners to preserve each database boundary.
      *
      * <p>It is called before changing catalog of the configuration.
      */
     public void resetSchemaInfo() {
         if (srcCatalog == null || srcCatalog.getDatabaseType().isSupportMultiSchema()) {
+            return;
+        }
+        if (isMultiDatabaseXMLDump()) {
             return;
         }
         // Set schema to null and remove duplicated objects
@@ -4995,6 +5011,10 @@ public class MigrationConfiguration {
         for (SourceSequenceConfig ssc : expSerials) {
             ssc.setOwner(null);
         }
+    }
+
+    private boolean isMultiDatabaseXMLDump() {
+        return sourceIsXMLDump() && srcCatalog.getSchemas().size() > 1;
     }
 
     /**

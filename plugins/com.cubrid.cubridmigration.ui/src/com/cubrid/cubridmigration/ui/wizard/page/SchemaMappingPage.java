@@ -330,7 +330,9 @@ public class SchemaMappingPage extends MigrationWizardPage {
         srcTable.setSrcSchema(schema.name());
         srcTable.setNote(schema.grantorSchema());
 
-        if (!schema.grantorSchema()) {
+        boolean preserveSourceOrder =
+                config.sourceIsXMLDump() && schemaCatalog.getSchemas().size() > 1;
+        if (!schema.grantorSchema() && !preserveSourceOrder) {
             srcTableList.add(0, srcTable);
         } else {
             srcTableList.add(srcTable);
