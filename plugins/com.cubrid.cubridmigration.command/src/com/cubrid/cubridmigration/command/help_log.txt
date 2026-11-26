@@ -4,6 +4,8 @@ Usage in Linux: migration.sh log [options] [migration history file(*.mh)]
 
 Available options:
     -l,    Show latest log automatically.
+    -e, -error,
+           Show the error log instead of the log.
     -ps,   Lines of text per page (integer).
 
 Please visit http://www.cubrid.org for more information.

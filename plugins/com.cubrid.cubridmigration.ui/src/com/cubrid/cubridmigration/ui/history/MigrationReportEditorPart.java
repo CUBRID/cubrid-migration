@@ -40,6 +40,8 @@ import com.cubrid.cubridmigration.ui.MigrationUIPlugin;
 import com.cubrid.cubridmigration.ui.common.TextAppender;
 import com.cubrid.cubridmigration.ui.history.controller.MigrationReportUIController;
 import com.cubrid.cubridmigration.ui.history.dialog.ShowTextDialog;
+import com.cubrid.cubridmigration.ui.history.tableviewer.ErrorLogEntry;
+import com.cubrid.cubridmigration.ui.history.tableviewer.ErrorLogTableLabelProvider;
 import com.cubrid.cubridmigration.ui.history.tableviewer.MigrationObjectNameChangeTableLabelProvider;
 import com.cubrid.cubridmigration.ui.history.tableviewer.MigrationOverviewTableLabelProvider;
 import com.cubrid.cubridmigration.ui.history.tableviewer.ObjectMigrationResultTableLabelProvider;
@@ -51,6 +53,7 @@ import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.DoubleClickEvent;
 import org.eclipse.jface.viewers.IDoubleClickListener;
+import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
@@ -93,6 +96,7 @@ public class MigrationReportEditorPart extends EditorPart {
     private TableViewer tvObjDetails;
     private TableViewer tvTableRecords;
     private TableViewer tvObjNames;
+    private TableViewer tvErrorLog;
 
     private Text txtNonsupport;
     private Text txtLog;
@@ -120,6 +124,43 @@ public class MigrationReportEditorPart extends EditorPart {
                     txtLog.append(text);
                 }
             };
+
+    /**
+     * Create the error log page: one row per failure (time, one-line summary). Double-clicking a
+     * row opens the complete entry, including the stack trace, in a dialog.
+     *
+     * @param tfReport parent
+     */
+    private void createErrorLogPage(TabFolder tfReport) {
+        TabItem tiError = new TabItem(tfReport, SWT.NONE);
+        tiError.setText(Messages.lblErrorLog);
+
+        TableViewerBuilder tvBuilder = new TableViewerBuilder();
+        tvBuilder.setColumnNames(MigrationReportUIController.TABLE_HEADER_ERROR_LOG);
+        tvBuilder.setColumnWidths(new int[] {170, 700});
+        tvBuilder.setColumnStyles(new int[] {SWT.LEFT, SWT.LEFT});
+        tvBuilder.setContentProvider(new ArrayContentProvider());
+        tvBuilder.setLabelProvider(new ErrorLogTableLabelProvider());
+        tvErrorLog =
+                tvBuilder.buildTableViewer(
+                        tfReport, SWT.BORDER | SWT.FULL_SELECTION | SWT.H_SCROLL | SWT.V_SCROLL);
+        tvErrorLog.addDoubleClickListener(
+                new IDoubleClickListener() {
+
+                    public void doubleClick(DoubleClickEvent event) {
+                        Object selected =
+                                ((IStructuredSelection) event.getSelection()).getFirstElement();
+                        if (!(selected instanceof ErrorLogEntry)) {
+                            return;
+                        }
+                        new ShowTextDialog(
+                                        MigrationReportEditorPart.this.getSite().getShell(),
+                                        ((ErrorLogEntry) selected).getDetail())
+                                .open();
+                    }
+                });
+        tiError.setControl(tvErrorLog.getTable());
+    }
 
     /** Create configuration summary page */
     private void createConfigSummaryPage() {
@@ -377,6 +418,7 @@ public class MigrationReportEditorPart extends EditorPart {
         createChangeObjectNamePage(tfReport);
         createNonsupportPage(tfReport);
         createLogPage(tfReport);
+        createErrorLogPage(tfReport);
         createConfigSummaryPage();
 
         setContent2Tables();
@@ -535,6 +577,7 @@ public class MigrationReportEditorPart extends EditorPart {
         tvObjDetails.setInput(report.getDbObjectsResult());
         tvObjNames.setInput(report.getObjNameResult());
         tvTableRecords.setInput(report.getRecMigResults());
+        tvErrorLog.setInput(controller.loadErrorLogEntries(reporter));
         txtConfigSummary.setText(report.getConfigSummary());
         controller.loadNonSupportedObjectText(reporter, noSupportedAppender);
         controller.loadLogText(reporter, logAppender);
