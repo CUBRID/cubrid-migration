@@ -360,11 +360,12 @@ public abstract class OfflineImporter extends Importer {
             int recordNo = 0;
             try {
                 List<String> lobFiles = new ArrayList<String>();
+                Map<String, ColumnMapping> columnMappings = resolveColumnMappings(stc, tt);
                 for (Record re : records) {
                     if (re == null) {
                         continue;
                     }
-                    List<String> res = getRecordString(stc, tt, re, lobFiles);
+                    List<String> res = getRecordString(stc, tt, re, lobFiles, columnMappings);
                     if (res == null) {
                         continue;
                     }
