@@ -12,7 +12,7 @@
  *   this list of conditions and the following disclaimer in the documentation
  *   and/or other materials provided with the distribution.
  *
- * - Neither the name of the <ORGANIZATION> nor the names of its contributors
+ * - Neither the name of the copyright holder nor the names of its contributors
  *   may be used to endorse or promote products derived from this software without
  *   specific prior written permission.
  *
@@ -80,6 +80,20 @@ public abstract class MigrationReportFileUtils {
         return CUBRIDIOUtils.extractFromZip(
                 PathUtils.getReportDir() + mhFile,
                 IMigrationReporter.LOG_FILE_EX,
+                getReportTempDir(mhFile));
+    }
+
+    /**
+     * extract *.err file from *.mh file
+     *
+     * @param mhFile *.mh
+     * @return *.err, or null if the history file has no error file (reports of older versions)
+     * @throws IOException ex
+     */
+    public static String extractError(String mhFile) throws IOException {
+        return CUBRIDIOUtils.extractFromZip(
+                PathUtils.getReportDir() + mhFile,
+                IMigrationReporter.ERROR_FILE_EX,
                 getReportTempDir(mhFile));
     }
 

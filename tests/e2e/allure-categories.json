@@ -1,0 +1,65 @@
+[
+  {
+    "name": "Data loss",
+    "matchedStatuses": [
+      "failed"
+    ],
+    "messageRegex": "(?s)Migration Report shows export/import count mismatch:.*"
+  },
+  {
+    "name": "Migration did not finish",
+    "matchedStatuses": [
+      "failed"
+    ],
+    "messageRegex": "(?s)(migration timed out|migration failed \\(exit=|stdout missing ').*"
+  },
+  {
+    "name": "Fatal log on a successful run",
+    "matchedStatuses": [
+      "failed"
+    ],
+    "messageRegex": "(?s)stderr contained fatal pattern:.*"
+  },
+  {
+    "name": "Output missing",
+    "matchedStatuses": [
+      "failed"
+    ],
+    "messageRegex": "(?s)(CMT did not produce a dump output directory:|Cannot capture dump snapshot: CMT output not found at|Expected dump files missing from CMT output:|Migration Report summary block not found in CMT stdout).*"
+  },
+  {
+    "name": "Snapshot drift",
+    "matchedStatuses": [
+      "failed"
+    ],
+    "messageRegex": "(?s)Snapshot mismatch:.*"
+  },
+  {
+    "name": "Snapshot not recorded",
+    "matchedStatuses": [
+      "failed"
+    ],
+    "messageRegex": "(?s)(Snapshot missing:|Dump snapshot missing:|Failed to read snapshot:).*"
+  },
+  {
+    "name": "Database not ready",
+    "matchedStatuses": [
+      "broken"
+    ],
+    "traceRegex": "(?s).*(DatabaseInitializationException|SqlRunnerException).*"
+  },
+  {
+    "name": "Not reported by CI",
+    "matchedStatuses": [
+      "unknown"
+    ],
+    "messageRegex": "(?s)(its CI job |the run does not account).*"
+  },
+  {
+    "name": "Blocked before it ran",
+    "matchedStatuses": [
+      "broken"
+    ],
+    "messageRegex": "(?s)something before it failed.*"
+  }
+]

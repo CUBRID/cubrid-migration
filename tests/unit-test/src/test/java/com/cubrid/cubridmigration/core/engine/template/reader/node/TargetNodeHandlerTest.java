@@ -11,7 +11,7 @@
  *   this list of conditions and the following disclaimer in the documentation
  *   and/or other materials provided with the distribution.
  *
- * - Neither the name of the <ORGANIZATION> nor the names of its contributors
+ * - Neither the name of the copyright holder nor the names of its contributors
  *   may be used to endorse or promote products derived from this software without
  *   specific prior written permission.
  *
@@ -43,7 +43,8 @@ import org.xml.sax.helpers.AttributesImpl;
 @DisplayName("TargetNodeHandler")
 class TargetNodeHandlerTest {
 
-    @ParameterizedTest(name = "type=\"dir\" keeps destType {0}")
+    @ParameterizedTest(name = "[{index}] type=\"dir\" keeps destType {0}")
+    @DisplayName("file target does not overwrite the format set by file_repository")
     @ValueSource(
             ints = {
                 MigrationConfiguration.DEST_CSV,
@@ -51,7 +52,6 @@ class TargetNodeHandlerTest {
                 MigrationConfiguration.DEST_XLS,
                 MigrationConfiguration.DEST_DB_UNLOAD
             })
-    @DisplayName("file target does not overwrite the format set by file_repository")
     void dirTarget_keepsFileRepositoryDestType(int destType) {
         MigrationConfiguration config = new MigrationConfiguration();
         config.setDestType(destType);

@@ -11,7 +11,7 @@
  *   this list of conditions and the following disclaimer in the documentation
  *   and/or other materials provided with the distribution.
  *
- * - Neither the name of the <ORGANIZATION> nor the names of its contributors
+ * - Neither the name of the copyright holder nor the names of its contributors
  *   may be used to endorse or promote products derived from this software without
  *   specific prior written permission.
  *
@@ -44,7 +44,7 @@ class SourceEntryTableConfigTest {
 
         @Test
         @DisplayName("partition follows create table when enabled")
-        void setCreateNewTable_enablesPartition() {
+        void turningItOn_enablesThePartition() {
             SourceEntryTableConfig config = new SourceEntryTableConfig();
             config.setCreatePartition(false);
             config.setCreateNewTable(false);
@@ -57,7 +57,7 @@ class SourceEntryTableConfigTest {
 
         @Test
         @DisplayName("partition is cleared when create table is disabled")
-        void setCreateNewTable_disablesPartition() {
+        void turningItOff_disablesThePartition() {
             SourceEntryTableConfig config = new SourceEntryTableConfig();
             config.setCreatePartition(true);
             config.setCreateNewTable(true);
@@ -66,6 +66,105 @@ class SourceEntryTableConfigTest {
 
             assertThat(config.isCreateNewTable()).isFalse();
             assertThat(config.isCreatePartition()).isFalse();
+        }
+
+        @Test
+        @DisplayName("turning it on selects every foreign key and index, if none was selected yet")
+        void nothingSelectedYet_selectsEveryForeignKeyAndIndex() {
+            SourceEntryTableConfig config = configWithNothingSelected();
+
+            config.setCreateNewTable(true);
+
+            assertThat(config.getColumnConfig("f1").isCreate()).isTrue();
+            assertThat(config.getFKConfig("fk1").isCreate()).isTrue();
+            assertThat(config.getFKConfig("fk1").isReplace()).isTrue();
+            assertThat(config.getIndexConfig("ix1").isCreate()).isTrue();
+        }
+
+        @Test
+        @DisplayName("a foreign key already selected means the rest are left as they are")
+        void somethingAlreadySelected_leavesTheRestAlone() {
+            SourceEntryTableConfig config = new SourceEntryTableConfig();
+            config.setCreateNewTable(false);
+            config.addFKConfig("fk1", "fk1", true);
+            config.addFKConfig("fk2", "fk2", false);
+
+            config.setCreateNewTable(true);
+
+            assertThat(config.getFKConfig("fk1").isCreate()).isTrue();
+            assertThat(config.getFKConfig("fk2").isCreate()).isFalse();
+        }
+
+        @Test
+        @DisplayName("turning it off again keeps the selection and only drops the partition")
+        void turningItOff_keepsTheSelection() {
+            SourceEntryTableConfig config = configWithNothingSelected();
+            config.setCreateNewTable(true);
+
+            config.setCreateNewTable(false);
+
+            assertThat(config.getColumnConfig("f1").isCreate()).isTrue();
+            assertThat(config.getFKConfig("fk1").isCreate()).isTrue();
+            assertThat(config.isCreatePartition()).isFalse();
+        }
+
+        /**
+         * createNewTable and migrateData both start out on, so a config has to be switched off
+         * before switching it on does anything at all.
+         */
+        private SourceEntryTableConfig configWithNothingSelected() {
+            SourceEntryTableConfig config = new SourceEntryTableConfig();
+            config.setCreateNewTable(false);
+            config.setMigrateData(false);
+            config.addColumnConfig("f1", "f1", false);
+            config.addFKConfig("fk1", "fk1", false);
+            config.addIndexConfig("ix1", "ix1", false);
+            return config;
+        }
+    }
+
+    @Nested
+    @DisplayName("setMigrateData()")
+    class SetMigrateData {
+
+        @Test
+        @DisplayName("the columns are selected but the keys and indexes are not")
+        void nothingSelectedYet_selectsTheColumnsOnly() {
+            SourceEntryTableConfig config = configWithNothingSelected();
+
+            config.setMigrateData(true);
+
+            assertThat(config.getColumnConfig("f1").isCreate()).isTrue();
+            assertThat(config.getFKConfig("fk1").isCreate()).isFalse();
+            assertThat(config.getIndexConfig("ix1").isCreate()).isFalse();
+        }
+
+        /** Same shape as the sibling group: nothing is selected until the flag is switched off. */
+        private SourceEntryTableConfig configWithNothingSelected() {
+            SourceEntryTableConfig config = new SourceEntryTableConfig();
+            config.setCreateNewTable(false);
+            config.setMigrateData(false);
+            config.addColumnConfig("f1", "f1", false);
+            config.addFKConfig("fk1", "fk1", false);
+            config.addIndexConfig("ix1", "ix1", false);
+            return config;
+        }
+    }
+
+    @Nested
+    @DisplayName("getCondition()")
+    class GetCondition {
+
+        @Test
+        @DisplayName("no condition is an empty one, so it can be appended to a WHERE clause")
+        void noCondition_isEmpty() {
+            SourceEntryTableConfig config = new SourceEntryTableConfig();
+
+            assertThat(config.getCondition()).isEmpty();
+
+            config.setCondition(null);
+
+            assertThat(config.getCondition()).isEmpty();
         }
     }
 }

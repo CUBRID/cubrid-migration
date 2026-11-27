@@ -34,3 +34,9 @@ tests/unit-test/logs/
 ## E2E test
 
 tests/e2e/e2e-test.properties
+
+## TC catalog (generated per run, uploaded as a CI artifact)
+
+/catalog-unit.json
+/catalog-e2e.json
+/.github/scripts/__pycache__/

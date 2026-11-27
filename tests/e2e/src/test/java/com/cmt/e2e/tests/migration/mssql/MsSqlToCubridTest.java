@@ -11,7 +11,7 @@
  *   this list of conditions and the following disclaimer in the documentation
  *   and/or other materials provided with the distribution.
  *
- * - Neither the name of the <ORGANIZATION> nor the names of its contributors
+ * - Neither the name of the copyright holder nor the names of its contributors
  *   may be used to endorse or promote products derived from this software without
  *   specific prior written permission.
  *
@@ -47,7 +47,9 @@ import java.nio.file.Path;
  * objects live in the {@code dbo} schema, which CMT maps to CUBRID owner {@code DBO}. Sequences are
  * not part of this dataset, so that catalog check (present for Oracle) is intentionally absent.
  */
-@MigrationE2E(name = "mssql_to_cubrid")
+@MigrationE2E(
+        name = "mssql_to_cubrid",
+        options = {"add_schema=true"})
 @DisplayName("MSSQL e2e dataset → CUBRID online migration")
 class MsSqlToCubridTest extends AbstractMigrationE2E {
 

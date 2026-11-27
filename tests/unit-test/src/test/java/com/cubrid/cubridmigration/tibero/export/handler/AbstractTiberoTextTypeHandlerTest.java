@@ -11,7 +11,7 @@
  *   this list of conditions and the following disclaimer in the documentation
  *   and/or other materials provided with the distribution.
  *
- * - Neither the name of the <ORGANIZATION> nor the names of its contributors
+ * - Neither the name of the copyright holder nor the names of its contributors
  *   may be used to endorse or promote products derived from this software without
  *   specific prior written permission.
  *
@@ -47,7 +47,7 @@ import java.sql.SQLException;
 
 /** Tests internal logic of AbstractTiberoTextTypeHandler via TestTextTypeHandler. */
 @DisplayName("AbstractTiberoTextTypeHandler")
-public class AbstractTiberoTextTypeHandlerTest {
+class AbstractTiberoTextTypeHandlerTest {
 
     static class TestTextTypeHandler extends AbstractTiberoTextTypeHandler {
         @Override
@@ -91,7 +91,7 @@ public class AbstractTiberoTextTypeHandlerTest {
         }
 
         @Test
-        @DisplayName("UTF-16BE BOM (FE FF) → UTF-16BE, offset=2")
+        @DisplayName("UTF-16BE BOM (FE FF) -> UTF-16BE, offset=2")
         void utf16BeBom_returnsUtf16Be() throws SQLException {
             // "A" in UTF-16BE is 0x00 0x41
             byte[] bytes = new byte[] {(byte) 0xFE, (byte) 0xFF, 0x00, 0x41};
@@ -102,7 +102,7 @@ public class AbstractTiberoTextTypeHandlerTest {
         }
 
         @Test
-        @DisplayName("UTF-16LE BOM (FF FE) → UTF-16LE, offset=2")
+        @DisplayName("UTF-16LE BOM (FF FE) -> UTF-16LE, offset=2")
         void utf16LeBom_returnsUtf16Le() throws SQLException {
             // "A" in UTF-16LE is 0x41 0x00
             byte[] bytes = new byte[] {(byte) 0xFF, (byte) 0xFE, 0x41, 0x00};

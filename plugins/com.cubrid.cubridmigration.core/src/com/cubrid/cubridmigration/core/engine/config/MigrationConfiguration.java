@@ -12,7 +12,7 @@
  *   this list of conditions and the following disclaimer in the documentation
  *   and/or other materials provided with the distribution.
  *
- * - Neither the name of the <ORGANIZATION> nor the names of its contributors
+ * - Neither the name of the copyright holder nor the names of its contributors
  *   may be used to endorse or promote products derived from this software without
  *   specific prior written permission.
  *
@@ -88,7 +88,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -108,6 +110,7 @@ public class MigrationConfiguration {
     private static final Logger LOG = LogUtil.getLogger(MigrationConfiguration.class);
 
     public static final int XLS_MAX_COUNT = 65536;
+    public static final int XLSX_MAX_COUNT = 1048576;
     public static final char CSV_NO_CHAR = '\u0000';
 
     public static final int DEST_DB_UNLOAD = 0;
@@ -115,6 +118,7 @@ public class MigrationConfiguration {
     public static final int DEST_SQL = 2;
     public static final int DEST_XLS = 3;
     public static final int DEST_ONLINE = 4;
+    public static final int DEST_XLSX = 5;
 
     public static final int SOURCE_TYPE_CUBRID = DatabaseType.CUBRID.getID();
     public static final int SOURCE_TYPE_MYSQL = DatabaseType.MYSQL.getID();
@@ -150,8 +154,9 @@ public class MigrationConfiguration {
     // Previously, data files had the ".txt" extension attached, but deleted the ".txt" extension
     // when changing it to _object to match the unloaddb format
     private static final String[] DATA_FORMAT_EXT =
-            new String[] {"", ".csv", ".sql", ".xls", "", ""};
-    private static final String[] DATA_FORMAT_LABEL = new String[] {"LoadDB", "CSV", "SQL", "XLS"};
+            new String[] {"", ".csv", ".sql", ".xls", "", ".xlsx"};
+    private static final String[] DATA_FORMAT_LABEL =
+            new String[] {"LoadDB", "CSV", "SQL", "XLS", "", "XLSX"};
 
     /**
      * Retrieves all fomrat exts
@@ -2300,6 +2305,53 @@ public class MigrationConfiguration {
                     tt.removeIndex(idx.getName());
                 }
             }
+
+            List<Index> selectedTargetIndexes = getSelectedTargetIndexes(tt);
+            for (Index idx : tt.getIndexes()) {
+                if (!selectedTargetIndexes.contains(idx)) {
+                    tt.removeIndex(idx.getName());
+                }
+            }
+
+            for (Column col : tt.getColumns()) {
+                boolean hasUnique = false;
+                if (tt.getPk() != null
+                        && tt.getPk().getPkColumns().size() == 1
+                        && StringUtils.equalsIgnoreCase(
+                                tt.getPk().getPkColumns().get(0), col.getName())) {
+                    hasUnique = true;
+                }
+                if (!hasUnique) {
+                    for (Index idx : tt.getIndexes()) {
+                        if (idx.isUnique()
+                                && idx.getColumnNames().size() == 1
+                                && StringUtils.equalsIgnoreCase(
+                                        idx.getColumnNames().get(0), col.getName())) {
+                            hasUnique = true;
+                            break;
+                        }
+                    }
+                }
+                if (hasUnique) {
+                    col.setUnique(true);
+                } else {
+                    boolean hasIndex = false;
+                    for (Index idx : tt.getIndexes()) {
+                        for (String idxCol : idx.getColumnNames()) {
+                            if (StringUtils.equalsIgnoreCase(idxCol, col.getName())) {
+                                hasIndex = true;
+                                break;
+                            }
+                        }
+                        if (hasIndex) {
+                            break;
+                        }
+                    }
+                    if (hasIndex) {
+                        col.setUnique(false);
+                    }
+                }
+            }
         }
     }
 
@@ -2581,10 +2633,11 @@ public class MigrationConfiguration {
      * @return the commitCount default 1000
      */
     public int getCommitCount() {
-        if (targetIsXLS()) {
+        if (targetIsXLS() || targetIsXLSX()) {
+            int limit = targetIsXLS() ? XLS_MAX_COUNT : XLSX_MAX_COUNT;
             int maxCount = getMaxCountPerFile();
-            if (maxCount <= 0 || maxCount > XLS_MAX_COUNT) {
-                maxCount = XLS_MAX_COUNT;
+            if (maxCount <= 0 || maxCount > limit) {
+                maxCount = limit;
             }
             return Math.min(commitCount, maxCount);
         }
@@ -2734,6 +2787,303 @@ public class MigrationConfiguration {
      */
     public List<SourceEntryTableConfig> getExpEntryTableCfg() {
         return new ArrayList<SourceEntryTableConfig>(expTables);
+    }
+
+    /** Keep at most one index selected by default from each same-column index group. */
+    public void retainOneIndexPerDuplicateColumnList() {
+        for (SourceEntryTableConfig tableConfig : expTables) {
+            List<SourceIndexConfig> indexes = tableConfig.getIndexConfigList();
+            if (indexes.size() < 2) {
+                continue;
+            }
+            Map<String, List<SourceIndexConfig>> groups =
+                    new LinkedHashMap<String, List<SourceIndexConfig>>();
+            for (SourceIndexConfig index : indexes) {
+                List<String> columns = getSourceIndexColumns(tableConfig, index.getName());
+                String columnKey =
+                        columns.isEmpty()
+                                ? "index:" + index.getName().toLowerCase(Locale.ROOT)
+                                : normalizeIndexColumnList(columns);
+                groups.computeIfAbsent(columnKey, k -> new ArrayList<SourceIndexConfig>())
+                        .add(index);
+            }
+            for (List<SourceIndexConfig> group : groups.values()) {
+                if (group.size() < 2) {
+                    continue;
+                }
+                SourceIndexConfig selected = null;
+                for (SourceIndexConfig idx : group) {
+                    if (idx.isCreate()) {
+                        if (selected == null) {
+                            selected = idx;
+                        } else {
+                            idx.setCreate(false);
+                            idx.setReplace(false);
+                        }
+                    }
+                }
+            }
+        }
+        syncColumnUniqueFlags();
+    }
+
+    /**
+     * Synchronizes target column unique flags with the currently selected indexes and primary keys.
+     * When single-column unique indexes or primary keys covering a column are deselected and no
+     * such constraint remains active, the column must not retain the unique flag.
+     */
+    public void syncColumnUniqueFlags() {
+        for (SourceEntryTableConfig setc : expTables) {
+            Table targetTable = getTargetTableSchema(setc.getTargetOwner(), setc.getTarget());
+            if (targetTable == null) {
+                targetTable = getTargetTableSchema(setc.getTarget());
+            }
+            if (targetTable == null) {
+                continue;
+            }
+            for (Column col : targetTable.getColumns()) {
+                boolean hasPkConfig =
+                        targetTable.getPk() != null
+                                && targetTable.getPk().getPkColumns().size() == 1
+                                && StringUtils.equalsIgnoreCase(
+                                        targetTable.getPk().getPkColumns().get(0), col.getName());
+                boolean hasUnique = setc.isCreatePK() && hasPkConfig;
+                boolean hasUniqueIndexConfig = false;
+                if (!hasUnique) {
+                    for (SourceIndexConfig sic : setc.getIndexConfigList()) {
+                        if (!sic.isUnique()) {
+                            continue;
+                        }
+                        List<String> cols = getSourceIndexColumns(setc, sic.getName());
+                        if (cols.size() == 1
+                                && StringUtils.equalsIgnoreCase(cols.get(0), col.getName())) {
+                            hasUniqueIndexConfig = true;
+                            if (sic.isCreate()) {
+                                hasUnique = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+                if (hasUnique) {
+                    col.setUnique(true);
+                } else if (hasUniqueIndexConfig || hasPkConfig) {
+                    col.setUnique(false);
+                }
+            }
+        }
+    }
+
+    /** Returns the source column names for an index, in index order. */
+    public List<String> getSourceIndexColumns(
+            SourceEntryTableConfig tableConfig, String indexName) {
+        if (tableConfig == null || StringUtils.isBlank(indexName)) {
+            return new ArrayList<String>();
+        }
+        if (srcCatalog != null) {
+            Table sourceTable = getSrcTableSchema(tableConfig.getOwner(), tableConfig.getName());
+            if (sourceTable == null) {
+                for (Schema schema : srcCatalog.getSchemas()) {
+                    if (StringUtils.isNotBlank(tableConfig.getOwner())
+                            && srcCatalog.getDatabaseType().isSupportMultiSchema()
+                            && !StringUtils.equalsIgnoreCase(
+                                    tableConfig.getOwner(), schema.getName())) {
+                        continue;
+                    }
+                    for (Table candidate : schema.getTables()) {
+                        if (StringUtils.equalsIgnoreCase(
+                                candidate.getName(), tableConfig.getName())) {
+                            sourceTable = candidate;
+                            break;
+                        }
+                    }
+                    if (sourceTable != null) {
+                        break;
+                    }
+                }
+            }
+            if (sourceTable != null) {
+                for (Index sourceIndex : sourceTable.getIndexes()) {
+                    if (StringUtils.equalsIgnoreCase(sourceIndex.getName(), indexName)) {
+                        return sourceIndex.getColumnNames();
+                    }
+                }
+            }
+        }
+        // Fallback: check target table schema if source schema lookup did not find the columns
+        Table targetTable =
+                getTargetTableSchema(tableConfig.getTargetOwner(), tableConfig.getTarget());
+        if (targetTable == null) {
+            targetTable = getTargetTableSchema(tableConfig.getTarget());
+        }
+        if (targetTable == null && tableConfig.getTarget() != null) {
+            for (Table tt : this.targetTables) {
+                if (tableConfig.getTarget().equalsIgnoreCase(tt.getName())) {
+                    targetTable = tt;
+                    break;
+                }
+            }
+        }
+        if (targetTable != null) {
+            String targetIndexName = null;
+            SourceIndexConfig sic = tableConfig.getIndexConfig(indexName);
+            if (sic != null) {
+                targetIndexName = sic.getTarget();
+            }
+            Index targetIndex = null;
+            if (StringUtils.isNotBlank(targetIndexName)) {
+                targetIndex = targetTable.getIndexByName(targetIndexName);
+            }
+            if (targetIndex == null) {
+                targetIndex = targetTable.getIndexByName(indexName);
+            }
+            if (targetIndex == null) {
+                for (Index ti : targetTable.getIndexes()) {
+                    if (StringUtils.equalsIgnoreCase(ti.getName(), indexName)
+                            || (targetIndexName != null
+                                    && StringUtils.equalsIgnoreCase(
+                                            ti.getName(), targetIndexName))) {
+                        targetIndex = ti;
+                        break;
+                    }
+                }
+            }
+            if (targetIndex != null) {
+                return targetIndex.getColumnNames();
+            }
+        }
+        return new ArrayList<String>();
+    }
+
+    /**
+     * Checks whether any table configured for export has duplicate indexes covering the same column
+     * list.
+     *
+     * @return true if duplicate indexes exist on any export table
+     */
+    public boolean hasDuplicateIndexes() {
+        for (SourceEntryTableConfig tableConfig : getExpEntryTableCfg()) {
+            if (!tableConfig.isCreateNewTable()) {
+                continue;
+            }
+            List<SourceIndexConfig> indexes = tableConfig.getIndexConfigList();
+            if (indexes.size() < 2) {
+                continue;
+            }
+            Set<String> columnKeys = new HashSet<String>();
+            for (SourceIndexConfig index : indexes) {
+                List<String> columns = getSourceIndexColumns(tableConfig, index.getName());
+                String columnKey =
+                        columns.isEmpty()
+                                ? "index:" + index.getName().toLowerCase(Locale.ROOT)
+                                : normalizeIndexColumnList(columns);
+                if (!columnKeys.add(columnKey)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /** Creates a case-insensitive key while preserving the ordered index columns. */
+    public static String normalizeIndexColumnList(List<String> columns) {
+        StringBuilder normalized = new StringBuilder();
+        for (String column : columns) {
+            String normalizedColumn = column == null ? "" : column.toLowerCase(Locale.ROOT);
+            normalized.append(normalizedColumn.length()).append(':').append(normalizedColumn);
+        }
+        return normalized.toString();
+    }
+
+    /** Returns target indexes that remain selected in the source index mapping. */
+    public List<Index> getSelectedTargetIndexes(Table targetTable) {
+        List<Index> selected = new ArrayList<Index>();
+        List<SourceIndexConfig> sourceIndexes = new ArrayList<SourceIndexConfig>();
+        for (SourceEntryTableConfig tableConfig : getExpEntryTableCfg()) {
+            if (!StringUtils.equalsIgnoreCase(tableConfig.getTarget(), targetTable.getName())) {
+                continue;
+            }
+            if (StringUtils.isNotBlank(tableConfig.getTargetOwner())
+                    && StringUtils.isNotBlank(targetTable.getOwner())
+                    && !tableConfig.getTargetOwner().equalsIgnoreCase(targetTable.getOwner())) {
+                continue;
+            }
+            sourceIndexes.addAll(tableConfig.getIndexConfigList());
+        }
+        for (Index index : targetTable.getIndexes()) {
+            SourceIndexConfig sourceConfig = null;
+            for (SourceIndexConfig candidate : sourceIndexes) {
+                if (StringUtils.equalsIgnoreCase(candidate.getTarget(), index.getName())) {
+                    sourceConfig = candidate;
+                    break;
+                }
+            }
+            boolean isSelected =
+                    sourceConfig != null ? sourceConfig.isCreate() : sourceIndexes.isEmpty();
+            if (isSelected) {
+                selected.add(index);
+            }
+        }
+
+        // Keep a final guard at the target schema boundary. Name mappings can differ
+        // between the source and target schema, but CUBRID treats indexes on the same
+        // ordered column list as duplicates regardless of their names.
+        Map<String, List<Index>> indexesByColumns = new LinkedHashMap<String, List<Index>>();
+        for (Index index : targetTable.getIndexes()) {
+            String columnKey = normalizeIndexColumnList(index.getColumnNames());
+            List<Index> sameColumns = indexesByColumns.get(columnKey);
+            if (sameColumns == null) {
+                sameColumns = new ArrayList<Index>();
+                indexesByColumns.put(columnKey, sameColumns);
+            }
+            sameColumns.add(index);
+        }
+
+        Set<Index> retained = new HashSet<Index>();
+        for (List<Index> sameColumns : indexesByColumns.values()) {
+            if (sameColumns.size() == 1) {
+                Index index = sameColumns.get(0);
+                if (selected.contains(index)) {
+                    retained.add(index);
+                }
+                continue;
+            }
+
+            Index preferred = null;
+            for (Index index : sameColumns) {
+                for (SourceIndexConfig sourceConfig : sourceIndexes) {
+                    if (sourceConfig.isCreate()
+                            && StringUtils.equalsIgnoreCase(
+                                    sourceConfig.getTarget(), index.getName())) {
+                        preferred = index;
+                        break;
+                    }
+                }
+                if (preferred != null) {
+                    break;
+                }
+            }
+
+            if (preferred == null) {
+                for (Index index : sameColumns) {
+                    if (selected.contains(index)) {
+                        preferred = index;
+                        break;
+                    }
+                }
+            }
+            if (preferred != null) {
+                retained.add(preferred);
+            }
+        }
+
+        List<Index> result = new ArrayList<Index>();
+        for (Index index : targetTable.getIndexes()) {
+            if (retained.contains(index)) {
+                result.add(index);
+            }
+        }
+        return result;
     }
 
     /**
@@ -4887,6 +5237,8 @@ public class MigrationConfiguration {
             setDestType(MigrationConfiguration.DEST_DB_UNLOAD);
         } else if (destName.equalsIgnoreCase("xls")) {
             setDestType(MigrationConfiguration.DEST_XLS);
+        } else if (destName.equalsIgnoreCase("xlsx")) {
+            setDestType(MigrationConfiguration.DEST_XLSX);
         } else {
             throw new RuntimeException("Invalid target type in the db.conf of " + destName);
         }
@@ -5018,9 +5370,9 @@ public class MigrationConfiguration {
      * @param maxCountPerFile integer
      */
     public void setMaxCountPerFile(int maxCountPerFile) {
-        if (destType == DEST_XLS) {
-            this.maxCountPerFile =
-                    maxCountPerFile > XLS_MAX_COUNT ? XLS_MAX_COUNT : maxCountPerFile;
+        if (destType == DEST_XLS || destType == DEST_XLSX) {
+            int limit = destType == DEST_XLS ? XLS_MAX_COUNT : XLSX_MAX_COUNT;
+            this.maxCountPerFile = maxCountPerFile > limit ? limit : maxCountPerFile;
         } else {
             this.maxCountPerFile = maxCountPerFile;
         }
@@ -5529,6 +5881,7 @@ public class MigrationConfiguration {
         return destType == DEST_CSV
                 || destType == DEST_SQL
                 || destType == DEST_XLS
+                || destType == DEST_XLSX
                 || destType == DEST_DB_UNLOAD;
     }
 
@@ -5555,6 +5908,15 @@ public class MigrationConfiguration {
      */
     public boolean targetIsXLS() {
         return destType == DEST_XLS;
+    }
+
+    /**
+     * Is export source to a xlsx.
+     *
+     * @return true if export to a dictionary
+     */
+    public boolean targetIsXLSX() {
+        return destType == DEST_XLSX;
     }
 
     /**

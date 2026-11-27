@@ -12,7 +12,7 @@
  *   this list of conditions and the following disclaimer in the documentation
  *   and/or other materials provided with the distribution.
  *
- * - Neither the name of the <ORGANIZATION> nor the names of its contributors
+ * - Neither the name of the copyright holder nor the names of its contributors
  *   may be used to endorse or promote products derived from this software without
  *   specific prior written permission.
  *
@@ -44,6 +44,7 @@ public interface IMigrationReporter {
     static final String REPORT_FILE_EX = ".report";
     static final String LOG_FILE_EX = ".log";
     static final String TXT_FILE_EX = ".txt";
+    static final String ERROR_FILE_EX = ".err";
     static final String RENAME_FILE_EX = ".rename";
     static final String SCRIPT_FILE_EX = ".script";
     static final String UTF_8 = "utf-8";

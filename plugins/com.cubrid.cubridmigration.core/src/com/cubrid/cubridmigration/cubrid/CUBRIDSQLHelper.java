@@ -12,7 +12,7 @@
  *   this list of conditions and the following disclaimer in the documentation
  *   and/or other materials provided with the distribution.
  *
- * - Neither the name of the <ORGANIZATION> nor the names of its contributors
+ * - Neither the name of the copyright holder nor the names of its contributors
  *   may be used to endorse or promote products derived from this software without
  *   specific prior written permission.
  *
@@ -167,8 +167,14 @@ public class CUBRIDSQLHelper extends SQLHelper {
                 if (!idx.isUnique()) {
                     continue;
                 }
-                if (idx.getColumnNames().indexOf(column.getName()) >= 0) {
-                    flag = true;
+                for (String idxCol : idx.getColumnNames()) {
+                    if (StringUtils.equalsIgnoreCase(idxCol, column.getName())) {
+                        flag = true;
+                        break;
+                    }
+                }
+                if (flag) {
+                    break;
                 }
             }
             if (!flag) {

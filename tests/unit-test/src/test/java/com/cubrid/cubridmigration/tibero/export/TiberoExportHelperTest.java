@@ -11,7 +11,7 @@
  *   this list of conditions and the following disclaimer in the documentation
  *   and/or other materials provided with the distribution.
  *
- * - Neither the name of the <ORGANIZATION> nor the names of its contributors
+ * - Neither the name of the copyright holder nor the names of its contributors
  *   may be used to endorse or promote products derived from this software without
  *   specific prior written permission.
  *
@@ -40,7 +40,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
 @DisplayName("TiberoExportHelper")
-public class TiberoExportHelperTest {
+class TiberoExportHelperTest {
 
     private static final TiberoExportHelper HELPER = new TiberoExportHelper();
 
@@ -81,14 +81,14 @@ public class TiberoExportHelperTest {
             assertThat(result).contains("CMT_ROWNUM > 100");
         }
 
-        @ParameterizedTest(name = "[{index}] rows={0}, exported={1} → endRow={2}, start={3}")
+        @ParameterizedTest(name = "[{index}] rows={0}, exported={1} -> endRow={2}, start={3}")
+        @DisplayName("checks endRow for rows/exportedRecords")
         @CsvSource({
             "50,   0,   50,  0",
             "50,  50,  100, 50",
             "200,  0,  200,  0",
             "1,    0,    1,  0",
         })
-        @DisplayName("checks endRow for rows/exportedRecords")
         void rownumBounds_variousCombinations(
                 long rows, long exported, long expectedEnd, long expectedStart) {
             String result = HELPER.getPagedSelectSQL("SELECT 1 FROM DUAL", rows, exported, null);

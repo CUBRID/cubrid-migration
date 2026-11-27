@@ -12,7 +12,7 @@
  *   this list of conditions and the following disclaimer in the documentation
  *   and/or other materials provided with the distribution.
  *
- * - Neither the name of the <ORGANIZATION> nor the names of its contributors
+ * - Neither the name of the copyright holder nor the names of its contributors
  *   may be used to endorse or promote products derived from this software without
  *   specific prior written permission.
  *
@@ -71,6 +71,7 @@ import com.cubrid.cubridmigration.ui.common.navigator.node.ViewsNode;
 import com.cubrid.cubridmigration.ui.message.Messages;
 import com.cubrid.cubridmigration.ui.wizard.MigrationWizard;
 import com.cubrid.cubridmigration.ui.wizard.dialog.AdjustCharColumnDialog;
+import com.cubrid.cubridmigration.ui.wizard.dialog.DuplicateIndexSelectorDialog;
 import com.cubrid.cubridmigration.ui.wizard.dialog.TableIndexSelectorDialog;
 import com.cubrid.cubridmigration.ui.wizard.page.view.AbstractMappingView;
 import com.cubrid.cubridmigration.ui.wizard.page.view.ColumnMappingView;
@@ -670,6 +671,22 @@ public class ObjectMappingPage extends MigrationWizardPage implements IRefreshab
         if (!isGotoNextPage(event)) {
             return;
         }
+
+        if (!saveCurrentView()) {
+            event.doit = false;
+            return;
+        }
+
+        final MigrationConfiguration cfg = getMigrationWizard().getMigrationConfig();
+        if (cfg.hasDuplicateIndexes()) {
+            DuplicateIndexSelectorDialog dialog = new DuplicateIndexSelectorDialog(getShell(), cfg);
+            if (dialog.open() != Dialog.OK) {
+                event.doit = false;
+                return;
+            }
+            refreshCurrentView();
+        }
+
         event.doit = validateConfig();
     }
 

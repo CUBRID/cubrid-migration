@@ -1,0 +1,15 @@
+# Ignore bulk formatting and license header changes when running git blame.
+# Enable locally: git config blame.ignoreRevsFile .git-blame-ignore-revs
+# GitHub automatically uses this file for its blame view.
+
+# [TOOLS-4986] Correct the organization name placeholder in license headers - #420
+aa8b6190e172c3f3e84717ca43587dc0334e5290
+
+# [TOOLS-4785] Apply Google Java Format v1.32.0 to code - #337
+38243b8335e03d882631db53fd7fe1cdd735e397
+
+# [TOOLS-4582] Change source code license - #190
+6fef1296cba64b7ca88ac1e9a122fd3b1b679dd4
+
+# [TOOLS-4553] Convert CMT Source Code style to google AOSP format - #134
+b8af047fcd5fac7eb55c2b3c7d175291f5f01752

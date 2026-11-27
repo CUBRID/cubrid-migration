@@ -12,7 +12,7 @@
  *   this list of conditions and the following disclaimer in the documentation
  *   and/or other materials provided with the distribution.
  *
- * - Neither the name of the <ORGANIZATION> nor the names of its contributors
+ * - Neither the name of the copyright holder nor the names of its contributors
  *   may be used to endorse or promote products derived from this software without
  *   specific prior written permission.
  *
@@ -420,7 +420,7 @@ public final class MySQLSchemaFetcher extends AbstractJDBCSchemaFetcher {
 
         if (version.getDbMajorVersion() >= 5) {
             sqlStr =
-                    "SELECT COLUMN_NAME, CHARACTER_SET_NAME, COLUMN_COMMENT "
+                    "SELECT COLUMN_NAME, CHARACTER_SET_NAME, COLUMN_COMMENT, EXTRA "
                             + "FROM INFORMATION_SCHEMA.COLUMNS "
                             + "WHERE TABLE_SCHEMA=? AND TABLE_NAME=?";
 
@@ -434,12 +434,14 @@ public final class MySQLSchemaFetcher extends AbstractJDBCSchemaFetcher {
                     final String columnName = rs.getString(1);
                     final String charset = rs.getString(2);
                     final String comment = rs.getString(3);
+                    final String extra = rs.getString(4);
 
                     final Column column = table.getColumnByName(columnName);
 
                     if (column != null) {
                         if (charset != null) column.setCharset(charset);
                         if (comment != null) column.setComment(commentEditor(comment));
+                        column.setDefaultIsExpression(isNonLiteralDefault(extra));
                     }
                 }
             } finally {
@@ -461,6 +463,17 @@ public final class MySQLSchemaFetcher extends AbstractJDBCSchemaFetcher {
                 }
             }
         }
+    }
+
+    /**
+     * JDBC returns a string default and an expression default as the same text. Since 8.0.13 the
+     * server marks an expression default in EXTRA, which a string literal never carries.
+     *
+     * @param extra String EXTRA as INFORMATION_SCHEMA reports it
+     * @return true: the default is computed by the server, not a stored literal
+     */
+    protected boolean isNonLiteralDefault(String extra) {
+        return extra != null && extra.toUpperCase(Locale.ROOT).contains("DEFAULT_GENERATED");
     }
 
     /**

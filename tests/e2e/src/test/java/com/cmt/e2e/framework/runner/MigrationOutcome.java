@@ -11,7 +11,7 @@
  *   this list of conditions and the following disclaimer in the documentation
  *   and/or other materials provided with the distribution.
  *
- * - Neither the name of the <ORGANIZATION> nor the names of its contributors
+ * - Neither the name of the copyright holder nor the names of its contributors
  *   may be used to endorse or promote products derived from this software without
  *   specific prior written permission.
  *
@@ -37,6 +37,8 @@ import com.cmt.e2e.framework.verify.CatalogSnapshot;
 import com.cmt.e2e.framework.verify.DumpSnapshot;
 import com.cmt.e2e.framework.verify.RowCounts;
 import com.cmt.e2e.framework.verify.RowQueries;
+
+import io.qameta.allure.Allure;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -80,20 +82,28 @@ public final class MigrationOutcome {
         this.scenarioName = scenarioName;
     }
 
+    /**
+     * Fails with a one-line reason, carrying CMT's output as attachments.
+     *
+     * <p>Allure groups failures by the exact message, so the whole run inside one would make every
+     * failure unique.
+     */
+    private AssertionError failed(String reason) {
+        Allure.addAttachment("CMT stdout", "text/plain", result.stdout(), ".txt");
+        Allure.addAttachment("CMT stderr", "text/plain", result.stderr(), ".txt");
+        return new AssertionError(reason);
+    }
+
     /** Asserts: not timed out, exit 0, "MIGRATION RESULT: SUCCESS" in stdout. */
     public MigrationOutcome expectSuccess() {
         if (result.timedOut()) {
-            throw new AssertionError("migration timed out");
+            throw failed("migration timed out");
         }
         if (result.exitCode() != 0) {
-            throw new AssertionError(
-                    String.format(
-                            "migration failed (exit=%d)%nstdout:%n%s%nstderr:%n%s",
-                            result.exitCode(), result.stdout(), result.stderr()));
+            throw failed("migration failed (exit=" + result.exitCode() + ")");
         }
         if (!result.stdout().contains(SUCCESS_MARKER)) {
-            throw new AssertionError(
-                    "stdout missing '" + SUCCESS_MARKER + "':\n" + result.stdout());
+            throw failed("stdout missing '" + SUCCESS_MARKER + "'");
         }
         return this;
     }
@@ -105,8 +115,7 @@ public final class MigrationOutcome {
      */
     public MigrationOutcome expectImportMatchesExport() {
         if (!result.stdout().contains("Migration Report summary:")) {
-            throw new AssertionError(
-                    "Migration Report summary block not found in CMT stdout:\n" + result.stdout());
+            throw failed("Migration Report summary block not found in CMT stdout");
         }
         Matcher m = REPORT_LINE.matcher(result.stdout());
         List<String> mismatches = new ArrayList<>();
@@ -121,7 +130,7 @@ public final class MigrationOutcome {
             }
         }
         if (!mismatches.isEmpty()) {
-            throw new AssertionError(
+            throw failed(
                     "Migration Report shows export/import count mismatch:\n  - "
                             + String.join("\n  - ", mismatches));
         }
@@ -132,7 +141,7 @@ public final class MigrationOutcome {
     public MigrationOutcome expectNoFatalStderr() {
         Matcher m = FATAL_STDERR.matcher(result.stderr());
         if (m.find()) {
-            throw new AssertionError(
+            throw failed(
                     "stderr contained fatal pattern: " + extractLine(result.stderr(), m.start()));
         }
         return this;

@@ -12,7 +12,7 @@
  *   this list of conditions and the following disclaimer in the documentation
  *   and/or other materials provided with the distribution.
  *
- * - Neither the name of the <ORGANIZATION> nor the names of its contributors
+ * - Neither the name of the copyright holder nor the names of its contributors
  *   may be used to endorse or promote products derived from this software without
  *   specific prior written permission.
  *
@@ -52,6 +52,7 @@ import com.cubrid.cubridmigration.core.engine.event.MigrationFinishedEvent;
 import com.cubrid.cubridmigration.core.engine.event.MigrationNoSupportEvent;
 import com.cubrid.cubridmigration.core.engine.event.MigrationStartEvent;
 import com.cubrid.cubridmigration.core.engine.event.MigrationXLSNoSupportEvent;
+import com.cubrid.cubridmigration.core.engine.event.SingleRecordErrorEvent;
 import com.cubrid.cubridmigration.core.engine.event.StartExpTableEvent;
 import com.cubrid.cubridmigration.core.engine.template.writer.MigrationTemplateWriter;
 import com.cubrid.cubridmigration.cubrid.CUBRIDSQLHelper;
@@ -78,6 +79,9 @@ import java.util.Map;
 public abstract class DefaultMigrationReporter implements IMigrationReporter {
     protected static final Logger LOG = LogUtil.getLogger(DefaultMigrationReporter.class);
 
+    /** Upper bound of the cause chain written for an error without stack trace. */
+    private static final int MAX_CAUSE_DEPTH = 5;
+
     protected final String fileName; // Only file name , without directory
 
     protected final MigrationConfiguration config;
@@ -88,6 +92,9 @@ public abstract class DefaultMigrationReporter implements IMigrationReporter {
 
     protected PrintWriter pwLog;
     protected String logFileName;
+
+    protected PrintWriter pwError;
+    protected String errorFileName;
 
     protected PrintWriter pwNonsupport;
     protected String nonSupFileName;
@@ -128,6 +135,12 @@ public abstract class DefaultMigrationReporter implements IMigrationReporter {
             logFileName = logFile.getName();
             PathUtils.createFile(logFile);
             pwLog = new PrintWriter(new OutputStreamWriter(new FileOutputStream(logFile), UTF_8));
+            // Error file
+            File errorFile = new File(reportDir + "migration_error_" + timeTag + ERROR_FILE_EX);
+            errorFileName = errorFile.getName();
+            PathUtils.createFile(errorFile);
+            pwError =
+                    new PrintWriter(new OutputStreamWriter(new FileOutputStream(errorFile), UTF_8));
             // Report file
             reportFile = new File(reportDir + "migration_report_" + timeTag + REPORT_FILE_EX);
             PathUtils.createFile(reportFile);
@@ -178,6 +191,29 @@ public abstract class DefaultMigrationReporter implements IMigrationReporter {
                 }
             }
         }
+        // Deliberately outside the instanceof/else-if dispatch below: several business events
+        // (CreateObjectEvent, ImportRecordsEvent, ImportCSVEvent, ImportSQLsEvent, ...) implement
+        // IMigrationErrorEvent (directly or via IMigrateDataErrorEvent) only to carry an optional
+        // error, but each already has its own dedicated branch there. An else-if chain would let
+        // that branch win and the error would never reach the error file.
+        if (event instanceof IMigrationErrorEvent) {
+            Throwable error = ((IMigrationErrorEvent) event).getError();
+            if (error != null) {
+                writeErrorEvent(event, error, true);
+            }
+        } else if (event instanceof SingleRecordErrorEvent
+                && config.getReportLevel() == MigrationConfiguration.RPT_LEVEL_DEBUG) {
+            // A single record error is not an IMigrationErrorEvent because its description
+            // carries the record's column values. Only at the debug level, where those values are
+            // already written into the report log, it is also written into the error file.
+            // Without the stack trace: one is produced per failed record, and the exception
+            // chain is enough to tell why the record was rejected.
+            Throwable error = ((SingleRecordErrorEvent) event).getError();
+            if (error != null) {
+                writeErrorEvent(event, error, false);
+            }
+        }
+
         long eventTime = event.getEventTime().getTime();
         if (event instanceof MigrationStartEvent) {
             report.setTotalStartTime(eventTime);
@@ -234,6 +270,37 @@ public abstract class DefaultMigrationReporter implements IMigrationReporter {
             report.addImportCSVEvent((ImportCSVEvent) event);
         } else if (event instanceof MigrationCanceledEvent) {
             report.getBrief().setStatus(MigrationBriefReport.MS_CANCELED);
+        }
+    }
+
+    /**
+     * Write an event's error into the dedicated error file: time stamp, the event's description and
+     * the error. The caller decides whether the event carries an error.
+     *
+     * @param event the event that carries the error
+     * @param error the error to be written, never null
+     * @param withStackTrace true to write the whole stack trace, false to write only the error and
+     *     its causes, one line each
+     */
+    private void writeErrorEvent(MigrationEvent event, Throwable error, boolean withStackTrace) {
+        pwError.append(CUBRIDTimeUtil.defaultFormatMilin(event.getEventTime())).append(" ");
+        pwError.append(event.toString());
+        pwError.append(" \r\n");
+        if (withStackTrace) {
+            error.printStackTrace(pwError);
+        } else {
+            appendCauseChain(error);
+        }
+        pwError.append(" \r\n");
+        pwError.flush();
+    }
+
+    private void appendCauseChain(Throwable error) {
+        Throwable current = error;
+        for (int depth = 0; current != null && depth < MAX_CAUSE_DEPTH; depth++) {
+            pwError.append(depth == 0 ? "" : "Caused by: ");
+            pwError.append(String.valueOf(current)).append(" \r\n");
+            current = current.getCause();
         }
     }
 
@@ -335,6 +402,7 @@ public abstract class DefaultMigrationReporter implements IMigrationReporter {
 
             Closer.close(pwRenameObj);
             Closer.close(pwLog);
+            Closer.close(pwError);
             Closer.close(pwNonsupport);
 
             final String fullBriefFile = PathUtils.getReportDir() + briefFile;
@@ -356,6 +424,7 @@ public abstract class DefaultMigrationReporter implements IMigrationReporter {
                         fullBriefFile,
                         reportFile.getCanonicalPath(),
                         PathUtils.getReportDir() + logFileName,
+                        PathUtils.getReportDir() + errorFileName,
                         PathUtils.getReportDir() + nonSupFileName,
                         PathUtils.getReportDir() + configFile,
                         PathUtils.getReportDir() + renameObjFile

@@ -12,7 +12,7 @@
  *   this list of conditions and the following disclaimer in the documentation
  *   and/or other materials provided with the distribution.
  *
- * - Neither the name of the <ORGANIZATION> nor the names of its contributors
+ * - Neither the name of the copyright holder nor the names of its contributors
  *   may be used to endorse or promote products derived from this software without
  *   specific prior written permission.
  *
@@ -82,6 +82,12 @@ public class LogCommandHandler extends HistoryCommandHandler {
             printHistoryFiles();
             return;
         }
+        // Flags, not value options: ConsoleUtils.getParameter would take the history file name
+        // that follows as the value. Both spellings are removed so that neither is mistaken for
+        // the file name.
+        boolean shortFlag = args.remove("-e");
+        boolean longFlag = args.remove("-error");
+        boolean errorMode = shortFlag || longFlag;
         int page = getPageSize(args);
         File file = getHistoryFile(args);
         if (file == null) {
@@ -92,7 +98,15 @@ public class LogCommandHandler extends HistoryCommandHandler {
             outPrinter.println();
             outPrinter.println("Reading migration history file: <" + file.getName() + ">");
             outPrinter.println();
-            String logFile = MigrationReportFileUtils.extractLog(file.getName());
+            String logFile =
+                    errorMode
+                            ? MigrationReportFileUtils.extractError(file.getName())
+                            : MigrationReportFileUtils.extractLog(file.getName());
+            if (logFile == null) {
+                // Histories of older versions have no error file.
+                outPrinter.println("The migration history file has no error log.");
+                return;
+            }
             BufferedReader reader =
                     new BufferedReader(
                             new InputStreamReader(new FileInputStream(logFile), "utf-8"));

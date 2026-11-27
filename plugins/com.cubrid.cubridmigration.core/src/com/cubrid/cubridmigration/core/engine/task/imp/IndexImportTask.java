@@ -12,7 +12,7 @@
  *   this list of conditions and the following disclaimer in the documentation
  *   and/or other materials provided with the distribution.
  *
- * - Neither the name of the <ORGANIZATION> nor the names of its contributors
+ * - Neither the name of the copyright holder nor the names of its contributors
  *   may be used to endorse or promote products derived from this software without
  *   specific prior written permission.
  *
@@ -49,15 +49,21 @@ import java.util.List;
 public class IndexImportTask extends ImportTask {
 
     private final Table targetTable;
+    private final List<Index> indexes;
 
     public IndexImportTask(Table targetTable) {
+        this(targetTable, targetTable.getIndexes());
+    }
+
+    public IndexImportTask(Table targetTable, List<Index> indexes) {
         this.targetTable = targetTable;
+        this.indexes = indexes;
     }
 
     /** Execute import operation */
     protected void executeImport() {
 
-        for (Index idx : targetTable.getIndexes()) {
+        for (Index idx : indexes) {
             try {
                 // If PK and index have same columns, the index should not be created.
                 if (isDuplicatedWithPK(idx)) {

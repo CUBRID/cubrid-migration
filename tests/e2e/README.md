@@ -6,6 +6,8 @@ output verification.
 Active sources: Oracle / CUBRID / MySQL / MariaDB / Informix / MSSQL / Tibero.
 Targets: online CUBRID, CMT unload (LoadDB) dump.
 
+Authoring conventions common to both test suites live in [../README.md](../README.md).
+
 ## Prerequisites
 
 - Docker daemon running.

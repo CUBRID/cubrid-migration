@@ -14,6 +14,7 @@
         <junit-jupiter.version>6.0.3</junit-jupiter.version>
         <mockito.version>5.22.0</mockito.version>
         <assertj.version>3.27.7</assertj.version>
+        <allure.version>2.35.5</allure.version>
     </properties>
 
     <dependencyManagement>
@@ -73,6 +74,20 @@
             <version>${assertj.version}</version>
             <scope>test</scope>
         </dependency>
+
+        <!-- The Open Test Report a dry run and a real run both emit, joined on junit:uniqueId. -->
+        <dependency>
+            <groupId>org.junit.platform</groupId>
+            <artifactId>junit-platform-reporting</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>io.qameta.allure</groupId>
+            <artifactId>allure-jupiter</artifactId>
+            <version>${allure.version}</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>
@@ -81,6 +96,13 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>3.5.2</version>
+                <configuration>
+                    <systemPropertyVariables>
+                        <junit.platform.reporting.open.xml.enabled>true</junit.platform.reporting.open.xml.enabled>
+                        <junit.platform.reporting.output.dir>${project.build.directory}/open-test-report</junit.platform.reporting.output.dir>
+                        <allure.results.directory>${project.build.directory}/allure-results</allure.results.directory>
+                    </systemPropertyVariables>
+                </configuration>
             </plugin>
         </plugins>
     </build>

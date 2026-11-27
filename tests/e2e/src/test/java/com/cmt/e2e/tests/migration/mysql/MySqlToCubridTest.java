@@ -11,7 +11,7 @@
  *   this list of conditions and the following disclaimer in the documentation
  *   and/or other materials provided with the distribution.
  *
- * - Neither the name of the <ORGANIZATION> nor the names of its contributors
+ * - Neither the name of the copyright holder nor the names of its contributors
  *   may be used to endorse or promote products derived from this software without
  *   specific prior written permission.
  *
@@ -46,7 +46,9 @@ import java.nio.file.Path;
  * MySQL 8.0 → CUBRID online migration. Snapshots: {@code snapshots/mysql_to_cubrid/}. MySQL has no
  * synonyms or sequences, so those catalog checks (present for Oracle) are intentionally absent.
  */
-@MigrationE2E(name = "mysql_to_cubrid")
+@MigrationE2E(
+        name = "mysql_to_cubrid",
+        options = {"add_schema=true"})
 @DisplayName("MySQL e2e dataset → CUBRID online migration")
 class MySqlToCubridTest extends AbstractMigrationE2E {
 

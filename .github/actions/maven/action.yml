@@ -1,0 +1,26 @@
+name: Set up Maven 3.9.16
+description: >-
+  The Maven this repository builds with. The runner image installs the newest Maven 3, and the
+  Tycho 4.0.13 this build uses cannot start on Maven 3.10, so the version is pinned here instead.
+
+runs:
+  using: composite
+  steps:
+    - shell: bash
+      env:
+        MAVEN_VERSION: 3.9.16
+        # https://downloads.apache.org/maven/maven-3/3.9.16/binaries/apache-maven-3.9.16-bin.tar.gz.sha512
+        MAVEN_SHA512: 831a8591fe20c8243b1dbe7d71e3244f31d1665b0804b2e825e38cbbe5ce0cafb8338851f90780735568773e0a6cd07bbec107cda0b896b008b861075358b6f6
+      run: |
+        set -euo pipefail
+        tgz="apache-maven-$MAVEN_VERSION-bin.tar.gz"
+        curl -sSfL --retry 3 -o "$RUNNER_TEMP/$tgz" \
+          "https://repo1.maven.org/maven2/org/apache/maven/apache-maven/$MAVEN_VERSION/$tgz"
+        echo "$MAVEN_SHA512  $RUNNER_TEMP/$tgz" | sha512sum -c -
+        tar -xzf "$RUNNER_TEMP/$tgz" -C "$RUNNER_TEMP"
+
+        # build.sh takes MAVEN_HOME over PATH; the steps that call mvn directly take it from PATH.
+        home="$RUNNER_TEMP/apache-maven-$MAVEN_VERSION"
+        echo "MAVEN_HOME=$home" >> "$GITHUB_ENV"
+        echo "$home/bin" >> "$GITHUB_PATH"
+        "$home/bin/mvn" -v

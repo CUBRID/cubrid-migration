@@ -1,0 +1,16 @@
+name: Set up Java 21
+description: The JDK this repository builds and runs its tests with.
+
+inputs:
+  cache:
+    description: Build tool whose dependency cache to restore, or empty for none.
+    default: maven
+
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6  # v6.0.1
+      with:
+        distribution: temurin
+        java-version: '21'
+        cache: ${{ inputs.cache }}

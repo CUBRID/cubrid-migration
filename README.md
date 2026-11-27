@@ -33,7 +33,7 @@ You can download the latest binaries from the following links:
 ### 1. Prerequisites
 Ensure you have the following installed before building:
 -  **Java Development Kit (JDK)**: Version 21 or higher
-*   **Apache Maven**: Version 3.9.0 or higher
+*   **Apache Maven**: Version 3.9.x (3.10 or later is not supported)
 ### 2. How to Build
 Use the `build.sh` script in the root directory to build the project.
 > **Note**: For Windows users, you can use the `build.ps1` script.
