@@ -29,6 +29,8 @@
 package com.cubrid.cubridmigration.core.engine.exporter.impl;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -36,31 +38,38 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.cubrid.cubridmigration.core.dbobject.Column;
+import com.cubrid.cubridmigration.core.dbobject.Record;
 import com.cubrid.cubridmigration.core.dbobject.Table;
-import com.cubrid.cubridmigration.core.dbtype.DatabaseType;
+import com.cubrid.cubridmigration.core.engine.JDBCConManager;
+import com.cubrid.cubridmigration.core.engine.RecordExportedListener;
 import com.cubrid.cubridmigration.core.engine.config.MigrationConfiguration;
 import com.cubrid.cubridmigration.core.engine.config.SourceColumnConfig;
 import com.cubrid.cubridmigration.core.engine.config.SourceEntryTableConfig;
+import com.cubrid.cubridmigration.core.engine.config.SourceSQLTableConfig;
+import com.cubrid.cubridmigration.core.engine.config.SourceTableConfig;
+import com.cubrid.cubridmigration.core.export.DBExportHelper;
 import com.cubrid.cubridmigration.cubrid.Data2StrTranslator;
 import com.cubrid.cubridmigration.testutil.TestColumnFactory;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 /**
- * Covers {@link JDBCExporter#combineCondition}, {@link JDBCExporter#isLatestPage} and {@link
- * JDBCExporter#resolveSerializationTargetColumns}.
+ * Covers {@link JDBCExporter#combineCondition}, the export loop of {@link
+ * JDBCExporter#exportTableRecords(SourceTableConfig, String, RecordExportedListener)}, {@link
+ * JDBCExporter#isLatestPage} and {@link JDBCExporter#resolveSerializationTargetColumns}.
  *
- * <p>{@code isLatestPage} regression note: {@code OracleExportHelper}/{@code MySQLExportHelper}
- * #getPagedSelectSQL are no-op stubs (never actually implemented), so a single query execution
- * already returns everything it matches. The stopping condition must not depend on comparing the
- * exported count against the *whole table's* row count for these two DB types, since a
- * TableSplitPlanner range query only ever returns its own (smaller) subset - see the real 4x
- * duplication bug this exact scenario caused.
+ * <p>Export loop regression note: most dialects' {@code getPagedSelectSQL} is a no-op (the SQL
+ * comes back unchanged), so one execution already returns everything the query matches. For those
+ * dialects the loop must not ask for a "next page" - re-running the same SQL re-reads (and
+ * re-imports) the same rows. That used to be decided by comparing the exported count against the
+ * *whole table's* row count, which a TableSplitPlanner range query (only a subset) never reaches:
+ * the real 4x duplication bug. The tests below count how many times the SQL is actually executed.
  */
 @DisplayName("JDBCExporter")
 class JDBCExporterTest {
@@ -88,8 +97,9 @@ class JDBCExporterTest {
     }
 
     @Test
-    @DisplayName("an existing WHERE clause (from the table's own condition): the extra condition"
-            + " is ANDed on instead of replacing it")
+    @DisplayName(
+            "an existing WHERE clause (from the table's own condition): the extra condition"
+                    + " is ANDed on instead of replacing it")
     void combineCondition_existingWhere_addsAnd() {
         String sql = "SELECT id FROM orders WHERE status = 'ACTIVE'";
 
@@ -112,53 +122,98 @@ class JDBCExporterTest {
         assertThat(result).doesNotContain(" WHERE (id BETWEEN 1 AND 1000)");
     }
 
+    // ---------------------------------------------------------------
+    // exportTableRecords(): how many times the SQL is executed
+    // ---------------------------------------------------------------
+
     @Test
     @DisplayName(
-            "regression: Oracle stops after one page even when the query only matched a range"
-                    + " smaller than the whole table (the 4x-duplication bug)")
-    void isLatestPage_oracleRangeSmallerThanTable_stopsAfterOnePage() {
-        MigrationConfiguration config = mock(MigrationConfiguration.class);
-        when(config.getSourceDBType()).thenReturn(DatabaseType.ORACLE);
-        when(config.isImplicitEstimate()).thenReturn(false); // the default a user would leave
-        when(config.getPageFetchCount()).thenReturn(1000);
-        exporter.setConfig(config);
+            "a dialect without paging runs a range query once, though the range is far smaller"
+                    + " than the whole table (the 4x-duplication bug)")
+    void exportTableRecords_unpagedDialectRange_executesOnce() {
+        // 50,000 rows came back from a range of a 200,000-row table. The old stopping condition
+        // compared that against the whole table and re-ran the same SQL until 200,000 rows had
+        // been "exported": exactly 4 executions for a degree=4 split.
+        CountingExporter counting = newExporter(false, 200_000, false, 50_000);
 
-        Table table = new Table();
-        table.setName("orders");
-        table.setTableRowCount(200_000); // whole table, not this range's ~50,000
+        counting.exportTableRecords(
+                ordersTable(), "id >= 26 AND id < 51", mock(RecordExportedListener.class));
 
-        // One un-paginated execution of a range query already returned all 50,000 matching rows -
-        // far more than pageFetchCount, and far less than the whole table's row count. The old
-        // logic would keep looping (re-reading the same 50,000 rows) until exportedRecords caught
-        // up to 200,000: exactly 4 repeats for a degree=4 split.
-        boolean latest = exporter.isLatestPage(table, 50_000, 50_000);
-
-        assertThat(latest).isTrue();
+        assertThat(counting.executedSql)
+                .containsExactly(BASE_SQL + " WHERE (id >= 26 AND id < 51)");
     }
 
     @Test
-    @DisplayName("regression: same as Oracle, MySQL also stops after one page unconditionally")
-    void isLatestPage_mysqlRangeSmallerThanTable_stopsAfterOnePage() {
-        MigrationConfiguration config = mock(MigrationConfiguration.class);
-        when(config.getSourceDBType()).thenReturn(DatabaseType.MYSQL);
-        when(config.isImplicitEstimate()).thenReturn(false);
-        when(config.getPageFetchCount()).thenReturn(1000);
-        exporter.setConfig(config);
+    @DisplayName("a dialect without paging reads a whole (unsplit) table in one execution")
+    void exportTableRecords_unpagedDialectWholeTable_executesOnce() {
+        CountingExporter counting = newExporter(false, 200_000, false, 200_000);
 
-        Table table = new Table();
-        table.setName("orders");
-        table.setTableRowCount(200_000);
+        counting.exportTableRecords(ordersTable(), null, mock(RecordExportedListener.class));
 
-        assertThat(exporter.isLatestPage(table, 50_000, 50_000)).isTrue();
+        assertThat(counting.executedSql).containsExactly(BASE_SQL);
     }
 
     @Test
     @DisplayName(
-            "a DB with real pagination (e.g. MSSQL) still uses the row-count-based stopping"
-                    + " condition, unaffected by the Oracle/MySQL fix")
-    void isLatestPage_otherDatabase_stillUsesRowCountCondition() {
+            "a dialect without paging stops after one execution even with implicit estimate on")
+    void exportTableRecords_unpagedDialectImplicitEstimateOn_executesOnce() {
+        // With implicit estimate on the table row count is 0 and the row-count condition can never
+        // fire, so a loop that waited for it would not end at all.
+        CountingExporter counting = newExporter(false, 0, true, 50_000);
+
+        counting.exportTableRecords(ordersTable(), null, mock(RecordExportedListener.class));
+
+        assertThat(counting.executedSql).hasSize(1);
+    }
+
+    @Test
+    @DisplayName("a dialect with paging fetches page by page until a short page comes back")
+    void exportTableRecords_pagedDialect_readsPageByPageUntilShortPage() {
+        CountingExporter counting = newExporter(true, 2_400, false, 1_000, 1_000, 400);
+
+        counting.exportTableRecords(ordersTable(), null, mock(RecordExportedListener.class));
+
+        assertThat(counting.executedSql)
+                .containsExactly(
+                        BASE_SQL + " /*offset=0*/",
+                        BASE_SQL + " /*offset=1000*/",
+                        BASE_SQL + " /*offset=2000*/");
+    }
+
+    @Test
+    @DisplayName("a dialect with paging still pages through a range query")
+    void exportTableRecords_pagedDialectRange_readsPageByPage() {
+        CountingExporter counting = newExporter(true, 200_000, false, 1_000, 300);
+
+        counting.exportTableRecords(
+                ordersTable(), "id >= 26 AND id < 51", mock(RecordExportedListener.class));
+
+        assertThat(counting.executedSql)
+                .containsExactly(
+                        BASE_SQL + " WHERE (id >= 26 AND id < 51) /*offset=0*/",
+                        BASE_SQL + " WHERE (id >= 26 AND id < 51) /*offset=1000*/");
+    }
+
+    @Test
+    @DisplayName("a custom SQL table is never paged, so even a paging dialect reads it once")
+    void exportTableRecords_customSqlTableOnPagingDialect_executesOnce() {
+        // DBExportHelper#getPagedSelectSQL returns a user's SQL as-is, so a "next page" would be
+        // the very same query again.
+        CountingExporter counting = newExporter(true, 200_000, false, 50_000);
+
+        counting.exportTableRecords(customSqlTable(), null, mock(RecordExportedListener.class));
+
+        assertThat(counting.executedSql).containsExactly(BASE_SQL);
+    }
+
+    // ---------------------------------------------------------------
+    // isLatestPage(): the stopping condition of a paged export
+    // ---------------------------------------------------------------
+
+    @Test
+    @DisplayName("a paged export stops on an empty or short page, or once the whole table was read")
+    void isLatestPage_rowCountConditions_returnsTrueOnlyForLastPage() {
         MigrationConfiguration config = mock(MigrationConfiguration.class);
-        when(config.getSourceDBType()).thenReturn(DatabaseType.MSSQL);
         when(config.isImplicitEstimate()).thenReturn(false);
         when(config.getPageFetchCount()).thenReturn(1000);
         exporter.setConfig(config);
@@ -176,8 +231,9 @@ class JDBCExporterTest {
     }
 
     @Test
-    @DisplayName("serialization switched off: no target lookup at all, and the table is not"
-            + " serialized")
+    @DisplayName(
+            "serialization switched off: no target lookup at all, and the table is not"
+                    + " serialized")
     void resolveSerializationTargetColumns_serializationDisabled_returnsNullWithoutLookup() {
         MigrationConfiguration config = mock(MigrationConfiguration.class);
         when(config.isRecordSerializationEnabled()).thenReturn(false);
@@ -312,5 +368,112 @@ class JDBCExporterTest {
             columns.add(scc);
         }
         return columns;
+    }
+
+    // ---------------------------------------------------------------
+    // export loop fixtures
+    // ---------------------------------------------------------------
+
+    private static final String BASE_SQL = "SELECT id FROM owner.orders";
+
+    /**
+     * Builds an exporter whose "database" is a stub: {@code handleSQL} only records the SQL it was
+     * asked to run and answers with {@code rowsPerExecution} (the last value repeats), and the
+     * export helper either pages (appending an offset marker to the SQL) or returns the SQL
+     * unchanged, like the real dialects.
+     */
+    private static CountingExporter newExporter(
+            boolean pagingSupported,
+            long tableRowCount,
+            boolean implicitEstimate,
+            long... rowsPerExecution) {
+        DBExportHelper helper = mock(DBExportHelper.class);
+        when(helper.isPagingSupported()).thenReturn(pagingSupported);
+        when(helper.getSelectSQL(any(SourceTableConfig.class), any(MigrationConfiguration.class)))
+                .thenReturn(BASE_SQL);
+        when(helper.getPagedSelectSQL(
+                        any(SourceTableConfig.class), anyString(), anyLong(), anyLong(), any()))
+                .thenAnswer(
+                        invocation -> {
+                            SourceTableConfig stc = invocation.getArgument(0);
+                            String sql = invocation.getArgument(1);
+                            long offset = invocation.getArgument(3);
+                            // Same policy as DBExportHelper: a custom SQL table is never paged.
+                            if (!pagingSupported || stc instanceof SourceSQLTableConfig) {
+                                return sql;
+                            }
+                            return sql + " /*offset=" + offset + "*/";
+                        });
+
+        Table table = new Table();
+        table.setOwner("owner");
+        table.setName("orders");
+        table.setTableRowCount(tableRowCount);
+        // A real MigrationConfiguration can only expose a source table through setSrcCatalog(),
+        // which also builds the whole target schema; the loop reads just these four values.
+        MigrationConfiguration config = mock(MigrationConfiguration.class);
+        when(config.getPageFetchCount()).thenReturn(1000);
+        when(config.isImplicitEstimate()).thenReturn(implicitEstimate);
+        when(config.getSrcTableSchema(anyString(), anyString())).thenReturn(table);
+        when(config.getSrcSQLSchema(anyString())).thenReturn(table);
+
+        JDBCConManager connManager = mock(JDBCConManager.class);
+        when(connManager.getSourceConnection()).thenReturn(mock(Connection.class));
+
+        CountingExporter counting = new CountingExporter(helper, rowsPerExecution);
+        counting.setConfig(config);
+        counting.setConnManager(connManager);
+        return counting;
+    }
+
+    /** The {@code owner.orders} table the export loop tests read. */
+    private static SourceEntryTableConfig ordersTable() {
+        SourceEntryTableConfig stc = entryTable("orders");
+        stc.setOwner("owner");
+        return stc;
+    }
+
+    /** A user-written SQL table, which the helper never pages. */
+    private static SourceSQLTableConfig customSqlTable() {
+        SourceSQLTableConfig stc = new SourceSQLTableConfig();
+        stc.setName("orders");
+        return stc;
+    }
+
+    private static final class CountingExporter extends JDBCExporter {
+        /** A loop that never terminates would hang the test run, so fail fast instead. */
+        private static final int RUNAWAY_LIMIT = 50;
+
+        private final DBExportHelper helper;
+        private final long[] rowsPerExecution;
+        private final List<String> executedSql = new ArrayList<String>();
+
+        CountingExporter(DBExportHelper helper, long... rowsPerExecution) {
+            this.helper = helper;
+            this.rowsPerExecution = rowsPerExecution;
+        }
+
+        @Override
+        protected DBExportHelper getSrcDBExportHelper() {
+            return helper;
+        }
+
+        @Override
+        protected long handleSQL(
+                Connection conn,
+                String sql,
+                SourceTableConfig stc,
+                Table sTable,
+                List<SourceColumnConfig> expColConfs,
+                Column[] sCols,
+                List<Record> records,
+                RecordExportedListener newRecsHandler) {
+            executedSql.add(sql);
+            if (executedSql.size() > RUNAWAY_LIMIT) {
+                throw new IllegalStateException(
+                        "export loop did not stop after " + RUNAWAY_LIMIT + " executions");
+            }
+            return rowsPerExecution[Math.min(executedSql.size() - 1, rowsPerExecution.length - 1)];
+        }
     }
 }

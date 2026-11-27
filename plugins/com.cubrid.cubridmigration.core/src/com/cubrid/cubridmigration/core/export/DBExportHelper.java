@@ -497,6 +497,23 @@ public abstract class DBExportHelper implements IDependOnDatabaseType {
     }
 
     /**
+     * Whether {@link #getPagedSelectSQL(String, long, long, PK)} really returns a different SQL for
+     * every page, i.e. whether the export loop may fetch a table (or a range of it) page by page.
+     *
+     * <p>When this is {@code false} (the default) the SQL is run <b>once</b> and every row it
+     * matches is streamed back by that single execution; the export loop does not ask for a "next
+     * page", because re-running the same unpaged SQL would just read (and import) the same rows
+     * again. This is the safe default: a dialect that forgets to declare paging still reads each
+     * row exactly once. Only dialects whose {@code getPagedSelectSQL} genuinely paginates override
+     * it to {@code true}, and a unit test checks that the declaration and that method agree.
+     *
+     * @return true if {@code getPagedSelectSQL} paginates; false if it returns the SQL unchanged
+     */
+    public boolean isPagingSupported() {
+        return false;
+    }
+
+    /**
      * Is support fast search with PK.
      *
      * @param conn Connection

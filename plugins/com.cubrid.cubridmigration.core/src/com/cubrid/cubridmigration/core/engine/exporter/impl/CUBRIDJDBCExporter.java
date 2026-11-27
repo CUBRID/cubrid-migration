@@ -245,10 +245,11 @@ public class CUBRIDJDBCExporter extends JDBCExporter {
 
     /**
      * Exports one {@code TableSplitPlanner} range in a single query/{@link ResultSet}, the same way
-     * {@code JDBCExporter#isLatestPage} already treats a whole Oracle/MySQL export: one execution
-     * streams every matching row via the driver's fetch size, instead of re-querying every {@code
-     * pageFetchCount} rows. A range is already small by construction (roughly {@code tableRowCount
-     * / degree}), so there is nothing to page within it.
+     * {@code JDBCExporter}'s export loop already treats a dialect without paging (see {@code
+     * DBExportHelper#isPagingSupported}): one execution streams every matching row via the driver's
+     * fetch size, instead of re-querying every {@code pageFetchCount} rows. A range is already
+     * small by construction (roughly {@code tableRowCount / degree}), so there is nothing to page
+     * within it.
      *
      * @param stc SourceTableConfig
      * @param extraCondition the range predicate to AND onto the table's existing condition

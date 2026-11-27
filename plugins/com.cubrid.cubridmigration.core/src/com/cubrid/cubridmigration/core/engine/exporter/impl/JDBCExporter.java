@@ -37,7 +37,6 @@ import com.cubrid.cubridmigration.core.dbobject.Column;
 import com.cubrid.cubridmigration.core.dbobject.PK;
 import com.cubrid.cubridmigration.core.dbobject.Record;
 import com.cubrid.cubridmigration.core.dbobject.Table;
-import com.cubrid.cubridmigration.core.dbtype.DatabaseType;
 import com.cubrid.cubridmigration.core.engine.JDBCConManager;
 import com.cubrid.cubridmigration.core.engine.MigrationStatusManager;
 import com.cubrid.cubridmigration.core.engine.RecordExportedListener;
@@ -327,8 +326,8 @@ public class JDBCExporter extends MigrationExporter {
      * OfflineImporter.UnloadFileWriter#writeData}). Only called when {@link
      * #isRecordSerializationEligible} already confirmed this table qualifies.
      *
-     * <p>Failures here fall back silently (the record is left without a serialized string, so
-     * the importer just does the conversion itself as usual) rather than propagating - this is an
+     * <p>Failures here fall back silently (the record is left without a serialized string, so the
+     * importer just does the conversion itself as usual) rather than propagating - this is an
      * opt-in performance path, not a correctness-critical one, and an uncaught exception here would
      * otherwise be treated as a fatal, whole-migration-aborting error (see {@code
      * ExportTask#run}/{@code MigrationErrorEvent#isFatalError}).
@@ -367,8 +366,7 @@ public class JDBCExporter extends MigrationExporter {
                 // hand back a string that silently drops it.
                 return;
             }
-            record.setSerializedString(
-                    unloadFileUtil.getRecordString(columnValues, columnStrings));
+            record.setSerializedString(unloadFileUtil.getRecordString(columnValues, columnStrings));
         } catch (RuntimeException ex) {
             LOG.warn("[RECORD SERIALIZATION] Falling back to normal import-side conversion.", ex);
         }
@@ -523,6 +521,10 @@ public class JDBCExporter extends MigrationExporter {
             long totalExported = 0L;
             long intPageCount = config.getPageFetchCount();
             String sql = combineCondition(expHelper.getSelectSQL(stc, config), extraCondition);
+            // Custom SQL tables are never paginated (DBExportHelper#getPagedSelectSQL returns their
+            // SQL as-is), so they are read in one execution just like a dialect without paging.
+            final boolean paged =
+                    expHelper.isPagingSupported() && !(stc instanceof SourceSQLTableConfig);
             while (true) {
                 if (interrupted) {
                     return;
@@ -548,6 +550,13 @@ public class JDBCExporter extends MigrationExporter {
                                 records,
                                 newRecordProcessor);
                 totalExported = totalExported + recordCountOfQuery;
+                // Without paging, one execution already returned every row the query matches, so
+                // there is no "next page": re-running the same SQL would re-read (and re-import)
+                // the same rows. This must not depend on comparing against the whole table's row
+                // count - a TableSplitPlanner range only ever returns its own, smaller subset.
+                if (!paged) {
+                    break;
+                }
                 // Stop fetching condition: no result;less then fetching count;great then total
                 // count
                 if (isLatestPage(sTable, totalExported, recordCountOfQuery)) {
@@ -798,30 +807,17 @@ public class JDBCExporter extends MigrationExporter {
     }
 
     /**
-     * @param sTable
-     * @param exportedRecords
-     * @param recordCountOfCurrentPage
-     * @return
+     * Whether the page just read was the last one. Only called for an export that really is paged
+     * (see {@link DBExportHelper#isPagingSupported()}); an unpaged export reads everything in one
+     * execution and never reaches this check.
+     *
+     * @param sTable source table
+     * @param exportedRecords how many records this export has read so far
+     * @param recordCountOfCurrentPage how many records the page just read returned
+     * @return true if there is no further page to read
      */
     protected boolean isLatestPage(
             Table sTable, long exportedRecords, long recordCountOfCurrentPage) {
-        int sourceDBTypeID = config.getSourceDBType().getID();
-        // OracleExportHelper/MySQLExportHelper#getPagedSelectSQL are no-op stubs (still a TODO -
-        // they just return the input SQL unchanged): a single execution already returns every row
-        // the query matches, so re-running it for a "next page" would just re-read (and
-        // re-import) the same rows. This has to be unconditional, not gated behind
-        // config.isImplicitEstimate() (a progress-bar-detail preference, unrelated to whether
-        // pagination actually works - see Messages.msgImplicitEstimate): the row-count check
-        // below only happened to terminate correctly for whole-table exports by coincidence
-        // (one un-paginated execution already returns sTable.getTableRowCount() rows); it stops
-        // being a coincidence - and silently re-imports the same rows N times - as soon as the
-        // query is restricted to less than the whole table, as TableSplitPlanner's range exports
-        // do.
-        if (sourceDBTypeID == DatabaseType.ORACLE.getID()
-                || sourceDBTypeID == DatabaseType.MYSQL.getID()) {
-            return true;
-        }
-
         return recordCountOfCurrentPage == 0
                 || recordCountOfCurrentPage < config.getPageFetchCount()
                 || (!config.isImplicitEstimate() && exportedRecords >= sTable.getTableRowCount());
