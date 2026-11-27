@@ -1725,6 +1725,51 @@ class MigrationConfigurationTest {
         }
 
         @Test
+        @DisplayName("a selected schema from a multi-database XML dump keeps its database owner")
+        void selectedSchemaFromMultiDatabaseXMLDump_keepsItsDatabaseOwner() {
+            MigrationConfiguration config = new MigrationConfiguration();
+            config.setSourceType(MigrationConfiguration.XML);
+
+            Catalog fullCatalog = catalogOf(DatabaseType.MYSQL);
+            Schema db1 = fullCatalog.getSchemas().get(0);
+            db1.setName("DB1");
+            Table db1Table = new Table();
+            db1Table.setName("SHARED");
+            db1.addTable(db1Table);
+
+            Schema db2 = new Schema();
+            db2.setName("DB2");
+            Table db2Table = new Table();
+            db2Table.setName("SHARED");
+            db2.addTable(db2Table);
+            fullCatalog.addSchema(db2);
+            config.setOfflineFullSrcCatalog(fullCatalog);
+
+            Catalog selectedCatalog = new Catalog();
+            selectedCatalog.setName(fullCatalog.getName());
+            selectedCatalog.setDatabaseType(DatabaseType.MYSQL);
+            Schema selectedDb2 = new Schema();
+            selectedDb2.setName("DB2");
+            Table selectedDb2Table = new Table();
+            selectedDb2Table.setName("SHARED");
+            selectedDb2.addTable(selectedDb2Table);
+            selectedCatalog.addSchema(selectedDb2);
+
+            SourceEntryTableConfig db1Mapping = selectedTable("SHARED", true, false);
+            db1Mapping.setOwner("DB1");
+            config.addExpEntryTableCfg(db1Mapping);
+            SourceEntryTableConfig db2Mapping = selectedTable("SHARED", true, false);
+            db2Mapping.setOwner("DB2");
+            config.addExpEntryTableCfg(db2Mapping);
+
+            config.setSrcCatalog(selectedCatalog, false);
+
+            assertThat(config.getExpEntryTableCfg())
+                    .extracting(SourceTableConfig::getOwner, SourceTableConfig::getName)
+                    .containsExactly(tuple("DB2", "SHARED"));
+        }
+
+        @Test
         @DisplayName("a database with several schemas keeps them")
         void multiSchemaDatabase_keepsTheSchemaNames() {
             MigrationConfiguration config = new MigrationConfiguration();

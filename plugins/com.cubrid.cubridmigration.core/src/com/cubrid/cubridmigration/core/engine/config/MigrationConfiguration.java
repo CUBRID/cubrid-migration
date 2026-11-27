@@ -84,6 +84,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -1235,7 +1237,10 @@ public class MigrationConfiguration {
         if (isOneTableOneFile) {
             for (SourceEntryTableConfig table : expTables) {
                 this.addTargetTableDataFileName(
-                        schemaName, buildDataFileFullPath(schemaName, table.getName()));
+                        schemaName,
+                        buildDataFileFullPath(
+                                schemaName,
+                                getDataFileTableName(table.getOwner(), table.getName())));
             }
         }
         this.addTargetDataFileName(schemaName, buildDataFileFullPath(schemaName, "object"));
@@ -5011,6 +5016,14 @@ public class MigrationConfiguration {
         for (SourceSequenceConfig ssc : expSerials) {
             ssc.setOwner(null);
         }
+    }
+
+    /** Qualify per-table files when one MySQL dump contains several databases. */
+    public String getDataFileTableName(String sourceOwner, String tableName) {
+        if (isMultiDatabaseXMLDump() && StringUtils.isNotEmpty(sourceOwner)) {
+            return URLEncoder.encode(sourceOwner, StandardCharsets.UTF_8) + "." + tableName;
+        }
+        return tableName;
     }
 
     private boolean isMultiDatabaseXMLDump() {

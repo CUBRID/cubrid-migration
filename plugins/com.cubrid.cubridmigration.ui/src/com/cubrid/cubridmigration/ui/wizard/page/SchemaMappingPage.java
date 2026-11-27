@@ -738,14 +738,17 @@ public class SchemaMappingPage extends MigrationWizardPage {
     private void populateDataAndIndexPaths(
             Schema schema, String schemaName, OfflineFilePathContext pathContext) {
         if (config.isOneTableOneFile()) {
-            List<String> tableList = new ArrayList<>();
+            List<String> tableList =
+                    pathContext.tableDataFileListFullName.computeIfAbsent(
+                            schemaName, key -> new ArrayList<>());
             schema.getTables()
                     .forEach(
                             table ->
                                     tableList.add(
                                             config.buildDataFileFullPath(
-                                                    schemaName, table.getName())));
-            pathContext.tableDataFileListFullName.put(schemaName, tableList);
+                                                    schemaName,
+                                                    config.getDataFileTableName(
+                                                            schema.getName(), table.getName()))));
         }
         pathContext.dataFullName.put(
                 schemaName, config.buildDataFileFullPath(schemaName, "objects"));
