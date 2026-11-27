@@ -63,6 +63,26 @@ import java.util.Map;
  * @version 1.0 - 2011-8-3 created by Kevin Cao
  */
 public class LoadFileImporter extends OfflineImporter {
+    protected static final Logger LOGGER = LogUtil.getLogger(LoadFileImporter.class);
+
+    private final Map<List<String>, CurrentDataFileInfo> tableFiles = new HashMap<>();
+    private final Map<String, String> schemaFiles = new HashMap<String, String>();
+    private final Map<String, String> tableSchemaFiles = new HashMap<String, String>();
+    private final Map<String, String> viewFiles = new HashMap<String, String>();
+    private final Map<String, String> viewQuerySpecFiles = new HashMap<String, String>();
+    private final Map<String, String> pkFiles = new HashMap<String, String>();
+    private final Map<String, String> fkFiles = new HashMap<String, String>();
+    private final Map<String, String> indexFiles = new HashMap<String, String>();
+    private final Map<String, String> uniqueIndexFiles = new HashMap<String, String>();
+    private final Map<String, String> sequenceFiles = new HashMap<String, String>();
+    private final Map<String, String> synonymFiles = new HashMap<String, String>();
+    private final Map<String, Map<String, String>> grantFiles =
+            new HashMap<String, Map<String, String>>();
+    private final Map<String, String> plcsqlProcedureFiles = new HashMap<>();
+    private final Map<String, String> plcsqlFunctionFiles = new HashMap<>();
+
+    private final Object lockObj = new Object();
+
     /**
      * ExportStatus records the export status
      *
@@ -111,26 +131,6 @@ public class LoadFileImporter extends OfflineImporter {
             PathUtils.deleteFile(new File(fileTableFullName));
         }
     }
-
-    protected static final Logger LOGGER = LogUtil.getLogger(LoadFileImporter.class);
-
-    private final Map<List<String>, CurrentDataFileInfo> tableFiles = new HashMap<>();
-    private final Map<String, String> schemaFiles = new HashMap<String, String>();
-    private final Map<String, String> tableSchemaFiles = new HashMap<String, String>();
-    private final Map<String, String> viewFiles = new HashMap<String, String>();
-    private final Map<String, String> viewQuerySpecFiles = new HashMap<String, String>();
-    private final Map<String, String> pkFiles = new HashMap<String, String>();
-    private final Map<String, String> fkFiles = new HashMap<String, String>();
-    private final Map<String, String> indexFiles = new HashMap<String, String>();
-    private final Map<String, String> uniqueIndexFiles = new HashMap<String, String>();
-    private final Map<String, String> sequenceFiles = new HashMap<String, String>();
-    private final Map<String, String> synonymFiles = new HashMap<String, String>();
-    private final Map<String, Map<String, String>> grantFiles =
-            new HashMap<String, Map<String, String>>();
-    private final Map<String, String> plcsqlProcedureFiles = new HashMap<>();
-    private final Map<String, String> plcsqlFunctionFiles = new HashMap<>();
-
-    private final Object lockObj = new Object();
 
     public LoadFileImporter(MigrationContext mrManager) {
         super(mrManager);
