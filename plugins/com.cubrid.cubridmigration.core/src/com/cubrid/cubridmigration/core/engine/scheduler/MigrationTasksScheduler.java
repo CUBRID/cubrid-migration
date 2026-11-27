@@ -519,7 +519,7 @@ public class MigrationTasksScheduler {
         Table srcTable = config.getSrcTableSchema(table.getOwner(), table.getName());
         if (srcTable == null
                 || srcTable.getTableRowCount() < config.getParallelExportMinRowCount()) {
-            LOG.info(
+            LOG.debug(
                     "[DEBUG-SPLIT] Parallel export skipped for "
                             + table.getOwner()
                             + "."
@@ -545,7 +545,7 @@ public class MigrationTasksScheduler {
                 && !table.isCreateNewTable()
                 && !table.isReplace()
                 && table.isStartFromTargetMax()) {
-            LOG.info(
+            LOG.debug(
                     "[DEBUG-SPLIT] Parallel export skipped for "
                             + table.getOwner()
                             + "."
@@ -561,7 +561,7 @@ public class MigrationTasksScheduler {
                         config, table, srcTable, config.getParallelExportDefaultDegree());
         if (plan == null || !plan.isParallelizable()) {
             if (plan != null) {
-                LOG.info(
+                LOG.debug(
                         "[DEBUG-SPLIT] Parallel export disabled for "
                                 + table.getOwner()
                                 + "."
@@ -592,7 +592,7 @@ public class MigrationTasksScheduler {
         TableSplitPlanner planner = new TableSplitPlanner();
         for (SplitRange range : ranges) {
             String rangeCondition = planner.buildRangeCondition(plan.getSplitColumn(), range);
-            LOG.info(
+            LOG.debug(
                     "[DEBUG-SPLIT] "
                             + table.getOwner()
                             + "."

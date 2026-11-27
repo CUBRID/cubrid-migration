@@ -441,13 +441,16 @@ public abstract class DBExportHelper implements IDependOnDatabaseType {
     public void configStatement(Statement stmt) {
         try {
             stmt.setFetchSize(DEFAULT_FETCH_SIZE);
-            LOG.info(
-                    "[DEBUG-FETCHSIZE] configStatement() on "
-                            + getClass().getSimpleName()
-                            + ": requested="
-                            + DEFAULT_FETCH_SIZE
-                            + ", actual stmt.getFetchSize()="
-                            + stmt.getFetchSize());
+            // Guarded: building the message calls stmt.getFetchSize() on every statement.
+            if (LOG.isDebugEnabled()) {
+                LOG.debug(
+                        "[DEBUG-FETCHSIZE] configStatement() on "
+                                + getClass().getSimpleName()
+                                + ": requested="
+                                + DEFAULT_FETCH_SIZE
+                                + ", actual stmt.getFetchSize()="
+                                + stmt.getFetchSize());
+            }
         } catch (SQLException e) {
             LOG.error(
                     "[DEBUG-FETCHSIZE] setFetchSize("

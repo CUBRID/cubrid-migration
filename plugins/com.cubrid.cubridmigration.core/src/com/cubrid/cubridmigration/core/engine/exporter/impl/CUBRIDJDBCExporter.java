@@ -365,7 +365,7 @@ public class CUBRIDJDBCExporter extends JDBCExporter {
                 }
             }
             if (serialCols != null) {
-                LOG.info(
+                LOG.debug(
                         "[DEBUG-RECORDSERIALIZE] "
                                 + sTable.getOwner()
                                 + "."

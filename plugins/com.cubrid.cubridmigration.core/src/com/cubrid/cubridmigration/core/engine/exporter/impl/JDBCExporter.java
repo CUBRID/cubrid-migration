@@ -164,7 +164,7 @@ public class JDBCExporter extends MigrationExporter {
         // This should log exactly once per table export (never once per row/page) - if it shows
         // up more than once for the same table in one run, the column cache isn't actually being
         // reused and something upstream is calling this per row again.
-        LOG.info(
+        LOG.debug(
                 "[DEBUG-COLCACHE] resolveSourceColumns() for "
                         + st.getOwner()
                         + "."
@@ -229,7 +229,7 @@ public class JDBCExporter extends MigrationExporter {
             return false;
         }
         if (unloadFileUtil == null || targetCols.length != expCols.size()) {
-            LOG.info(
+            LOG.debug(
                     "[DEBUG-RECORDSERIALIZE] Disabled for "
                             + tableLabel
                             + ": target table/columns could not be resolved.");
@@ -237,7 +237,7 @@ public class JDBCExporter extends MigrationExporter {
         }
         for (SourceColumnConfig scc : expCols) {
             if (StringUtils.isNotBlank(scc.getUserDataHandler())) {
-                LOG.info(
+                LOG.debug(
                         "[DEBUG-RECORDSERIALIZE] Disabled for "
                                 + tableLabel
                                 + ": column "
@@ -250,7 +250,7 @@ public class JDBCExporter extends MigrationExporter {
         for (int i = 0; i < targetCols.length; i++) {
             Column targetColumn = targetCols[i];
             if (targetColumn == null) {
-                LOG.info(
+                LOG.debug(
                         "[DEBUG-RECORDSERIALIZE] Disabled for "
                                 + tableLabel
                                 + ": target column for "
@@ -260,7 +260,7 @@ public class JDBCExporter extends MigrationExporter {
             }
             String dataType = targetColumn.getDataType();
             if (dataTypeHelper.isCollection(dataType)) {
-                LOG.info(
+                LOG.debug(
                         "[DEBUG-RECORDSERIALIZE] Disabled for "
                                 + tableLabel
                                 + ": column "
@@ -273,7 +273,7 @@ public class JDBCExporter extends MigrationExporter {
             int dataTypeId = dataTypeHelper.getCUBRIDDataTypeID(dataType);
             if (dataTypeId == DataTypeConstant.CUBRID_DT_BLOB
                     || dataTypeId == DataTypeConstant.CUBRID_DT_CLOB) {
-                LOG.info(
+                LOG.debug(
                         "[DEBUG-RECORDSERIALIZE] Disabled for "
                                 + tableLabel
                                 + ": column "
@@ -284,7 +284,7 @@ public class JDBCExporter extends MigrationExporter {
                 return false;
             }
         }
-        LOG.info(
+        LOG.debug(
                 "[DEBUG-RECORDSERIALIZE] Enabled for "
                         + tableLabel
                         + ": "
@@ -668,7 +668,7 @@ public class JDBCExporter extends MigrationExporter {
             return totalExported;
         } finally {
             if (serialize) {
-                LOG.info(
+                LOG.debug(
                         "[DEBUG-RECORDSERIALIZE] "
                                 + tableLabel
                                 + ": "

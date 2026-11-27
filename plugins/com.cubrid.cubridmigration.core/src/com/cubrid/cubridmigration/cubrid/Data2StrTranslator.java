@@ -346,7 +346,7 @@ public class Data2StrTranslator implements IData2StrTranslator {
         if (dataTypeID != null) {
             long hits = dataTypeIdCacheHits.incrementAndGet();
             if (hits % DATA_TYPE_ID_CACHE_HIT_LOG_INTERVAL == 0) {
-                LOG.info(
+                LOG.debug(
                         "[DEBUG-COLCACHE] dataTypeIdCache HIT heartbeat: "
                                 + hits
                                 + " hit(s) so far, "
@@ -361,9 +361,9 @@ public class Data2StrTranslator implements IData2StrTranslator {
                                 int id =
                                         CUBRIDDataTypeHelper.getInstance(null)
                                                 .getCUBRIDDataTypeID(dt);
-                                LOG.info(
+                                LOG.debug(
                                         "[DEBUG-COLCACHE] dataTypeIdCache MISS - computed"
-                                            + " dataType=\""
+                                                + " dataType=\""
                                                 + dt
                                                 + "\" -> id="
                                                 + id

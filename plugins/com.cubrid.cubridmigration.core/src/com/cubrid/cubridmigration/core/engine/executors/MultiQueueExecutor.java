@@ -116,7 +116,7 @@ public class MultiQueueExecutor implements IRunnableExecutor {
                 // key in the log directly measures how many import queues that key ended up with.
                 // For a table key this should stay 1 no matter how many split ranges feed it; for
                 // a plain thread-id fallback key, it stays 1 per distinct calling thread.
-                LOG.info(
+                LOG.debug(
                         "[DEBUG-IMPORTQUEUE] New import queue #"
                                 + executors.size()
                                 + " created for key="
@@ -162,7 +162,7 @@ public class MultiQueueExecutor implements IRunnableExecutor {
         }
         if (es != null) {
             es.dispose();
-            LOG.info(
+            LOG.debug(
                     "[DEBUG-IMPORTQUEUE] Released import queue for key="
                             + key
                             + " ("
