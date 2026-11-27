@@ -97,6 +97,23 @@ class MySQLXMLSchemaParserTest {
         }
 
         @Test
+        @DisplayName("a table retains the database identity from its XML section")
+        void multipleDatabases_keepTableOwnerIdentity() throws Exception {
+            Catalog catalog =
+                    parse(
+                            "<mysqldump>"
+                                    + "<database name=\"db1\"><table_structure name=\"shared\"/>"
+                                    + "</database>"
+                                    + "<database name=\"db2\"><table_structure name=\"shared\"/>"
+                                    + "</database></mysqldump>");
+
+            assertThat(catalog.getSchemaByName("db1").getTableByName("shared").getOwner())
+                    .isEqualTo("db1");
+            assertThat(catalog.getSchemaByName("db2").getTableByName("shared").getOwner())
+                    .isEqualTo("db2");
+        }
+
+        @Test
         @DisplayName("the dump is read as a MySQL catalog")
         void catalog_isMarkedAsMySQL() throws Exception {
             Catalog catalog =

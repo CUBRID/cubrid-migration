@@ -36,6 +36,7 @@ import com.cubrid.cubridmigration.core.dbobject.Record;
 import com.cubrid.cubridmigration.core.dbobject.Table;
 import com.cubrid.cubridmigration.core.engine.RecordExportedListener;
 import com.cubrid.cubridmigration.core.engine.config.MigrationConfiguration;
+import com.cubrid.cubridmigration.core.engine.config.SourceEntryTableConfig;
 import com.cubrid.cubridmigration.cubrid.CUBRIDTimeUtil;
 import com.cubrid.cubridmigration.mysql.MySQLDataTypeHelper;
 import com.cubrid.cubridmigration.mysql.trans.MySQL2CUBRIDMigParas;
@@ -59,7 +60,7 @@ import java.util.TimeZone;
 public class XMLDataParsingTask implements Runnable {
     private static final Logger LOG = LogUtil.getLogger(XMLDataParsingTask.class);
 
-    private final String tableName;
+    private final SourceEntryTableConfig sourceTable;
     private final List<List<String[]>> recordMaps;
     private final RecordExportedListener oneNewRecord;
     private final MigrationConfiguration config;
@@ -68,11 +69,11 @@ public class XMLDataParsingTask implements Runnable {
     public XMLDataParsingTask(
             MigrationConfiguration config,
             RecordExportedListener oneNewRecord,
-            String tableName,
+            SourceEntryTableConfig sourceTable,
             List<List<String[]>> recordMaps) {
         this.config = config;
         this.oneNewRecord = oneNewRecord;
-        this.tableName = tableName;
+        this.sourceTable = sourceTable;
         this.recordMaps = recordMaps;
     }
 
@@ -161,7 +162,7 @@ public class XMLDataParsingTask implements Runnable {
     public void run() {
         try {
             List<Record> records = new ArrayList<Record>(recordMaps.size());
-            Table stable = config.getSrcTableSchema(null, tableName);
+            Table stable = config.getSrcTableSchema(sourceTable.getOwner(), sourceTable.getName());
             for (List<String[]> recordMap : recordMaps) {
                 Record record = new Record();
                 for (String[] key : recordMap) {
@@ -174,7 +175,7 @@ public class XMLDataParsingTask implements Runnable {
                 }
                 records.add(record);
             }
-            oneNewRecord.processRecords(tableName, records);
+            oneNewRecord.processRecords(sourceTable, records);
         } catch (Exception ex) {
             LOG.error("", ex);
         }

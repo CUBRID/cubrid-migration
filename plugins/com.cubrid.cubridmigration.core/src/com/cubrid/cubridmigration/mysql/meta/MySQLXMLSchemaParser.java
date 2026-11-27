@@ -78,8 +78,6 @@ public class MySQLXMLSchemaParser extends DefaultHandler {
     public void startDocument() throws SAXException {
         catalog = factory.createCatalog();
         catalog.setDatabaseType(DatabaseType.MYSQL);
-        schema = factory.createSchema();
-        schema.setCatalog(catalog);
         super.startDocument();
     }
 
@@ -115,15 +113,21 @@ public class MySQLXMLSchemaParser extends DefaultHandler {
             catalog.setDatabaseType(DatabaseType.MYSQL);
         } else if ("database".equals(qName)) {
             String databaseName = attributes.getValue("name");
-            catalog.setName(databaseName);
-            schema.setName(databaseName);
-            catalog.addSchema(schema);
+            if (catalog.getName() == null) {
+                catalog.setName(databaseName);
+            }
+            schema = catalog.getSchemaByName(databaseName);
+            if (schema == null) {
+                schema = factory.createSchema();
+                schema.setName(databaseName);
+                catalog.addSchema(schema);
+            }
         } else if ("table_structure".equals(qName)) {
             String tableName = attributes.getValue("name");
             table = factory.createTable();
             table.setName(tableName);
+            table.setOwner(schema.getName());
             schema.addTable(table);
-            table.setSchema(schema);
             continueParseMeta = true;
         } else if ("table_data".equals(qName)) {
             continueParseMeta = false;

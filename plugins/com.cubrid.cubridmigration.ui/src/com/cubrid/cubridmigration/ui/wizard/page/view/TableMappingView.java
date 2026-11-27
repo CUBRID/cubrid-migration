@@ -119,7 +119,7 @@ public class TableMappingView extends AbstractMappingView {
                 return super.getElements(result);
             }
             Table srcTable = config.getSrcTableSchema(setc.getOwner(), setc.getName());
-            Table tt = config.getTargetTableSchema(setc.getTarget());
+            Table tt = config.getTargetTableSchema(setc.getTargetOwner(), setc.getTarget());
             if (srcTable == null || tt == null) {
                 return super.getElements(result);
             }
@@ -185,7 +185,7 @@ public class TableMappingView extends AbstractMappingView {
             if (newName.equalsIgnoreCase(setc.getTarget())) {
                 return;
             }
-            Table tt = config.getTargetTableSchema(newName);
+            Table tt = config.getTargetTableSchema(setc.getTargetOwner(), newName);
             if (tt == null) {
                 return;
             }
@@ -725,7 +725,7 @@ public class TableMappingView extends AbstractMappingView {
         txtUserSQL.setText(stc.getSqlBefore());
         txtUserSQL2.setText(stc.getSqlAfter());
 
-        Table tt = config.getTargetTableSchema(stc.getTarget());
+        Table tt = config.getTargetTableSchema(stc.getTargetOwner(), stc.getTarget());
         if (tt != null) {
             btnReuseOID.setSelection(tt.isReuseOID());
         }
@@ -768,7 +768,7 @@ public class TableMappingView extends AbstractMappingView {
         // Fill target PK columns editor.
         allColumnList.removeAll();
         pkColumnList.removeAll();
-        Table tt = config.getTargetTableSchema(stc.getTarget());
+        Table tt = config.getTargetTableSchema(stc.getTargetOwner(), stc.getTarget());
         if (tt == null) {
             return;
         }
@@ -828,7 +828,7 @@ public class TableMappingView extends AbstractMappingView {
         config.changeTarget(setc, newTableName);
 
         Table srcTable = config.getSrcTableSchema(setc.getOwner(), setc.getName());
-        Table tt = config.getTargetTableSchema(setc.getTarget());
+        Table tt = config.getTargetTableSchema(setc.getTargetOwner(), setc.getTarget());
         if (tt == null) {
             return super.save();
         }

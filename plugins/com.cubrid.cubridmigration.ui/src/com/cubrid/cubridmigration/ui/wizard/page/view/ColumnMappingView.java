@@ -304,6 +304,7 @@ public class ColumnMappingView extends AbstractMappingView {
          * @param editable boolean
          */
         void setEditable(boolean editable) {
+            this.editable = editable;
             txtColumnName.setEditable(editable);
             txtDataType.setEditable(editable);
             btnNullable.setEnabled(editable);
@@ -439,6 +440,9 @@ public class ColumnMappingView extends AbstractMappingView {
      * @return VerifyResultMessages
      */
     public VerifyResultMessages save() {
+        if (scc == null) {
+            return super.save();
+        }
         scc.setCreate(btnCreate.getSelection());
         if (!scc.isCreate()) {
             return super.save();
@@ -478,23 +482,32 @@ public class ColumnMappingView extends AbstractMappingView {
         if (!(obj instanceof ColumnNode)) {
             return;
         }
-        ColumnNode cNode = (ColumnNode) obj;
-        btnCreate.setVisible(!(cNode.getParent().getParent() instanceof SQLTableNode));
-        Column column = cNode.getColumn();
-        TableOrView st = column.getTableOrView();
-        scc = config.getExpColumnCfg(st.getOwner(), st.getName(), column.getName());
-
-        grpTarget.setEditable(false);
-        if (scc == null) {
-            return;
+        ColumnNode node = (ColumnNode) obj;
+        Column column = node.getColumn();
+        boolean sqlTable = node.getParent().getParent() instanceof SQLTableNode;
+        btnCreate.setVisible(!sqlTable);
+        grpSource.grp.setVisible(column != null);
+        scc = null;
+        if (column != null) {
+            grpSource.setColumn(column);
+            TableOrView table = column.getTableOrView();
+            if (sqlTable) {
+                scc =
+                        ((SQLTableNode) node.getParent().getParent())
+                                .getSstc()
+                                .getColumnConfig(column.getName());
+            } else {
+                scc = config.getExpColumnCfg(table.getOwner(), table.getName(), column.getName());
+            }
         }
-        Column srcCol = config.getSrcColumnSchema(st.getOwner(), st.getName(), column.getName());
-        if (srcCol == null) {
-            return;
-        }
-        grpSource.setColumn(srcCol);
-        Column tarCol = config.getTargetColumnSchema(scc.getParent().getTarget(), scc.getTarget());
+        Column tarCol = scc == null ? null : config.getTargetColumnSchema(scc);
+        grpTarget.grp.setVisible(tarCol != null);
+        btnTrim.getParent().setVisible(tarCol != null);
+        txtHandlerPath.getParent().setVisible(tarCol != null);
         if (tarCol == null) {
+            scc = null;
+            btnCreate.setEnabled(false);
+            btnCreate.setSelection(false);
             return;
         }
 

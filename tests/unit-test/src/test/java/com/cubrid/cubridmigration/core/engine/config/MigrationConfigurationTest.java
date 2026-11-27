@@ -247,6 +247,40 @@ class MigrationConfigurationTest {
             assertThat(target(config, kind, null, name) != null).isEqualTo(found);
         }
 
+        @Test
+        @DisplayName("column mapping resolves a shared target name under the selected owner")
+        void resolvesColumnUnderMappedTargetOwner() {
+            MigrationConfiguration config = new MigrationConfiguration();
+            Table first = new Table();
+            first.setName("shared");
+            Column firstColumn = new Column(first);
+            firstColumn.setName("col3");
+            first.addColumn(firstColumn);
+            config.addTargetTableSchema(first);
+
+            Table second = new Table();
+            second.setName("shared");
+            second.setOwner("db2");
+            Column secondColumn = new Column(second);
+            secondColumn.setName("col3");
+            second.addColumn(secondColumn);
+            config.addTargetTableSchema(second);
+
+            SourceEntryTableConfig mapping = new SourceEntryTableConfig();
+            mapping.setTarget("shared");
+            mapping.addColumnConfig("source_col", "col3", true);
+            SourceColumnConfig column = mapping.getColumnConfig("source_col");
+
+            assertThat(config.getTargetColumnSchema(column)).isSameAs(firstColumn);
+            mapping.setTargetOwner("DB2");
+            assertThat(config.getTargetColumnSchema(column)).isSameAs(secondColumn);
+            config.changeTarget(column, "renamed");
+            assertThat(firstColumn.getName()).isEqualTo("col3");
+            assertThat(secondColumn.getName()).isEqualTo("renamed");
+            mapping.setTargetOwner("missing");
+            assertThat(config.getTargetColumnSchema(column)).isNull();
+        }
+
         private Object target(
                 MigrationConfiguration config, String kind, String owner, String name) {
             switch (kind) {
@@ -1691,6 +1725,51 @@ class MigrationConfigurationTest {
         }
 
         @Test
+        @DisplayName("a selected schema from a multi-database XML dump keeps its database owner")
+        void selectedSchemaFromMultiDatabaseXMLDump_keepsItsDatabaseOwner() {
+            MigrationConfiguration config = new MigrationConfiguration();
+            config.setSourceType(MigrationConfiguration.XML);
+
+            Catalog fullCatalog = catalogOf(DatabaseType.MYSQL);
+            Schema db1 = fullCatalog.getSchemas().get(0);
+            db1.setName("DB1");
+            Table db1Table = new Table();
+            db1Table.setName("SHARED");
+            db1.addTable(db1Table);
+
+            Schema db2 = new Schema();
+            db2.setName("DB2");
+            Table db2Table = new Table();
+            db2Table.setName("SHARED");
+            db2.addTable(db2Table);
+            fullCatalog.addSchema(db2);
+            config.setOfflineFullSrcCatalog(fullCatalog);
+
+            Catalog selectedCatalog = new Catalog();
+            selectedCatalog.setName(fullCatalog.getName());
+            selectedCatalog.setDatabaseType(DatabaseType.MYSQL);
+            Schema selectedDb2 = new Schema();
+            selectedDb2.setName("DB2");
+            Table selectedDb2Table = new Table();
+            selectedDb2Table.setName("SHARED");
+            selectedDb2.addTable(selectedDb2Table);
+            selectedCatalog.addSchema(selectedDb2);
+
+            SourceEntryTableConfig db1Mapping = selectedTable("SHARED", true, false);
+            db1Mapping.setOwner("DB1");
+            config.addExpEntryTableCfg(db1Mapping);
+            SourceEntryTableConfig db2Mapping = selectedTable("SHARED", true, false);
+            db2Mapping.setOwner("DB2");
+            config.addExpEntryTableCfg(db2Mapping);
+
+            config.setSrcCatalog(selectedCatalog, false);
+
+            assertThat(config.getExpEntryTableCfg())
+                    .extracting(SourceTableConfig::getOwner, SourceTableConfig::getName)
+                    .containsExactly(tuple("DB2", "SHARED"));
+        }
+
+        @Test
         @DisplayName("a database with several schemas keeps them")
         void multiSchemaDatabase_keepsTheSchemaNames() {
             MigrationConfiguration config = new MigrationConfiguration();
@@ -1716,6 +1795,71 @@ class MigrationConfigurationTest {
                     .extracting(SourceTableConfig::getName, SourceTableConfig::getTarget)
                     .containsExactly(tuple("EMP", "emp"));
             assertThat(config.getTargetTableSchema()).hasSize(1);
+        }
+
+        @Test
+        @DisplayName("a column lookup uses both its database and table identity")
+        void columnLookup_usesItsSchemaAndTable() {
+            MigrationConfiguration config = new MigrationConfiguration();
+            config.setSourceType("xml");
+
+            Catalog catalog = new Catalog();
+            catalog.setName("DB1");
+            catalog.setDatabaseType(DatabaseType.MYSQL);
+            addTableWithColumn(catalog, "DB1", "TB1", "datetime");
+            addTableWithColumn(catalog, "DB2", "TB2", "text");
+
+            config.setSrcCatalog(catalog, false);
+
+            SourceColumnConfig columnConfig = config.getExpColumnCfg("DB2", "TB2", "col3");
+            Column sourceColumn = config.getSrcColumnSchema("DB2", "TB2", "col3");
+
+            assertThat(columnConfig).isNotNull();
+            assertThat(columnConfig.getParent().getOwner()).isEqualTo("DB2");
+            assertThat(sourceColumn.getTableOrView().getName()).isEqualTo("TB2");
+            assertThat(sourceColumn.getShownDataType()).isEqualTo("text");
+        }
+
+        @Test
+        @DisplayName("rebuilding a legacy XML mapping gives each shared table its own config")
+        void legacyMappingIsReusedForOnlyOneDatabase() {
+            MigrationConfiguration config = new MigrationConfiguration();
+            config.setSourceType("xml");
+            SourceEntryTableConfig legacy = selectedTable("shared", true, true);
+            legacy.setOwner(null);
+            config.addExpEntryTableCfg(legacy);
+            Catalog catalog = new Catalog();
+            catalog.setName("DB1");
+            catalog.setDatabaseType(DatabaseType.MYSQL);
+            addTableWithColumn(catalog, "DB1", "shared", "datetime");
+            addTableWithColumn(catalog, "DB2", "shared", "text");
+
+            config.setSrcCatalog(catalog, false);
+
+            assertThat(config.getExpEntryTableCfg("DB1", "shared")).isSameAs(legacy);
+            assertThat(legacy.getOwner()).isEqualTo("DB1");
+            assertThat(config.getExpEntryTableCfg("DB2", "shared"))
+                    .isNotSameAs(legacy)
+                    .extracting(SourceTableConfig::getOwner)
+                    .isEqualTo("DB2");
+        }
+
+        private void addTableWithColumn(
+                Catalog catalog, String schemaName, String tableName, String dataType) {
+            Schema schema = new Schema();
+            schema.setName(schemaName);
+            Table table = new Table();
+            table.setName(tableName);
+            table.setOwner(schemaName);
+            Column column = new Column(table);
+            column.setName("col3");
+            column.setDataType(dataType);
+            column.setShownDataType(dataType);
+            column.setPrecision(64);
+            column.setJdbcIDOfDataType("text".equals(dataType) ? Types.CLOB : Types.TIMESTAMP);
+            table.addColumn(column);
+            schema.addTable(table);
+            catalog.addSchema(schema);
         }
 
         @Test

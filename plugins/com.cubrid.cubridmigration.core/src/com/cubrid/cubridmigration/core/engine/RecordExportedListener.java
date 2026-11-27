@@ -31,6 +31,7 @@
 package com.cubrid.cubridmigration.core.engine;
 
 import com.cubrid.cubridmigration.core.dbobject.Record;
+import com.cubrid.cubridmigration.core.engine.config.SourceEntryTableConfig;
 
 import java.util.List;
 
@@ -63,4 +64,19 @@ public interface RecordExportedListener {
      * @param tableName String
      */
     public void endExportTable(String tableName);
+
+    /** Process records while retaining the source schema identity for XML dumps. */
+    public default void processRecords(SourceEntryTableConfig sourceTable, List<Record> records) {
+        processRecords(sourceTable.getName(), records);
+    }
+
+    /** Notify the listener using the full source table configuration. */
+    public default void startExportTable(SourceEntryTableConfig sourceTable) {
+        startExportTable(sourceTable.getName());
+    }
+
+    /** Notify the listener using the full source table configuration. */
+    public default void endExportTable(SourceEntryTableConfig sourceTable) {
+        endExportTable(sourceTable.getName());
+    }
 }

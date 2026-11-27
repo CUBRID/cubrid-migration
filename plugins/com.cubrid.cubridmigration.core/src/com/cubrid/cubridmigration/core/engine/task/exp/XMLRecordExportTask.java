@@ -33,7 +33,7 @@ package com.cubrid.cubridmigration.core.engine.task.exp;
 import com.cubrid.cubridmigration.core.dbobject.Record;
 import com.cubrid.cubridmigration.core.engine.MigrationContext;
 import com.cubrid.cubridmigration.core.engine.RecordExportedListener;
-import com.cubrid.cubridmigration.core.engine.config.SourceTableConfig;
+import com.cubrid.cubridmigration.core.engine.config.SourceEntryTableConfig;
 import com.cubrid.cubridmigration.core.engine.event.ExportRecordsEvent;
 import com.cubrid.cubridmigration.core.engine.event.StartExpTableEvent;
 import com.cubrid.cubridmigration.core.engine.task.ExportTask;
@@ -59,26 +59,44 @@ public class XMLRecordExportTask extends ExportTask {
         exporter.exportAllRecords(
                 new RecordExportedListener() {
 
-                    public void processRecords(String sourceTableName, List<Record> records) {
-                        // XML doesn't support SQL table
-                        SourceTableConfig stc =
-                                mrManager.getConfig().getExpEntryTableCfg(null, sourceTableName);
+                    @Override
+                    public void processRecords(SourceEntryTableConfig stc, List<Record> records) {
                         if (stc == null || !stc.isMigrateData()) {
                             return;
                         }
-                        mrManager.getStatusMgr().addExpCount("", sourceTableName, records.size());
+                        mrManager
+                                .getStatusMgr()
+                                .addExpCount(stc.getOwner(), stc.getName(), records.size());
                         eventHandler.handleEvent(new ExportRecordsEvent(stc, records.size()));
                         importTaskExecutor = mrManager.getImportRecordExecutor();
                         importTaskExecutor.execute(
                                 (Runnable) taskFactory.createImportRecordsTask(stc, records));
                     }
 
-                    public void startExportTable(String tableName) {
-                        SourceTableConfig stc =
-                                mrManager.getConfig().getExpEntryTableCfg(null, tableName);
+                    @Override
+                    public void startExportTable(SourceEntryTableConfig stc) {
                         eventHandler.handleEvent(new StartExpTableEvent(stc));
                     }
 
+                    @Override
+                    public void endExportTable(SourceEntryTableConfig stc) {
+                        mrManager.getStatusMgr().setExpFinished(stc.getOwner(), stc.getName());
+                    }
+
+                    @Override
+                    public void processRecords(String sourceTableName, List<Record> records) {
+                        processRecords(
+                                mrManager.getConfig().getExpEntryTableCfg(null, sourceTableName),
+                                records);
+                    }
+
+                    @Override
+                    public void startExportTable(String tableName) {
+                        startExportTable(
+                                mrManager.getConfig().getExpEntryTableCfg(null, tableName));
+                    }
+
+                    @Override
                     public void endExportTable(String tableName) {
                         mrManager.getStatusMgr().setExpFinished("", tableName);
                     }

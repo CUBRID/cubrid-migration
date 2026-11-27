@@ -84,6 +84,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -1235,7 +1237,10 @@ public class MigrationConfiguration {
         if (isOneTableOneFile) {
             for (SourceEntryTableConfig table : expTables) {
                 this.addTargetTableDataFileName(
-                        schemaName, buildDataFileFullPath(schemaName, table.getName()));
+                        schemaName,
+                        buildDataFileFullPath(
+                                schemaName,
+                                getDataFileTableName(table.getOwner(), table.getName())));
             }
         }
         this.addTargetDataFileName(schemaName, buildDataFileFullPath(schemaName, "object"));
@@ -1425,8 +1430,14 @@ public class MigrationConfiguration {
                     setc.setMigrateData(isReset);
                     setc.setReplace(isReset);
                     setc.setEnableExpOpt(srcTable.getPk() != null);
-                } else if (sourceDBSchema.getTargetSchemaName() != null) {
-                    if (!sourceDBSchema.getTargetSchemaName().equals(setc.getTargetOwner())) {
+                } else {
+                    if (setc.getOwner() == null && isMultiDatabaseXMLDump()) {
+                        setc.setOwner(sourceDBSchema.getName());
+                    }
+                    if (sourceDBSchema.getTargetSchemaName() != null
+                            && !sourceDBSchema
+                                    .getTargetSchemaName()
+                                    .equals(setc.getTargetOwner())) {
                         setc.setTargetOwner(sourceDBSchema.getTargetSchemaName());
                     }
                 }
@@ -1910,7 +1921,7 @@ public class MigrationConfiguration {
             return;
         }
         SourceTableConfig setc = scc.getParent();
-        Table tt = getTargetTableSchema(setc.getTarget());
+        Table tt = getTargetTableSchema(setc.getTargetOwner(), setc.getTarget());
         if (tt == null) {
             throw new IllegalArgumentException("Cant't find target table:" + setc.getTarget());
         }
@@ -3072,12 +3083,11 @@ public class MigrationConfiguration {
                 if (schema == null) {
                     return setc;
                 }
-                if (schema.equalsIgnoreCase((setc.getOwner()))) {
+                if (schema.equalsIgnoreCase(setc.getOwner())) {
                     return setc;
                 }
-                if (setc.getOwner() == null) {
+                if (result == null && setc.getOwner() == null) {
                     result = setc;
-                    break;
                 }
             }
         }
@@ -3931,6 +3941,13 @@ public class MigrationConfiguration {
         return result == null ? "UTF-8" : result;
     }
 
+    /** Resolve the target column within the target schema selected for its table. */
+    public Column getTargetColumnSchema(SourceColumnConfig column) {
+        SourceTableConfig parent = column.getParent();
+        Table table = getTargetTableSchema(parent.getTargetOwner(), parent.getTarget());
+        return table == null ? null : table.getColumnByName(column.getTarget());
+    }
+
     /**
      * Get the export column by source table name and column name
      *
@@ -4392,7 +4409,7 @@ public class MigrationConfiguration {
         }
 
         for (Table tt : this.targetTables) {
-            if (tt.getName().equalsIgnoreCase(name) && tt.getOwner().equalsIgnoreCase(owner)) {
+            if (tt.getName().equalsIgnoreCase(name) && owner.equalsIgnoreCase(tt.getOwner())) {
                 return tt;
             }
         }
@@ -4977,12 +4994,16 @@ public class MigrationConfiguration {
     }
 
     /**
-     * If source is CUBRID or MySQL, the owner will be set to NULL.
+     * Clears owners for source types that normally expose a single schema. Multi-database MySQL XML
+     * dumps keep owners to preserve each database boundary.
      *
      * <p>It is called before changing catalog of the configuration.
      */
     public void resetSchemaInfo() {
         if (srcCatalog == null || srcCatalog.getDatabaseType().isSupportMultiSchema()) {
+            return;
+        }
+        if (isMultiDatabaseXMLDump()) {
             return;
         }
         // Set schema to null and remove duplicated objects
@@ -4995,6 +5016,22 @@ public class MigrationConfiguration {
         for (SourceSequenceConfig ssc : expSerials) {
             ssc.setOwner(null);
         }
+    }
+
+    /** Qualify per-table files when one MySQL dump contains several databases. */
+    public String getDataFileTableName(String sourceOwner, String tableName) {
+        if (isMultiDatabaseXMLDump() && StringUtils.isNotEmpty(sourceOwner)) {
+            return URLEncoder.encode(sourceOwner, StandardCharsets.UTF_8) + "." + tableName;
+        }
+        return tableName;
+    }
+
+    private boolean isMultiDatabaseXMLDump() {
+        if (!sourceIsXMLDump()) {
+            return false;
+        }
+        Catalog sourceCatalog = offlineFullSrcCatalog == null ? srcCatalog : offlineFullSrcCatalog;
+        return sourceCatalog != null && sourceCatalog.getSchemas().size() > 1;
     }
 
     /**

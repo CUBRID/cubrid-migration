@@ -767,7 +767,10 @@ public abstract class OfflineImporter extends Importer {
         File file = new File(tmpDataFileName);
         int successCnt;
         try {
-            final Table tt = config.getTargetTableSchema(stc.getTarget());
+            Table tt = config.getTargetTableSchema(stc.getTargetOwner(), stc.getTarget());
+            if (tt == null) {
+                tt = config.getTargetTableSchema(stc.getTarget());
+            }
             if (null == tt) {
                 throw new NormalMigrationException(
                         "Target Table " + stc.getTarget() + " not found.");

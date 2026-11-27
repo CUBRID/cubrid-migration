@@ -330,7 +330,9 @@ public class SchemaMappingPage extends MigrationWizardPage {
         srcTable.setSrcSchema(schema.name());
         srcTable.setNote(schema.grantorSchema());
 
-        if (!schema.grantorSchema()) {
+        boolean preserveSourceOrder =
+                config.sourceIsXMLDump() && schemaCatalog.getSchemas().size() > 1;
+        if (!schema.grantorSchema() && !preserveSourceOrder) {
             srcTableList.add(0, srcTable);
         } else {
             srcTableList.add(srcTable);
@@ -736,14 +738,17 @@ public class SchemaMappingPage extends MigrationWizardPage {
     private void populateDataAndIndexPaths(
             Schema schema, String schemaName, OfflineFilePathContext pathContext) {
         if (config.isOneTableOneFile()) {
-            List<String> tableList = new ArrayList<>();
+            List<String> tableList =
+                    pathContext.tableDataFileListFullName.computeIfAbsent(
+                            schemaName, key -> new ArrayList<>());
             schema.getTables()
                     .forEach(
                             table ->
                                     tableList.add(
                                             config.buildDataFileFullPath(
-                                                    schemaName, table.getName())));
-            pathContext.tableDataFileListFullName.put(schemaName, tableList);
+                                                    schemaName,
+                                                    config.getDataFileTableName(
+                                                            schema.getName(), table.getName()))));
         }
         pathContext.dataFullName.put(
                 schemaName, config.buildDataFileFullPath(schemaName, "objects"));
