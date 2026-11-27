@@ -5014,7 +5014,11 @@ public class MigrationConfiguration {
     }
 
     private boolean isMultiDatabaseXMLDump() {
-        return sourceIsXMLDump() && srcCatalog.getSchemas().size() > 1;
+        if (!sourceIsXMLDump()) {
+            return false;
+        }
+        Catalog sourceCatalog = offlineFullSrcCatalog == null ? srcCatalog : offlineFullSrcCatalog;
+        return sourceCatalog != null && sourceCatalog.getSchemas().size() > 1;
     }
 
     /**
