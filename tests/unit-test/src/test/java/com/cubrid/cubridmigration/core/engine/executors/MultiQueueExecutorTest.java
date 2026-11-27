@@ -342,7 +342,7 @@ class MultiQueueExecutorTest {
 
     @Test
     @DisplayName("concurrent execute()/releaseKey() and isBusy() polling never throw")
-    void concurrentReleaseKeyAndIsBusy_neverThrows() throws InterruptedException {
+    void releaseKey_concurrentWithIsBusy_neverThrows() throws InterruptedException {
         final int producers = 4;
         final int keysPerProducer = 300;
         MultiQueueExecutor executor = new MultiQueueExecutor(1, false);

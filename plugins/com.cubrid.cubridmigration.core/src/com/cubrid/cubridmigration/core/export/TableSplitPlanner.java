@@ -169,9 +169,10 @@ public class TableSplitPlanner {
      * ones. Composite indexes are skipped for the same reason composite PKs are skipped - a
      * multi-column range predicate is out of scope for this planner.
      *
-     * <p>Columns that allow NULL are skipped as well: the range predicate ({@code col BETWEEN lo AND
-     * hi}) never matches a NULL, so splitting on such a column would silently drop every row whose
-     * value is NULL. PK columns are NOT NULL by definition, so only this index path needs the check.
+     * <p>Columns that allow NULL are skipped as well: the range predicate ({@code col BETWEEN lo
+     * AND hi}) never matches a NULL, so splitting on such a column would silently drop every row
+     * whose value is NULL. PK columns are NOT NULL by definition, so only this index path needs the
+     * check.
      *
      * <p>TODO: index cardinality/statistics aren't tracked anywhere in this codebase's metadata, so
      * this can't distinguish a high-cardinality index from a low-cardinality one. {@link
@@ -246,9 +247,9 @@ public class TableSplitPlanner {
     }
 
     /**
-     * Computes up to {@code degree} non-overlapping, gap-free value ranges that together cover every
-     * value of the split column (see {@link SplitRange} for the half-open convention). MIN/MAX only
-     * - no COUNT(*) - so this stays cheap regardless of table size.
+     * Computes up to {@code degree} non-overlapping, gap-free value ranges that together cover
+     * every value of the split column (see {@link SplitRange} for the half-open convention).
+     * MIN/MAX only - no COUNT(*) - so this stays cheap regardless of table size.
      *
      * <p>TODO: identifier quoting/escaping is not dialect-aware yet - reuse the quoting helpers
      * already in {@link DBExportHelper} and its per-DB subclasses instead of the naive {@code
@@ -335,9 +336,9 @@ public class TableSplitPlanner {
     }
 
     /**
-     * Boundaries for integer-valued MIN/MAX: {@code lo + i * (hi - lo + 1) / degree}, so e.g.
-     * [1, 100] in 4 ranges splits at 26, 51 and 76. Boundaries that would not advance (a span
-     * smaller than the degree) are dropped rather than producing empty ranges.
+     * Boundaries for integer-valued MIN/MAX: {@code lo + i * (hi - lo + 1) / degree}, so e.g. [1,
+     * 100] in 4 ranges splits at 26, 51 and 76. Boundaries that would not advance (a span smaller
+     * than the degree) are dropped rather than producing empty ranges.
      */
     private List<Object> integerBoundaries(BigInteger lo, BigInteger hi, int degree) {
         BigInteger span = hi.subtract(lo).add(BigInteger.ONE);

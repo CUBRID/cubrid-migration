@@ -195,7 +195,8 @@ class TableSplitPlannerTest {
     }
 
     @Test
-    @DisplayName("a nullable unique index column is skipped, since BETWEEN would drop its NULL rows")
+    @DisplayName(
+            "a nullable unique index column is skipped, since BETWEEN would drop its NULL rows")
     void determineSplitColumn_nullableUniqueIndexColumn_returnsNull() {
         Table table = createTable("logs");
         addColumn(table, "seq", "BIGINT"); // nullable by default
@@ -278,8 +279,9 @@ class TableSplitPlannerTest {
     // ---------------------------------------------------------------
 
     @Test
-    @DisplayName("numeric bounds are emitted as unquoted literals, lower inclusive and upper exclusive")
-    void buildRangeCondition_numericBounds_areUnquotedHalfOpen() {
+    @DisplayName(
+            "numeric bounds are emitted as unquoted literals, lower inclusive and upper exclusive")
+    void buildRangeCondition_numericBounds_emitsUnquotedHalfOpenPredicate() {
         Column id = new Column();
         id.setName("id");
 
@@ -290,12 +292,11 @@ class TableSplitPlannerTest {
 
     @Test
     @DisplayName("an unbounded side is omitted from the predicate")
-    void buildRangeCondition_unboundedSides_areOmitted() {
+    void buildRangeCondition_unboundedSide_omitsThatComparison() {
         Column id = new Column();
         id.setName("id");
 
-        assertThat(planner.buildRangeCondition(id, new SplitRange(null, 26L)))
-                .isEqualTo("id < 26");
+        assertThat(planner.buildRangeCondition(id, new SplitRange(null, 26L))).isEqualTo("id < 26");
         assertThat(planner.buildRangeCondition(id, new SplitRange(76L, null)))
                 .isEqualTo("id >= 76");
     }
@@ -311,7 +312,7 @@ class TableSplitPlannerTest {
 
     @Test
     @DisplayName("BigDecimal bounds are written in plain notation, never exponent form")
-    void buildRangeCondition_bigDecimalBounds_arePlainNotation() {
+    void buildRangeCondition_bigDecimalBounds_writesPlainNotation() {
         Column amount = new Column();
         amount.setName("amount");
 
@@ -393,8 +394,7 @@ class TableSplitPlannerTest {
         // Truncating through longValue() gave [0,2] [3,5] [6,8] [9,10] here, so 2.5, 5.5, 8.7
         // and 10.7 matched no range at all.
         List<SplitRange> ranges =
-                calculateRangesFor(
-                        "DECIMAL", new BigDecimal("0.5"), new BigDecimal("10.7"), 4);
+                calculateRangesFor("DECIMAL", new BigDecimal("0.5"), new BigDecimal("10.7"), 4);
 
         assertThat(ranges)
                 .extracting(range -> planner.buildRangeCondition(idColumn(), range))
@@ -406,11 +406,11 @@ class TableSplitPlannerTest {
     }
 
     @Test
-    @DisplayName("every value, boundaries and out-of-MIN/MAX values included, is in exactly one range")
+    @DisplayName(
+            "every value, boundaries and out-of-MIN/MAX values included, is in exactly one range")
     void calculateRanges_anyValue_belongsToExactlyOneRange() throws Exception {
         List<SplitRange> ranges =
-                calculateRangesFor(
-                        "DECIMAL", new BigDecimal("0.5"), new BigDecimal("10.7"), 4);
+                calculateRangesFor("DECIMAL", new BigDecimal("0.5"), new BigDecimal("10.7"), 4);
 
         String[] samples = {
             "-1000", "0.5", "2.5", "3.05", "3.0499", "5.6", "5.5", "8.15", "8.7", "10.7", "10.71",
@@ -439,8 +439,8 @@ class TableSplitPlannerTest {
     }
 
     @Test
-    @DisplayName("boundaries beyond the long range are BigDecimal (a JDBC standard type), not BigInteger")
-    void calculateRanges_boundsBeyondLong_areBigDecimal() throws Exception {
+    @DisplayName("boundaries beyond the long range are BigDecimal, not BigInteger")
+    void calculateRanges_boundsBeyondLong_returnsBigDecimalBounds() throws Exception {
         // e.g. an Oracle NUMBER(38) key: MIN/MAX arrive as BigDecimal and the cut points no longer
         // fit in a long.
         List<SplitRange> ranges =
@@ -455,8 +455,7 @@ class TableSplitPlannerTest {
         assertThat(((BigDecimal) ranges.get(0).getUpperBound()).toPlainString())
                 .isEqualTo("25000000000000000000000000");
         assertThat(planner.buildRangeCondition(idColumn(), ranges.get(1)))
-                .isEqualTo(
-                        "id >= 25000000000000000000000000 AND id < 50000000000000000000000000");
+                .isEqualTo("id >= 25000000000000000000000000 AND id < 50000000000000000000000000");
     }
 
     @Test
@@ -625,8 +624,9 @@ class TableSplitPlannerTest {
     }
 
     @Test
-    @DisplayName("each COUNT(*) uses the same half-open predicate as the export, bound as parameters")
-    void validateSkew_countsWithHalfOpenPredicate_bindingOnlyPresentBounds() throws Exception {
+    @DisplayName(
+            "each COUNT(*) uses the same half-open predicate as the export, bound as parameters")
+    void validateSkew_rangesWithOpenSides_bindsOnlyPresentBounds() throws Exception {
         Table table = createTable("orders");
         Column id = addColumn(table, "id", "BIGINT");
         List<SplitRange> ranges =

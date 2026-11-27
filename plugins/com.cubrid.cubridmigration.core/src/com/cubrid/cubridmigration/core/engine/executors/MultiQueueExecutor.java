@@ -30,15 +30,15 @@
  */
 package com.cubrid.cubridmigration.core.engine.executors;
 
+import com.cubrid.common.log.LogUtil;
+import com.cubrid.cubridmigration.core.engine.task.ITableKeyedTask;
+
+import org.slf4j.Logger;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import org.slf4j.Logger;
-
-import com.cubrid.common.log.LogUtil;
-import com.cubrid.cubridmigration.core.engine.task.ITableKeyedTask;
 
 /**
  * MultiQueueExecutor will execute the tasks in a thread pool which only has one thread.
@@ -51,7 +51,8 @@ public class MultiQueueExecutor implements IRunnableExecutor {
     private static final Logger LOG = LogUtil.getLogger(MultiQueueExecutor.class);
 
     /** Live queues by key. Guarded by {@link #lockObj}. */
-    private final Map<Object, IRunnableExecutor> executors = new HashMap<Object, IRunnableExecutor>();
+    private final Map<Object, IRunnableExecutor> executors =
+            new HashMap<Object, IRunnableExecutor>();
 
     /**
      * Queues already released by {@link #releaseKey} (no more tasks will be submitted) that may
