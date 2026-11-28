@@ -30,8 +30,14 @@
  */
 package com.cubrid.cubridmigration.core.engine;
 
+import com.cubrid.common.log.LogUtil;
+
+import org.slf4j.Logger;
+
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * MigrationStatusManager: thread safe.
@@ -40,6 +46,32 @@ import java.util.Map;
  * @version 1.0 - 2013-6-27 created by Kevin Cao
  */
 public class MigrationStatusManager {
+
+    private static final Logger LOG = LogUtil.getLogger(MigrationStatusManager.class);
+
+    /**
+     * Told once, at the moment the last export range of a source reports finished. The "all
+     * exported" condition is one half of what an importer needs to know (the other half being "all
+     * imported"), and it can turn true after the last import has already completed - for example
+     * when the last range to finish returned no rows and so produced no import task - so a listener
+     * lets the importer re-check at exactly that moment instead of relying only on its own
+     * per-batch callbacks.
+     */
+    public interface TableExportFinishedListener {
+
+        /**
+         * Called from the export thread that finished the source's last range, after the status has
+         * been updated and without any lock of this manager held, so the listener may freely call
+         * back into this manager.
+         *
+         * @param owner of the source, as passed to {@link #setExpFinished}
+         * @param source name of the source, as passed to {@link #setExpFinished}
+         */
+        void tableExportFinished(String owner, String source);
+    }
+
+    private final List<TableExportFinishedListener> tableExportFinishedListeners =
+            new CopyOnWriteArrayList<TableExportFinishedListener>();
 
     private long maxMemory;
     private long alertFreeMemory;
@@ -242,10 +274,16 @@ public class MigrationStatusManager {
      * source split into N ranges only becomes "done" (per {@link #getExpFlag}) once this has been
      * called N times.
      *
+     * <p>The call that completes the last range also notifies the registered {@link
+     * TableExportFinishedListener}s, once, outside this manager's lock.
+     *
      * @param owner of the object
      * @param source name
      */
     public void setExpFinished(String owner, String source) {
+        // True only for the call that finishes the last remaining range, i.e. the one call that
+        // turns the source from "still exporting" into "all exported".
+        final boolean completedLastRange;
         synchronized (lockObj) {
             String src = (owner == null ? "" : owner) + "." + source;
             DataMigrationStatus dms = dataMigrationStatus.get(src);
@@ -254,7 +292,34 @@ public class MigrationStatusManager {
                 dms.setSource(src);
                 dataMigrationStatus.put(src, dms);
             }
+            // Snapshot taken before this call is counted: were all ranges already finished?
+            final boolean wasAllExportFinished = dms.isExportFinished();
             dms.finishExportRange();
+            completedLastRange = !wasAllExportFinished && dms.isExportFinished();
+        }
+        if (completedLastRange) {
+            notifyTableExportFinished(owner, source);
+        }
+    }
+
+    /**
+     * Registers a listener told when a source's export becomes complete.
+     *
+     * @param listener to be told
+     */
+    public void addTableExportFinishedListener(TableExportFinishedListener listener) {
+        tableExportFinishedListeners.add(listener);
+    }
+
+    private void notifyTableExportFinished(String owner, String source) {
+        for (TableExportFinishedListener listener : tableExportFinishedListeners) {
+            try {
+                listener.tableExportFinished(owner, source);
+            } catch (RuntimeException ex) {
+                // A listener is a safety net; it must never break the export thread that happened
+                // to finish the table, nor keep the other listeners from being told.
+                LOG.error("Table export finished listener failed for " + owner + "." + source, ex);
+            }
         }
     }
 

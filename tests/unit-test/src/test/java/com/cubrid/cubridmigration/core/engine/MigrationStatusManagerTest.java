@@ -29,17 +29,23 @@
 package com.cubrid.cubridmigration.core.engine;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
+
 /**
- * Regression coverage for the export-completion tracking in {@link MigrationStatusManager}: it
- * used to be a plain boolean flag that assumed exactly one export task per table, which silently
- * breaks once a table is split into N parallel range tasks (the first range to finish would mark
- * the whole table done while the others are still exporting - see TableSplitPlanner and
- * LoadFileImporter's use of getExpFlag() to trigger the final file merge).
+ * Regression coverage for the export-completion tracking in {@link MigrationStatusManager}: it used
+ * to be a plain boolean flag that assumed exactly one export task per table, which silently breaks
+ * once a table is split into N parallel range tasks (the first range to finish would mark the whole
+ * table done while the others are still exporting - see TableSplitPlanner and LoadFileImporter's
+ * use of getExpFlag() to trigger the final file merge).
  */
 @DisplayName("MigrationStatusManager export completion tracking")
 class MigrationStatusManagerTest {
@@ -89,8 +95,9 @@ class MigrationStatusManagerTest {
     }
 
     @Test
-    @DisplayName("registering the range count after construction still works if done before any"
-            + " range reports finished")
+    @DisplayName(
+            "registering the range count after construction still works if done before any"
+                    + " range reports finished")
     void registerExportRangeCount_beforeAnyFinish_isRespected() {
         statusManager.registerExportRangeCount(OWNER, TABLE, 2);
 
@@ -138,5 +145,102 @@ class MigrationStatusManagerTest {
         // Row counting and range-completion tracking are independent: no range has reported
         // finished yet even though records were counted.
         assertThat(statusManager.getExpFlag(OWNER, TABLE)).isFalse();
+    }
+
+    @Test
+    @DisplayName("the listener is told once, only when the last of the registered ranges finishes")
+    void setExpFinished_lastOfThreeRegisteredRanges_notifiesListenerOnce() {
+        List<String> told = new ArrayList<String>();
+        statusManager.addTableExportFinishedListener(
+                (owner, source) -> told.add(owner + "." + source));
+        statusManager.registerExportRangeCount(OWNER, TABLE, 3);
+
+        statusManager.setExpFinished(OWNER, TABLE);
+        statusManager.setExpFinished(OWNER, TABLE);
+        assertThat(told).isEmpty();
+
+        statusManager.setExpFinished(OWNER, TABLE);
+
+        assertThat(told).containsExactly(OWNER + "." + TABLE);
+    }
+
+    @Test
+    @DisplayName("an unsplit source notifies the listener after its single setExpFinished() call")
+    void setExpFinished_unregisteredSource_notifiesListenerAfterOneCall() {
+        AtomicInteger told = new AtomicInteger();
+        statusManager.addTableExportFinishedListener((owner, source) -> told.incrementAndGet());
+
+        statusManager.setExpFinished(OWNER, TABLE);
+
+        assertThat(told.get()).isEqualTo(1);
+    }
+
+    @Test
+    @DisplayName("an extra setExpFinished() after the source is done does not notify again")
+    void setExpFinished_afterAlreadyFinished_doesNotNotifyAgain() {
+        AtomicInteger told = new AtomicInteger();
+        statusManager.addTableExportFinishedListener((owner, source) -> told.incrementAndGet());
+
+        statusManager.setExpFinished(OWNER, TABLE);
+        statusManager.setExpFinished(OWNER, TABLE);
+
+        assertThat(told.get()).isEqualTo(1);
+    }
+
+    @Test
+    @DisplayName("the listener sees the source already finished, and is told per source")
+    void setExpFinished_listener_seesFlagTrueForTheFinishedSourceOnly() {
+        List<Boolean> flagSeen = new ArrayList<Boolean>();
+        statusManager.addTableExportFinishedListener(
+                (owner, source) -> flagSeen.add(statusManager.getExpFlag(owner, source)));
+        statusManager.registerExportRangeCount(OWNER, "table_b", 2);
+
+        statusManager.setExpFinished(OWNER, "table_b");
+        statusManager.setExpFinished(OWNER, "table_a");
+
+        // Only table_a (one range) finished; table_b is still waiting for its second range.
+        assertThat(flagSeen).containsExactly(true);
+    }
+
+    @Test
+    @DisplayName("the listener is called without the manager's lock, so another thread can use it")
+    void setExpFinished_listener_runsOutsideTheManagersLock() throws InterruptedException {
+        AtomicReference<Long> countSeenByOtherThread = new AtomicReference<Long>();
+        statusManager.addExpCount(OWNER, TABLE, 42);
+        statusManager.addTableExportFinishedListener(
+                (owner, source) -> {
+                    Thread other =
+                            new Thread(
+                                    () ->
+                                            countSeenByOtherThread.set(
+                                                    statusManager.getExpCount(owner, source)));
+                    other.start();
+                    try {
+                        // If the manager's lock were still held here, the other thread could not
+                        // read the count and this join would time out.
+                        other.join(5000);
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                    }
+                });
+
+        statusManager.setExpFinished(OWNER, TABLE);
+
+        assertThat(countSeenByOtherThread.get()).isEqualTo(42L);
+    }
+
+    @Test
+    @DisplayName("a listener that throws neither fails setExpFinished() nor hides the others")
+    void setExpFinished_listenerThrows_stillNotifiesTheRest() {
+        AtomicInteger told = new AtomicInteger();
+        statusManager.addTableExportFinishedListener(
+                (owner, source) -> {
+                    throw new IllegalStateException("expected by the test");
+                });
+        statusManager.addTableExportFinishedListener((owner, source) -> told.incrementAndGet());
+
+        assertThatCode(() -> statusManager.setExpFinished(OWNER, TABLE)).doesNotThrowAnyException();
+
+        assertThat(told.get()).isEqualTo(1);
     }
 }
