@@ -30,8 +30,10 @@ package com.cubrid.cubridmigration.core.engine.exporter.impl;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -55,6 +57,10 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -368,6 +374,68 @@ class JDBCExporterTest {
             columns.add(scc);
         }
         return columns;
+    }
+
+    // ---------------------------------------------------------------
+    // getResultSet(): a statement that fails on an attempt must not be left open
+    // ---------------------------------------------------------------
+
+    @Test
+    @DisplayName("a prepared statement whose parameter binding fails is closed before the retry")
+    void getResultSet_bindingFails_closesTheFailedPreparedStatement() throws Exception {
+        PreparedStatement failed = mock(PreparedStatement.class);
+        PreparedStatement retried = mock(PreparedStatement.class);
+        doThrow(new SQLException("bind failed")).when(failed).setObject(1, 10L);
+        ResultSet rs = mock(ResultSet.class);
+        when(retried.executeQuery()).thenReturn(rs);
+        Connection conn = mock(Connection.class);
+        when(conn.prepareStatement(anyString(), anyInt(), anyInt())).thenReturn(failed, retried);
+        JDBCExporter.JDBCObjContainer joc = containerFor(conn);
+
+        statementExporter(mock(DBExportHelper.class))
+                .getResultSet("SELECT id FROM orders WHERE id > ?", new Object[] {10L}, joc);
+
+        verify(failed).close();
+        verify(retried, never()).close();
+        assertThat(joc.getStmt()).isSameAs(retried);
+        assertThat(joc.getRs()).isSameAs(rs);
+    }
+
+    @Test
+    @DisplayName("a plain statement that fails while being configured is closed before the retry")
+    void getResultSet_configureFails_closesTheFailedStatement() throws Exception {
+        Statement failed = mock(Statement.class);
+        Statement retried = mock(Statement.class);
+        ResultSet rs = mock(ResultSet.class);
+        when(retried.executeQuery(anyString())).thenReturn(rs);
+        Connection conn = mock(Connection.class);
+        when(conn.createStatement(anyInt(), anyInt())).thenReturn(failed, retried);
+        DBExportHelper helper = mock(DBExportHelper.class);
+        doThrow(new IllegalStateException("config failed")).when(helper).configStatement(failed);
+        JDBCExporter.JDBCObjContainer joc = containerFor(conn);
+
+        statementExporter(helper).getResultSet("SELECT id FROM orders", null, joc);
+
+        verify(failed).close();
+        verify(retried, never()).close();
+        assertThat(joc.getStmt()).isSameAs(retried);
+        assertThat(joc.getRs()).isSameAs(rs);
+    }
+
+    private static JDBCExporter.JDBCObjContainer containerFor(Connection conn) {
+        JDBCExporter.JDBCObjContainer joc = new JDBCExporter.JDBCObjContainer();
+        joc.setConn(conn);
+        return joc;
+    }
+
+    /** An exporter that only needs the export helper, as {@code getResultSet} does. */
+    private static JDBCExporter statementExporter(DBExportHelper helper) {
+        return new JDBCExporter() {
+            @Override
+            protected DBExportHelper getSrcDBExportHelper() {
+                return helper;
+            }
+        };
     }
 
     // ---------------------------------------------------------------

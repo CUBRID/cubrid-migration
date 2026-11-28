@@ -721,27 +721,28 @@ public class JDBCExporter extends MigrationExporter {
         while (true) {
             try {
                 if (hasParams) {
+                    // Kept in stmt from the moment it exists, so the catch below closes it even
+                    // if configuring, binding or executing it throws.
                     PreparedStatement pstmt =
                             joc.getConn()
                                     .prepareStatement(
                                             sql,
                                             ResultSet.TYPE_FORWARD_ONLY,
                                             ResultSet.CONCUR_READ_ONLY); // NOPMD
+                    stmt = pstmt;
                     getSrcDBExportHelper().configStatement(pstmt);
                     for (int i = 0; i < params.length; i++) {
                         pstmt.setObject(i + 1, params[i]);
                     }
                     rs = pstmt.executeQuery(); // NOPMD
-                    stmt = pstmt;
                 } else {
-                    Statement plainStmt =
+                    stmt =
                             joc.getConn()
                                     .createStatement(
                                             ResultSet.TYPE_FORWARD_ONLY,
                                             ResultSet.CONCUR_READ_ONLY); // NOPMD
-                    getSrcDBExportHelper().configStatement(plainStmt);
-                    rs = plainStmt.executeQuery(sql); // NOPMD
-                    stmt = plainStmt;
+                    getSrcDBExportHelper().configStatement(stmt);
+                    rs = stmt.executeQuery(sql); // NOPMD
                 }
                 break;
             } catch (Exception ex) {
