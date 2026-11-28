@@ -47,7 +47,10 @@ public class SingleQueueExecutor implements IRunnableExecutor {
 
     protected final boolean limitTaskCount;
 
-    /** Tasks accepted so far. Guarded by {@link #lockObj}. */
+    /**
+     * Tasks submitted to the pool so far; a submitter still waiting for a slot is not counted.
+     * Guarded by {@link #lockObj}.
+     */
     protected long taskCount;
 
     /**
@@ -89,28 +92,25 @@ public class SingleQueueExecutor implements IRunnableExecutor {
      */
     public void execute(Runnable tk) {
         synchronized (lockObj) {
-            taskCount++;
-            boolean submitted = false;
-            try {
-                while (limitTaskCount && tooManyTasks()) {
-                    if (interrupted) {
-                        throw new RuntimeException("Interrupted.");
-                    }
-                    awaitFreeSlot();
-                }
+            while (limitTaskCount && tooManyTasks()) {
                 if (interrupted) {
                     throw new RuntimeException("Interrupted.");
                 }
-                executor.execute(countOnCompletion(tk));
-                submitted = true;
-            } finally {
-                if (!submitted) {
-                    // The task never reached the pool, so it must not count as outstanding
-                    // forever (it would otherwise keep isBusy() true and eat a queue slot).
-                    taskCount--;
-                    lockObj.notifyAll();
-                }
+                awaitFreeSlot();
             }
+            if (interrupted) {
+                throw new RuntimeException("Interrupted.");
+            }
+            executor.execute(countOnCompletion(tk));
+            // Counted only now that the task really is in the pool. A submitter still waiting for a
+            // slot must not count: several of them (e.g. one per split range feeding this shared
+            // queue) could otherwise keep the count above the limit all by themselves after every
+            // queued task had finished, and nobody would ever be let in again. A task that never
+            // reaches the pool (rejected, or interrupted while waiting) is simply never counted.
+            // Counting after the hand-off is safe against a fast task: its completion also needs
+            // lockObj, which this thread holds until it returns, so the task cannot be counted as
+            // completed before it was counted as submitted.
+            taskCount++;
         }
     }
 
@@ -153,12 +153,14 @@ public class SingleQueueExecutor implements IRunnableExecutor {
     }
 
     /**
-     * True if there are too many tasks in queue.
+     * True if the queue is full, i.e. one more task must not be submitted yet. {@link #taskCount}
+     * only counts tasks already submitted (a submitter still waiting is not one of them), so the
+     * queue is full once {@code poolSize} of them are outstanding.
      *
-     * @return True if there are too many tasks in queue.
+     * @return True if the queue is full.
      */
     protected boolean tooManyTasks() {
-        return (taskCount - completedCount) > poolSize;
+        return (taskCount - completedCount) >= poolSize;
     }
 
     /** Interrupted */

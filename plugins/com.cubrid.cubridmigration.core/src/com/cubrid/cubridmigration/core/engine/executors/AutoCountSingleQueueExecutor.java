@@ -57,34 +57,26 @@ public class AutoCountSingleQueueExecutor extends SingleQueueExecutor {
      */
     public void execute(Runnable tk) {
         synchronized (lockObj) {
-            taskCount++;
-            boolean submitted = false;
-            try {
-                while (limitTaskCount && tooManyTasks()) {
-                    if (interrupted) {
-                        throw new RuntimeException("Interrupted.");
-                    }
-                    if ((executor.getPoolSize() >= MAX_THREAD) || CommonUtils.oomWarning()) {
-                        awaitFreeSlot();
-                    } else if (System.currentTimeMillis() - lastAdjustTime >= 60000) {
-                        lastAdjustTime = System.currentTimeMillis();
-                        poolSize++;
-                        executor.setCorePoolSize(executor.getPoolSize() + 1);
-                    } else {
-                        awaitFreeSlot();
-                    }
-                }
+            while (limitTaskCount && tooManyTasks()) {
                 if (interrupted) {
                     throw new RuntimeException("Interrupted.");
                 }
-                executor.execute(countOnCompletion(tk));
-                submitted = true;
-            } finally {
-                if (!submitted) {
-                    taskCount--;
-                    lockObj.notifyAll();
+                if ((executor.getPoolSize() >= MAX_THREAD) || CommonUtils.oomWarning()) {
+                    awaitFreeSlot();
+                } else if (System.currentTimeMillis() - lastAdjustTime >= 60000) {
+                    lastAdjustTime = System.currentTimeMillis();
+                    poolSize++;
+                    executor.setCorePoolSize(executor.getPoolSize() + 1);
+                } else {
+                    awaitFreeSlot();
                 }
             }
+            if (interrupted) {
+                throw new RuntimeException("Interrupted.");
+            }
+            executor.execute(countOnCompletion(tk));
+            // Counted only once really submitted - see SingleQueueExecutor#execute.
+            taskCount++;
 
             if (System.currentTimeMillis() - lastAdjustTime <= 180000) {
                 return;

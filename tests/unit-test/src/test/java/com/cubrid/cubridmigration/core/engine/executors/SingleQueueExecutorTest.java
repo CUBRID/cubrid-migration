@@ -29,11 +29,15 @@
 package com.cubrid.cubridmigration.core.engine.executors;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
@@ -41,11 +45,11 @@ import java.util.concurrent.atomic.AtomicReference;
 /**
  * Regression coverage for {@link SingleQueueExecutor}'s task-count limit.
  *
- * <p>The limit used to be enforced by a loop that slept 200 ms between checks <em>while holding
- * the executor's monitor</em>. Two things followed: every other submitter stood BLOCKED on the
- * monitor behind the one sleeper, and a freed slot was only noticed at the next 200 ms tick - so
- * several parallel export ranges feeding one table's import queue spent most of their time asleep
- * while the importers sat idle, capping throughput at roughly one queue-full per 200 ms.
+ * <p>The limit used to be enforced by a loop that slept 200 ms between checks <em>while holding the
+ * executor's monitor</em>. Two things followed: every other submitter stood BLOCKED on the monitor
+ * behind the one sleeper, and a freed slot was only noticed at the next 200 ms tick - so several
+ * parallel export ranges feeding one table's import queue spent most of their time asleep while the
+ * importers sat idle, capping throughput at roughly one queue-full per 200 ms.
  *
  * <p>The tests drive that through thread states and latches (a blocked submitter is either
  * TIMED_WAITING on the monitor or BLOCKED behind someone) rather than through elapsed time, except
@@ -148,6 +152,106 @@ class SingleQueueExecutorTest {
     }
 
     @Test
+    @DisplayName(
+            "more waiting submitters than the limit all go through once the queued tasks finish")
+    void execute_moreWaitingSubmittersThanLimit_allGoThroughOnceQueuedTasksFinish()
+            throws InterruptedException {
+        SingleQueueExecutor executor = new SingleQueueExecutor(ONE_THREAD, true);
+        CountDownLatch release = new CountDownLatch(1);
+        // e.g. four export threads feeding one shared import queue whose limit is only three.
+        int submitters = LIMIT_FOR_ONE_THREAD + 1;
+        CountDownLatch accepted = new CountDownLatch(submitters);
+        List<Thread> threads = new ArrayList<Thread>();
+        try {
+            for (int i = 0; i < LIMIT_FOR_ONE_THREAD; i++) {
+                executor.execute(() -> awaitLatchQuietly(release));
+            }
+            for (int i = 0; i < submitters; i++) {
+                Thread thread = new Thread(() -> executor.execute(accepted::countDown));
+                threads.add(thread);
+                thread.start();
+            }
+            for (Thread thread : threads) {
+                assertThat(awaitState(thread, Thread.State.TIMED_WAITING)).isTrue();
+            }
+
+            release.countDown();
+
+            // The queued tasks are done, so nothing is outstanding any more and every waiter must
+            // be let in. A waiter that was already counted while it waited would still see
+            // `submitters` outstanding tasks - more than the limit - and wait forever.
+            assertThat(awaitLatch(accepted)).isTrue();
+        } finally {
+            release.countDown();
+            // Frees any submitter still parked, so a failing run cannot hang the build.
+            executor.interrupt();
+        }
+    }
+
+    @Test
+    @DisplayName("a task rejected by the pool is not counted as outstanding")
+    void execute_rejectedByPool_isNotCountedAsOutstanding() {
+        SingleQueueExecutor executor = new SingleQueueExecutor(ONE_THREAD, true);
+        executor.dispose();
+
+        assertThatThrownBy(() -> executor.execute(() -> {}))
+                .isInstanceOf(RejectedExecutionException.class);
+
+        assertThat(executor.isBusy()).isFalse();
+    }
+
+    @Test
+    @DisplayName(
+            "waiting submitters whose tasks the pool rejects neither block each other nor leak"
+                    + " the count")
+    void execute_waitingSubmittersRejectedByPool_doNotBlockEachOtherOrLeakCount()
+            throws InterruptedException {
+        SingleQueueExecutor executor = new SingleQueueExecutor(ONE_THREAD, true);
+        CountDownLatch release = new CountDownLatch(1);
+        AtomicInteger rejected = new AtomicInteger();
+        List<Thread> threads = new ArrayList<Thread>();
+        try {
+            for (int i = 0; i < LIMIT_FOR_ONE_THREAD; i++) {
+                executor.execute(() -> awaitLatchQuietly(release));
+            }
+            // Graceful: the three tasks above still finish, but anything new is rejected.
+            executor.dispose();
+            for (int i = 0; i < 2; i++) {
+                Thread thread =
+                        new Thread(
+                                () -> {
+                                    try {
+                                        executor.execute(() -> {});
+                                    } catch (RejectedExecutionException expected) {
+                                        rejected.incrementAndGet();
+                                    }
+                                });
+                threads.add(thread);
+                thread.start();
+            }
+            for (Thread thread : threads) {
+                assertThat(awaitState(thread, Thread.State.TIMED_WAITING)).isTrue();
+            }
+
+            release.countDown();
+
+            // Nothing wakes the waiters when a submission fails, so each must get through on the
+            // completion notifications alone and fail on its own, without holding up the other.
+            for (Thread thread : threads) {
+                thread.join(AWAIT_SECONDS * 1000);
+                assertThat(thread.isAlive()).isFalse();
+            }
+            assertThat(rejected.get()).isEqualTo(2);
+            // A rejected task was never counted, so once the three real ones finished nothing is
+            // left outstanding.
+            assertThat(awaitIdle(executor)).isTrue();
+        } finally {
+            release.countDown();
+            executor.interrupt();
+        }
+    }
+
+    @Test
     @DisplayName("a task that throws still frees its slot")
     void execute_taskThrows_stillFreesItsSlot() {
         SingleQueueExecutor executor = new SingleQueueExecutor(ONE_THREAD, true);
@@ -196,7 +300,9 @@ class SingleQueueExecutorTest {
 
             submitter.join(AWAIT_SECONDS * 1000);
             assertThat(submitter.isAlive()).isFalse();
-            assertThat(thrown.get()).isInstanceOf(RuntimeException.class).hasMessage("Interrupted.");
+            assertThat(thrown.get())
+                    .isInstanceOf(RuntimeException.class)
+                    .hasMessage("Interrupted.");
         } finally {
             release.countDown();
             executor.dispose();
@@ -262,7 +368,9 @@ class SingleQueueExecutorTest {
         awaitLatch(latch);
     }
 
-    /** Polls the thread's state (no sleeps in the code under test) until it reaches {@code state}. */
+    /**
+     * Polls the thread's state (no sleeps in the code under test) until it reaches {@code state}.
+     */
     private static boolean awaitState(Thread thread, Thread.State state) {
         long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(AWAIT_SECONDS);
         while (System.nanoTime() < deadline) {
