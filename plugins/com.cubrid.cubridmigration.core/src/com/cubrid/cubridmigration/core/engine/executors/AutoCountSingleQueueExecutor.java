@@ -31,7 +31,6 @@
 package com.cubrid.cubridmigration.core.engine.executors;
 
 import com.cubrid.cubridmigration.core.common.CommonUtils;
-import com.cubrid.cubridmigration.core.engine.ThreadUtils;
 
 /**
  * AutoCountSingleQueueExecutor will automatically change thread pool's size to get the best
@@ -58,30 +57,31 @@ public class AutoCountSingleQueueExecutor extends SingleQueueExecutor {
      */
     public void execute(Runnable tk) {
         synchronized (lockObj) {
-            taskCount++;
             while (limitTaskCount && tooManyTasks()) {
                 if (interrupted) {
                     throw new RuntimeException("Interrupted.");
                 }
                 if ((executor.getPoolSize() >= MAX_THREAD) || CommonUtils.oomWarning()) {
-                    ThreadUtils.threadSleep(200, null);
+                    awaitFreeSlot();
                 } else if (System.currentTimeMillis() - lastAdjustTime >= 60000) {
                     lastAdjustTime = System.currentTimeMillis();
                     poolSize++;
                     executor.setCorePoolSize(executor.getPoolSize() + 1);
                 } else {
-                    ThreadUtils.threadSleep(200, null);
+                    awaitFreeSlot();
                 }
             }
             if (interrupted) {
                 throw new RuntimeException("Interrupted.");
             }
-            executor.execute(tk);
+            executor.execute(countOnCompletion(tk));
+            // Counted only once really submitted - see SingleQueueExecutor#execute.
+            taskCount++;
 
             if (System.currentTimeMillis() - lastAdjustTime <= 180000) {
                 return;
             }
-            long idleCount = executor.getCompletedTaskCount() + executor.getPoolSize() - taskCount;
+            long idleCount = completedCount + executor.getPoolSize() - taskCount;
             if (idleCount >= 3) {
                 lastAdjustTime = System.currentTimeMillis();
                 poolSize--;

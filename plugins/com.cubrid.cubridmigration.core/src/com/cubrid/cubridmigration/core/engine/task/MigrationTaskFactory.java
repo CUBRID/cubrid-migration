@@ -75,6 +75,7 @@ import com.cubrid.cubridmigration.core.engine.task.exp.SequenceExportTask;
 import com.cubrid.cubridmigration.core.engine.task.exp.SynonymExportTask;
 import com.cubrid.cubridmigration.core.engine.task.exp.SynonymNoSupportExportTask;
 import com.cubrid.cubridmigration.core.engine.task.exp.TableRecordExportTask;
+import com.cubrid.cubridmigration.core.engine.task.exp.TableRecordRangeExportTask;
 import com.cubrid.cubridmigration.core.engine.task.exp.TableSchemaExportTask;
 import com.cubrid.cubridmigration.core.engine.task.exp.TriggerExportTask;
 import com.cubrid.cubridmigration.core.engine.task.exp.ViewAlterExportTask;
@@ -271,6 +272,25 @@ public class MigrationTaskFactory {
      */
     public TableRecordExportTask createExportTableRecordsTask(SourceTableConfig table) {
         TableRecordExportTask task = new TableRecordExportTask(context, table);
+        initExportTask(task, true);
+        return task;
+    }
+
+    /**
+     * createExportTableRecordsRangeTask - one parallel range worker for a table {@code
+     * TableSplitPlanner} decided to split. The scheduler must call this once per range and must
+     * have already registered the total range count with {@code MigrationStatusManager} before
+     * dispatching any of them.
+     *
+     * @param table SourceTable
+     * @param rangeCondition standalone boolean SQL predicate for this range (see {@code
+     *     TableSplitPlanner#buildRangeCondition})
+     * @return TableRecordRangeExportTask
+     */
+    public TableRecordRangeExportTask createExportTableRecordsRangeTask(
+            SourceTableConfig table, String rangeCondition) {
+        TableRecordRangeExportTask task =
+                new TableRecordRangeExportTask(context, table, rangeCondition);
         initExportTask(task, true);
         return task;
     }

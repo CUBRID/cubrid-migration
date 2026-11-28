@@ -31,12 +31,14 @@
 package com.cubrid.cubridmigration.core.engine.exporter.impl;
 
 import com.cubrid.cubridmigration.core.common.Closer;
+import com.cubrid.cubridmigration.core.dbobject.Column;
 import com.cubrid.cubridmigration.core.dbobject.PK;
 import com.cubrid.cubridmigration.core.dbobject.Record;
 import com.cubrid.cubridmigration.core.dbobject.Table;
 import com.cubrid.cubridmigration.core.engine.RecordExportedListener;
 import com.cubrid.cubridmigration.core.engine.config.SourceColumnConfig;
 import com.cubrid.cubridmigration.core.engine.config.SourceEntryTableConfig;
+import com.cubrid.cubridmigration.core.engine.config.SourceSQLTableConfig;
 import com.cubrid.cubridmigration.core.engine.config.SourceTableConfig;
 import com.cubrid.cubridmigration.core.engine.exception.NormalMigrationException;
 import com.cubrid.cubridmigration.core.export.DBExportHelper;
@@ -70,6 +72,7 @@ public class CUBRIDJDBCExporter extends JDBCExporter {
     private static class ExportingStatus {
         private long totalTobeExported;
         private long totalExported;
+        private long serializedCount;
         private int rsSize;
         // NULL means starting from head.
         private Object[] startIDValueForNextFetching;
@@ -130,6 +133,15 @@ public class CUBRIDJDBCExporter extends JDBCExporter {
             this.totalTobeExported = totalTobeExported;
         }
 
+        /** Counts one record that was pre-serialized during export (see record serialization). */
+        public void countSerialized() {
+            serializedCount++;
+        }
+
+        public long getSerializedCount() {
+            return serializedCount;
+        }
+
         //		public void setTotalExported(long totalExported) {
         //			this.totalExported = totalExported;
         //		}
@@ -171,6 +183,40 @@ public class CUBRIDJDBCExporter extends JDBCExporter {
      * @param newRecsHandler RecordExportedListener
      */
     public void exportTableRecords(SourceTableConfig stc, RecordExportedListener newRecsHandler) {
+        exportTableRecords(stc, null, newRecsHandler);
+    }
+
+    /**
+     * Export source data records by paging query, restricted to an extra caller-supplied predicate.
+     * Used by {@code TableRecordRangeExportTask} to read only one {@code TableSplitPlanner} range
+     * instead of the whole table; ordinary (unsplit) exports go through {@link
+     * #exportTableRecords(SourceTableConfig, RecordExportedListener)}, which delegates here with
+     * {@code extraCondition == null}.
+     *
+     * <p>A non-blank {@code extraCondition} is handled by {@link #exportRangeInOneShot}, not by the
+     * special-column keyset paging below: {@code TableSplitPlanner} has already restricted the row
+     * set to one small range, so re-paging it every {@code pageFetchCount} rows (this class's own
+     * {@code FOR ORDERBY_NUM()} keyset paging, or the generic path's {@code
+     * CUBRIDExportHelper#getPagedSelectSQL} OFFSET-based paging) would not shrink the total
+     * round-trip count - it would just add one MIN/MAX/COUNT query per range on top of it, since
+     * {@code TableSplitPlanner#validateSkew} already ran a COUNT(*) per range while planning.
+     * {@code MigrationTasksScheduler#scheduleTableExport} already excludes "resume from target max"
+     * tables from ever reaching here, so there is no start cursor this shortcut could break.
+     *
+     * @param stc SourceTableConfig
+     * @param extraCondition a standalone boolean SQL predicate (e.g. from {@code
+     *     TableSplitPlanner#buildRangeCondition}) to AND onto the table's existing condition, or
+     *     {@code null}/blank for no extra restriction
+     * @param newRecsHandler RecordExportedListener
+     */
+    @Override
+    public void exportTableRecords(
+            SourceTableConfig stc, String extraCondition, RecordExportedListener newRecsHandler) {
+        if (StringUtils.isNotBlank(extraCondition)) {
+            exportRangeInOneShot(stc, extraCondition, newRecsHandler);
+            return;
+        }
+
         Table sTable = config.getSrcTableSchema(stc.getOwner(), stc.getName());
         if (sTable == null) {
             throw new NormalMigrationException("Table " + stc.getName() + " was not found.");
@@ -192,7 +238,54 @@ public class CUBRIDJDBCExporter extends JDBCExporter {
             }
         }
 
-        super.exportTableRecords(stc, newRecsHandler);
+        // Must be the 3-argument form: JDBCExporter's 2-argument overload delegates back to the
+        // overridable 3-argument one, so calling it from here re-enters this method forever.
+        super.exportTableRecords(stc, extraCondition, newRecsHandler);
+    }
+
+    /**
+     * Exports one {@code TableSplitPlanner} range in a single query/{@link ResultSet}, the same way
+     * {@code JDBCExporter}'s export loop already treats a dialect without paging (see {@code
+     * DBExportHelper#isPagingSupported}): one execution streams every matching row via the driver's
+     * fetch size, instead of re-querying every {@code pageFetchCount} rows. A range is already
+     * small by construction (roughly {@code tableRowCount / degree}), so there is nothing to page
+     * within it.
+     *
+     * @param stc SourceTableConfig
+     * @param extraCondition the range predicate to AND onto the table's existing condition
+     * @param newRecsHandler RecordExportedListener
+     */
+    private void exportRangeInOneShot(
+            SourceTableConfig stc, String extraCondition, RecordExportedListener newRecsHandler) {
+        Table sTable;
+        if (stc instanceof SourceSQLTableConfig) {
+            sTable = config.getSrcSQLSchema(stc.getName());
+        } else {
+            sTable = config.getSrcTableSchema(stc.getOwner(), stc.getName());
+        }
+        if (sTable == null) {
+            throw new NormalMigrationException("Table " + stc.getName() + " was not found.");
+        }
+        Connection conn = connManager.getSourceConnection(); // NOPMD
+        try {
+            newRecsHandler.startExportTable(stc.getName());
+            List<SourceColumnConfig> expColConfs = stc.getColumnConfigList();
+            Column[] sCols = resolveSourceColumns(sTable, expColConfs);
+            List<Record> records = new ArrayList<Record>();
+            String sql =
+                    combineCondition(
+                            getSrcDBExportHelper().getSelectSQL(stc, config), extraCondition);
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("[SQL]RANGE(one-shot)=" + sql);
+            }
+            handleSQL(conn, sql, stc, sTable, expColConfs, sCols, records, newRecsHandler);
+            if (!records.isEmpty()) {
+                newRecsHandler.processRecords(stc.getName(), records);
+            }
+        } finally {
+            newRecsHandler.endExportTable(stc.getName());
+            connManager.closeSrc(conn);
+        }
     }
 
     /**
@@ -216,6 +309,13 @@ public class CUBRIDJDBCExporter extends JDBCExporter {
             newRecsHandler.startExportTable(setc.getName());
             List<Record> records = new ArrayList<Record>();
             List<SourceColumnConfig> expColConfs = setc.getColumnConfigList();
+            Column[] sCols = resolveSourceColumns(sTable, expColConfs);
+            // Decided once per table here, not per page in handleResultSet: this keyset-paging
+            // path builds its records itself instead of going through handleSQL, so without this
+            // call record serialization would silently never apply to it.
+            final Column[] serialCols =
+                    resolveSerializationTargetColumns(
+                            setc, sTable.getOwner() + "." + sTable.getName(), expColConfs);
 
             String startSQL = getPagingSQL(setc, spCols, true);
             String noStartSQL = getPagingSQL(setc, spCols, false);
@@ -249,11 +349,33 @@ public class CUBRIDJDBCExporter extends JDBCExporter {
                 getResultSet(finalSQL, params.toArray(new Object[] {}), joc);
                 // Start handle result set.
                 handleResultSet(
-                        joc, setc, sTable, expColConfs, records, newRecsHandler, expStatus, spCols);
+                        joc,
+                        setc,
+                        sTable,
+                        expColConfs,
+                        sCols,
+                        records,
+                        newRecsHandler,
+                        expStatus,
+                        spCols,
+                        serialCols);
                 // If end fetching.
                 if (isEndFetching(expStatus)) {
                     break;
                 }
+            }
+            if (serialCols != null) {
+                LOG.debug(
+                        "[DEBUG-RECORDSERIALIZE] "
+                                + sTable.getOwner()
+                                + "."
+                                + sTable.getName()
+                                + ": "
+                                + expStatus.getSerializedCount()
+                                // Same wording as JDBCExporter#handleSQL's line, and LOG is the
+                                // inherited JDBCExporter logger, so this suffix is the only way to
+                                // tell from the log which of the two export loops ran.
+                                + " record(s) pre-serialized during export (keyset paging).");
             }
             if (!records.isEmpty()) {
                 newRecsHandler.processRecords(setc.getName(), records);
@@ -476,20 +598,26 @@ public class CUBRIDJDBCExporter extends JDBCExporter {
      * @param stc SourceTableConfig
      * @param sTable Source Table
      * @param expColConfs List<SourceColumnConfig> of Source Table
+     * @param sCols {@code expColConfs[i]}'s resolved {@link Column}, from {@link
+     *     #resolveSourceColumns} - same order/index as {@code expColConfs}
      * @param records data cache
      * @param newRecordProcessor processor
      * @param expStatus ExportingStatus. In method, some properties will be changed.
      * @param spCols special columns
+     * @param serialCols the target columns record serialization needs (see {@link
+     *     #resolveSerializationTargetColumns}), or {@code null} to leave conversion to the importer
      */
     private void handleResultSet(
             JDBCObjContainer joc,
             SourceEntryTableConfig stc,
             Table sTable,
             List<SourceColumnConfig> expColConfs,
+            Column[] sCols,
             List<Record> records,
             RecordExportedListener newRecordProcessor,
             ExportingStatus expStatus,
-            String[] spCols) {
+            String[] spCols,
+            Column[] serialCols) {
         try {
             ResultSet rs = joc.getRs();
             if (rs == null) {
@@ -514,9 +642,15 @@ public class CUBRIDJDBCExporter extends JDBCExporter {
                 }
 
                 thisTimeRecords++;
-                Record record = createNewRecord(sTable, expColConfs, rs);
+                Record record = createNewRecord(sTable, expColConfs, sCols, rs);
                 if (record == null) {
                     continue;
+                }
+                if (serialCols != null) {
+                    serializeRecord(record, expColConfs, serialCols);
+                    if (record.getSerializedString() != null) {
+                        expStatus.countSerialized();
+                    }
                 }
                 records.add(record);
                 handleCommit(stc, newRecordProcessor, sTable, records);

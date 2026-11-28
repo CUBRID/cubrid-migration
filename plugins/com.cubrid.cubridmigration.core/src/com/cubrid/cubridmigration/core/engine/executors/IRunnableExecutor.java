@@ -54,4 +54,15 @@ public interface IRunnableExecutor extends ICanInterrupt, ICanDispose {
      * @return true if is busy.
      */
     public boolean isBusy();
+
+    /**
+     * Releases and disposes whatever sub-queue was created for {@code key} (see {@code
+     * MultiQueueExecutor}), once the caller knows nothing will ever be submitted under that key
+     * again - e.g. once a table's export has fully finished, so its import queue doesn't sit alive,
+     * idle, for the rest of the migration. A no-op for executors that don't key by anything more
+     * specific than the whole instance.
+     *
+     * @param key the same key the executor would have resolved for that producer
+     */
+    default void releaseKey(Object key) {}
 }

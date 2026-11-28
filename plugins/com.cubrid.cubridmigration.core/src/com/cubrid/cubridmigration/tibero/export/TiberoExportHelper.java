@@ -131,6 +131,17 @@ public class TiberoExportHelper extends DBExportHelper {
     }
 
     /**
+     * {@link #getPagedSelectSQL} wraps the query in a {@code ROWNUM} page window, so the export
+     * loop may fetch Tibero tables page by page.
+     *
+     * @return true
+     */
+    @Override
+    public boolean isPagingSupported() {
+        return true;
+    }
+
+    /**
      * Retrieves the Database type.
      *
      * @return DatabaseType

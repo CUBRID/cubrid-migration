@@ -78,7 +78,7 @@ import java.util.Map;
 public abstract class DBExportHelper implements IDependOnDatabaseType {
     protected static final Logger LOG = LogUtil.getLogger(CUBRIDExportHelper.class);
 
-    protected static final int DEFAULT_FETCH_SIZE = 500;
+    protected static final int DEFAULT_FETCH_SIZE = 1000;
 
     public static final int LONGNVARCHAR = -16;
     public static final int NCHAR = -15;
@@ -161,6 +161,34 @@ public abstract class DBExportHelper implements IDependOnDatabaseType {
      * @return String
      */
     protected abstract String getQuotedObjName(String objectName);
+
+    /**
+     * Quotes a column name exactly the way {@link #getSelectSQL(SourceTableConfig)} does, for SQL
+     * built outside this class (e.g. the split planner's range predicates).
+     *
+     * @param columnName the column name as stored in the table metadata
+     * @return the column name quoted for this dialect
+     */
+    public String getQuotedColumnName(String columnName) {
+        return getQuotedObjName(columnName);
+    }
+
+    /**
+     * Builds the table reference {@link #getSelectSQL(SourceTableConfig)} reads from: the quoted
+     * name, preceded by the quoted owner when there is one (see {@link
+     * #addSchemaPrefix(SourceEntryTableConfig, StringBuilder)}).
+     *
+     * @param owner the table's owner/schema, may be blank
+     * @param tableName the table name as stored in the table metadata
+     * @return the table reference quoted for this dialect
+     */
+    public String getQualifiedTableName(String owner, String tableName) {
+        StringBuilder buf = new StringBuilder();
+        if (StringUtils.isNotBlank(owner)) {
+            buf.append(getQuotedObjName(owner)).append(".");
+        }
+        return buf.append(getQuotedObjName(tableName)).toString();
+    }
 
     /**
      * to return SELECT SQL
@@ -441,7 +469,23 @@ public abstract class DBExportHelper implements IDependOnDatabaseType {
     public void configStatement(Statement stmt) {
         try {
             stmt.setFetchSize(DEFAULT_FETCH_SIZE);
+            // Guarded: building the message calls stmt.getFetchSize() on every statement.
+            if (LOG.isDebugEnabled()) {
+                LOG.debug(
+                        "[DEBUG-FETCHSIZE] configStatement() on "
+                                + getClass().getSimpleName()
+                                + ": requested="
+                                + DEFAULT_FETCH_SIZE
+                                + ", actual stmt.getFetchSize()="
+                                + stmt.getFetchSize());
+            }
         } catch (SQLException e) {
+            LOG.error(
+                    "[DEBUG-FETCHSIZE] setFetchSize("
+                            + DEFAULT_FETCH_SIZE
+                            + ") failed on "
+                            + getClass().getSimpleName(),
+                    e);
             throw new RuntimeException(e);
         }
     }
@@ -481,6 +525,23 @@ public abstract class DBExportHelper implements IDependOnDatabaseType {
             return sql;
         }
         return getPagedSelectSQL(sql, pageSize, exportedRecords, pk);
+    }
+
+    /**
+     * Whether {@link #getPagedSelectSQL(String, long, long, PK)} really returns a different SQL for
+     * every page, i.e. whether the export loop may fetch a table (or a range of it) page by page.
+     *
+     * <p>When this is {@code false} (the default) the SQL is run <b>once</b> and every row it
+     * matches is streamed back by that single execution; the export loop does not ask for a "next
+     * page", because re-running the same unpaged SQL would just read (and import) the same rows
+     * again. This is the safe default: a dialect that forgets to declare paging still reads each
+     * row exactly once. Only dialects whose {@code getPagedSelectSQL} genuinely paginates override
+     * it to {@code true}, and a unit test checks that the declaration and that method agree.
+     *
+     * @return true if {@code getPagedSelectSQL} paginates; false if it returns the SQL unchanged
+     */
+    public boolean isPagingSupported() {
+        return false;
     }
 
     /**

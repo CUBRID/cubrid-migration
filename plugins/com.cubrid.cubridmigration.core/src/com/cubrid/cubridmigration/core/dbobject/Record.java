@@ -44,12 +44,26 @@ import java.util.Map;
 public class Record {
     private List<ColumnValue> columnValueList = new ArrayList<ColumnValue>();
 
+    // "Record serialization" = converting a record to its final dump-file line. Set only when the
+    // exporter already did that (see JDBCExporter#serializeRecord, gated by
+    // MigrationConfiguration#isRecordSerializationEnabled() and #targetIsDBDump()). Null for every
+    // other record, in which case the importer does its own per-column conversion as before.
+    private String serializedString;
+
     public List<ColumnValue> getColumnValueList() {
         return columnValueList;
     }
 
     public void setColumnValueList(List<ColumnValue> columnValueList) {
         this.columnValueList = columnValueList;
+    }
+
+    public String getSerializedString() {
+        return serializedString;
+    }
+
+    public void setSerializedString(String serializedString) {
+        this.serializedString = serializedString;
     }
 
     /**

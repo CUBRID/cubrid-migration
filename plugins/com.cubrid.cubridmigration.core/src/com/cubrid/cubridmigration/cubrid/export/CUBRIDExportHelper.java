@@ -255,6 +255,17 @@ public class CUBRIDExportHelper extends DBExportHelper {
     }
 
     /**
+     * {@link #getPagedSelectSQL} appends an {@code ORDERBY_NUM()}/{@code ROWNUM ... BETWEEN} page
+     * window, so the export loop may fetch CUBRID tables page by page.
+     *
+     * @return true
+     */
+    @Override
+    public boolean isPagingSupported() {
+        return true;
+    }
+
+    /**
      * Is support fast search with PK.
      *
      * @param conn Connection

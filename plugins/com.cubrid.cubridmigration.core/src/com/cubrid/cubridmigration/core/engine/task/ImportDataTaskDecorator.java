@@ -31,6 +31,7 @@
 package com.cubrid.cubridmigration.core.engine.task;
 
 import com.cubrid.cubridmigration.core.engine.MigrationContext;
+import com.cubrid.cubridmigration.core.engine.task.imp.RecordImportTask;
 
 /**
  * ImportDataTaskDecorator is responses for record task count.
@@ -38,7 +39,7 @@ import com.cubrid.cubridmigration.core.engine.MigrationContext;
  * @author Kevin Cao
  * @version 1.0 - 2011-8-5 created by Kevin Cao
  */
-public class ImportDataTaskDecorator extends ImportTask {
+public class ImportDataTaskDecorator extends ImportTask implements ITableKeyedTask {
 
     private final ImportTask task;
     private final MigrationContext mrManager;
@@ -58,5 +59,15 @@ public class ImportDataTaskDecorator extends ImportTask {
         } finally {
             mrManager.getStatusMgr().increaseFinishedImportTaskCount();
         }
+    }
+
+    /**
+     * Delegates to the wrapped task so that, when it is a {@link RecordImportTask} (or any other
+     * table-keyed task), every export range/thread feeding the same table shares one import queue
+     * instead of each claiming its own - see {@link ITableKeyedTask}.
+     */
+    @Override
+    public String getTableKey() {
+        return (task instanceof ITableKeyedTask) ? ((ITableKeyedTask) task).getTableKey() : null;
     }
 }

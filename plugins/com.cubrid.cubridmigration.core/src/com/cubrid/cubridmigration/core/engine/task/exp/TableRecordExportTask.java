@@ -37,6 +37,7 @@ import com.cubrid.cubridmigration.core.engine.config.SourceTableConfig;
 import com.cubrid.cubridmigration.core.engine.event.ExportRecordsEvent;
 import com.cubrid.cubridmigration.core.engine.event.StartExpTableEvent;
 import com.cubrid.cubridmigration.core.engine.task.ExportTask;
+import com.cubrid.cubridmigration.core.engine.task.ITableKeyedTask;
 import com.cubrid.cubridmigration.core.engine.task.ImportTask;
 
 import java.util.List;
@@ -85,6 +86,15 @@ public class TableRecordExportTask extends ExportTask {
                         mrManager
                                 .getStatusMgr()
                                 .setExpFinished(sourceTable.getOwner(), sourceTable.getName());
+                        if (mrManager
+                                .getStatusMgr()
+                                .getExpFlag(sourceTable.getOwner(), sourceTable.getName())) {
+                            mrManager
+                                    .getImportRecordExecutor()
+                                    .releaseKey(
+                                            ITableKeyedTask.tableKey(
+                                                    sourceTable.getOwner(), sourceTable.getName()));
+                        }
                     }
                 });
     }

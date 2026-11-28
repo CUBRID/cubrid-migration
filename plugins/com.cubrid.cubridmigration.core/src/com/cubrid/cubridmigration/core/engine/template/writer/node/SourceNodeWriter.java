@@ -278,6 +278,7 @@ public class SourceNodeWriter {
         writer.writeAttribute(ATTR_REPLACE, getBooleanString(setc.isReplace()));
         writer.writeAttribute(ATTR_PARTITION, getBooleanString(setc.isCreatePartition()));
         writer.writeAttribute(ATTR_CONDITION, setc.getCondition());
+        writer.writeAttribute(ATTR_PARALLEL_DEGREE, String.valueOf(setc.getParallelDegree()));
         writer.writeAttribute(ATTR_BEFORE_SQL, setc.getSqlBefore());
         writer.writeAttribute(ATTR_AFTER_SQL, setc.getSqlAfter());
         if (setc.isEnableExpOpt()) {

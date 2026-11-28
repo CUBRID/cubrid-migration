@@ -220,6 +220,15 @@ public class MigrationProcessManager {
             throw new BreakMigrationException("Offline migration is not supported any more.");
         }
         taskFactory.setImporter(importer);
+
+        // Wire the exporter to the importer's own Data2StrTranslator so export-side record
+        // serialization (JDBCExporter#serializeRecord) reuses it rather than building a second
+        // one. Harmless to wire up even when the feature is off: JDBCExporter only ever reads it
+        // when config.isRecordSerializationEnabled() && config.targetIsDBDump() are both true.
+        if (exporter instanceof JDBCExporter && importer instanceof LoadFileImporter) {
+            ((JDBCExporter) exporter)
+                    .setUnloadFileUtil(((LoadFileImporter) importer).getUnloadFileUtil());
+        }
         return taskFactory;
     }
 

@@ -56,6 +56,12 @@ public class SourceEntryTableConfig extends SourceTableConfig {
     private final List<SourceIndexConfig> indexes = new ArrayList<SourceIndexConfig>();
     private String condition = "";
 
+    // How many parallel range workers to export this table with. 1 (the default) means the
+    // existing one-thread-per-table behavior; a scheduler that wants to split this table must
+    // consult TableSplitPlanner to see whether the table actually has a usable split column
+    // before honoring a value greater than 1.
+    private int parallelDegree = 1;
+
     /**
      * Create PK on target table.
      *
@@ -198,6 +204,22 @@ public class SourceEntryTableConfig extends SourceTableConfig {
 
     public void setCondition(String condition) {
         this.condition = condition;
+    }
+
+    /**
+     * @return how many parallel range workers to export this table with; 1 means unsplit (current
+     *     default, one-thread-per-table)
+     */
+    public int getParallelDegree() {
+        return parallelDegree;
+    }
+
+    /**
+     * @param parallelDegree how many parallel range workers to export this table with; values &lt;=
+     *     1 disable splitting
+     */
+    public void setParallelDegree(int parallelDegree) {
+        this.parallelDegree = parallelDegree;
     }
 
     /**

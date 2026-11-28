@@ -98,9 +98,10 @@ public class MigrationContext {
         msm.setAlertCommitCount(Math.max(config.getCommitCount() / 100, 100));
         context.setStatusMgr(msm);
 
-        context.setExportRecExe(new SingleQueueExecutor(config.getExportThreadCount(), true));
+        context.setExportRecExe(
+                new SingleQueueExecutor(Math.max(1, config.getExportThreadCount()), true));
         context.setImportRecordExecutor(
-                new MultiQueueExecutor(config.getImportThreadCount(), true));
+                new MultiQueueExecutor(Math.max(1, config.getImportThreadCount()), true));
 
         context.setMergeTaskExe(new SingleQueueExecutor(1, false));
 

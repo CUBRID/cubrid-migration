@@ -52,6 +52,17 @@ public class ParametersNodeWriter {
                 ATTR_IMPLICIT_ESTIMATE_PROGRESS, getBooleanString(config.isImplicitEstimate()));
         writer.writeAttribute(
                 ATTR_UPDATE_STATISTICS, getBooleanString(config.isUpdateStatistics()));
+        writer.writeAttribute(
+                ATTR_PARALLEL_EXPORT_ENABLED, getBooleanString(config.isParallelExportEnabled()));
+        writer.writeAttribute(
+                ATTR_PARALLEL_EXPORT_DEFAULT_DEGREE,
+                String.valueOf(config.getParallelExportDefaultDegree()));
+        writer.writeAttribute(
+                ATTR_PARALLEL_EXPORT_MIN_ROW_COUNT,
+                String.valueOf(config.getParallelExportMinRowCount()));
+        writer.writeAttribute(
+                ATTR_RECORD_SERIALIZATION_ENABLED,
+                getBooleanString(config.isRecordSerializationEnabled()));
 
         if (config.hasOtherParam()) {
             String s1 = config.getOtherParam(MySQL2CUBRIDMigParas.UNPARSED_TIME);

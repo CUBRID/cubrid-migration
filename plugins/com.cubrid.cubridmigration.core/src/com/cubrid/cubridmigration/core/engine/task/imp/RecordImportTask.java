@@ -32,6 +32,7 @@ package com.cubrid.cubridmigration.core.engine.task.imp;
 
 import com.cubrid.cubridmigration.core.dbobject.Record;
 import com.cubrid.cubridmigration.core.engine.config.SourceTableConfig;
+import com.cubrid.cubridmigration.core.engine.task.ITableKeyedTask;
 import com.cubrid.cubridmigration.core.engine.task.ImportTask;
 
 import java.util.ArrayList;
@@ -43,7 +44,7 @@ import java.util.List;
  * @author Kevin Cao
  * @version 1.0 - 2011-8-5 created by Kevin Cao
  */
-public class RecordImportTask extends ImportTask {
+public class RecordImportTask extends ImportTask implements ITableKeyedTask {
 
     private final SourceTableConfig table;
     private final List<Record> records;
@@ -56,5 +57,10 @@ public class RecordImportTask extends ImportTask {
     /** Execute import operation */
     protected void executeImport() {
         importer.importRecords(table, records);
+    }
+
+    @Override
+    public String getTableKey() {
+        return ITableKeyedTask.tableKey(table.getOwner(), table.getName());
     }
 }

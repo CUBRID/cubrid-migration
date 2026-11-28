@@ -38,6 +38,7 @@ import com.cubrid.cubridmigration.ui.preference.MigrationConfigPage;
 
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
@@ -49,6 +50,9 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Spinner;
+
+import java.text.MessageFormat;
+import java.text.NumberFormat;
 
 /**
  * Performance settings dialog
@@ -73,6 +77,17 @@ public class PerformanceSettingsDialog extends Dialog {
     private Spinner txtFileMaxSize;
 
     private Button btnImplicitEstimate;
+
+    private Button btnParallelExportEnabled;
+
+    private Spinner txtParallelExportDefaultDegree;
+
+    private Spinner txtParallelExportMinRowCount;
+
+    /** What the min-row-count Spinner showed when the dialog opened. */
+    private int initialMinRowCountSelection;
+
+    private Button btnRecordSerializationEnabled;
 
     public PerformanceSettingsDialog(Shell parentShell, MigrationConfiguration config) {
         super(parentShell);
@@ -180,7 +195,153 @@ public class PerformanceSettingsDialog extends Dialog {
         //			btnImplicitEstimate.setSelection(false);
         //			btnImplicitEstimate.setEnabled(false);
         //		}
+
+        if (supportsParallelExport()) {
+            Label lblParallelExport = new Label(container, SWT.NONE);
+            lblParallelExport.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false));
+
+            btnParallelExportEnabled = new Button(container, SWT.CHECK);
+            btnParallelExportEnabled.setSelection(config.isParallelExportEnabled());
+            btnParallelExportEnabled.setText(Messages.lblParallelExportEnabled);
+
+            Label lblParallelExportDegree = new Label(container, SWT.NONE);
+            lblParallelExportDegree.setLayoutData(
+                    new GridData(SWT.RIGHT, SWT.CENTER, false, false));
+            lblParallelExportDegree.setText(Messages.lblParallelExportDefaultDegree);
+
+            txtParallelExportDefaultDegree = new Spinner(container, SWT.BORDER);
+            txtParallelExportDefaultDegree.setLayoutData(
+                    new GridData(SWT.FILL, SWT.CENTER, true, false));
+            txtParallelExportDefaultDegree.setValues(
+                    config.getParallelExportDefaultDegree(), 2, 64, 0, 1, 4);
+
+            Label lblParallelExportMinRowCount = new Label(container, SWT.NONE);
+            lblParallelExportMinRowCount.setLayoutData(
+                    new GridData(SWT.RIGHT, SWT.CENTER, false, false));
+            lblParallelExportMinRowCount.setText(Messages.lblParallelExportMinRowCount);
+            lblParallelExportMinRowCount.setToolTipText(Messages.ttParallelExportMinRowCount);
+
+            // The Spinner is int-based, so the threshold is limited to the int range here.
+            txtParallelExportMinRowCount = new Spinner(container, SWT.BORDER);
+            txtParallelExportMinRowCount.setToolTipText(Messages.ttParallelExportMinRowCount);
+            txtParallelExportMinRowCount.setLayoutData(
+                    new GridData(SWT.FILL, SWT.CENTER, true, false));
+            // The saved threshold is a long, the Spinner only holds an int: show the nearest
+            // value it can, and remember what was shown so okPressed() can tell whether the user
+            // really edited the field (see there).
+            txtParallelExportMinRowCount.setValues(
+                    toSpinnerRange(config.getParallelExportMinRowCount()),
+                    0,
+                    Integer.MAX_VALUE,
+                    0,
+                    100_000,
+                    1_000_000);
+            initialMinRowCountSelection = txtParallelExportMinRowCount.getSelection();
+            if (config.getParallelExportMinRowCount() > Integer.MAX_VALUE) {
+                warnMinRowCountOverLimit(config.getParallelExportMinRowCount());
+            }
+
+            txtParallelExportDefaultDegree.setEnabled(btnParallelExportEnabled.getSelection());
+            txtParallelExportMinRowCount.setEnabled(btnParallelExportEnabled.getSelection());
+
+            btnParallelExportEnabled.addSelectionListener(
+                    new SelectionListener() {
+                        public void widgetSelected(SelectionEvent ex) {
+                            boolean enabled = btnParallelExportEnabled.getSelection();
+                            txtParallelExportDefaultDegree.setEnabled(enabled);
+                            txtParallelExportMinRowCount.setEnabled(enabled);
+                            if (enabled) {
+                                UICommonTool.openInformationBox(
+                                        getShell(),
+                                        Messages.msgWarning,
+                                        Messages.msgParallelExport);
+                            }
+                        }
+
+                        public void widgetDefaultSelected(SelectionEvent ex) {}
+                    });
+        }
+
+        if (supportsRecordSerialization()) {
+            Label lblRecordSerialization = new Label(container, SWT.NONE);
+            lblRecordSerialization.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false));
+
+            btnRecordSerializationEnabled = new Button(container, SWT.CHECK);
+            btnRecordSerializationEnabled.setSelection(config.isRecordSerializationEnabled());
+            btnRecordSerializationEnabled.setText(Messages.lblRecordSerializationEnabled);
+            btnRecordSerializationEnabled.addSelectionListener(
+                    new SelectionListener() {
+                        public void widgetSelected(SelectionEvent ex) {
+                            if (btnRecordSerializationEnabled.getSelection()) {
+                                UICommonTool.openInformationBox(
+                                        getShell(),
+                                        Messages.msgWarning,
+                                        Messages.msgRecordSerialization);
+                            }
+                        }
+
+                        public void widgetDefaultSelected(SelectionEvent ex) {}
+                    });
+        }
+
         return parent;
+    }
+
+    /** Clamps a long threshold into what an int Spinner can hold (0 to Integer.MAX_VALUE). */
+    private static int toSpinnerRange(long value) {
+        return (int) Math.max(0L, Math.min(value, Integer.MAX_VALUE));
+    }
+
+    /**
+     * Tells the user that the saved threshold is beyond what this screen can show and stays as it
+     * is unless the field is changed. Shown once the dialog is open, not while it is being built.
+     */
+    private void warnMinRowCountOverLimit(final long savedValue) {
+        final Shell shell = getShell();
+        shell.getDisplay()
+                .asyncExec(
+                        new Runnable() {
+                            public void run() {
+                                if (shell.isDisposed()) {
+                                    return;
+                                }
+                                NumberFormat format = NumberFormat.getIntegerInstance();
+                                UICommonTool.openMsgBox(
+                                        shell,
+                                        MessageDialog.WARNING,
+                                        Messages.msgWarning,
+                                        MessageFormat.format(
+                                                Messages.msgParallelExportMinRowCountOverLimit,
+                                                format.format(savedValue),
+                                                format.format(Integer.MAX_VALUE)),
+                                        new String[] {Messages.btnOK});
+                            }
+                        });
+    }
+
+    /**
+     * Parallel range export is only wired up for online JDBC sources. CUBRID sources are supported
+     * too: {@code CUBRIDJDBCExporter} overrides the range-based export path (not just the
+     * single-task path) so its special-column PK optimization and incremental "resume from target
+     * max" logic still apply per range; the latter is additionally excluded per-table by {@code
+     * MigrationTasksScheduler#scheduleTableExport} since it cannot be range-split.
+     *
+     * @return true if this migration's source can use parallel export
+     */
+    private boolean supportsParallelExport() {
+        return config.sourceIsOnline();
+    }
+
+    /**
+     * Serializing records to dump-file strings during export only makes sense - and is only safe -
+     * for the CUBRID unload/dump target: {@code JDBCExporter} reuses the same {@code
+     * Data2StrTranslator} the dump-file importer already builds, and binding a value to an online
+     * target still needs the original typed value, not a pre-joined string.
+     *
+     * @return true if this migration's target can use export-side record serialization
+     */
+    private boolean supportsRecordSerialization() {
+        return config.targetIsDBDump();
     }
 
     private boolean isSupportPageQuery() {
@@ -246,6 +407,17 @@ public class PerformanceSettingsDialog extends Dialog {
                     100,
                     1000);
             btnImplicitEstimate.setSelection(false);
+            if (btnParallelExportEnabled != null) {
+                btnParallelExportEnabled.setSelection(false);
+                txtParallelExportDefaultDegree.setValues(4, 2, 64, 0, 1, 4);
+                txtParallelExportDefaultDegree.setEnabled(false);
+                txtParallelExportMinRowCount.setValues(
+                        1_000_000, 0, Integer.MAX_VALUE, 0, 100_000, 1_000_000);
+                txtParallelExportMinRowCount.setEnabled(false);
+            }
+            if (btnRecordSerializationEnabled != null) {
+                btnRecordSerializationEnabled.setSelection(false);
+            }
         }
         super.buttonPressed(buttonId);
     }
@@ -262,6 +434,18 @@ public class PerformanceSettingsDialog extends Dialog {
             config.setMaxCountPerFile(txtFileMaxSize.getSelection());
         }
         config.setImplicitEstimate(btnImplicitEstimate.getSelection());
+        if (btnParallelExportEnabled != null) {
+            config.setParallelExportEnabled(btnParallelExportEnabled.getSelection());
+            config.setParallelExportDefaultDegree(txtParallelExportDefaultDegree.getSelection());
+            // A saved value above the int range was shown clamped. Writing that back unchanged
+            // would silently lower the user's threshold, so only an edited field replaces it.
+            if (txtParallelExportMinRowCount.getSelection() != initialMinRowCountSelection) {
+                config.setParallelExportMinRowCount(txtParallelExportMinRowCount.getSelection());
+            }
+        }
+        if (btnRecordSerializationEnabled != null) {
+            config.setRecordSerializationEnabled(btnRecordSerializationEnabled.getSelection());
+        }
         super.okPressed();
     }
 }

@@ -40,7 +40,16 @@ public class DataMigrationStatus {
     private String source;
     private long totalExpCount = 0;
     private long totalImpCount = 0;
-    private boolean expDoneFlag = false;
+
+    // A table normally has exactly one export task (one thread reads the whole table), so the
+    // default of 1 here reproduces the old single-boolean-flag behavior: the one and only
+    // finishExportRange() call finishes it. When TableSplitPlanner splits a table into N parallel
+    // range workers, the scheduler must call setTotalExportRanges(N) before dispatching those N
+    // tasks, so completion only registers once every range has reported in - otherwise the first
+    // range to finish would wrongly mark the whole table done while the others are still running
+    // (see LoadFileImporter's use of getExpFlag() to trigger the final file merge).
+    private int totalExportRanges = 1;
+    private int finishedExportRanges = 0;
 
     public String getSource() {
         return source;
@@ -76,11 +85,39 @@ public class DataMigrationStatus {
         this.totalImpCount += totalImpCount;
     }
 
-    public boolean isExpDoneFlag() {
-        return expDoneFlag;
+    /**
+     * Sets how many parallel export ranges this table was split into. Must be called (if at all)
+     * before any of those ranges can report completion via {@link #finishExportRange()} - this
+     * class does no locking of its own, so the caller (MigrationStatusManager) is responsible for
+     * that ordering guarantee.
+     *
+     * @param totalExportRanges total number of export tasks/ranges for this table, &gt;= 1
+     */
+    public void setTotalExportRanges(int totalExportRanges) {
+        if (totalExportRanges < 1) {
+            throw new IllegalArgumentException("totalExportRanges must be >= 1.");
+        }
+        this.totalExportRanges = totalExportRanges;
     }
 
-    public void setExpDoneFlag(boolean expDoneFlag) {
-        this.expDoneFlag = expDoneFlag;
+    public int getTotalExportRanges() {
+        return totalExportRanges;
+    }
+
+    /** Records that one export range/task for this table has finished. */
+    public void finishExportRange() {
+        finishedExportRanges++;
+    }
+
+    public int getFinishedExportRanges() {
+        return finishedExportRanges;
+    }
+
+    /**
+     * @return true once every export range registered via {@link #setTotalExportRanges} has called
+     *     {@link #finishExportRange()}
+     */
+    public boolean isExportFinished() {
+        return finishedExportRanges >= totalExportRanges;
     }
 }

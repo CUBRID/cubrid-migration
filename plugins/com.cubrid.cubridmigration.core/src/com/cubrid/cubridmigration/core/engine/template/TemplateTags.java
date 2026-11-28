@@ -116,6 +116,11 @@ public final class TemplateTags {
     public static final String ATTR_OUTPUT_FILE_PREFIX = "file_prefix";
     public static final String ATTR_PAGE_FETCH_COUNT = "page_fetch_count";
     public static final String ATTR_PAGE_SIZE = "page_size";
+    public static final String ATTR_PARALLEL_DEGREE = "parallel_degree";
+    public static final String ATTR_PARALLEL_EXPORT_ENABLED = "parallel_export_enabled";
+    public static final String ATTR_PARALLEL_EXPORT_DEFAULT_DEGREE =
+            "parallel_export_default_degree";
+    public static final String ATTR_PARALLEL_EXPORT_MIN_ROW_COUNT = "parallel_export_min_row_count";
     public static final String ATTR_PARTITION = "partition";
     public static final String ATTR_PASSWORD = "password";
     public static final String ATTR_PATH = "path";
@@ -123,6 +128,7 @@ public final class TemplateTags {
     public static final String ATTR_PORT = "port";
     public static final String ATTR_PRIVILEGE = "privilege";
     public static final String ATTR_PROCEDURE_DDL = "procedure_ddl";
+    public static final String ATTR_RECORD_SERIALIZATION_ENABLED = "record_serialization_enabled";
     public static final String ATTR_REF_FIELDS = "ref_fields";
     public static final String ATTR_REF_TABLE = "ref_table";
     public static final String ATTR_RENAME = "rename";

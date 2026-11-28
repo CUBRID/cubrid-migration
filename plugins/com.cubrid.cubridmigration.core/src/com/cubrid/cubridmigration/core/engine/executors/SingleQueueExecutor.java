@@ -30,8 +30,6 @@
  */
 package com.cubrid.cubridmigration.core.engine.executors;
 
-import com.cubrid.cubridmigration.core.engine.ThreadUtils;
-
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 
@@ -49,11 +47,32 @@ public class SingleQueueExecutor implements IRunnableExecutor {
 
     protected final boolean limitTaskCount;
 
+    /**
+     * Tasks submitted to the pool so far; a submitter still waiting for a slot is not counted.
+     * Guarded by {@link #lockObj}.
+     */
     protected long taskCount;
 
+    /**
+     * Tasks that have finished running (normally or not). Counted by this class instead of read
+     * from {@link ThreadPoolExecutor#getCompletedTaskCount()} so that a finishing task can wake a
+     * blocked submitter at the exact moment its slot frees up. Guarded by {@link #lockObj}.
+     */
+    protected long completedCount;
+
+    /**
+     * Monitor for the counters above. A submitter that must wait for a free slot waits ON this
+     * monitor (which releases it), so other submitters are never stuck behind a sleeping one.
+     */
     protected Object lockObj = new Object();
 
-    protected boolean interrupted;
+    /**
+     * Safety re-check interval while waiting for a free slot. A finishing task normally wakes the
+     * waiter immediately; this only bounds how long a wake-up could ever be missed.
+     */
+    private static final long SLOT_RECHECK_MILLIS = 200L;
+
+    protected volatile boolean interrupted;
 
     public SingleQueueExecutor(int threadSize, boolean limitTaskCount) {
         poolSize = threadSize + Math.max(2, threadSize / 2);
@@ -73,33 +92,86 @@ public class SingleQueueExecutor implements IRunnableExecutor {
      */
     public void execute(Runnable tk) {
         synchronized (lockObj) {
-            taskCount++;
             while (limitTaskCount && tooManyTasks()) {
                 if (interrupted) {
                     throw new RuntimeException("Interrupted.");
                 }
-                ThreadUtils.threadSleep(200, null);
+                awaitFreeSlot();
             }
             if (interrupted) {
                 throw new RuntimeException("Interrupted.");
             }
-            executor.execute(tk);
+            executor.execute(countOnCompletion(tk));
+            // Counted only now that the task really is in the pool. A submitter still waiting for a
+            // slot must not count: several of them (e.g. one per split range feeding this shared
+            // queue) could otherwise keep the count above the limit all by themselves after every
+            // queued task had finished, and nobody would ever be let in again. A task that never
+            // reaches the pool (rejected, or interrupted while waiting) is simply never counted.
+            // Counting after the hand-off is safe against a fast task: its completion also needs
+            // lockObj, which this thread holds until it returns, so the task cannot be counted as
+            // completed before it was counted as submitted.
+            taskCount++;
         }
     }
 
     /**
-     * True if there are too many tasks in queue.
+     * Waits until a task finishes (or {@link #SLOT_RECHECK_MILLIS} passes) so the caller can
+     * re-check {@link #tooManyTasks()}. Must be called holding {@link #lockObj}; the wait releases
+     * it, which is the point: the old sleep-while-holding-the-monitor loop made every other
+     * submitter queue up on the monitor behind one sleeping thread, and the wake-up only came on
+     * the next 200 ms poll even though importers had long since drained the queue.
+     */
+    protected final void awaitFreeSlot() {
+        try {
+            lockObj.wait(SLOT_RECHECK_MILLIS);
+        } catch (InterruptedException ex) {
+            // Same as the previous ThreadUtils.threadSleep(.., null): swallowed, the caller's loop
+            // re-checks the interrupted flag set by interrupt().
+        }
+    }
+
+    /**
+     * Wraps {@code tk} so that finishing it - normally or by exception - is counted and wakes any
+     * submitter waiting for a free slot.
      *
-     * @return True if there are too many tasks in queue.
+     * @param tk the task to run
+     * @return the task to hand to the pool
+     */
+    protected final Runnable countOnCompletion(final Runnable tk) {
+        return new Runnable() {
+            public void run() {
+                try {
+                    tk.run();
+                } finally {
+                    synchronized (lockObj) {
+                        completedCount++;
+                        lockObj.notifyAll();
+                    }
+                }
+            }
+        };
+    }
+
+    /**
+     * True if the queue is full, i.e. one more task must not be submitted yet. {@link #taskCount}
+     * only counts tasks already submitted (a submitter still waiting is not one of them), so the
+     * queue is full once {@code poolSize} of them are outstanding.
+     *
+     * @return True if the queue is full.
      */
     protected boolean tooManyTasks() {
-        return (taskCount - executor.getCompletedTaskCount()) > poolSize;
+        return (taskCount - completedCount) >= poolSize;
     }
 
     /** Interrupted */
     public void interrupt() {
         interrupted = true;
         executor.shutdownNow();
+        synchronized (lockObj) {
+            // Wake submitters waiting for a slot so they see the flag now instead of at the next
+            // recheck; tasks dropped by shutdownNow() never complete, so nothing else would.
+            lockObj.notifyAll();
+        }
     }
 
     /**
@@ -111,6 +183,8 @@ public class SingleQueueExecutor implements IRunnableExecutor {
         if (interrupted) {
             return false;
         }
-        return ((taskCount - executor.getCompletedTaskCount()) != 0);
+        synchronized (lockObj) {
+            return (taskCount - completedCount) != 0;
+        }
     }
 }

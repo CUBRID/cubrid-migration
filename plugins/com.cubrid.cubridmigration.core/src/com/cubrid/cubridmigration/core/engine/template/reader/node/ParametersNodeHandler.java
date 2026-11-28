@@ -35,6 +35,10 @@ import static com.cubrid.cubridmigration.core.engine.template.TemplateTags.ATTR_
 import static com.cubrid.cubridmigration.core.engine.template.TemplateTags.ATTR_IMPLICIT_ESTIMATE_PROGRESS;
 import static com.cubrid.cubridmigration.core.engine.template.TemplateTags.ATTR_IMPORT_THREAD;
 import static com.cubrid.cubridmigration.core.engine.template.TemplateTags.ATTR_PAGE_FETCH_COUNT;
+import static com.cubrid.cubridmigration.core.engine.template.TemplateTags.ATTR_PARALLEL_EXPORT_DEFAULT_DEGREE;
+import static com.cubrid.cubridmigration.core.engine.template.TemplateTags.ATTR_PARALLEL_EXPORT_ENABLED;
+import static com.cubrid.cubridmigration.core.engine.template.TemplateTags.ATTR_PARALLEL_EXPORT_MIN_ROW_COUNT;
+import static com.cubrid.cubridmigration.core.engine.template.TemplateTags.ATTR_RECORD_SERIALIZATION_ENABLED;
 import static com.cubrid.cubridmigration.core.engine.template.TemplateTags.ATTR_UPDATE_STATISTICS;
 
 import com.cubrid.cubridmigration.core.engine.config.MigrationConfiguration;
@@ -57,6 +61,22 @@ public class ParametersNodeHandler {
         config.setImplicitEstimate(
                 getBoolean(attributes.getValue(ATTR_IMPLICIT_ESTIMATE_PROGRESS), false));
         config.setUpdateStatistics(getBoolean(attributes.getValue(ATTR_UPDATE_STATISTICS), true));
+
+        // Optional/new: absent on templates saved before parallel export existed, so keep the
+        // defaults (disabled) instead of failing to parse a null value.
+        config.setParallelExportEnabled(
+                getBoolean(attributes.getValue(ATTR_PARALLEL_EXPORT_ENABLED), false));
+        final String parallelDegree = attributes.getValue(ATTR_PARALLEL_EXPORT_DEFAULT_DEGREE);
+        if (parallelDegree != null) {
+            config.setParallelExportDefaultDegree(Integer.parseInt(parallelDegree));
+        }
+        final String parallelMinRowCount = attributes.getValue(ATTR_PARALLEL_EXPORT_MIN_ROW_COUNT);
+        if (parallelMinRowCount != null) {
+            config.setParallelExportMinRowCount(Long.parseLong(parallelMinRowCount));
+        }
+        // Optional/new: absent on templates saved before record serialization existed.
+        config.setRecordSerializationEnabled(
+                getBoolean(attributes.getValue(ATTR_RECORD_SERIALIZATION_ENABLED), false));
 
         setOtherParamIfPresent(config, attributes, MySQL2CUBRIDMigParas.UNPARSED_TIME);
         setOtherParamIfPresent(config, attributes, MySQL2CUBRIDMigParas.UNPARSED_DATE);

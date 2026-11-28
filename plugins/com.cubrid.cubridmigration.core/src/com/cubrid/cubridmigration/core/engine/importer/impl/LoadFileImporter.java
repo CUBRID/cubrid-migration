@@ -74,6 +74,9 @@ public class LoadFileImporter extends OfflineImporter {
         int currentFileNO = 1;
         String fileExt;
 
+        /** The table this file belongs to, so the final merge can be decided from either event. */
+        final SourceTableConfig stc;
+
         public CurrentDataFileInfo(
                 String fileFullName,
                 String header,
@@ -81,7 +84,9 @@ public class LoadFileImporter extends OfflineImporter {
                 String owner,
                 String name,
                 String ext,
-                String pathID) {
+                String pathID,
+                SourceTableConfig stc) {
+            this.stc = stc;
             this.fileHeader =
                     header
                             + File.separator
@@ -129,6 +134,11 @@ public class LoadFileImporter extends OfflineImporter {
     private final Map<String, String> plcsqlProcedureFiles = new HashMap<>();
     private final Map<String, String> plcsqlFunctionFiles = new HashMap<>();
 
+    /** Maps a source's status key (see {@link #sourceKey}) to its key in {@link #tableFiles}. */
+    private final Map<String, String> tableKeysBySource = new HashMap<String, String>();
+
+    private final FinalMergeGate finalMergeGate = new FinalMergeGate();
+
     private final Object lockObj = new Object();
 
     public LoadFileImporter(MigrationContext mrManager) {
@@ -139,6 +149,99 @@ public class LoadFileImporter extends OfflineImporter {
                         config,
                         mrManager.getDirAndFilesMgr(),
                         config.getDestType());
+        final MigrationStatusManager statusMgr = mrManager.getStatusMgr();
+        if (statusMgr != null) {
+            // The final merge used to be decided only when a batch finished importing, so a table
+            // whose last export range finished after its last batch (e.g. the range returned no
+            // rows) was never merged. Re-check at that moment too.
+            statusMgr.addTableExportFinishedListener(this::onTableExportFinished);
+        }
+    }
+
+    /**
+     * Same key {@link MigrationStatusManager} uses for a source, so a notification can be matched
+     * to the table this importer wrote files for.
+     */
+    private static String sourceKey(String owner, String name) {
+        return (owner == null ? "" : owner) + "." + name;
+    }
+
+    private String resolveSchemaName(String owner) {
+        return config.getSrcCatalog().getDatabaseType().isSupportMultiSchema()
+                ? owner
+                : config.getSrcConnOwner();
+    }
+
+    /**
+     * Called when every export range of a source has finished. Does nothing for a source this
+     * importer has not written any data file for (no rows, or not a table it handles).
+     */
+    private void onTableExportFinished(String owner, String source) {
+        final String tableKey;
+        synchronized (lockObj) {
+            tableKey = tableKeysBySource.get(sourceKey(owner, source));
+        }
+        if (tableKey != null) {
+            tryFinalMerge(tableKey);
+        }
+    }
+
+    /**
+     * Runs the table's final merge (or, for XLSX, the final flush) if every export range has
+     * finished and every exported record has been imported - and only once per table.
+     *
+     * <p>Called from both events that can complete that condition: a batch finishing its import,
+     * and the last export range finishing.
+     *
+     * @param tableKey the table's key in {@link #tableFiles}
+     */
+    private void tryFinalMerge(String tableKey) {
+        final CurrentDataFileInfo es;
+        final String fileTableFullName;
+        final String fileFullName;
+        synchronized (lockObj) {
+            es = tableFiles.get(tableKey);
+            if (es == null) {
+                return;
+            }
+            fileTableFullName = es.fileTableFullName;
+            fileFullName = es.fileFullName;
+        }
+        final SourceTableConfig stc = es.stc;
+        final MigrationStatusManager sm = mrManager.getStatusMgr();
+        final String owner = stc.getOwner();
+        final String name = stc.getName();
+        if (config.targetIsCSV()
+                || config.targetIsXLS()
+                || config.targetIsXLSX()
+                || config.isOneTableOneFile()) {
+            if (config.targetIsXLSX()
+                    && finalMergeGate.tryAcquire(
+                            tableKey,
+                            sm.getExpFlag(owner, name),
+                            sm.getExpCount(owner, name),
+                            sm.getImpCount(owner, name))) {
+                FileMergeRunnable.flushAndCloseXLSX(fileTableFullName);
+            }
+            return;
+        }
+        final Table st;
+        if (stc instanceof SourceSQLTableConfig) {
+            st = config.getSrcSQLSchema(name);
+        } else {
+            st = config.getSrcTableSchema(owner, name);
+        }
+        if (null == st) {
+            return;
+        }
+        // If it is the last merging, merge data files to one data file
+        if (finalMergeGate.tryAcquire(
+                tableKey,
+                sm.getExpFlag(owner, name),
+                sm.getExpCount(owner, name),
+                sm.getImpCount(owner, name))) {
+            executeTask(fileTableFullName, fileFullName, null, true, false);
+        }
     }
 
     /**
@@ -204,14 +307,13 @@ public class LoadFileImporter extends OfflineImporter {
             String schemaName;
             String mergeDir;
 
-            schemaName =
-                    config.getSrcCatalog().getDatabaseType().isSupportMultiSchema()
-                            ? stc.getOwner()
-                            : config.getSrcConnOwner();
+            schemaName = resolveSchemaName(stc.getOwner());
             mergeDir = mdfm.getMergeFilesDir();
+            final String tableKey = schemaName + stc.getName();
+            tableKeysBySource.put(sourceKey(stc.getOwner(), stc.getName()), tableKey);
 
             tableFiles.computeIfAbsent(
-                    schemaName + stc.getName(),
+                    tableKey,
                     key ->
                             new CurrentDataFileInfo(
                                     config.getTargetDataFileName(schemaName),
@@ -220,9 +322,10 @@ public class LoadFileImporter extends OfflineImporter {
                                     schemaName,
                                     stc.getName(),
                                     config.getDataFileExt(),
-                                    stc.getPathID(schemaName)));
+                                    stc.getPathID(schemaName),
+                                    stc));
 
-            CurrentDataFileInfo es = tableFiles.get(schemaName + stc.getName());
+            CurrentDataFileInfo es = tableFiles.get(tableKey);
 
             // If the target file is full.
             if (mdfm.isDataFileFull(es.fileTableFullName, impCount)) {
@@ -234,7 +337,6 @@ public class LoadFileImporter extends OfflineImporter {
                 }
             }
             final String fileTableFullName = es.fileTableFullName;
-            final String fileFullName = es.fileFullName;
             ensureHeaderPresent(fileTableFullName, stc);
             mdfm.addDataFile(fileTableFullName, impCount);
             executeTask(
@@ -246,40 +348,8 @@ public class LoadFileImporter extends OfflineImporter {
                             eventHandler.handleEvent(new ImportRecordsEvent(stc, impCount));
                             final MigrationStatusManager sm = mrManager.getStatusMgr();
                             sm.addImpCount(stc.getOwner(), stc.getName(), expCount);
-                            if (config.targetIsCSV()
-                                    || config.targetIsXLS()
-                                    || config.targetIsXLSX()
-                                    || config.isOneTableOneFile()) {
-                                if (config.targetIsXLSX()) {
-                                    final long totalEc =
-                                            sm.getExpCount(stc.getOwner(), stc.getName());
-                                    final long totalIc =
-                                            sm.getImpCount(stc.getOwner(), stc.getName());
-                                    final boolean expEnd =
-                                            sm.getExpFlag(stc.getOwner(), stc.getName());
-                                    if (expEnd && totalEc == totalIc) {
-                                        FileMergeRunnable.flushAndCloseXLSX(fileTableFullName);
-                                    }
-                                }
-                                return;
-                            }
-                            final Table st;
-                            if (stc instanceof SourceSQLTableConfig) {
-                                st = config.getSrcSQLSchema(stc.getName());
-                            } else {
-                                st = config.getSrcTableSchema(stc.getOwner(), stc.getName());
-                            }
-
-                            if (null == st) {
-                                return;
-                            }
-                            final long totalEc = sm.getExpCount(stc.getOwner(), stc.getName());
-                            final long totalIc = sm.getImpCount(stc.getOwner(), stc.getName());
-                            final boolean expEnd = sm.getExpFlag(stc.getOwner(), stc.getName());
-                            // If it is the last merging,Merge data files to one data file
-                            if (expEnd && totalEc == totalIc) {
-                                executeTask(fileTableFullName, fileFullName, null, true, false);
-                            }
+                            // If this was the last batch, merge the data files into one.
+                            tryFinalMerge(tableKey);
                         }
 
                         public void failed(String error) {
@@ -292,6 +362,9 @@ public class LoadFileImporter extends OfflineImporter {
                                             impCount,
                                             new NormalMigrationException(error),
                                             null));
+                            // A failed last batch still completes the counts; the batches that did
+                            // succeed must not be left unmerged because of it.
+                            tryFinalMerge(tableKey);
                         }
                     },
                     config.isDeleteTempFile(),

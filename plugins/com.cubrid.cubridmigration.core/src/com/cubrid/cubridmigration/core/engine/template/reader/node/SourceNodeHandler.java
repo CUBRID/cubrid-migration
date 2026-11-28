@@ -187,6 +187,12 @@ public class SourceNodeHandler extends DefaultHandler {
         setc.setCreatePartition(getBoolean(attributes.getValue(ATTR_PARTITION), false));
         setc.setCreatePK(getBoolean(attributes.getValue(ATTR_PK), true));
         setc.setCondition(attributes.getValue(ATTR_CONDITION));
+        // Optional/new: absent on templates saved before parallel export existed, so keep the
+        // default (1 = unsplit) instead of failing to parse a null value.
+        String parallelDegreeStr = attributes.getValue(ATTR_PARALLEL_DEGREE);
+        if (parallelDegreeStr != null) {
+            setc.setParallelDegree(Integer.parseInt(parallelDegreeStr));
+        }
         setc.setEnableExpOpt(getBoolean(attributes.getValue(ATTR_EXP_OPT_COL), true));
         setc.setStartFromTargetMax(getBoolean(attributes.getValue(ATTR_START_TARGET_MAX), false));
         setc.setComment(attributes.getValue(ATTR_COMMENT));

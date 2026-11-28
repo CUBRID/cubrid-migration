@@ -77,6 +77,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * help to create load DB file
@@ -100,6 +101,14 @@ public class Data2StrTranslator implements IData2StrTranslator {
 
     private final Map<Integer, IFormatValueToString> formaters =
             new HashMap<Integer, IFormatValueToString>();
+
+    // A column's CUBRID data type (and therefore its type ID) never changes mid-export, but
+    // exportToCUBRIDUnLoadFile() is called once per cell - for a wide table this
+    // re-parses/re-hashes
+    // the same handful of distinct "dataType" strings millions of times. This instance is shared
+    // across concurrent import worker threads (see MigrationProcessManager - one Data2StrTranslator
+    // per migration), so the cache must be thread-safe.
+    private final Map<String, Integer> dataTypeIdCache = new ConcurrentHashMap<String, Integer>();
 
     private final int targetDataFileFormat;
     private final MigrationDirAndFilesManager dirAndFilesManager;
@@ -328,8 +337,27 @@ public class Data2StrTranslator implements IData2StrTranslator {
             String schemaName,
             String tableName,
             List<String> lobFiles) {
-        CUBRIDDataTypeHelper cubDTHelper = CUBRIDDataTypeHelper.getInstance(null);
-        Integer dataTypeID = cubDTHelper.getCUBRIDDataTypeID(dataType);
+        Integer dataTypeID = dataTypeIdCache.get(dataType);
+        if (dataTypeID == null) {
+            dataTypeID =
+                    dataTypeIdCache.computeIfAbsent(
+                            dataType,
+                            dt -> {
+                                int id =
+                                        CUBRIDDataTypeHelper.getInstance(null)
+                                                .getCUBRIDDataTypeID(dt);
+                                LOG.debug(
+                                        "[DEBUG-COLCACHE] dataTypeIdCache MISS - computed"
+                                                + " dataType=\""
+                                                + dt
+                                                + "\" -> id="
+                                                + id
+                                                + " ("
+                                                + (dataTypeIdCache.size() + 1)
+                                                + " distinct type(s) cached so far).");
+                                return id;
+                            });
+        }
         IFormatValueToString formater = formaters.get(dataTypeID);
         if (formater != null) {
             return formater.format(dataVal);
