@@ -606,7 +606,8 @@ public class MigrationTasksScheduler {
                         + plan.getSkewResult().getSkewRatio());
         context.getStatusMgr()
                 .registerExportRangeCount(table.getOwner(), table.getName(), ranges.size());
-        TableSplitPlanner planner = new TableSplitPlanner();
+        TableSplitPlanner planner =
+                new TableSplitPlanner(config.getSourceDBType().getExportHelper());
         for (SplitRange range : ranges) {
             String rangeCondition = planner.buildRangeCondition(plan.getSplitColumn(), range);
             LOG.debug(
@@ -640,7 +641,8 @@ public class MigrationTasksScheduler {
         Connection conn = null; // NOPMD
         try {
             conn = context.getConnManager().getSourceConnection();
-            TableSplitPlanner planner = new TableSplitPlanner();
+            TableSplitPlanner planner =
+                    new TableSplitPlanner(config.getSourceDBType().getExportHelper());
             return planner.plan(
                     conn,
                     srcTable,

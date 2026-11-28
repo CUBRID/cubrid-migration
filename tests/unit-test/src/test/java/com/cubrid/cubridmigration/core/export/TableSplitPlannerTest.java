@@ -49,6 +49,9 @@ import com.cubrid.cubridmigration.core.export.TableSplitPlanner.SplitRange;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.ArgumentCaptor;
 
 import java.math.BigDecimal;
@@ -60,6 +63,7 @@ import java.sql.Statement;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Stream;
 
 @DisplayName("TableSplitPlanner")
 class TableSplitPlannerTest {
@@ -68,7 +72,8 @@ class TableSplitPlannerTest {
     // tests can pass a different value if they need to exercise the threshold itself.
     private static final double SKEW_RATIO_THRESHOLD = 3.0;
 
-    private final TableSplitPlanner planner = new TableSplitPlanner();
+    private final TableSplitPlanner planner =
+            new TableSplitPlanner(DatabaseType.MYSQL.getExportHelper());
 
     // ---------------------------------------------------------------
     // determineSplitColumn(): metadata-only, no DB round trip involved
@@ -287,7 +292,7 @@ class TableSplitPlannerTest {
 
         String condition = planner.buildRangeCondition(id, new SplitRange(1L, 1000L));
 
-        assertThat(condition).isEqualTo("id >= 1 AND id < 1000");
+        assertThat(condition).isEqualTo("`id` >= 1 AND `id` < 1000");
     }
 
     @Test
@@ -296,9 +301,10 @@ class TableSplitPlannerTest {
         Column id = new Column();
         id.setName("id");
 
-        assertThat(planner.buildRangeCondition(id, new SplitRange(null, 26L))).isEqualTo("id < 26");
+        assertThat(planner.buildRangeCondition(id, new SplitRange(null, 26L)))
+                .isEqualTo("`id` < 26");
         assertThat(planner.buildRangeCondition(id, new SplitRange(76L, null)))
-                .isEqualTo("id >= 76");
+                .isEqualTo("`id` >= 76");
     }
 
     @Test
@@ -320,7 +326,7 @@ class TableSplitPlannerTest {
                 planner.buildRangeCondition(
                         amount, new SplitRange(new BigDecimal("1E+3"), new BigDecimal("2.50")));
 
-        assertThat(condition).isEqualTo("amount >= 1000 AND amount < 2.50");
+        assertThat(condition).isEqualTo("`amount` >= 1000 AND `amount` < 2.50");
     }
 
     @Test
@@ -331,7 +337,7 @@ class TableSplitPlannerTest {
 
         String condition = planner.buildRangeCondition(code, new SplitRange("A", "O'Brien"));
 
-        assertThat(condition).isEqualTo("code >= 'A' AND code < 'O''Brien'");
+        assertThat(condition).isEqualTo("`code` >= 'A' AND `code` < 'O''Brien'");
     }
 
     // ---------------------------------------------------------------
@@ -385,7 +391,10 @@ class TableSplitPlannerTest {
         assertThat(ranges)
                 .extracting(range -> planner.buildRangeCondition(idColumn(), range))
                 .containsExactly(
-                        "id < 26", "id >= 26 AND id < 51", "id >= 51 AND id < 76", "id >= 76");
+                        "`id` < 26",
+                        "`id` >= 26 AND `id` < 51",
+                        "`id` >= 51 AND `id` < 76",
+                        "`id` >= 76");
     }
 
     @Test
@@ -399,10 +408,10 @@ class TableSplitPlannerTest {
         assertThat(ranges)
                 .extracting(range -> planner.buildRangeCondition(idColumn(), range))
                 .containsExactly(
-                        "id < 3.05",
-                        "id >= 3.05 AND id < 5.6",
-                        "id >= 5.6 AND id < 8.15",
-                        "id >= 8.15");
+                        "`id` < 3.05",
+                        "`id` >= 3.05 AND `id` < 5.6",
+                        "`id` >= 5.6 AND `id` < 8.15",
+                        "`id` >= 8.15");
     }
 
     @Test
@@ -455,7 +464,8 @@ class TableSplitPlannerTest {
         assertThat(((BigDecimal) ranges.get(0).getUpperBound()).toPlainString())
                 .isEqualTo("25000000000000000000000000");
         assertThat(planner.buildRangeCondition(idColumn(), ranges.get(1)))
-                .isEqualTo("id >= 25000000000000000000000000 AND id < 50000000000000000000000000");
+                .isEqualTo(
+                        "`id` >= 25000000000000000000000000 AND `id` < 50000000000000000000000000");
     }
 
     @Test
@@ -465,7 +475,7 @@ class TableSplitPlannerTest {
 
         assertThat(ranges)
                 .extracting(range -> planner.buildRangeCondition(idColumn(), range))
-                .containsExactly("id < 2", "id >= 2 AND id < 3", "id >= 3");
+                .containsExactly("`id` < 2", "`id` >= 2 AND `id` < 3", "`id` >= 3");
     }
 
     @Test
@@ -650,9 +660,9 @@ class TableSplitPlannerTest {
         verify(conn, org.mockito.Mockito.times(3)).prepareStatement(sql.capture());
         assertThat(sql.getAllValues())
                 .containsExactly(
-                        "SELECT COUNT(*) FROM owner.orders WHERE id < ?",
-                        "SELECT COUNT(*) FROM owner.orders WHERE id >= ? AND id < ?",
-                        "SELECT COUNT(*) FROM owner.orders WHERE id >= ?");
+                        "SELECT COUNT(*) FROM `owner`.`orders` WHERE `id` < ?",
+                        "SELECT COUNT(*) FROM `owner`.`orders` WHERE `id` >= ? AND `id` < ?",
+                        "SELECT COUNT(*) FROM `owner`.`orders` WHERE `id` >= ?");
         // First range binds only its upper bound, the last only its lower bound.
         verify(ps, org.mockito.Mockito.times(2)).setObject(1, 26L);
         verify(ps).setObject(2, 51L);
@@ -863,6 +873,113 @@ class TableSplitPlannerTest {
         assertThat(plan.isParallelizable()).isTrue();
         assertThat(plan.getSplitColumn()).isEqualTo(tenantId);
         assertThat(plan.getSplitBasis()).isEqualTo(SplitBasis.COMPOSITE_PK_LEADING_COLUMN);
+    }
+
+    // ---------------------------------------------------------------
+    // identifier quoting: every name in the generated SQL goes through the dialect's quoting
+    // ---------------------------------------------------------------
+
+    /** Dialect, opening quote, closing quote - as the export queries quote identifiers. */
+    private static Stream<Arguments> quotingDialects() {
+        return Stream.of(
+                Arguments.of(DatabaseType.ORACLE, "\"", "\""),
+                Arguments.of(DatabaseType.TIBERO, "\"", "\""),
+                Arguments.of(DatabaseType.MYSQL, "`", "`"),
+                Arguments.of(DatabaseType.MARIADB, "`", "`"),
+                Arguments.of(DatabaseType.MSSQL, "[", "]"),
+                Arguments.of(DatabaseType.CUBRID, "[", "]"),
+                // The Informix export helper deliberately leaves names unquoted.
+                Arguments.of(DatabaseType.INFORMIX, "", ""));
+    }
+
+    @ParameterizedTest(name = "[{index}] {0}")
+    @DisplayName("the split column in a range predicate is quoted the way the dialect quotes it")
+    @MethodSource("quotingDialects")
+    void buildRangeCondition_columnNeedingQuotes_isQuotedForTheDialect(
+            DatabaseType dialect, String open, String close) {
+        TableSplitPlanner dialectPlanner = new TableSplitPlanner(dialect.getExportHelper());
+        Column column = new Column();
+        column.setName("Order Id");
+        String quoted = open + "Order Id" + close;
+
+        assertThat(dialectPlanner.buildRangeCondition(column, new SplitRange(1L, 10L)))
+                .isEqualTo(quoted + " >= 1 AND " + quoted + " < 10");
+    }
+
+    @ParameterizedTest(name = "[{index}] {0}")
+    @DisplayName("MIN/MAX query quotes the split column, the owner and the table")
+    @MethodSource("quotingDialects")
+    void calculateRanges_namesNeedingQuotes_quotesColumnOwnerAndTable(
+            DatabaseType dialect, String open, String close) throws Exception {
+        TableSplitPlanner dialectPlanner = new TableSplitPlanner(dialect.getExportHelper());
+        Table table = createTable("Order Items");
+        table.setOwner("Sales Dept");
+        Column column = addColumn(table, "order", "BIGINT");
+
+        Connection conn = mock(Connection.class);
+        Statement stmt = mock(Statement.class);
+        when(conn.createStatement()).thenReturn(stmt);
+        ResultSet minMax = countResultSet(1L, 100L);
+        when(stmt.executeQuery(anyString())).thenReturn(minMax);
+
+        dialectPlanner.calculateRanges(conn, table, column, 4);
+
+        String col = open + "order" + close;
+        String tableRef = open + "Sales Dept" + close + "." + open + "Order Items" + close;
+        verify(stmt).executeQuery("SELECT MIN(" + col + "), MAX(" + col + ") FROM " + tableRef);
+    }
+
+    @ParameterizedTest(name = "[{index}] {0}")
+    @DisplayName("skew COUNT query quotes the split column, the owner and the table")
+    @MethodSource("quotingDialects")
+    void validateSkew_namesNeedingQuotes_quotesColumnOwnerAndTable(
+            DatabaseType dialect, String open, String close) throws Exception {
+        TableSplitPlanner dialectPlanner = new TableSplitPlanner(dialect.getExportHelper());
+        Table table = createTable("Order Items");
+        table.setOwner("Sales Dept");
+        Column column = addColumn(table, "order", "BIGINT");
+
+        Connection conn = mock(Connection.class);
+        PreparedStatement ps = mock(PreparedStatement.class);
+        when(conn.prepareStatement(anyString())).thenReturn(ps);
+        ResultSet count = countResultSet(10L);
+        when(ps.executeQuery()).thenReturn(count);
+
+        dialectPlanner.validateSkew(
+                conn,
+                table,
+                column,
+                Collections.singletonList(new SplitRange(null, 26L)),
+                SKEW_RATIO_THRESHOLD);
+
+        String tableRef = open + "Sales Dept" + close + "." + open + "Order Items" + close;
+        verify(conn)
+                .prepareStatement(
+                        "SELECT COUNT(*) FROM "
+                                + tableRef
+                                + " WHERE "
+                                + open
+                                + "order"
+                                + close
+                                + " < ?");
+    }
+
+    @Test
+    @DisplayName("a table without an owner is not prefixed with an empty qualifier")
+    void calculateRanges_tableWithoutOwner_omitsTheQualifier() throws Exception {
+        Table table = createTable("orders");
+        table.setOwner(null);
+        Column id = addColumn(table, "id", "BIGINT");
+
+        Connection conn = mock(Connection.class);
+        Statement stmt = mock(Statement.class);
+        when(conn.createStatement()).thenReturn(stmt);
+        ResultSet minMax = countResultSet(1L, 100L);
+        when(stmt.executeQuery(anyString())).thenReturn(minMax);
+
+        planner.calculateRanges(conn, table, id, 4);
+
+        verify(stmt).executeQuery("SELECT MIN(`id`), MAX(`id`) FROM `orders`");
     }
 
     // ---------------------------------------------------------------

@@ -31,6 +31,7 @@ package com.cubrid.cubridmigration.core.export;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.cubrid.cubridmigration.core.dbtype.DatabaseType;
+import com.cubrid.cubridmigration.core.engine.config.SourceEntryTableConfig;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -96,6 +97,43 @@ class DBExportHelperTest {
                 assertThat(firstPage).isEqualTo(SQL);
                 assertThat(secondPage).isEqualTo(SQL);
             }
+        }
+    }
+
+    @Nested
+    @DisplayName("getQualifiedTableName() / getQuotedColumnName()")
+    class QuotedNames {
+
+        @ParameterizedTest(name = "[{index}] {0}")
+        @DisplayName("the names are quoted exactly as getSelectSQL() quotes them")
+        @MethodSource("com.cubrid.cubridmigration.core.export.DBExportHelperTest#allDialects")
+        void names_matchTheTableAndColumnInGetSelectSQL(String label, DatabaseType type) {
+            DBExportHelper helper = type.getExportHelper();
+            SourceEntryTableConfig table = new SourceEntryTableConfig();
+            table.setOwner("Sales Dept");
+            table.setName("Order Items");
+            table.addColumnConfig("order", "order", true);
+
+            String selectSql = helper.getSelectSQL(table);
+
+            assertThat(selectSql)
+                    .isEqualTo(
+                            "SELECT "
+                                    + helper.getQuotedColumnName("order")
+                                    + " FROM "
+                                    + helper.getQualifiedTableName("Sales Dept", "Order Items"));
+        }
+
+        @ParameterizedTest(name = "[{index}] {0}")
+        @DisplayName("a blank owner adds no qualifier")
+        @MethodSource("com.cubrid.cubridmigration.core.export.DBExportHelperTest#allDialects")
+        void blankOwner_returnsOnlyTheQuotedTableName(String label, DatabaseType type) {
+            DBExportHelper helper = type.getExportHelper();
+
+            assertThat(helper.getQualifiedTableName(null, "orders"))
+                    .isEqualTo(helper.getQuotedColumnName("orders"));
+            assertThat(helper.getQualifiedTableName("  ", "orders"))
+                    .isEqualTo(helper.getQuotedColumnName("orders"));
         }
     }
 }

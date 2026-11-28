@@ -163,6 +163,34 @@ public abstract class DBExportHelper implements IDependOnDatabaseType {
     protected abstract String getQuotedObjName(String objectName);
 
     /**
+     * Quotes a column name exactly the way {@link #getSelectSQL(SourceTableConfig)} does, for SQL
+     * built outside this class (e.g. the split planner's range predicates).
+     *
+     * @param columnName the column name as stored in the table metadata
+     * @return the column name quoted for this dialect
+     */
+    public String getQuotedColumnName(String columnName) {
+        return getQuotedObjName(columnName);
+    }
+
+    /**
+     * Builds the table reference {@link #getSelectSQL(SourceTableConfig)} reads from: the quoted
+     * name, preceded by the quoted owner when there is one (see {@link
+     * #addSchemaPrefix(SourceEntryTableConfig, StringBuilder)}).
+     *
+     * @param owner the table's owner/schema, may be blank
+     * @param tableName the table name as stored in the table metadata
+     * @return the table reference quoted for this dialect
+     */
+    public String getQualifiedTableName(String owner, String tableName) {
+        StringBuilder buf = new StringBuilder();
+        if (StringUtils.isNotBlank(owner)) {
+            buf.append(getQuotedObjName(owner)).append(".");
+        }
+        return buf.append(getQuotedObjName(tableName)).toString();
+    }
+
+    /**
      * to return SELECT SQL
      *
      * @param stc SourceTableConfig

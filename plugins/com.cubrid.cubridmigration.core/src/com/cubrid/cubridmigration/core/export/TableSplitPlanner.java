@@ -61,11 +61,9 @@ import java.util.function.Function;
  * Decides whether a table's records can be exported by multiple parallel range workers instead of
  * the current one-thread-per-table model, and computes the value ranges those workers would use.
  *
- * <p>This is a design skeleton: {@link #determineSplitColumn(Table, DatabaseType)} is fully
- * implemented since it only needs metadata that is already fetched. {@link #calculateRanges(
- * Connection, Table, Column, int)} and {@link #validateSkew(Connection, Table, Column, List,
- * double)} contain a generic, dialect-agnostic SQL implementation that must be reviewed per source
- * database (identifier quoting) before being relied on.
+ * <p>Every identifier the planner puts into SQL (table, owner, split column) is quoted by the
+ * source database's {@link DBExportHelper}, the same way the export queries quote them, so names
+ * that are reserved words, contain spaces or are case-sensitive work as they do in a normal export.
  *
  * <p>The skew ratio threshold used by {@link #validateSkew} and {@link #plan} is intentionally not
  * a constant here - callers should read it from {@code MigrationConfiguration
@@ -104,6 +102,16 @@ public class TableSplitPlanner {
                             "datetimetz",
                             "timestampltz",
                             "datetimeltz"));
+
+    private final DBExportHelper exportHelper;
+
+    /**
+     * @param exportHelper the source database's export helper, used to quote identifiers in the SQL
+     *     this planner generates
+     */
+    public TableSplitPlanner(DBExportHelper exportHelper) {
+        this.exportHelper = exportHelper;
+    }
 
     /**
      * Picks the column to split on, following the priority described in the class doc. Metadata
@@ -251,11 +259,9 @@ public class TableSplitPlanner {
      * every value of the split column (see {@link SplitRange} for the half-open convention).
      * MIN/MAX only - no COUNT(*) - so this stays cheap regardless of table size.
      *
-     * <p>TODO: identifier quoting/escaping is not dialect-aware yet - reuse the quoting helpers
-     * already in {@link DBExportHelper} and its per-DB subclasses instead of the naive {@code
-     * owner.table} concatenation below. Only numeric split columns are actually split here;
-     * DATE/TIMESTAMP columns need dialect-specific arithmetic and currently fall back to a single
-     * unsplit range (see {@link #splitIntoRanges}).
+     * <p>Only numeric split columns are actually split here; DATE/TIMESTAMP columns need
+     * dialect-specific arithmetic and currently fall back to a single unsplit range (see {@link
+     * #splitIntoRanges}).
      *
      * @param conn a short-lived connection to the source database, owned by the caller
      * @param table source table metadata
@@ -270,11 +276,12 @@ public class TableSplitPlanner {
             return Collections.emptyList();
         }
 
+        String quotedColumn = quotedColumnName(splitColumn);
         String sql =
                 "SELECT MIN("
-                        + splitColumn.getName()
+                        + quotedColumn
                         + "), MAX("
-                        + splitColumn.getName()
+                        + quotedColumn
                         + ") FROM "
                         + qualifiedTableName(table);
 
@@ -454,11 +461,12 @@ public class TableSplitPlanner {
         // exactly the set of rows that range's task will read. Bounds are bound as parameters; a
         // range's unbounded side has no placeholder, so the statement differs per range.
         String countPrefix = "SELECT COUNT(*) FROM " + qualifiedTableName(table) + " WHERE ";
+        String quotedColumn = quotedColumnName(splitColumn);
 
         List<Long> counts = new ArrayList<Long>();
         long total = 0;
         for (SplitRange range : ranges) {
-            String sql = countPrefix + rangePredicate(splitColumn.getName(), range, b -> "?");
+            String sql = countPrefix + rangePredicate(quotedColumn, range, b -> "?");
             try (PreparedStatement ps = conn.prepareStatement(sql)) {
                 int index = 1;
                 if (range.getLowerBound() != null) {
@@ -534,14 +542,13 @@ public class TableSplitPlanner {
         return ParallelExportPlan.enabled(table, splitColumn, choice.getBasis(), ranges, skew);
     }
 
-    /**
-     * TODO: naive owner.table concatenation with no identifier quoting. Replace with the
-     * quoting/escaping already implemented per source dialect in {@link DBExportHelper} and its
-     * subclasses before this is used against a real connection.
-     */
+    /** The table reference the export query reads from, quoted for the source dialect. */
     private String qualifiedTableName(Table table) {
-        String owner = table.getOwner();
-        return (owner == null || owner.isEmpty()) ? table.getName() : owner + "." + table.getName();
+        return exportHelper.getQualifiedTableName(table.getOwner(), table.getName());
+    }
+
+    private String quotedColumnName(Column column) {
+        return exportHelper.getQuotedColumnName(column.getName());
     }
 
     /**
@@ -554,8 +561,7 @@ public class TableSplitPlanner {
      * two neighbouring ranges, and for fractional values the integer-only ranges used to leave
      * gaps. With one shared boundary per pair of neighbours every value lands in exactly one range.
      *
-     * <p>TODO: same identifier-quoting caveat as {@link #qualifiedTableName} - the column name is
-     * emitted as-is rather than through a dialect-specific quoting helper.
+     * <p>The column name is quoted for the source dialect, as in the export query it is ANDed onto.
      *
      * @param splitColumn the column ranges were computed against (from {@link
      *     #determineSplitColumn})
@@ -563,12 +569,15 @@ public class TableSplitPlanner {
      * @return a standalone boolean SQL predicate, safe to AND onto an existing condition
      */
     public String buildRangeCondition(Column splitColumn, SplitRange range) {
-        return rangePredicate(splitColumn.getName(), range, TableSplitPlanner::toSqlLiteral);
+        return rangePredicate(
+                quotedColumnName(splitColumn), range, TableSplitPlanner::toSqlLiteral);
     }
 
     /**
      * The one place the range predicate is spelled out, shared by the export condition (bounds as
      * SQL literals) and the skew check (bounds as {@code ?} placeholders).
+     *
+     * @param columnName the split column, already quoted for the source dialect
      */
     private static String rangePredicate(
             String columnName, SplitRange range, Function<Object, String> renderBound) {
