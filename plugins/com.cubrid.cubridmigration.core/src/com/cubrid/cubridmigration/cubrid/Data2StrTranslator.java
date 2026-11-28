@@ -78,7 +78,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * help to create load DB file
@@ -110,10 +109,6 @@ public class Data2StrTranslator implements IData2StrTranslator {
     // across concurrent import worker threads (see MigrationProcessManager - one Data2StrTranslator
     // per migration), so the cache must be thread-safe.
     private final Map<String, Integer> dataTypeIdCache = new ConcurrentHashMap<String, Integer>();
-
-    // Only for the [DEBUG-COLCACHE] hit heartbeat below - not needed for the cache itself.
-    private final AtomicLong dataTypeIdCacheHits = new AtomicLong();
-    private static final long DATA_TYPE_ID_CACHE_HIT_LOG_INTERVAL = 1_000_000L;
 
     private final int targetDataFileFormat;
     private final MigrationDirAndFilesManager dirAndFilesManager;
@@ -343,17 +338,7 @@ public class Data2StrTranslator implements IData2StrTranslator {
             String tableName,
             List<String> lobFiles) {
         Integer dataTypeID = dataTypeIdCache.get(dataType);
-        if (dataTypeID != null) {
-            long hits = dataTypeIdCacheHits.incrementAndGet();
-            if (hits % DATA_TYPE_ID_CACHE_HIT_LOG_INTERVAL == 0) {
-                LOG.debug(
-                        "[DEBUG-COLCACHE] dataTypeIdCache HIT heartbeat: "
-                                + hits
-                                + " hit(s) so far, "
-                                + dataTypeIdCache.size()
-                                + " distinct type(s) cached.");
-            }
-        } else {
+        if (dataTypeID == null) {
             dataTypeID =
                     dataTypeIdCache.computeIfAbsent(
                             dataType,
