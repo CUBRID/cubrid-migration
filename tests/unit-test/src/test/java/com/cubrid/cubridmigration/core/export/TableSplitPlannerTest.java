@@ -286,7 +286,7 @@ class TableSplitPlannerTest {
     @Test
     @DisplayName(
             "numeric bounds are emitted as unquoted literals, lower inclusive and upper exclusive")
-    void buildRangeCondition_numericBounds_emitsUnquotedHalfOpenPredicate() {
+    void buildRangeCondition_numericBounds_emitsHalfOpenPredicateWithPlainLiterals() {
         Column id = new Column();
         id.setName("id");
 

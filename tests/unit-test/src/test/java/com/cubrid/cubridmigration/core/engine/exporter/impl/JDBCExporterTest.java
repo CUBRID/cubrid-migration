@@ -68,7 +68,8 @@ import java.util.List;
 /**
  * Covers {@link JDBCExporter#combineCondition}, the export loop of {@link
  * JDBCExporter#exportTableRecords(SourceTableConfig, String, RecordExportedListener)}, {@link
- * JDBCExporter#isLatestPage} and {@link JDBCExporter#resolveSerializationTargetColumns}.
+ * JDBCExporter#isLatestPage}, {@link JDBCExporter#resolveSerializationTargetColumns} and {@link
+ * JDBCExporter#getResultSet}.
  *
  * <p>Export loop regression note: most dialects' {@code getPagedSelectSQL} is a no-op (the SQL
  * comes back unchanged), so one execution already returns everything the query matches. For those

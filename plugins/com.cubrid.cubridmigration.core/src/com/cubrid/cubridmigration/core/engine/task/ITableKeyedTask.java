@@ -64,9 +64,8 @@ public interface ITableKeyedTask {
      * <p>{@code owner} is {@code null} for every table whenever the source doesn't support per-user
      * schemas (see {@code DatabaseType#isSupportMultiSchema} - e.g. CUBRID before 11.2, per {@code
      * MigrationConfiguration#resetSchemaInfo}, which explicitly nulls it out in that case) -
-     * guarded the same way {@code TableSplitPlanner#qualifiedTableName} already guards the same
-     * "owner.name" shape, so the key degrades to just {@code name} instead of the literal string
-     * {@code "null.NAME"}.
+     * guarded the same way {@code DBExportHelper#getQualifiedTableName} guards a blank owner, so
+     * the key degrades to just {@code name} instead of the literal string {@code "null.NAME"}.
      *
      * @param owner table owner, may be {@code null} or {@code ""} for sources without one
      * @param name table name

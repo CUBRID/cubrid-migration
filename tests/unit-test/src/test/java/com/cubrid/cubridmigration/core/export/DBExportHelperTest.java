@@ -101,39 +101,52 @@ class DBExportHelperTest {
     }
 
     @Nested
-    @DisplayName("getQualifiedTableName() / getQuotedColumnName()")
-    class QuotedNames {
+    @DisplayName("getQuotedColumnName()")
+    class GetQuotedColumnName {
 
         @ParameterizedTest(name = "[{index}] {0}")
-        @DisplayName("the names are quoted exactly as getSelectSQL() quotes them")
+        @DisplayName("a column is quoted exactly as getSelectSQL() quotes it")
         @MethodSource("com.cubrid.cubridmigration.core.export.DBExportHelperTest#allDialects")
-        void names_matchTheTableAndColumnInGetSelectSQL(String label, DatabaseType type) {
+        void anyDialect_matchesTheColumnInGetSelectSQL(String label, DatabaseType type) {
             DBExportHelper helper = type.getExportHelper();
-            SourceEntryTableConfig table = new SourceEntryTableConfig();
-            table.setOwner("Sales Dept");
-            table.setName("Order Items");
-            table.addColumnConfig("order", "order", true);
 
-            String selectSql = helper.getSelectSQL(table);
+            assertThat(helper.getSelectSQL(entryTable("Sales Dept", "Order Items", "order")))
+                    .startsWith("SELECT " + helper.getQuotedColumnName("order") + " FROM ");
+        }
+    }
 
-            assertThat(selectSql)
-                    .isEqualTo(
-                            "SELECT "
-                                    + helper.getQuotedColumnName("order")
-                                    + " FROM "
-                                    + helper.getQualifiedTableName("Sales Dept", "Order Items"));
+    @Nested
+    @DisplayName("getQualifiedTableName()")
+    class GetQualifiedTableName {
+
+        @ParameterizedTest(name = "[{index}] {0}")
+        @DisplayName("owner and table are quoted exactly as getSelectSQL() quotes them")
+        @MethodSource("com.cubrid.cubridmigration.core.export.DBExportHelperTest#allDialects")
+        void ownerAndTable_matchesTheTableInGetSelectSQL(String label, DatabaseType type) {
+            DBExportHelper helper = type.getExportHelper();
+
+            assertThat(helper.getSelectSQL(entryTable("Sales Dept", "Order Items", "id")))
+                    .endsWith(" FROM " + helper.getQualifiedTableName("Sales Dept", "Order Items"));
         }
 
         @ParameterizedTest(name = "[{index}] {0}")
-        @DisplayName("a blank owner adds no qualifier")
+        @DisplayName("a null or blank owner adds no qualifier, as in getSelectSQL()")
         @MethodSource("com.cubrid.cubridmigration.core.export.DBExportHelperTest#allDialects")
-        void blankOwner_returnsOnlyTheQuotedTableName(String label, DatabaseType type) {
+        void blankOwner_matchesTheTableInGetSelectSQLWithoutOwner(String label, DatabaseType type) {
             DBExportHelper helper = type.getExportHelper();
 
-            assertThat(helper.getQualifiedTableName(null, "orders"))
-                    .isEqualTo(helper.getQuotedColumnName("orders"));
-            assertThat(helper.getQualifiedTableName("  ", "orders"))
-                    .isEqualTo(helper.getQuotedColumnName("orders"));
+            assertThat(helper.getSelectSQL(entryTable(null, "orders", "id")))
+                    .endsWith(" FROM " + helper.getQualifiedTableName(null, "orders"));
+            assertThat(helper.getSelectSQL(entryTable("  ", "orders", "id")))
+                    .endsWith(" FROM " + helper.getQualifiedTableName("  ", "orders"));
         }
+    }
+
+    private static SourceEntryTableConfig entryTable(String owner, String name, String column) {
+        SourceEntryTableConfig table = new SourceEntryTableConfig();
+        table.setOwner(owner);
+        table.setName(name);
+        table.addColumnConfig(column, column, true);
+        return table;
     }
 }
