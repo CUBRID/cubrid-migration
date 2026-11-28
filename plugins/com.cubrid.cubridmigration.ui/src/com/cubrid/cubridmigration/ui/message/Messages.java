@@ -474,6 +474,8 @@ public class Messages extends NLS {
     public static String lblParallelExportEnabled;
     public static String lblParallelExportDefaultDegree;
     public static String lblParallelExportMinRowCount;
+    public static String ttParallelExportMinRowCount;
+    public static String msgParallelExportMinRowCountOverLimit;
     public static String lblRecordSerializationEnabled;
     public static String lblPassword;
     public static String lblPort;

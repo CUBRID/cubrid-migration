@@ -38,6 +38,7 @@ import com.cubrid.cubridmigration.ui.preference.MigrationConfigPage;
 
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
@@ -49,6 +50,9 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Spinner;
+
+import java.text.MessageFormat;
+import java.text.NumberFormat;
 
 /**
  * Performance settings dialog
@@ -79,6 +83,9 @@ public class PerformanceSettingsDialog extends Dialog {
     private Spinner txtParallelExportDefaultDegree;
 
     private Spinner txtParallelExportMinRowCount;
+
+    /** What the min-row-count Spinner showed when the dialog opened. */
+    private int initialMinRowCountSelection;
 
     private Button btnRecordSerializationEnabled;
 
@@ -212,17 +219,27 @@ public class PerformanceSettingsDialog extends Dialog {
             lblParallelExportMinRowCount.setLayoutData(
                     new GridData(SWT.RIGHT, SWT.CENTER, false, false));
             lblParallelExportMinRowCount.setText(Messages.lblParallelExportMinRowCount);
+            lblParallelExportMinRowCount.setToolTipText(Messages.ttParallelExportMinRowCount);
 
+            // The Spinner is int-based, so the threshold is limited to the int range here.
             txtParallelExportMinRowCount = new Spinner(container, SWT.BORDER);
+            txtParallelExportMinRowCount.setToolTipText(Messages.ttParallelExportMinRowCount);
             txtParallelExportMinRowCount.setLayoutData(
                     new GridData(SWT.FILL, SWT.CENTER, true, false));
+            // The saved threshold is a long, the Spinner only holds an int: show the nearest
+            // value it can, and remember what was shown so okPressed() can tell whether the user
+            // really edited the field (see there).
             txtParallelExportMinRowCount.setValues(
-                    (int) Math.min(config.getParallelExportMinRowCount(), Integer.MAX_VALUE),
+                    toSpinnerRange(config.getParallelExportMinRowCount()),
                     0,
                     Integer.MAX_VALUE,
                     0,
                     100_000,
                     1_000_000);
+            initialMinRowCountSelection = txtParallelExportMinRowCount.getSelection();
+            if (config.getParallelExportMinRowCount() > Integer.MAX_VALUE) {
+                warnMinRowCountOverLimit(config.getParallelExportMinRowCount());
+            }
 
             txtParallelExportDefaultDegree.setEnabled(btnParallelExportEnabled.getSelection());
             txtParallelExportMinRowCount.setEnabled(btnParallelExportEnabled.getSelection());
@@ -268,6 +285,38 @@ public class PerformanceSettingsDialog extends Dialog {
         }
 
         return parent;
+    }
+
+    /** Clamps a long threshold into what an int Spinner can hold (0 to Integer.MAX_VALUE). */
+    private static int toSpinnerRange(long value) {
+        return (int) Math.max(0L, Math.min(value, Integer.MAX_VALUE));
+    }
+
+    /**
+     * Tells the user that the saved threshold is beyond what this screen can show and stays as it
+     * is unless the field is changed. Shown once the dialog is open, not while it is being built.
+     */
+    private void warnMinRowCountOverLimit(final long savedValue) {
+        final Shell shell = getShell();
+        shell.getDisplay()
+                .asyncExec(
+                        new Runnable() {
+                            public void run() {
+                                if (shell.isDisposed()) {
+                                    return;
+                                }
+                                NumberFormat format = NumberFormat.getIntegerInstance();
+                                UICommonTool.openMsgBox(
+                                        shell,
+                                        MessageDialog.WARNING,
+                                        Messages.msgWarning,
+                                        MessageFormat.format(
+                                                Messages.msgParallelExportMinRowCountOverLimit,
+                                                format.format(savedValue),
+                                                format.format(Integer.MAX_VALUE)),
+                                        new String[] {Messages.btnOK});
+                            }
+                        });
     }
 
     /**
@@ -388,7 +437,11 @@ public class PerformanceSettingsDialog extends Dialog {
         if (btnParallelExportEnabled != null) {
             config.setParallelExportEnabled(btnParallelExportEnabled.getSelection());
             config.setParallelExportDefaultDegree(txtParallelExportDefaultDegree.getSelection());
-            config.setParallelExportMinRowCount(txtParallelExportMinRowCount.getSelection());
+            // A saved value above the int range was shown clamped. Writing that back unchanged
+            // would silently lower the user's threshold, so only an edited field replaces it.
+            if (txtParallelExportMinRowCount.getSelection() != initialMinRowCountSelection) {
+                config.setParallelExportMinRowCount(txtParallelExportMinRowCount.getSelection());
+            }
         }
         if (btnRecordSerializationEnabled != null) {
             config.setRecordSerializationEnabled(btnRecordSerializationEnabled.getSelection());
