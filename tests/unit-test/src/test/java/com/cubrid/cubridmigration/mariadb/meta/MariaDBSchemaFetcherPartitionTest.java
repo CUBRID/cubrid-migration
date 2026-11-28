@@ -66,7 +66,7 @@ class MariaDBSchemaFetcherPartitionTest {
     private static final String TODO_PARTITION_EXPR = "col1";
     private static final String TODO_TABLE_DDL =
             "CREATE TABLE `tbl1` (`col1` int(11) DEFAULT NULL) ENGINE=InnoDB PARTITION BY RANGE"
-                + " (col1) (PARTITION p_under_2000 VALUES LESS THAN (2000))\n";
+                    + " (col1) (PARTITION p_under_2000 VALUES LESS THAN (2000))\n";
 
     @Test
     @DisplayName(
