@@ -500,8 +500,9 @@ public class MigrationTasksScheduler {
      * <p>Driven entirely by the three global {@code MigrationConfiguration} knobs for now - {@code
      * SourceEntryTableConfig#getParallelDegree()} (a per-table override) is intentionally not
      * consulted yet, so every table is judged the same way: {@link
-     * MigrationConfiguration#isParallelExportEnabled()} must be on, and the table's own row count
-     * (already-fetched metadata, no extra query) must meet {@link
+     * MigrationConfiguration#isParallelExportEnabled()} must be on, the table must have no
+     * condition of its own (see the comment below), and the table's own row count (already-fetched
+     * metadata, no extra query) must meet {@link
      * MigrationConfiguration#getParallelExportMinRowCount()} - this is checked *before* touching a
      * connection, so tables that don't qualify never pay for {@code TableSplitPlanner#plan}'s
      * MIN/MAX + COUNT round trip.
@@ -512,6 +513,22 @@ public class MigrationTasksScheduler {
      */
     private void scheduleTableExport(MigrationConfiguration config, SourceEntryTableConfig table) {
         if (!config.isParallelExportEnabled()) {
+            executeTask2(taskFactory.createExportTableRecordsTask(table));
+            return;
+        }
+
+        // A table condition is free text typed by the user, and each range's predicate has to be
+        // ANDed onto it. That is only correct when the condition is a plain predicate: a top-level
+        // OR would be mis-grouped (every range then re-reads the rows matching its left side), and
+        // a trailing clause (ORDER BY, GROUP BY, LIMIT, ...) cannot take an AND at all. Telling the
+        // two apart reliably is not possible, so tables with a condition are simply not split.
+        if (StringUtils.isNotBlank(table.getCondition())) {
+            LOG.debug(
+                    "[DEBUG-SPLIT] Parallel export skipped for "
+                            + table.getOwner()
+                            + "."
+                            + table.getName()
+                            + ": the table has a condition.");
             executeTask2(taskFactory.createExportTableRecordsTask(table));
             return;
         }
